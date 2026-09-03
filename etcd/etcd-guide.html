@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>etcd 技术介绍与使用指南</title>
+<style>
+  :root{
+    --accent:#2563eb; --accent-light:#dbeafe; --accent-dark:#1e40af;
+    --bg:#f6f8fb; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#0f172a; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 55%,#3b82f6 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(37,99,235,.25)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.92;font-size:15px;max-width:680px}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark)}
+  h4{font-size:15px;margin:16px 0 8px;color:#0f172a}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin-bottom:18px;box-shadow:0 1px 3px rgba(30,64,175,.06)}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:#152238;padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code{background:#eef4fd;color:#1e40af;border:1px solid #dbe7f9;padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(30,64,175,.06)}
+  th{background:#e8f0fd;color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:#f8faff}
+  .tip,.warn,.danger{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px;display:flex;gap:10px;align-items:flex-start}
+  .tip{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .tip b,.warn b,.danger b{flex-shrink:0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0;box-shadow:0 1px 3px rgba(30,64,175,.06)}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:0 1px 3px rgba(30,64,175,.07)}
+  .feature .fh{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+  .feature .fic{font-size:21px;line-height:1}
+  .feature h4{font-size:14.5px;color:var(--accent-dark);margin:0}
+  .feature p{font-size:12.6px;color:#475569;margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px;box-shadow:0 1px 3px rgba(30,64,175,.06)}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark);font-size:14px}
+  .tl p{font-size:13px;color:#475569;margin:3px 0 0}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+  @media (max-width:760px){
+    .features{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="sidebar">
+  <div class="logo">etcd<span class="ver">v3.6</span></div>
+  <div class="sub">分布式强一致 KV 存储 · K8s 心脏</div>
+  <a href="#intro">1. 项目简介</a>
+  <a href="#features">2. 功能特性总览</a>
+  <a href="#concepts">3. 核心概念与原理</a>
+  <a class="sub-link" href="#c-arch">3.1 三层架构</a>
+  <a class="sub-link" href="#c-write">3.2 一次写入的旅程</a>
+  <a class="sub-link" href="#c-read">3.3 读的两种模式</a>
+  <a class="sub-link" href="#c-mvcc">3.4 MVCC · Watch · 压缩</a>
+  <a class="sub-link" href="#c-lease">3.5 Lease 租约</a>
+  <a class="sub-link" href="#c-quorum">3.6 容量与仲裁</a>
+  <a href="#practice">4. 使用实战</a>
+  <a class="sub-link" href="#p-kv">4.1 KV 与前缀查询</a>
+  <a class="sub-link" href="#p-watch">4.2 Watch 监听变更</a>
+  <a class="sub-link" href="#p-lease">4.3 Lease 服务注册</a>
+  <a class="sub-link" href="#p-lock">4.4 锁与事务</a>
+  <a class="sub-link" href="#p-ops">4.5 运维常用命令</a>
+  <a href="#v36">5. v3.6 版本要点</a>
+  <a href="#pitfalls">6. 常见坑与最佳实践</a>
+  <a href="#compare">7. 选型对比</a>
+</nav>
+
+<main>
+
+<div class="hero">
+  <h1>etcd</h1>
+  <p>分布式、强一致的键值存储，<b>Kubernetes 控制平面的心脏</b>。Raft 共识 + MVCC 多版本 + bbolt B+ 树，专为分布式系统中最关键的数据而生：集群元数据、服务发现、配置分发、leader 选举、分布式锁。</p>
+  <div class="meta">
+    <span>Raft 共识</span>
+    <span>MVCC 多版本</span>
+    <span>bbolt B+ 树</span>
+    <span>K8s 心脏</span>
+    <span>主线 v3.6 · 2025.5</span>
+    <span>强一致 · 高可用</span>
+  </div>
+</div>
+
+<!-- ============ 1 项目简介 ============ -->
+<section id="intro">
+  <h2>1. 项目简介<span class="lvl b">入门</span></h2>
+  <p>etcd 的名字来源于 <b>"/etc 分布式"</b>——一个分布式的配置目录。它是<b>分布式、强一致的键值存储</b>，专为分布式系统中最关键的数据设计：集群元数据、服务发现、配置分发、leader 选举、分布式锁。仓库：<a href="https://github.com/etcd-io/etcd">github.com/etcd-io/etcd</a>；当前主线 <b>v3.6</b>（2025.5.15 发布，距 v3.5 近四年）。</p>
+
+  <h4>典型用户</h4>
+  <ul>
+    <li><b>Kubernetes</b>：所有对象（Pod / Service / ConfigMap…）都存在 etcd 里，API Server 是 etcd 的唯一客户端；</li>
+    <li><b>CoreDNS / Rook / Flannel</b> 等几乎所有 CNCF 项目的协调层；</li>
+    <li><b>Patroni</b>（PostgreSQL HA）、各类"配置中心 + 选主"场景。</li>
+  </ul>
+
+  <div class="warn"><b>⚠️ 能力边界：</b><span>etcd 是<b>小数据量、低写入吞吐</b>的元数据存储（默认配额 2GiB，建议万级 QPS 以内），不是 Redis、不是消息队列。核心承诺是<b>强一致（线性一致读）与高可用（少数派故障可服务）</b>。</span></div>
+
+  <h3>部署形态</h3>
+  <pre><code class="lang-bash"><span class="cmt"># 单机（开发 / 测试）</span>
+<span class="fn">etcd</span> --listen-client-urls <span class="str">http://0.0.0.0:2379</span> --advertise-client-urls <span class="str">http://127.0.0.1:2379</span>
+
+<span class="cmt"># 生产：3 或 5 节点静态集群（节点 1 示例，其余节点替换 name / IP）</span>
+<span class="fn">etcd</span> --name node1 --data-dir /var/lib/etcd \
+  --listen-peer-urls <span class="str">http://0.0.0.0:2380</span> \
+  --initial-advertise-peer-urls <span class="str">http://10.0.0.1:2380</span> \
+  --listen-client-urls <span class="str">http://0.0.0.0:2379</span> \
+  --advertise-client-urls <span class="str">http://10.0.0.1:2379</span> \
+  --initial-cluster <span class="str">node1=http://10.0.0.1:2380,node2=http://10.0.0.2:2380,node3=http://10.0.0.3:2380</span> \
+  --initial-cluster-state new</code></pre>
+
+  <div class="tip"><b>💡 端口约定：</b><span><b>2379</b> 客户端、<b>2380</b> 节点间（peer）——牢记这对端口，是排查连通性问题时的第一现场。</span></div>
+</section>
+
+<!-- ============ 2 功能特性总览 ============ -->
+<section id="features">
+  <h2>2. 功能特性总览<span class="lvl b">速览</span></h2>
+  <p>十项核心能力覆盖"存储、协调、运维"三大维度：</p>
+  <div class="features">
+    <div class="feature"><div class="fh"><span class="fic">🗂️</span><h4>扁平 KV 存储</h4></div><p>key 是字节串，通常以 <code>/</code> 分层模拟目录；Put / Get / Delete / Range 前缀查询一应俱全。</p></div>
+    <div class="feature"><div class="fh"><span class="fic">⚖️</span><h4>事务 Txn</h4></div><p>原子的 If-Then-Else：按版本 / 值 / 创建 revision 做条件 CAS，是分布式锁与乐观并发的基础。</p></div>
+    <div class="feature"><div class="fh"><span class="fic">🕰️</span><h4>多版本 MVCC</h4></div><p>每次写产生全局递增 revision，可读历史版本、按 revision 回放——Watch 的地基。</p></div>
+    <div class="feature"><div class="fh"><span class="fic">👁️</span><h4>Watch 事件流</h4></div><p>订阅 key / 前缀的变更事件流，从任意历史 revision 起订阅，事件保证有序不丢。</p></div>
+    <div class="feature"><div class="fh"><span class="fic">⏳</span><h4>Lease 租约</h4></div><p>TTL 机制；租约可绑定多个 key，到期自动删除——服务注册 / 心跳的基石。</p></div>
+    <div class="feature"><div class="fh"><span class="fic">🛡️</span><h4>线性一致读</h4></div><p>默认读也走 Raft 共识（可退化为 serializable 读换性能）。</p></div>
+    <div class="feature"><div class="fh"><span class="fic">🔄</span><h4>集群自愈</h4></div><p>Raft leader 选举 + 日志复制，容忍 (N-1)/2 节点故障，无需人工介入。</p></div>
+    <div class="feature"><div class="fh"><span class="fic">🔐</span><h4>认证与权限</h4></div><p>root / 普通用户、role 绑定 key 前缀的读写权限；支持 TLS 双向认证。</p></div>
+    <div class="feature"><div class="fh"><span class="fic">🧹</span><h4>压缩与碎片整理</h4></div><p>compaction 裁剪历史 revision、defrag 回收 bbolt 空间。</p></div>
+    <div class="feature"><div class="fh"><span class="fic">💾</span><h4>快照与恢复</h4></div><p><code>snapshot save</code> / <code>restore</code>，灾备与迁移的标准手段。</p></div>
+  </div>
+</section>
+
+<!-- ============ 3 核心概念与原理 ============ -->
+<section id="concepts">
+  <h2>3. 核心概念与原理<span class="lvl m">核心</span></h2>
+
+  <h3 id="c-arch">3.1 三层架构</h3>
+  <div class="figure">
+    <svg viewBox="0 0 880 450" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs>
+        <marker id="m1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker>
+        <marker id="m1b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker>
+        <marker id="m1d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1e3a8a"/></marker>
+      </defs>
+      <!-- 客户端 -->
+      <rect x="250" y="24" width="380" height="66" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+      <text x="440" y="50" text-anchor="middle" font-size="15" font-weight="800" fill="#1e40af">客户端</text>
+      <text x="440" y="72" text-anchor="middle" font-size="11.5" fill="#1e40af">etcdctl · clientv3 · gRPC</text>
+      <!-- gRPC 箭头 -->
+      <line x1="440" y1="90" x2="440" y2="124" stroke="#2563eb" stroke-width="2.2" marker-end="url(#m1b)"/>
+      <text x="452" y="112" font-size="11.5" fill="#2563eb">gRPC · 2379</text>
+      <!-- etcdServer 容器 -->
+      <rect x="120" y="128" width="640" height="190" rx="16" fill="#eff6ff" stroke="#3b82f6" stroke-width="2.5"/>
+      <text x="440" y="156" text-anchor="middle" font-size="14.5" font-weight="800" fill="#1e3a8a">etcdServer（每个节点）</text>
+      <!-- Raft 层 -->
+      <rect x="150" y="172" width="270" height="122" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.8"/>
+      <text x="285" y="196" text-anchor="middle" font-size="13.5" font-weight="800" fill="#1e40af">Raft 层</text>
+      <text x="285" y="220" text-anchor="middle" font-size="11.5" fill="#334155">leader 选举 · 日志复制</text>
+      <text x="285" y="240" text-anchor="middle" font-size="11.5" fill="#334155">多数派 commit 后应用</text>
+      <text x="285" y="262" text-anchor="middle" font-size="11.5" fill="#475569">选举超时 1s · 心跳 100ms</text>
+      <!-- Raft→MVCC -->
+      <line x1="420" y1="233" x2="460" y2="233" stroke="#64748b" stroke-width="2" marker-end="url(#m1a)"/>
+      <text x="440" y="226" text-anchor="middle" font-size="10.5" fill="#64748b">应用</text>
+      <!-- MVCC 层 -->
+      <rect x="460" y="172" width="270" height="122" rx="10" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.8"/>
+      <text x="595" y="196" text-anchor="middle" font-size="13.5" font-weight="800" fill="#075985">MVCC 层</text>
+      <text x="595" y="220" text-anchor="middle" font-size="11.5" fill="#334155">revision = {main, sub} 分配</text>
+      <text x="595" y="240" text-anchor="middle" font-size="11.5" fill="#334155">keyIndex 维护版本链</text>
+      <text x="595" y="262" text-anchor="middle" font-size="11.5" fill="#475569">Watch 事件推送</text>
+      <!-- peer 复制 -->
+      <line x1="760" y1="210" x2="806" y2="210" stroke="#64748b" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#m1a)"/>
+      <text x="810" y="206" font-size="11" fill="#64748b">其他节点</text>
+      <text x="810" y="224" font-size="11" fill="#64748b">2380</text>
+      <!-- 落盘箭头 -->
+      <line x1="440" y1="318" x2="440" y2="348" stroke="#1e3a8a" stroke-width="2.2" marker-end="url(#m1d)"/>
+      <text x="428" y="338" text-anchor="end" font-size="11.5" fill="#1e3a8a">key 按 revision 编码落盘</text>
+      <!-- bbolt -->
+      <rect x="250" y="352" width="380" height="56" rx="12" fill="#1e3a8a" stroke="#172554" stroke-width="2"/>
+      <text x="440" y="376" text-anchor="middle" font-size="13.5" font-weight="800" fill="#ffffff">bbolt · B+ 树（单文件）</text>
+      <text x="440" y="396" text-anchor="middle" font-size="11" fill="#bfdbfe">member/snap/db</text>
+      <!-- 图例 -->
+      <rect x="150" y="424" width="14" height="14" rx="3" fill="#dbeafe" stroke="#2563eb"/><text x="172" y="436" font-size="11.5" fill="#334155">共识层 Raft</text>
+      <rect x="290" y="424" width="14" height="14" rx="3" fill="#e0f2fe" stroke="#0284c7"/><text x="312" y="436" font-size="11.5" fill="#334155">版本层 MVCC</text>
+      <rect x="430" y="424" width="14" height="14" rx="3" fill="#1e3a8a"/><text x="452" y="436" font-size="11.5" fill="#334155">存储 bbolt</text>
+      <rect x="550" y="424" width="14" height="14" rx="3" fill="#ffffff" stroke="#94a3b8"/><text x="572" y="436" font-size="11.5" fill="#334155">客户端</text>
+      <line x1="660" y1="431" x2="700" y2="431" stroke="#64748b" stroke-width="1.8" stroke-dasharray="5 4"/><text x="708" y="436" font-size="11.5" fill="#334155">节点间复制</text>
+    </svg>
+    <figcaption>图 1 · etcd 三层架构：客户端经 gRPC 访问任意节点，etcdServer 内 Raft 共识层与 MVCC 版本层协作，最终落盘到单文件 bbolt B+ 树</figcaption>
+  </div>
+
+  <ul>
+    <li><b>Raft 层</b>：所有写请求（含集群成员变更）封装为 Raft 日志，由 leader 复制到多数派后 commit 才应用；leader 选举默认超时 1s、心跳 100ms；</li>
+    <li><b>MVCC 层</b>：每个 key 的每次修改都产生新版本。全局单调递增的 <b>revision = {main, sub}</b>，例如 <code>put /a</code> 后 revision 从 5 变 6；keyIndex 维护每个 key 的版本链；</li>
+    <li><b>存储层（bbolt）</b>：单文件 B+ 树（<code>member/snap/db</code>），key 按 revision 编码存储，外加一个 bucket 存 key→revisions 索引。</li>
+  </ul>
+
+  <h3 id="c-write">3.2 一次写入的旅程</h3>
+  <div class="figure">
+    <svg viewBox="0 0 880 390" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs>
+        <marker id="m2b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker>
+        <marker id="m2g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#059669"/></marker>
+      </defs>
+      <!-- ① 客户端 -->
+      <rect x="30" y="46" width="240" height="92" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+      <text x="150" y="74" text-anchor="middle" font-size="13.5" font-weight="800" fill="#1e40af">① 客户端发起 Put</text>
+      <text x="150" y="98" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#0f172a">Put /config/db-host "mysql-1"</text>
+      <text x="150" y="118" text-anchor="middle" font-size="11.5" fill="#334155">发往集群任意节点</text>
+      <line x1="270" y1="92" x2="316" y2="92" stroke="#2563eb" stroke-width="2.2" marker-end="url(#m2b)"/>
+      <!-- ② 转发 -->
+      <rect x="320" y="46" width="240" height="92" rx="12" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+      <text x="440" y="74" text-anchor="middle" font-size="13.5" font-weight="800" fill="#075985">② 转发到 leader</text>
+      <text x="440" y="98" text-anchor="middle" font-size="11.5" fill="#334155">非 leader 节点内部转发</text>
+      <text x="440" y="118" text-anchor="middle" font-size="11.5" fill="#0369a1">v3.6：客户端统一走 2379</text>
+      <line x1="560" y1="92" x2="606" y2="92" stroke="#2563eb" stroke-width="2.2" marker-end="url(#m2b)"/>
+      <!-- ③ Raft 日志 -->
+      <rect x="610" y="46" width="240" height="92" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+      <text x="730" y="74" text-anchor="middle" font-size="13.5" font-weight="800" fill="#1e40af">③ 追加 Raft 日志</text>
+      <text x="730" y="98" text-anchor="middle" font-size="11.5" fill="#334155">leader 生成日志条目</text>
+      <text x="730" y="118" text-anchor="middle" font-size="11.5" fill="#334155">并行复制给全部 follower</text>
+      <line x1="730" y1="138" x2="730" y2="222" stroke="#2563eb" stroke-width="2.2" marker-end="url(#m2b)"/>
+      <!-- ④ commit -->
+      <rect x="610" y="226" width="240" height="92" rx="12" fill="#dcfce7" stroke="#059669" stroke-width="2"/>
+      <text x="730" y="254" text-anchor="middle" font-size="13.5" font-weight="800" fill="#065f46">④ 多数派确认 → commit</text>
+      <text x="730" y="278" text-anchor="middle" font-size="11.5" fill="#047857">2/3 节点完成持久化确认</text>
+      <text x="730" y="298" text-anchor="middle" font-size="11.5" fill="#047857">该日志条目被提交</text>
+      <line x1="610" y1="272" x2="564" y2="272" stroke="#2563eb" stroke-width="2.2" marker-end="url(#m2b)"/>
+      <!-- ⑤ 应用 -->
+      <rect x="320" y="226" width="240" height="92" rx="12" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+      <text x="440" y="254" text-anchor="middle" font-size="13.5" font-weight="800" fill="#075985">⑤ 应用到状态机</text>
+      <text x="440" y="278" text-anchor="middle" font-size="11.5" fill="#334155">MVCC 分配 revision</text>
+      <text x="440" y="298" text-anchor="middle" font-size="11.5" fill="#334155">写入 bbolt + fsync 落盘</text>
+      <line x1="320" y1="272" x2="274" y2="272" stroke="#2563eb" stroke-width="2.2" marker-end="url(#m2b)"/>
+      <!-- ⑥ 应答 -->
+      <rect x="30" y="226" width="240" height="92" rx="12" fill="#dcfce7" stroke="#059669" stroke-width="2"/>
+      <text x="150" y="254" text-anchor="middle" font-size="13.5" font-weight="800" fill="#065f46">⑥ 应答 + Watch 推送</text>
+      <text x="150" y="278" text-anchor="middle" font-size="11.5" fill="#047857">向客户端返回成功</text>
+      <text x="150" y="298" text-anchor="middle" font-size="11.5" fill="#047857">Watch 事件异步推送下游</text>
+      <!-- 应答回传 -->
+      <line x1="150" y1="226" x2="150" y2="140" stroke="#059669" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#m2g)"/>
+      <text x="160" y="190" font-size="11" fill="#047857">应答 OK · revision=N</text>
+      <!-- 成本提示条 -->
+      <rect x="30" y="340" width="820" height="38" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.6"/>
+      <text x="440" y="364" text-anchor="middle" font-size="12.5" fill="#92400e">⚠️ 一次 Put = 一次多数派共识 + 一次磁盘 fsync（Raft 日志与 bbolt 落盘）→ 写吞吐数千~万级 / 秒，生产强烈建议 SSD</text>
+    </svg>
+    <figcaption>图 2 · 一次写入的旅程：从客户端 Put 到多数派 commit、状态机应用，再到应答与 Watch 推送的全流程</figcaption>
+  </div>
+
+  <ol>
+    <li>客户端 <code>Put /config/db-host "mysql-1"</code> → 任意节点；</li>
+    <li>若非 leader，转发（v3.6 起 peer 端口不再服务客户端请求）；</li>
+    <li>leader 将写操作追加为 Raft 日志条目，并行发给 followers；</li>
+    <li><b>多数派确认</b>后该条目 commit，leader 应用到状态机（MVCC 分配 revision，写入 bbolt）；</li>
+    <li>应答客户端，Watch 事件异步推送。</li>
+  </ol>
+
+  <div class="warn"><b>⚠️ 写入成本：</b><span>这解释了 etcd 的写入成本：<b>一次 Put = 一次多数派共识 + 一次磁盘 fsync</b>（Raft 日志与 bbolt 落盘）。因此写吞吐有限（数千~万级 / 秒），且强烈建议 SSD。</span></div>
+
+  <h3 id="c-read">3.3 读的两种模式</h3>
+  <table>
+    <tr><th style="width:110px">维度</th><th>Linearizable（默认）</th><th>Serializable</th></tr>
+    <tr><td>机制</td><td>请求也要经 leader 确认（通过 ReadIndex 机制确认自己仍是 leader）</td><td>直接读本地节点 bbolt</td></tr>
+    <tr><td>一致性</td><td>读到的一定是最新提交数据（线性一致）</td><td>可能读到旧数据</td></tr>
+    <tr><td>开销</td><td>一次网络往返 + 共识校验</td><td>零共识开销</td></tr>
+    <tr><td>适用</td><td>配置读取、锁判断等强一致场景</td><td>对一致性不敏感的 dashboard 类读</td></tr>
+  </table>
+  <div class="tip"><b>💡 选型建议：</b><span>默认用 Linearizable 保一致；大规模只读的监控 / 统计场景可退化为 Serializable 换性能。</span></div>
+
+  <h3 id="c-mvcc">3.4 MVCC、Watch 与压缩</h3>
+  <div class="figure">
+    <svg viewBox="0 0 880 390" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs>
+        <marker id="m3a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker>
+        <marker id="m3g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#059669"/></marker>
+        <marker id="m3r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/></marker>
+      </defs>
+      <!-- keyIndex -->
+      <rect x="60" y="16" width="760" height="40" rx="10" fill="#1e3a8a"/>
+      <text x="440" y="41" text-anchor="middle" font-size="13" font-weight="800" fill="#ffffff">keyIndex：/config → 版本链 [ rev 2 · rev 4 · rev 6 ]</text>
+      <!-- rev2 -->
+      <rect x="60" y="84" width="200" height="112" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+      <rect x="76" y="98" width="100" height="24" rx="12" fill="#dbeafe"/>
+      <text x="126" y="114" text-anchor="middle" font-size="12" font-weight="700" fill="#1e40af">revision 2</text>
+      <text x="160" y="152" text-anchor="middle" font-family="Consolas,monospace" font-size="12.5" fill="#0f172a">"mysql-a"</text>
+      <text x="160" y="174" text-anchor="middle" font-size="11.5" fill="#64748b">创建（create）</text>
+      <line x1="260" y1="140" x2="326" y2="140" stroke="#64748b" stroke-width="2" marker-end="url(#m3a)"/>
+      <text x="294" y="131" text-anchor="middle" font-size="10.5" fill="#64748b">put</text>
+      <!-- rev4 -->
+      <rect x="330" y="84" width="200" height="112" rx="12" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+      <rect x="346" y="98" width="100" height="24" rx="12" fill="#2563eb"/>
+      <text x="396" y="114" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">revision 4</text>
+      <text x="430" y="152" text-anchor="middle" font-family="Consolas,monospace" font-size="12.5" fill="#0f172a">"mysql-1"</text>
+      <text x="430" y="174" text-anchor="middle" font-size="11.5" fill="#2563eb">修改（put）· Watch 起点</text>
+      <line x1="530" y1="140" x2="596" y2="140" stroke="#64748b" stroke-width="2" marker-end="url(#m3a)"/>
+      <text x="564" y="131" text-anchor="middle" font-size="10.5" fill="#64748b">delete</text>
+      <!-- rev6 -->
+      <rect x="600" y="84" width="200" height="112" rx="12" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.5"/>
+      <rect x="616" y="98" width="100" height="24" rx="12" fill="#dc2626"/>
+      <text x="666" y="114" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">revision 6</text>
+      <text x="700" y="152" text-anchor="middle" font-size="12.5" fill="#991b1b">已删除</text>
+      <text x="700" y="174" text-anchor="middle" font-size="11.5" fill="#b91c1c">tombstone（删除标记）</text>
+      <!-- Watcher -->
+      <rect x="60" y="228" width="290" height="64" rx="12" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+      <text x="205" y="252" text-anchor="middle" font-size="13" font-weight="800" fill="#065f46">Watcher 订阅方</text>
+      <text x="205" y="274" text-anchor="middle" font-size="11" fill="#047857">WithRev(4) 起续订 · 断线重连不丢事件</text>
+      <line x1="350" y1="252" x2="420" y2="200" stroke="#059669" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#m3g)"/>
+      <text x="368" y="222" font-size="10.5" fill="#047857">PUT 事件</text>
+      <line x1="350" y1="238" x2="688" y2="200" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#m3r)"/>
+      <text x="520" y="234" text-anchor="middle" font-size="10.5" fill="#dc2626">DELETE 事件</text>
+      <!-- revision 轴 -->
+      <line x1="60" y1="350" x2="826" y2="350" stroke="#cbd5e1" stroke-width="2" marker-end="url(#m3a)"/>
+      <text x="820" y="340" text-anchor="end" font-size="11" fill="#64748b">全局 revision 单调递增 →</text>
+      <line x1="110" y1="344" x2="110" y2="356" stroke="#94a3b8" stroke-width="1.5"/><text x="110" y="372" text-anchor="middle" font-size="10.5" fill="#64748b">1</text>
+      <circle cx="220" cy="350" r="4.5" fill="#2563eb"/><line x1="220" y1="344" x2="220" y2="356" stroke="#2563eb" stroke-width="2.5"/><text x="220" y="372" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1e40af">2</text>
+      <line x1="330" y1="344" x2="330" y2="356" stroke="#94a3b8" stroke-width="1.5"/><text x="330" y="372" text-anchor="middle" font-size="10.5" fill="#64748b">3</text>
+      <circle cx="440" cy="350" r="4.5" fill="#2563eb"/><line x1="440" y1="344" x2="440" y2="356" stroke="#2563eb" stroke-width="2.5"/><text x="440" y="372" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1e40af">4</text>
+      <line x1="550" y1="344" x2="550" y2="356" stroke="#94a3b8" stroke-width="1.5"/><text x="550" y="372" text-anchor="middle" font-size="10.5" fill="#64748b">5</text>
+      <circle cx="660" cy="350" r="4.5" fill="#2563eb"/><line x1="660" y1="344" x2="660" y2="356" stroke="#2563eb" stroke-width="2.5"/><text x="660" y="372" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1e40af">6</text>
+      <line x1="770" y1="344" x2="770" y2="356" stroke="#94a3b8" stroke-width="1.5"/><text x="770" y="372" text-anchor="middle" font-size="10.5" fill="#64748b">7</text>
+      <!-- 压缩标注 -->
+      <line x1="330" y1="312" x2="330" y2="344" stroke="#dc2626" stroke-width="1.6" stroke-dasharray="4 3"/>
+      <text x="338" y="334" font-size="12">✂️</text>
+      <rect x="400" y="314" width="420" height="28" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.4"/>
+      <text x="610" y="333" text-anchor="middle" font-size="11.5" fill="#991b1b">compact(3)：rev ≤ 3 的历史被裁剪（逻辑删除），空间靠 defrag 回收</text>
+    </svg>
+    <figcaption>图 3 · MVCC 多版本与 Watch 续订：/config 的版本链 rev 2 → 4 → 6，Watcher 从 rev 4 起订阅不丢事件；compact 裁剪 rev ≤ 3 的历史</figcaption>
+  </div>
+
+  <ul>
+    <li><b>Watch 基于 MVCC</b>：客户端可从"上次的 revision"续订，断线重连后从缺口继续，事件不丢；</li>
+    <li><b>历史 revision 会无限膨胀磁盘</b>，因此必须配置压缩：</li>
+  </ul>
+  <pre><code class="lang-yaml"><span class="kw">auto-compaction-mode</span>: periodic
+<span class="kw">auto-compaction-retention</span>: <span class="str">"1h"</span>   <span class="cmt"># 只保留 1 小时历史</span></code></pre>
+  <div class="warn"><b>⚠️ 压缩 ≠ 释放空间：</b><span>压缩只是"逻辑删除"，空间要靠 <code>etcdctl defrag</code> 回收（在线操作，逐节点执行，注意 follower 优先）。</span></div>
+
+  <h3 id="c-lease">3.5 Lease：服务注册的标准姿势</h3>
+  <p>租约是一个带 TTL 的服务端对象；key 可以附着在租约上，进程心跳续约（KeepAlive），进程挂了租约超时，<b>所有绑定的 key 自动删除</b>，Watch 的下游立刻感知——这是 etcd 做服务发现的核心机制。</p>
+  <div class="figure">
+    <svg viewBox="0 0 880 410" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs>
+        <marker id="m4a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker>
+        <marker id="m4b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker>
+        <marker id="m4g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#059669"/></marker>
+        <marker id="m4r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/></marker>
+      </defs>
+      <!-- 角色框 -->
+      <rect x="60" y="16" width="190" height="52" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+      <text x="155" y="38" text-anchor="middle" font-size="13.5" font-weight="800" fill="#1e40af">服务进程</text>
+      <text x="155" y="57" text-anchor="middle" font-size="10.5" fill="#1e40af">clientv3 + KeepAlive</text>
+      <rect x="345" y="16" width="190" height="52" rx="12" fill="#1e3a8a" stroke="#172554" stroke-width="2"/>
+      <text x="440" y="38" text-anchor="middle" font-size="13.5" font-weight="800" fill="#ffffff">etcd 集群</text>
+      <text x="440" y="57" text-anchor="middle" font-size="10.5" fill="#bfdbfe">lease · KV · watch</text>
+      <rect x="630" y="16" width="190" height="52" rx="12" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+      <text x="725" y="38" text-anchor="middle" font-size="13.5" font-weight="800" fill="#075985">下游 Watcher</text>
+      <text x="725" y="57" text-anchor="middle" font-size="10.5" fill="#0369a1">订阅 /services/ 前缀</text>
+      <!-- 生命线 -->
+      <line x1="155" y1="68" x2="155" y2="400" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 4"/>
+      <line x1="440" y1="68" x2="440" y2="400" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 4"/>
+      <line x1="725" y1="68" x2="725" y2="400" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 4"/>
+      <!-- ① Grant -->
+      <line x1="155" y1="100" x2="436" y2="100" stroke="#2563eb" stroke-width="2" marker-end="url(#m4b)"/>
+      <text x="295" y="92" text-anchor="middle" font-size="11.5" fill="#1e40af">① Grant（TTL = 10s）</text>
+      <line x1="440" y1="124" x2="159" y2="124" stroke="#64748b" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#m4a)"/>
+      <text x="295" y="116" text-anchor="middle" font-size="10.5" fill="#64748b">lease_id</text>
+      <!-- ② Put -->
+      <line x1="155" y1="156" x2="436" y2="156" stroke="#2563eb" stroke-width="2" marker-end="url(#m4b)"/>
+      <text x="295" y="148" text-anchor="middle" font-size="11" fill="#1e40af">② Put /services/user/10.0.0.5（WithLease）</text>
+      <!-- ③ Watch 推送 -->
+      <line x1="440" y1="184" x2="721" y2="184" stroke="#059669" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#m4g)"/>
+      <text x="580" y="176" text-anchor="middle" font-size="11" fill="#047857">③ Watch 推送：PUT /services/user/10.0.0.5</text>
+      <!-- ④ KeepAlive 循环 -->
+      <rect x="180" y="191" width="54" height="20" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.4"/>
+      <text x="207" y="205" text-anchor="middle" font-size="10.5" fill="#047857">loop</text>
+      <rect x="172" y="198" width="248" height="74" rx="10" fill="#f0fdf4" stroke="#059669" stroke-width="1.5" stroke-dasharray="6 4"/>
+      <line x1="155" y1="222" x2="416" y2="222" stroke="#059669" stroke-width="2" marker-end="url(#m4g)"/>
+      <text x="286" y="214" text-anchor="middle" font-size="11" fill="#047857">④ KeepAlive 心跳（约每 TTL/3 续约）</text>
+      <line x1="420" y1="252" x2="159" y2="252" stroke="#64748b" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#m4a)"/>
+      <text x="286" y="268" text-anchor="middle" font-size="10.5" fill="#64748b">续约应答（刷新 TTL）</text>
+      <!-- ⑤ 进程死亡 -->
+      <circle cx="155" cy="292" r="13" fill="#fef2f2" stroke="#dc2626" stroke-width="2"/>
+      <text x="155" y="299" text-anchor="middle" font-size="17" font-weight="800" fill="#dc2626">✕</text>
+      <text x="143" y="296" text-anchor="end" font-size="11.5" fill="#991b1b">⑤ 进程死亡 / 失联</text>
+      <!-- TTL 到期 -->
+      <rect x="350" y="310" width="180" height="42" rx="8" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.6"/>
+      <text x="440" y="328" text-anchor="middle" font-size="11.5" font-weight="700" fill="#92400e">TTL 倒计时归零</text>
+      <text x="440" y="346" text-anchor="middle" font-size="11" fill="#b45309">租约过期失效</text>
+      <!-- ⑥ DELETE 事件 -->
+      <line x1="440" y1="372" x2="721" y2="372" stroke="#dc2626" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#m4r)"/>
+      <text x="580" y="364" text-anchor="middle" font-size="11" fill="#991b1b">⑥ DELETE 事件 → 下游立刻感知下线</text>
+      <text x="580" y="388" text-anchor="middle" font-size="10.5" fill="#64748b">（租约绑定的全部 key 一并删除）</text>
+    </svg>
+    <figcaption>图 4 · Lease 服务注册时序：Grant → 绑定 key → KeepAlive 心跳续约；进程死亡后 TTL 到期，绑定 key 自动删除并推送 DELETE 事件</figcaption>
+  </div>
+
+  <h3 id="c-quorum">3.6 容量与仲裁</h3>
+  <div class="figure">
+    <svg viewBox="0 0 880 360" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs>
+        <marker id="m5b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker>
+        <marker id="m5g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#059669"/></marker>
+        <marker id="m5r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/></marker>
+      </defs>
+      <!-- 场景 A -->
+      <rect x="25" y="20" width="405" height="280" rx="14" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+      <text x="227" y="46" text-anchor="middle" font-size="13.5" font-weight="800" fill="#1e293b">场景 A：3 节点全部在线</text>
+      <rect x="152" y="64" width="150" height="58" rx="10" fill="#1e3a8a" stroke="#172554" stroke-width="2"/>
+      <text x="227" y="88" text-anchor="middle" font-size="13.5" font-weight="800" fill="#ffffff">Leader 👑</text>
+      <text x="227" y="106" text-anchor="middle" font-size="11" fill="#bfdbfe">node1</text>
+      <rect x="52" y="196" width="140" height="52" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.8"/>
+      <text x="122" y="218" text-anchor="middle" font-size="12" fill="#1e40af">Follower · node2</text>
+      <text x="122" y="238" text-anchor="middle" font-size="10.5" fill="#1e40af">已复制 ✓</text>
+      <rect x="262" y="196" width="140" height="52" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.8"/>
+      <text x="332" y="218" text-anchor="middle" font-size="12" fill="#1e40af">Follower · node3</text>
+      <text x="332" y="238" text-anchor="middle" font-size="10.5" fill="#1e40af">已复制 ✓</text>
+      <line x1="175" y1="122" x2="105" y2="192" stroke="#2563eb" stroke-width="2" marker-end="url(#m5b)"/>
+      <text x="118" y="150" text-anchor="middle" font-size="10.5" fill="#1e40af">复制</text>
+      <line x1="145" y1="196" x2="210" y2="128" stroke="#059669" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#m5g)"/>
+      <text x="185" y="172" text-anchor="middle" font-size="10.5" fill="#047857">✓ ACK</text>
+      <line x1="280" y1="122" x2="350" y2="192" stroke="#2563eb" stroke-width="2" marker-end="url(#m5b)"/>
+      <text x="338" y="150" text-anchor="middle" font-size="10.5" fill="#1e40af">复制</text>
+      <line x1="340" y1="196" x2="245" y2="128" stroke="#059669" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#m5g)"/>
+      <text x="272" y="172" text-anchor="middle" font-size="10.5" fill="#047857">✓ ACK</text>
+      <rect x="57" y="256" width="340" height="32" rx="16" fill="#dcfce7" stroke="#059669" stroke-width="1.6"/>
+      <text x="227" y="277" text-anchor="middle" font-size="12.5" font-weight="700" fill="#065f46">多数派 2/3 确认 → commit，写入成功 ✅</text>
+      <!-- 场景 B -->
+      <rect x="450" y="20" width="405" height="280" rx="14" fill="#ffffff" stroke="#fca5a5" stroke-width="1.8"/>
+      <text x="652" y="46" text-anchor="middle" font-size="13.5" font-weight="800" fill="#991b1b">场景 B：1 个 follower 宕机</text>
+      <rect x="577" y="64" width="150" height="58" rx="10" fill="#1e3a8a" stroke="#172554" stroke-width="2"/>
+      <text x="652" y="88" text-anchor="middle" font-size="13.5" font-weight="800" fill="#ffffff">Leader 👑</text>
+      <text x="652" y="106" text-anchor="middle" font-size="11" fill="#bfdbfe">node1</text>
+      <rect x="477" y="196" width="140" height="52" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.8"/>
+      <text x="547" y="218" text-anchor="middle" font-size="12" fill="#1e40af">Follower · node2</text>
+      <text x="547" y="238" text-anchor="middle" font-size="10.5" fill="#1e40af">已复制 ✓</text>
+      <rect x="687" y="196" width="140" height="52" rx="10" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.8" stroke-dasharray="5 4"/>
+      <text x="757" y="218" text-anchor="middle" font-size="12" fill="#64748b">Follower · node3</text>
+      <text x="757" y="238" text-anchor="middle" font-size="10.5" fill="#dc2626">宕机 ✕</text>
+      <line x1="600" y1="122" x2="530" y2="192" stroke="#2563eb" stroke-width="2" marker-end="url(#m5b)"/>
+      <text x="543" y="150" text-anchor="middle" font-size="10.5" fill="#1e40af">复制</text>
+      <line x1="570" y1="196" x2="635" y2="128" stroke="#059669" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#m5g)"/>
+      <text x="610" y="172" text-anchor="middle" font-size="10.5" fill="#047857">✓ ACK</text>
+      <line x1="680" y1="122" x2="745" y2="192" stroke="#fca5a5" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#m5r)"/>
+      <text x="758" y="150" text-anchor="middle" font-size="10.5" fill="#dc2626">超时无应答</text>
+      <rect x="482" y="256" width="340" height="32" rx="16" fill="#dcfce7" stroke="#059669" stroke-width="1.6"/>
+      <text x="652" y="277" text-anchor="middle" font-size="12" font-weight="700" fill="#065f46">leader + node2 仍构成多数派 → 集群照常读写 ✅</text>
+      <!-- 底部结论 -->
+      <rect x="25" y="312" width="830" height="38" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.6"/>
+      <text x="440" y="336" text-anchor="middle" font-size="12.5" fill="#1e40af">Quorum（多数派）= N / 2 + 1 · 集群容忍 (N-1)/2 台节点故障 · 部署永远用奇数节点（3 或 5）</text>
+    </svg>
+    <figcaption>图 5 · 三节点 Raft 仲裁：写入需 2/3 多数派确认；1 台 follower 宕机仍可读写，2 台宕机则无法达成 quorum</figcaption>
+  </div>
+
+  <table>
+    <tr><th style="width:110px">集群规模</th><th>Quorum</th><th>容忍故障</th></tr>
+    <tr><td>1</td><td>1</td><td>0（仅开发）</td></tr>
+    <tr><td>3</td><td>2</td><td>1</td></tr>
+    <tr><td>5</td><td>3</td><td>2</td></tr>
+  </table>
+
+  <div class="danger"><b>🚫 永远用奇数节点：</b><span>4 节点与 3 节点同样只能容忍 1 台故障，却多付一份复制成本、更大分区脑裂风险。</span></div>
+</section>
+
+<!-- ============ 4 使用实战 ============ -->
+<section id="practice">
+  <h2>4. 使用实战（Go，clientv3）<span class="lvl m">实战</span></h2>
+  <pre><code class="lang-bash"><span class="fn">go</span> get go.etcd.io/etcd/client/v3</code></pre>
+
+  <h3 id="p-kv">4.1 基础 KV 与前缀查询</h3>
+  <pre><code class="lang-go">cli, _ := clientv3.New(clientv3.Config{
+    Endpoints: []string{"127.0.0.1:2379"},
+    DialTimeout: 5 * time.Second,
+})
+defer cli.Close()
+
+ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+defer cancel()
+
+// Put
+cli.Put(ctx, "/config/db-host", "mysql-1")
+
+// Get 单键
+resp, _ := cli.Get(ctx, "/config/db-host")
+fmt.Println(string(resp.Kvs[0].Value)) // mysql-1
+
+// 前缀查询（模拟"目录"）
+cli.Put(ctx, "/services/user/10.0.0.5", "8080")
+presp, _ := cli.Get(ctx, "/services/user/", clientv3.WithPrefix())
+for _, kv := range presp.Kvs {
+    fmt.Printf("%s -> %s\n", kv.Key, kv.Value)
+}</code></pre>
+
+  <h3 id="p-watch">4.2 Watch：监听配置变更</h3>
+  <pre><code class="lang-go">rch := cli.Watch(context.Background(), "/config/", clientv3.WithPrefix())
+for wresp := range rch {
+    for _, ev := range wresp.Events {
+        switch ev.Type {
+        case clientv3.EventTypePut:
+            fmt.Printf("更新 %s = %s\n", ev.Kv.Key, ev.Kv.Value)
+        case clientv3.EventTypeDelete:
+            fmt.Printf("删除 %s\n", ev.Kv.Key)
+        }
+    }
+}</code></pre>
+
+  <h3 id="p-lease">4.3 Lease + 注册：服务发现骨架</h3>
+  <pre><code class="lang-go">// 申请 10s 租约
+grant, _ := cli.Grant(ctx, 10)
+// key 绑定租约
+cli.Put(ctx, "/services/user/10.0.0.5", "8080", clientv3.WithLease(grant.ID))
+// 自动续约（进程存活期间）；进程退出后 10s 内 key 自动删除
+ch, _ := cli.KeepAlive(context.Background(), grant.ID)
+go func() { for range ch {} }() // 消费续约应答</code></pre>
+
+  <h3 id="p-lock">4.4 事务：分布式锁的核心（concurrency 包）</h3>
+  <pre><code class="lang-go">import "go.etcd.io/etcd/client/v3/concurrency"
+
+// 简单方式：官方封装的分布式锁
+session, _ := concurrency.NewSession(cli)
+mutex := concurrency.NewMutex(session, "/lock/order-job")
+mutex.Lock(context.Background())   // 底层：Txn(create key) + 自旋
+// ... 临界区 ...
+mutex.Unlock(context.Background())</code></pre>
+  <p>手写 CAS 一窥事务原语：</p>
+  <pre><code class="lang-go">// 若 /counter 版本未变，则原子执行两个写
+txn := cli.Txn(ctx).
+    If(clientv3.Compare(clientv3.Version("/counter"), "=", 3)).
+    Then(
+        clientv3.OpPut("/counter", "4"),
+        clientv3.OpPut("/audit", "updated"),
+    ).
+    Else(clientv3.OpGet("/counter"))
+resp, _ := txn.Commit()</code></pre>
+
+  <h3 id="p-ops">4.5 运维常用命令</h3>
+  <pre><code class="lang-bash"><span class="fn">etcdctl</span> put /foo bar
+<span class="fn">etcdctl</span> get /foo
+<span class="fn">etcdctl</span> get /services/ --prefix --keys-only
+<span class="fn">etcdctl</span> del /services/ --prefix
+<span class="fn">etcdctl</span> watch /config/ --prefix
+<span class="fn">etcdctl</span> lease grant 60
+<span class="fn">etcdctl</span> lease keep-alive &lt;lease-id&gt;
+
+<span class="fn">etcdctl</span> member list                        <span class="cmt"># 集群成员</span>
+<span class="fn">etcdctl</span> endpoint status --cluster -w table <span class="cmt"># 健康与 DB 大小</span>
+<span class="fn">etcdctl</span> endpoint health --cluster
+<span class="fn">etcdctl</span> snapshot save backup.db            <span class="cmt"># 备份</span>
+<span class="fn">etcdutl</span> snapshot restore backup.db --data-dir /new-data  <span class="cmt"># 恢复（v3.6 起命令归 etcdutl）</span>
+<span class="fn">etcdctl</span> compaction 1000                    <span class="cmt"># 压缩到 revision 1000</span>
+<span class="fn">etcdctl</span> defrag                              <span class="cmt"># 碎片整理</span></code></pre>
+</section>
+
+<!-- ============ 5 v3.6 版本要点 ============ -->
+<section id="v36">
+  <h2>5. v3.6 版本要点（2025.5）<span class="lvl b">版本</span></h2>
+  <p>v3.6 是 2025.5.15 发布的主线大版本，距 v3.5 近四年：</p>
+  <div class="timeline">
+    <div class="tl"><b>2025.5.15 · v3.6.0 发布</b><p>距 v3.5 近四年的主线大版本。</p></div>
+    <div class="tl"><b>v2 存储正式退场</b><p><code>--enable-v2</code> 等标志移除，成员数据全部迁入 v3store（v3.6 内部完成迁移）。</p></div>
+    <div class="tl"><b>内存减半</b><p><code>--snapshot-count</code> 默认从 100000 降到 10000，快照保留更少的历史，平均内存占用下降 50%+。</p></div>
+    <div class="tl"><b>livez / readyz</b><p>新增 K8s 风格健康检查端点：<code>/livez</code> 判进程是否需重启、<code>/readyz</code> 判是否可服务流量。</p></div>
+    <div class="tl"><b>官方支持降级（downgrade）</b><p>升级出问题可在限定版本间回退。</p></div>
+    <div class="tl"><b>Feature Gates 机制</b><p>实验特性显式开关。</p></div>
+    <div class="tl"><b>治理变化</b><p>etcd 移交 Kubernetes 社区成为 SIG-etcd；raft 库独立为 <code>github.com/etcd-io/raft</code>，依赖 bbolt 1.4。</p></div>
+    <div class="tl"><b>破坏性变更</b><p>peer 端口(2380) 不再响应客户端请求；旧版本二进制与新版 schema 不兼容（升级需逐节点滚动、不可跨大版本跳跃）。</p></div>
+  </div>
+  <div class="tip"><b>💡 版本线：</b><span>v3.4 已 EOL，v3.5 维护中（K8s 1.22–1.33 可用），<b>新集群建议 v3.6</b>。</span></div>
+</section>
+
+<!-- ============ 6 常见坑 ============ -->
+<section id="pitfalls">
+  <h2>6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+
+  <div class="danger"><b>🚫 容量红线：</b><span>默认 2GiB 配额，超限进入只读 alarm。存大 value（&gt;1MB 禁止，建议 &lt;100KB）是误用——etcd 是元数据存储不是数据湖。</span></div>
+  <div class="danger"><b>🔥 必须开自动压缩：</b><span>不压缩的历史 revision 会撑爆磁盘并拖慢性能。</span></div>
+  <div class="warn"><b>⚠️ 奇数节点、不要 7 台以上：</b><span>写吞吐随集群规模下降，3~5 台是甜点。</span></div>
+  <div class="danger"><b>💾 磁盘是生命线：</b><span>fsync 延迟直接决定写延迟，生产必须 SSD，且不要与其他 IO 密集进程共盘。</span></div>
+  <div class="warn"><b>🧹 defrag 要逐节点、低峰执行：</b><span>碎片整理会短暂锁 DB。</span></div>
+  <div class="tip"><b>💡 别造轮子：</b><span>K8s 多副本服务的定时 / 选主逻辑，用 etcd 的 <code>concurrency</code> 包（锁 / 选举）而不是自己写。</span></div>
+  <div class="warn"><b>📦 大 range 分页：</b><span><code>WithLimit</code> + <code>WithFromKey</code> 分批拉取，防止大响应打爆内存。</span></div>
+  <div class="danger"><b>🧭 升级纪律：</b><span>一次只升一个小版本、逐节点滚动、先备份 snapshot、看官方兼容矩阵。</span></div>
+</section>
+
+<!-- ============ 7 选型对比 ============ -->
+<section id="compare">
+  <h2>7. 选型对比<span class="lvl b">决策</span></h2>
+  <table>
+    <tr><th style="width:100px">维度</th><th>etcd</th><th>Redis</th><th>ZooKeeper</th><th>Consul</th></tr>
+    <tr><td>一致性</td><td>强一致（Raft）</td><td>异步复制 / 弱</td><td>强一致（ZAB）</td><td>强一致（Raft）</td></tr>
+    <tr><td>数据模型</td><td>MVCC KV</td><td>丰富数据结构</td><td>树状 ZNode</td><td>KV + 服务目录</td></tr>
+    <tr><td>Watch</td><td>历史可回放</td><td>keyspace 通知（弱）</td><td>一次性 Watch</td><td>长轮询 / blocking query</td></tr>
+    <tr><td>适用</td><td>K8s / 元数据 / 锁</td><td>缓存 / 队列</td><td>老式 Hadoop 系</td><td>服务发现 + DNS</td></tr>
+  </table>
+  <div class="tip"><b>✅ 一句话选型：</b><span><b>元数据与服务协调选 etcd，缓存与高吞吐数据选 Redis，不要混用</b>。</span></div>
+</section>
+
+<footer>etcd 技术介绍与使用指南 · 内容整理自 etcd-guide.md 与 etcd 官方文档（github.com/etcd-io/etcd）· 2026-09</footer>
+</main>
+</div>
+
+<script>
+document.querySelectorAll('pre code.lang-go').forEach(function(block){
+  var src = block.textContent;
+  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  var master = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  var out = src.replace(master, function(m, c1, c2, s, kw, typ, num, fn){
+    if (c1 || c2) return '<span class="cmt">'+m+'</span>';
+    if (s) return '<span class="str">'+m+'</span>';
+    if (kw) return '<span class="kw">'+m+'</span>';
+    if (typ) return '<span class="typ">'+m+'</span>';
+    if (num) return '<span class="num">'+m+'</span>';
+    if (fn) return '<span class="fn">'+m+'</span>';
+    return m;
+  });
+  block.innerHTML = out;
+});
+document.querySelectorAll('pre code.lang-go').forEach(function(b){
+  var label=document.createElement('span');label.className='codelabel';label.textContent='Go';
+  b.closest('pre').appendChild(label);
+});
+document.querySelectorAll('pre code.lang-bash, pre code.lang-yaml').forEach(function(b){
+  var label=document.createElement('span');label.className='codelabel';
+  label.textContent=b.classList.contains('lang-bash')?'Shell':'YAML';
+  b.closest('pre').appendChild(label);
+});
+</script>
+</body>
+</html>

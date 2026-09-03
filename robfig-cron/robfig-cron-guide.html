@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>robfig/cron 技术指南 — Go 定时任务调度库</title>
+<style>
+  :root{
+    --accent:#2563eb; --accent-light:#dbeafe; --accent-dark:#1e40af;
+    --bg:#f6f8fb; --card:#ffffff; --border:#e5e9f0; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#0f172a; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:250px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+
+  .hero{background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 55%,#3b82f6 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(37,99,235,.25)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.92;font-size:15px;max-width:640px}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  strong{color:#0f172a}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin-bottom:18px;box-shadow:0 1px 3px rgba(15,23,42,.05)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ic{font-size:22px;margin-bottom:6px}
+  .feature b{display:block;font-size:14.5px;margin-bottom:4px}
+  .feature span{font-size:12.8px;color:var(--muted);line-height:1.55}
+
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#94a3b8;background:#1e293b;padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code{background:#eef2f7;color:#c026d3;border:1px solid #e2e8f0;padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(15,23,42,.05)}
+  th{background:#eef4ff;color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:#fafbfd}
+
+  .tip,.warn,.danger{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px;display:flex;gap:10px;align-items:flex-start}
+  .tip{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .tip b,.warn b,.danger b{flex-shrink:0}
+
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0;box-shadow:0 1px 3px rgba(15,23,42,.05)}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+
+  .timeline{position:relative;padding-left:26px}
+  .timeline::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:3px;background:var(--accent-light);border-radius:2px}
+  .timeline .tl-item{position:relative;margin-bottom:18px}
+  .timeline .tl-item::before{content:"";position:absolute;left:-24px;top:7px;width:13px;height:13px;border-radius:50%;background:var(--accent);border:3px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .timeline b{color:var(--accent-dark)}
+  .timeline span{font-size:13.5px;color:var(--muted)}
+
+  .pill{display:inline-block;background:var(--accent-light);color:var(--accent-dark);border-radius:16px;padding:2px 12px;font-size:12px;margin:2px 4px 2px 0}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="sidebar">
+  <div class="logo">robfig/cron<span class="ver">v3</span></div>
+  <div class="sub">Go 定时任务调度库 · 技术指南</div>
+  <a href="#intro">1. 库简介</a>
+  <a href="#features">2. 功能特性总览</a>
+  <a href="#concepts">3. 核心概念与架构</a>
+  <a href="#loop">4. 运行循环原理</a>
+  <a href="#expr">5. 表达式全解析</a>
+  <a href="#chain">6. 装饰器链</a>
+  <a href="#usage">7. 代码实战</a>
+  <a class="sub-link" href="#u-quick">快速上手</a>
+  <a class="sub-link" href="#u-sec">秒级精度 / 描述符</a>
+  <a class="sub-link" href="#u-tz">时区处理</a>
+  <a class="sub-link" href="#u-job">自定义 Job</a>
+  <a class="sub-link" href="#u-dyn">动态管理任务</a>
+  <a class="sub-link" href="#u-stop">优雅停止 / 日志</a>
+  <a href="#pitfalls">8. 常见坑与最佳实践</a>
+  <a href="#versions">9. 版本演进</a>
+</nav>
+
+<main>
+
+<div class="hero">
+  <h1>robfig/cron</h1>
+  <p>Go 语言事实标准的<b>进程内定时任务调度器</b>：以标准 cron 表达式驱动，单 goroutine 调度 + 每任务独立执行，支持秒级精度、时区、装饰器链与优雅停止。</p>
+  <div class="meta">
+    <span>github.com/robfig/cron</span>
+    <span>当前主线 v3</span>
+    <span>Go 1.11+</span>
+    <span>MIT License</span>
+  </div>
+</div>
+
+<!-- ================= 1 简介 ================= -->
+<section id="intro">
+  <h2>1. 库简介</h2>
+  <div class="card">
+    <p><b>robfig/cron</b> 把 Unix <code>cron</code> 守护进程的核心能力搬进了 Go 应用：用<b>标准 5 字段 cron 表达式</b>（分 时 日 月 周）描述触发时间，到点自动执行注册的函数或对象。</p>
+    <p>它解决的是「<b>单进程内的周期性触发</b>」问题——不持久化、不分布式、错过的触发不补跑。在「一个服务里跑几个定时逻辑」的场景下它几乎是无脑之选；若需要分布式、可重试、可观测的任务队列，请考虑 Asynq 等方案。</p>
+    <pre><code class="lang-bash">go get github.com/robfig/cron/v3</code></pre>
+    <pre><code class="lang-go">import "github.com/robfig/cron/v3"</code></pre>
+  </div>
+</section>
+
+<!-- ================= 2 特性 ================= -->
+<section id="features">
+  <h2>2. 功能特性总览</h2>
+  <div class="grid">
+    <div class="feature"><div class="ic">⏱️</div><b>标准表达式</b><span>默认解析 5 字段标准 cron spec，首字段为「分」，符合 Wikipedia 规范</span></div>
+    <div class="feature"><div class="ic">⚡</div><b>秒级精度</b><span>cron.New(cron.WithSeconds()) 开启 Quartz 兼容的 6 字段布局（不支持年字段）</span></div>
+    <div class="feature"><div class="ic">📅</div><b>预定义描述符</b><span>@yearly / @monthly / @weekly / @daily / @hourly / @every 5m 开箱即用</span></div>
+    <div class="feature"><div class="ic">🌏</div><b>时区支持</b><span>全局 WithLocation()；单条表达式可用 CRON_TZ=Asia/Tokyo 前缀（兼容旧 TZ=）</span></div>
+    <div class="feature"><div class="ic">🔄</div><b>动态管理</b><span>运行中 Add / Remove / Entries 快照，全部通过 channel 传递，线程安全</span></div>
+    <div class="feature"><div class="ic">🧅</div><b>装饰器链</b><span>Chain + JobWrapper 提供可插拔横切能力：Recover / SkipIfStillRunning / DelayIfStillRunning</span></div>
+    <div class="feature"><div class="ic">📝</div><b>结构化日志</b><span>兼容 go-logr 的 Logger 接口，可对接 zap / logrus 等主流日志库</span></div>
+    <div class="feature"><div class="ic">🛑</div><b>优雅停止</b><span>Stop() 返回 context.Context，可等待所有正在执行的任务结束后再退出</span></div>
+  </div>
+</section>
+
+<!-- ================= 3 架构 ================= -->
+<section id="concepts">
+  <h2>3. 核心概念与架构</h2>
+
+  <div class="figure">
+    <svg viewBox="0 0 880 430" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+        </marker>
+      </defs>
+      <!-- Cron 大框 -->
+      <rect x="20" y="40" width="360" height="360" rx="16" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+      <text x="200" y="70" text-anchor="middle" font-size="17" font-weight="800" fill="#1e40af">Cron 调度器</text>
+      <!-- run goroutine -->
+      <rect x="45" y="90" width="310" height="70" rx="10" fill="#dbeafe" stroke="#60a5fa"/>
+      <text x="200" y="117" text-anchor="middle" font-size="13.5" font-weight="700" fill="#1e3a8a">run() 调度 goroutine（唯一）</text>
+      <text x="200" y="140" text-anchor="middle" font-size="11.5" fill="#334155">排序 entries → 设 Timer → select 分发</text>
+      <!-- channels -->
+      <rect x="45" y="178" width="145" height="46" rx="8" fill="#fff" stroke="#94a3b8"/>
+      <text x="117" y="206" text-anchor="middle" font-size="12" fill="#334155">chan: add / remove</text>
+      <rect x="210" y="178" width="145" height="46" rx="8" fill="#fff" stroke="#94a3b8"/>
+      <text x="282" y="206" text-anchor="middle" font-size="12" fill="#334155">chan: snapshot / stop</text>
+      <line x1="117" y1="224" x2="117" y2="248" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+      <line x1="282" y1="224" x2="282" y2="248" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+      <!-- entries -->
+      <rect x="45" y="252" width="310" height="128" rx="10" fill="#fff" stroke="#cbd5e1"/>
+      <text x="200" y="276" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">entries []*Entry（按 Next 升序）</text>
+      <rect x="62" y="288" width="276" height="26" rx="6" fill="#f1f5f9" stroke="#e2e8f0"/>
+      <text x="74" y="306" font-size="11.5" fill="#334155">Entry #1 · Next:10:00 · Prev:09:00</text>
+      <rect x="62" y="320" width="276" height="26" rx="6" fill="#f1f5f9" stroke="#e2e8f0"/>
+      <text x="74" y="338" font-size="11.5" fill="#334155">Entry #2 · Next:10:30 · Prev:09:30</text>
+      <rect x="62" y="352" width="276" height="20" rx="6" fill="#f8fafc"/>
+      <text x="74" y="367" font-size="11" fill="#94a3b8">…（零值 Next 排在末尾）</text>
+      <!-- Entry 组合 -->
+      <rect x="430" y="40" width="200" height="120" rx="12" fill="#fff" stroke="#2563eb" stroke-width="2"/>
+      <text x="530" y="66" text-anchor="middle" font-size="14" font-weight="800" fill="#1e40af">Schedule 接口</text>
+      <text x="530" y="88" text-anchor="middle" font-size="12" fill="#334155">Next(t) → 下次触发时间</text>
+      <rect x="448" y="100" width="164" height="24" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+      <text x="530" y="117" text-anchor="middle" font-size="11.5" fill="#065f46">SpecSchedule（表达式）</text>
+      <rect x="448" y="128" width="164" height="24" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+      <text x="530" y="145" text-anchor="middle" font-size="11.5" fill="#065f46">ConstantDelay（@every）</text>
+      <!-- Job -->
+      <rect x="430" y="185" width="200" height="95" rx="12" fill="#fff" stroke="#2563eb" stroke-width="2"/>
+      <text x="530" y="211" text-anchor="middle" font-size="14" font-weight="800" fill="#1e40af">Job 接口</text>
+      <text x="530" y="233" text-anchor="middle" font-size="12" fill="#334155">Run() → 做什么</text>
+      <rect x="448" y="244" width="164" height="24" rx="6" fill="#fef3c7" stroke="#fcd34d"/>
+      <text x="530" y="261" text-anchor="middle" font-size="11.5" fill="#92400e">FuncJob / 自定义结构体</text>
+      <!-- Chain -->
+      <rect x="430" y="305" width="200" height="95" rx="12" fill="#fff" stroke="#7c3aed" stroke-width="2"/>
+      <text x="530" y="331" text-anchor="middle" font-size="14" font-weight="800" fill="#5b21b6">Chain 装饰器链</text>
+      <text x="530" y="353" text-anchor="middle" font-size="12" fill="#334155">m1(m2(m3(job)))</text>
+      <rect x="448" y="366" width="164" height="24" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/>
+      <text x="530" y="383" text-anchor="middle" font-size="11.5" fill="#5b21b6">Recover / Skip / Delay</text>
+      <!-- 关系线 -->
+      <line x1="380" y1="160" x2="428" y2="110" stroke="#64748b" stroke-width="1.8" marker-end="url(#arr)"/>
+      <text x="398" y="122" font-size="11" fill="#64748b" text-anchor="middle">引用</text>
+      <line x1="380" y1="200" x2="428" y2="228" stroke="#64748b" stroke-width="1.8" marker-end="url(#arr)"/>
+      <line x1="380" y1="300" x2="428" y2="330" stroke="#64748b" stroke-width="1.8" marker-end="url(#arr)"/>
+      <!-- WrappedJob 说明 -->
+      <rect x="670" y="185" width="185" height="215" rx="12" fill="#faf5ff" stroke="#a78bfa" stroke-dasharray="6 4"/>
+      <text x="762" y="215" text-anchor="middle" font-size="13" font-weight="700" fill="#5b21b6">Entry.WrappedJob</text>
+      <text x="762" y="240" text-anchor="middle" font-size="11.5" fill="#475569">实际被调度的对象</text>
+      <text x="762" y="260" text-anchor="middle" font-size="11.5" fill="#475569">= Chain.Then(Job)</text>
+      <circle cx="712" cy="300" r="26" fill="#ede9fe" stroke="#8b5cf6"/>
+      <text x="712" y="304" text-anchor="middle" font-size="10.5" fill="#5b21b6">Recover</text>
+      <circle cx="762" cy="300" r="26" fill="#ede9fe" stroke="#8b5cf6"/>
+      <text x="762" y="304" text-anchor="middle" font-size="10.5" fill="#5b21b6">Skip</text>
+      <circle cx="812" cy="300" r="26" fill="#ede9fe" stroke="#8b5cf6"/>
+      <text x="812" y="304" text-anchor="middle" font-size="10.5" fill="#5b21b6">Job</text>
+      <text x="762" y="345" text-anchor="middle" font-size="10.5" fill="#64748b">从外到内依次包裹</text>
+      <text x="762" y="362" text-anchor="middle" font-size="10.5" fill="#64748b">横切行为 + 原始任务</text>
+      <line x1="630" y1="300" x2="668" y2="300" stroke="#8b5cf6" stroke-width="1.8" marker-end="url(#arr)"/>
+    </svg>
+    <figcaption>图 1 · robfig/cron 核心架构：Cron 持有 Entry 列表，Entry 组合 Schedule（何时）与 Job（做什么），Chain 把 Job 包成 WrappedJob（怎么包着做）</figcaption>
+  </div>
+
+  <h3>五个核心抽象</h3>
+  <table>
+    <tr><th style="width:130px">抽象</th><th>职责</th></tr>
+    <tr><td><code>Cron</code></td><td>调度器本体。独占一个调度 goroutine，通过 add / remove / snapshot / stop 四个 channel 与外界通信</td></tr>
+    <tr><td><code>Schedule</code></td><td><b>何时</b>执行。接口唯一方法 <code>Next(t) time.Time</code>。内置 SpecSchedule（表达式）与 ConstantDelaySchedule（@every 固定间隔）</td></tr>
+    <tr><td><code>Job</code></td><td><b>做什么</b>。接口唯一方法 <code>Run()</code>；<code>FuncJob</code> 是 <code>func()</code> 的现成适配器</td></tr>
+    <tr><td><code>Entry</code></td><td>一条调度记录：ID + Schedule + Job + <code>Next</code>（下次触发）+ <code>Prev</code>(上次触发)</td></tr>
+    <tr><td><code>Chain</code></td><td><b>怎么包着做</b>。<code>JobWrapper</code> 是 <code>func(Job) Job</code>，按传入顺序从外到内包裹任务</td></tr>
+  </table>
+</section>
+
+<!-- ================= 4 运行循环 ================= -->
+<section id="loop">
+  <h2>4. 运行循环原理</h2>
+  <p><code>Start()</code> 之后，<code>run()</code> 在一个独立 goroutine 里持续运转。理解这个循环，就理解了 robfig/cron 的一切行为特征。</p>
+
+  <div class="figure">
+    <svg viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs>
+        <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+        </marker>
+      </defs>
+      <!-- 开始 -->
+      <rect x="360" y="10" width="180" height="38" rx="19" fill="#2563eb"/>
+      <text x="450" y="34" text-anchor="middle" font-size="13" fill="#fff" font-weight="700">Start() → go run()</text>
+      <line x1="450" y1="48" x2="450" y2="72" stroke="#475569" stroke-width="1.8" marker-end="url(#arr2)"/>
+      <!-- 初始化 Next -->
+      <rect x="300" y="74" width="300" height="40" rx="8" fill="#dbeafe" stroke="#60a5fa"/>
+      <text x="450" y="99" text-anchor="middle" font-size="12.5" fill="#1e3a8a">为每个 entry 计算 entry.Next = Next(now)</text>
+      <line x1="450" y1="114" x2="450" y2="138" stroke="#475569" stroke-width="1.8" marker-end="url(#arr2)"/>
+
+      <!-- 循环开始 -->
+      <rect x="330" y="140" width="240" height="40" rx="20" fill="#f1f5f9" stroke="#94a3b8"/>
+      <text x="450" y="165" text-anchor="middle" font-size="12.5" font-weight="700" fill="#334155">for 主循环开始</text>
+      <line x1="450" y1="180" x2="450" y2="204" stroke="#475569" stroke-width="1.8" marker-end="url(#arr2)"/>
+      <!-- 排序 -->
+      <rect x="290" y="206" width="320" height="40" rx="8" fill="#fff" stroke="#2563eb" stroke-width="1.6"/>
+      <text x="450" y="231" text-anchor="middle" font-size="12.5" fill="#1e3a8a">① 按 Next 升序排序（零值排末尾）</text>
+      <line x1="450" y1="246" x2="450" y2="270" stroke="#475569" stroke-width="1.8" marker-end="url(#arr2)"/>
+      <!-- 设timer -->
+      <rect x="270" y="272" width="360" height="52" rx="8" fill="#fff" stroke="#2563eb" stroke-width="1.6"/>
+      <text x="450" y="293" text-anchor="middle" font-size="12.5" fill="#1e3a8a">② timer = NewTimer(entries[0].Next − now)</text>
+      <text x="450" y="312" text-anchor="middle" font-size="11" fill="#64748b">无任务时睡眠 100000 小时（仍可被 add/stop 唤醒）</text>
+      <line x1="450" y1="324" x2="450" y2="352" stroke="#475569" stroke-width="1.8" marker-end="url(#arr2)"/>
+
+      <!-- select 菱形 -->
+      <polygon points="450,354 580,404 450,454 320,404" fill="#fef9c3" stroke="#eab308" stroke-width="1.8"/>
+      <text x="450" y="410" text-anchor="middle" font-size="13" font-weight="700" fill="#854d0e">③ select 等待事件</text>
+
+      <!-- 5 分支 -->
+      <line x1="320" y1="404" x2="230" y2="404" stroke="#475569" stroke-width="1.8" marker-end="url(#arr2)"/>
+      <rect x="30" y="368" width="200" height="72" rx="8" fill="#dcfce7" stroke="#4ade80"/>
+      <text x="130" y="390" text-anchor="middle" font-size="12" font-weight="700" fill="#166534">&lt;-timer.C 到点</text>
+      <text x="130" y="408" text-anchor="middle" font-size="11" fill="#166534">触发所有 Next ≤ now 的任务</text>
+      <text x="130" y="426" text-anchor="middle" font-size="11" fill="#166534">startJob 独立 goroutine 执行</text>
+
+      <line x1="580" y1="404" x2="660" y2="404" stroke="#475569" stroke-width="1.8" marker-end="url(#arr2)"/>
+      <rect x="662" y="330" width="215" height="52" rx="8" fill="#ede9fe" stroke="#a78bfa"/>
+      <text x="770" y="351" text-anchor="middle" font-size="12" font-weight="700" fill="#5b21b6">&lt;-add 新增任务</text>
+      <text x="770" y="369" text-anchor="middle" font-size="11" fill="#5b21b6">计算新 entry 的 Next 后加入</text>
+      <rect x="662" y="394" width="215" height="52" rx="8" fill="#ede9fe" stroke="#a78bfa"/>
+      <text x="770" y="415" text-anchor="middle" font-size="12" font-weight="700" fill="#5b21b6">&lt;-remove / &lt;-snapshot</text>
+      <text x="770" y="433" text-anchor="middle" font-size="11" fill="#5b21b6">删除条目 / 返回条目快照</text>
+      <rect x="662" y="458" width="215" height="52" rx="8" fill="#fee2e2" stroke="#fca5a5"/>
+      <text x="770" y="479" text-anchor="middle" font-size="12" font-weight="700" fill="#991b1b">&lt;-stop 停止信号</text>
+      <text x="770" y="497" text-anchor="middle" font-size="11" fill="#991b1b">return 退出调度 goroutine</text>
+      <line x1="660" y1="420" x2="662" y2="420" stroke="#475569" stroke-width="1.8" marker-end="url(#arr2)"/>
+
+      <!-- 回环 -->
+      <path d="M130,440 L130,530 L450,530 L450,462" fill="none" stroke="#475569" stroke-width="1.8" marker-end="url(#arr2)"/>
+      <text x="290" y="522" text-anchor="middle" font-size="11.5" fill="#64748b">处理完事件后回到主循环，重新排序、重新设 timer</text>
+      <text x="770" y="532" text-anchor="middle" font-size="11" fill="#991b1b">Stop() 后可等待 jobWaiter</text>
+    </svg>
+    <figcaption>图 2 · run() 主循环：排序 → 设 Timer → select 事件分发 → 回环。调度逻辑集中在单个 goroutine，天然免锁</figcaption>
+  </div>
+
+  <h3>关键源码（有删减）</h3>
+  <pre><code class="lang-go"><span class="cmt">// 触发到点任务：每个任务独立 goroutine，互不阻塞</span>
+<span class="kw">case</span> now = &lt;-timer.C:
+    <span class="kw">for</span> _, e := <span class="kw">range</span> c.entries {
+        <span class="kw">if</span> e.Next.After(now) || e.Next.IsZero() {
+            <span class="kw">break</span>
+        }
+        c.startJob(e.WrappedJob)          <span class="cmt">// go func(){ j.Run() }()</span>
+        e.Prev = e.Next
+        e.Next = e.Schedule.Next(now)     <span class="cmt">// 立即求解下一次触发</span>
+    }</code></pre>
+
+  <div class="figure">
+    <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs><marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>
+      <!-- 调度 goroutine -->
+      <rect x="30" y="30" width="300" height="52" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+      <text x="180" y="61" text-anchor="middle" font-size="13.5" font-weight="700" fill="#1e3a8a">调度 goroutine（唯一）</text>
+      <!-- 时间轴 -->
+      <line x1="80" y1="140" x2="800" y2="140" stroke="#94a3b8" stroke-width="2" marker-end="url(#arr3)"/>
+      <text x="830" y="145" font-size="11" fill="#64748b">t</text>
+      <g font-size="11" fill="#334155" text-anchor="middle">
+        <line x1="140" y1="132" x2="140" y2="148" stroke="#334155" stroke-width="2"/><text x="140" y="126">10:00</text>
+        <line x1="330" y1="132" x2="330" y2="148" stroke="#334155" stroke-width="2"/><text x="330" y="126">10:05</text>
+        <line x1="520" y1="132" x2="520" y2="148" stroke="#334155" stroke-width="2"/><text x="520" y="126">10:10</text>
+        <line x1="700" y1="132" x2="700" y2="148" stroke="#334155" stroke-width="2"/><text x="700" y="126">10:15</text>
+      </g>
+      <!-- 任务 goroutines -->
+      <line x1="140" y1="82" x2="140" y2="160" stroke="#059669" stroke-width="2" marker-end="url(#arr3)"/>
+      <rect x="60" y="160" width="160" height="34" rx="8" fill="#dcfce7" stroke="#4ade80"/>
+      <text x="140" y="182" text-anchor="middle" font-size="11.5" fill="#166534">goroutine：任务 A（跑 2min）</text>
+      <line x1="140" y1="194" x2="250" y2="194" stroke="#4ade80" stroke-width="6" stroke-linecap="round"/>
+
+      <line x1="330" y1="82" x2="330" y2="160" stroke="#059669" stroke-width="2" marker-end="url(#arr3)"/>
+      <rect x="250" y="160" width="160" height="34" rx="8" fill="#dcfce7" stroke="#4ade80"/>
+      <text x="330" y="182" text-anchor="middle" font-size="11.5" fill="#166534">goroutine：任务 A（重叠!）</text>
+      <line x1="250" y1="194" x2="440" y2="194" stroke="#4ade80" stroke-width="6" stroke-linecap="round"/>
+
+      <line x1="520" y1="82" x2="520" y2="240" stroke="#d97706" stroke-width="2" marker-end="url(#arr3)"/>
+      <rect x="440" y="240" width="160" height="34" rx="8" fill="#fef3c7" stroke="#fcd34d"/>
+      <text x="520" y="262" text-anchor="middle" font-size="11.5" fill="#92400e">goroutine：任务 B（慢）</text>
+      <line x1="520" y1="274" x2="760" y2="274" stroke="#fcd34d" stroke-width="6" stroke-linecap="round"/>
+
+      <line x1="700" y1="82" x2="700" y2="120" stroke="#059669" stroke-width="2" marker-end="url(#arr3)"/>
+      <rect x="620" y="88" width="160" height="34" rx="8" fill="#dcfce7" stroke="#4ade80"/>
+      <text x="700" y="110" text-anchor="middle" font-size="11.5" fill="#166534">goroutine：任务 C（快）</text>
+      <text x="450" y="50" text-anchor="middle" font-size="12" fill="#64748b">每个触发点 spawn 一个新 goroutine：慢任务不阻塞调度器，但默认允许同一任务重叠执行</text>
+    </svg>
+    <figcaption>图 3 · 并发模型：调度集中、执行分散。任务 A 耗时超过触发间隔时，下一轮到点会再次起新 goroutine —— 防重叠需 SkipIfStillRunning 装饰器</figcaption>
+  </div>
+
+  <div class="tip"><b>✅ 结论：</b><span>① 单 goroutine 调度 → entries 读写无锁；外部 Add/Remove/Entries 通过 channel 传递，这是线程安全的来源。② 排序 + Timer 精确休眠而非轮询。③ 错过的触发直接跳过（无补跑）。④ 默认允许任务重叠执行。</span></div>
+</section>
+
+<!-- ================= 5 表达式 ================= -->
+<section id="expr">
+  <h2>5. 表达式全解析</h2>
+
+  <div class="figure">
+    <svg viewBox="0 0 880 330" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <!-- 示例行 -->
+      <text x="440" y="30" text-anchor="middle" font-size="14" font-weight="700" fill="#1e293b">标准 5 字段布局（默认）</text>
+      <g text-anchor="middle" font-family="Consolas,monospace" font-size="34" font-weight="700">
+        <text x="100" y="90" fill="#2563eb">30</text>
+        <text x="270" y="90" fill="#7c3aed">2</text>
+        <text x="440" y="90" fill="#059669">*</text>
+        <text x="610" y="90" fill="#d97706">*</text>
+        <text x="780" y="90" fill="#dc2626">*</text>
+      </g>
+      <g text-anchor="middle" font-size="12" fill="#64748b">
+        <text x="440" y="118">示例：每天 02:30 触发</text>
+      </g>
+      <!-- 字段卡片 -->
+      <g>
+        <rect x="30" y="140" width="140" height="120" rx="10" fill="#eff6ff" stroke="#2563eb"/>
+        <text x="100" y="165" text-anchor="middle" font-size="13.5" font-weight="700" fill="#1e40af">分钟</text>
+        <text x="100" y="188" text-anchor="middle" font-size="11.5" fill="#475569">0 – 59</text>
+        <text x="100" y="210" text-anchor="middle" font-size="11" fill="#64748b">*/15 每15分钟</text>
+        <text x="100" y="228" text-anchor="middle" font-size="11" fill="#64748b">30-45 范围</text>
+        <text x="100" y="246" text-anchor="middle" font-size="11" fill="#64748b">1,15,30 列表</text>
+
+        <rect x="200" y="140" width="140" height="120" rx="10" fill="#f5f3ff" stroke="#7c3aed"/>
+        <text x="270" y="165" text-anchor="middle" font-size="13.5" font-weight="700" fill="#5b21b6">小时</text>
+        <text x="270" y="188" text-anchor="middle" font-size="11.5" fill="#475569">0 – 23</text>
+        <text x="270" y="210" text-anchor="middle" font-size="11" fill="#64748b">9-18 工作时段</text>
+        <text x="270" y="228" text-anchor="middle" font-size="11" fill="#64748b">*/2 每2小时</text>
+
+        <rect x="370" y="140" width="140" height="120" rx="10" fill="#ecfdf5" stroke="#059669"/>
+        <text x="440" y="165" text-anchor="middle" font-size="13.5" font-weight="700" fill="#065f46">日（Dom）</text>
+        <text x="440" y="188" text-anchor="middle" font-size="11.5" fill="#475569">1 – 31</text>
+        <text x="440" y="210" text-anchor="middle" font-size="11" fill="#64748b">1,15 半月结</text>
+        <text x="440" y="246" text-anchor="middle" font-size="10.5" fill="#b45309">与周同时指定=或</text>
+
+        <rect x="540" y="140" width="140" height="120" rx="10" fill="#fffbeb" stroke="#d97706"/>
+        <text x="610" y="165" text-anchor="middle" font-size="13.5" font-weight="700" fill="#92400e">月</text>
+        <text x="610" y="188" text-anchor="middle" font-size="11.5" fill="#475569">1 – 12</text>
+        <text x="610" y="210" text-anchor="middle" font-size="11" fill="#64748b">JAN-DEC 缩写</text>
+        <text x="610" y="228" text-anchor="middle" font-size="11" fill="#64748b">*/3 每季度</text>
+
+        <rect x="710" y="140" width="140" height="120" rx="10" fill="#fef2f2" stroke="#dc2626"/>
+        <text x="780" y="165" text-anchor="middle" font-size="13.5" font-weight="700" fill="#991b1b">周（Dow）</text>
+        <text x="780" y="188" text-anchor="middle" font-size="11.5" fill="#475569">0 – 6（周日=0）</text>
+        <text x="780" y="210" text-anchor="middle" font-size="11" fill="#64748b">MON-FRI 工作日</text>
+        <text x="780" y="228" text-anchor="middle" font-size="11" fill="#64748b">SAT,周日可混写</text>
+      </g>
+      <text x="440" y="292" text-anchor="middle" font-size="11.5" fill="#64748b">WithSeconds() 开启后变为 6 字段：秒 分 时 日 月 周（Quartz 兼容，不含年字段）</text>
+      <text x="440" y="312" text-anchor="middle" font-size="11.5" fill="#64748b">单条表达式可加时区前缀：CRON_TZ=Asia/Shanghai 0 30 9 * * *</text>
+    </svg>
+    <figcaption>图 4 · cron 表达式五字段：语法支持 * / 步进、- 范围、, 列表及其组合（如 1-10/2）</figcaption>
+  </div>
+
+  <h3>预定义描述符</h3>
+  <table>
+    <tr><th>描述符</th><th>等价表达式</th><th>含义</th></tr>
+    <tr><td><code>@yearly</code> / <code>@annually</code></td><td><code>0 0 1 1 *</code></td><td>每年 1 月 1 日 0 点</td></tr>
+    <tr><td><code>@monthly</code></td><td><code>0 0 1 * *</code></td><td>每月 1 日 0 点</td></tr>
+    <tr><td><code>@weekly</code></td><td><code>0 0 * * 0</code></td><td>每周日 0 点</td></tr>
+    <tr><td><code>@daily</code> / <code>@midnight</code></td><td><code>0 0 * * *</code></td><td>每天 0 点</td></tr>
+    <tr><td><code>@hourly</code></td><td><code>0 * * * *</code></td><td>每小时第 0 分</td></tr>
+    <tr><td><code>@every 1h30m</code></td><td>—</td><td>从添加时刻起固定间隔（<code>time.ParseDuration</code> 语法）</td></tr>
+  </table>
+
+  <div class="warn"><b>⚠️ 注意：</b><span><code>@every 1h</code> 是「固定间隔」（从 Add 时刻起算，走 ConstantDelaySchedule），而 <code>0 * * * *</code> 是「整点对齐」（走 SpecSchedule），两者语义不同。另外 Dom 与 Dow 同时指定时是「或」关系：<code>0 0 1 * 1</code> = 每月 1 号<b>或</b>每周一的零点。</span></div>
+</section>
+
+<!-- ================= 6 装饰器 ================= -->
+<section id="chain">
+  <h2>6. 装饰器链（Chain / JobWrapper）</h2>
+  <p>Chain 是 robfig/cron v3 最优雅的设计：<code>JobWrapper</code> 是 <code>func(Job) Job</code>，Chain 按传入顺序从外到内包裹任务，形成洋葱结构，为任务注入横切行为。</p>
+
+  <div class="figure">
+    <svg viewBox="0 0 880 320" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs><marker id="arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>
+      <!-- 洋葱结构 -->
+      <rect x="40" y="30" width="420" height="260" rx="18" fill="#eff6ff" stroke="#2563eb" stroke-width="2.5"/>
+      <text x="250" y="58" text-anchor="middle" font-size="13.5" font-weight="700" fill="#1e40af">Recover(logger) — 捕获 panic，打印堆栈</text>
+      <rect x="75" y="72" width="350" height="202" rx="14" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2.5"/>
+      <text x="250" y="98" text-anchor="middle" font-size="13.5" font-weight="700" fill="#5b21b6">SkipIfStillRunning — 上次没跑完？跳过本次</text>
+      <rect x="110" y="112" width="280" height="144" rx="12" fill="#fffbeb" stroke="#d97706" stroke-width="2.5"/>
+      <text x="250" y="138" text-anchor="middle" font-size="13.5" font-weight="700" fill="#92400e">你的自定义 Wrapper（可选）</text>
+      <rect x="145" y="152" width="200" height="84" rx="10" fill="#dcfce7" stroke="#059669" stroke-width="2.5"/>
+      <text x="245" y="186" text-anchor="middle" font-size="14" font-weight="800" fill="#065f46">原始 Job.Run()</text>
+      <text x="245" y="210" text-anchor="middle" font-size="11.5" fill="#166534">业务逻辑本体</text>
+      <!-- 代码对应 -->
+      <text x="640" y="80" font-size="13" font-weight="700" fill="#1e293b">等价于函数嵌套：</text>
+      <rect x="530" y="96" width="320" height="120" rx="10" fill="#0f172a"/>
+      <text x="530" y="126" font-size="13" font-family="Consolas,monospace" fill="#93c5fd">Recover(</text>
+      <text x="560" y="150" font-size="13" font-family="Consolas,monospace" fill="#c4b5fd">SkipIfStillRunning(</text>
+      <text x="590" y="174" font-size="13" font-family="Consolas,monospace" fill="#fbbf24">MyWrapper(</text>
+      <text x="620" y="198" font-size="13" font-family="Consolas,monospace" fill="#86efac">job)))</text>
+      <text x="640" y="250" font-size="12" fill="#64748b" text-anchor="start">Chain 是全局的：构造 Cron 时</text>
+      <text x="640" y="270" font-size="12" fill="#64748b">通过 WithChain 设定，对实例内</text>
+      <text x="640" y="290" font-size="12" fill="#64748b">所有任务统一生效</text>
+    </svg>
+    <figcaption>图 5 · Chain 洋葱模型：NewChain(m1, m2, m3).Then(job) ≡ m1(m2(m3(job)))，请求从外向内穿透各层 Wrapper</figcaption>
+  </div>
+
+  <h3>内置三个 JobWrapper</h3>
+  <table>
+    <tr><th>Wrapper</th><th>行为</th><th>实现要点</th></tr>
+    <tr><td><code>Recover(logger)</code></td><td>捕获任务 panic 并记录堆栈日志</td><td><code>defer recover()</code> + <code>runtime.Stack</code>；v3 默认不 recover，必须显式挂载</td></tr>
+    <tr><td><code>SkipIfStillRunning(logger)</code></td><td>上一次没跑完则<b>跳过</b>本次触发</td><td>容量 1 的 channel 非阻塞抢锁，抢不到即 skip</td></tr>
+    <tr><td><code>DelayIfStillRunning(logger)</code></td><td>上一次没跑完则<b>排队等待</b>（串行化）</td><td>mutex 互斥，延迟超 1 分钟记 Info 日志</td></tr>
+  </table>
+</section>
+
+<!-- ================= 7 实战 ================= -->
+<section id="usage">
+  <h2>7. 代码实战</h2>
+
+  <h3 id="u-quick">7.1 快速上手</h3>
+  <pre><code class="lang-go"><span class="kw">package</span> main
+
+<span class="kw">import</span> (
+    <span class="str">"fmt"</span>
+    <span class="str">"time"</span>
+
+    <span class="str">"github.com/robfig/cron/v3"</span>
+)
+
+<span class="kw">func</span> <span class="fn">main</span>() {
+    c := cron.<span class="fn">New</span>() <span class="cmt">// 标准 5 字段解析器，时区 time.Local</span>
+
+    <span class="cmt">// 每分钟打印一次</span>
+    c.<span class="fn">AddFunc</span>(<span class="str">"* * * * *"</span>, <span class="kw">func</span>() {
+        fmt.<span class="fn">Println</span>(<span class="str">"每分钟触发:"</span>, time.<span class="fn">Now</span>().<span class="fn">Format</span>(<span class="str">"15:04:05"</span>))
+    })
+
+    <span class="cmt">// 每天凌晨 2:30（表达式非法时返回 error）</span>
+    _, err := c.<span class="fn">AddFunc</span>(<span class="str">"30 2 * * *"</span>, <span class="kw">func</span>() {
+        fmt.<span class="fn">Println</span>(<span class="str">"每日对账任务"</span>)
+    })
+    <span class="kw">if</span> err != <span class="kw">nil</span> {
+        <span class="fn">panic</span>(err)
+    }
+
+    c.<span class="fn">Start</span>()
+    <span class="kw">defer</span> c.<span class="fn">Stop</span>()
+
+    <span class="kw">select</span> {} <span class="cmt">// 阻塞主 goroutine</span>
+}</code></pre>
+
+  <h3 id="u-sec">7.2 秒级精度与预定义描述符</h3>
+  <pre><code class="lang-go">c := cron.<span class="fn">New</span>(cron.<span class="fn">WithSeconds</span>()) <span class="cmt">// 6 字段：秒 分 时 日 月 周</span>
+
+c.<span class="fn">AddFunc</span>(<span class="str">"*/5 * * * * *"</span>, <span class="kw">func</span>() {})     <span class="cmt">// 每 5 秒</span>
+c.<span class="fn">AddFunc</span>(<span class="str">"0 30 9 * * MON-FRI"</span>, <span class="kw">func</span>() {}) <span class="cmt">// 工作日 9:30:00</span>
+
+c2 := cron.<span class="fn">New</span>()
+c2.<span class="fn">AddFunc</span>(<span class="str">"@every 2h30m"</span>, <span class="kw">func</span>() {}) <span class="cmt">// 每 2.5 小时（固定间隔）</span>
+c2.<span class="fn">AddFunc</span>(<span class="str">"@daily"</span>, <span class="kw">func</span>() {})       <span class="cmt">// 每天 0 点</span></code></pre>
+
+  <h3 id="u-tz">7.3 时区处理</h3>
+  <pre><code class="lang-go"><span class="cmt">// 方式一：全局时区</span>
+loc, _ := time.<span class="fn">LoadLocation</span>(<span class="str">"Asia/Shanghai"</span>)
+c := cron.<span class="fn">New</span>(cron.<span class="fn">WithLocation</span>(loc))
+
+<span class="cmt">// 方式二：单表达式指定时区（规格化写法，推荐）</span>
+c.<span class="fn">AddFunc</span>(<span class="str">"CRON_TZ=Asia/Tokyo 0 6 * * *"</span>, <span class="kw">func</span>() {}) <span class="cmt">// 东京时间早 6 点</span></code></pre>
+
+  <h3 id="u-job">7.4 自定义 Job（实现 Job 接口）</h3>
+  <pre><code class="lang-go"><span class="kw">type</span> <span class="typ">SyncJob</span> <span class="kw">struct</span> {
+    Table <span class="typ">string</span>
+}
+
+<span class="kw">func</span> (s *<span class="typ">SyncJob</span>) <span class="fn">Run</span>() {
+    fmt.<span class="fn">Printf</span>(<span class="str">"同步表 %s ...\n"</span>, s.Table)
+}
+
+<span class="kw">func</span> <span class="fn">main</span>() {
+    c := cron.<span class="fn">New</span>()
+    id, _ := c.<span class="fn">AddJob</span>(<span class="str">"*/10 * * * *"</span>, &amp;<span class="typ">SyncJob</span>{Table: <span class="str">"orders"</span>})
+    fmt.<span class="fn">Println</span>(<span class="str">"entry id:"</span>, id)
+    c.<span class="fn">Start</span>()
+    <span class="kw">select</span> {}
+}</code></pre>
+
+  <h3>7.5 装饰器：panic 恢复与防重叠</h3>
+  <pre><code class="lang-go">c := cron.<span class="fn">New</span>(
+    cron.<span class="fn">WithChain</span>(
+        cron.<span class="fn">Recover</span>(cron.DefaultLogger),            <span class="cmt">// 捕获 panic 并记日志</span>
+        cron.<span class="fn">SkipIfStillRunning</span>(cron.DefaultLogger), <span class="cmt">// 上次未跑完则跳过本次</span>
+    ),
+    cron.<span class="fn">WithSeconds</span>(),
+)
+
+c.<span class="fn">AddFunc</span>(<span class="str">"*/5 * * * * *"</span>, <span class="kw">func</span>() {
+    <span class="fn">panic</span>(<span class="str">"boom"</span>) <span class="cmt">// 不会拖垮调度器</span>
+})
+
+<span class="cmt">// 自定义 JobWrapper 也非常简单：</span>
+<span class="kw">func</span> <span class="fn">WithMetric</span>(name <span class="typ">string</span>) cron.<span class="typ">JobWrapper</span> {
+    <span class="kw">return func</span>(j cron.<span class="typ">Job</span>) cron.<span class="typ">Job</span> {
+        <span class="kw">return</span> cron.<span class="fn">FuncJob</span>(<span class="kw">func</span>() {
+            start := time.<span class="fn">Now</span>()
+            j.<span class="fn">Run</span>()
+            <span class="fn">recordDuration</span>(name, time.<span class="fn">Since</span>(start)) <span class="cmt">// 上报耗时</span>
+        })
+    }
+}</code></pre>
+
+  <h3 id="u-dyn">7.6 运行中动态管理任务</h3>
+  <pre><code class="lang-go">c := cron.<span class="fn">New</span>()
+c.<span class="fn">Start</span>()
+
+id, _ := c.<span class="fn">AddFunc</span>(<span class="str">"*/1 * * * *"</span>, <span class="kw">func</span>() { fmt.<span class="fn">Println</span>(<span class="str">"tick"</span>) })
+<span class="cmt">// 运行中添加：经 add channel 交给调度 goroutine，立即生效</span>
+
+<span class="kw">for</span> _, e := <span class="kw">range</span> c.<span class="fn">Entries</span>() { <span class="cmt">// 快照，线程安全</span>
+    fmt.<span class="fn">Printf</span>(<span class="str">"entry=%d next=%v prev=%v\n"</span>, e.ID, e.Next, e.Prev)
+}
+
+time.<span class="fn">Sleep</span>(5 * time.Minute)
+c.<span class="fn">Remove</span>(id) <span class="cmt">// 移除；c.Entry(id) 可查单个条目</span></code></pre>
+
+  <h3 id="u-stop">7.7 优雅停止与日志</h3>
+  <pre><code class="lang-go">ctx := c.<span class="fn">Stop</span>() <span class="cmt">// 发停止信号，不再派发新触发</span>
+&lt;-ctx.<span class="fn">Done</span>()    <span class="cmt">// 等待所有「正在执行」的任务结束（内部 sync.WaitGroup）</span>
+fmt.<span class="fn">Println</span>(<span class="str">"所有任务已退出"</span>)
+
+<span class="cmt">// 集成结构化日志：输出 schedule/wake/run/added/removed 事件，排查「为什么没触发」必备</span>
+logger := cron.<span class="fn">VerbosePrintfLogger</span>(log.<span class="fn">New</span>(os.Stdout, <span class="str">"cron: "</span>, log.LstdFlags))
+c := cron.<span class="fn">New</span>(cron.<span class="fn">WithLogger</span>(logger))</code></pre>
+
+  <div class="tip"><b>💡 Start vs Run：</b><span><code>Start()</code> 起后台 goroutine 立即返回；<code>Run()</code> 在当前 goroutine 阻塞执行，适合「进程只跑调度器」的场景。两者重复调用都是 no-op。</span></div>
+</section>
+
+<!-- ================= 8 坑 ================= -->
+<section id="pitfalls">
+  <h2>8. 常见坑与最佳实践</h2>
+  <div class="danger"><b>🚫 忘记 Start()：</b><span>Add 之后不 Start，任务静静躺在 entries 里永远不会执行。</span></div>
+  <div class="danger"><b>🚫 panic 不再默认恢复：</b><span>v3 默认不 recover。生产环境务必挂 <code>cron.Recover(logger)</code>，否则一个任务的 panic 会崩掉整个进程。</span></div>
+  <div class="warn"><b>⚠️ v1 → v3 迁移：</b><span>默认解析从「可选秒字段的 6 段」变为「标准 5 段」。<code>* * * * *</code> 在 v1 是每秒、在 v3 是每分。要秒级请 <code>WithSeconds()</code>。</span></div>
+  <div class="warn"><b>⚠️ 长任务重叠：</b><span>默认允许同一任务并发多份。清理 / 上报类任务通常要加 <code>SkipIfStillRunning</code>。</span></div>
+  <div class="warn"><b>⚠️ 错过即跳过：</b><span>进程重启后不会补跑停机期间错过的触发，需要补偿逻辑请在任务内部自行实现（如对比 <code>e.Prev</code>）。</span></div>
+  <div class="warn"><b>⚠️ 时区陷阱：</b><span>服务器时区 ≠ 业务时区时，显式 <code>WithLocation</code> 或 <code>CRON_TZ=</code>；夏令时切换日建议业务上使用无夏令时时区。</span></div>
+  <div class="warn"><b>⚠️ K8s 多副本：</b><span>每个 Pod 各跑一份 cron，同一任务会被触发 N 次。需要分布式锁（Redis SET NX）或改用中心化调度 —— 这是 robfig/cron 与分布式任务队列（Asynq 等）的本质边界。</span></div>
+</section>
+
+<!-- ================= 9 版本 ================= -->
+<section id="versions">
+  <h2>9. 版本演进</h2>
+  <div class="card">
+    <div class="timeline">
+      <div class="tl-item"><b>v1</b><br><span>最初版本，gopkg.in 分发；默认「可选秒字段」格式，与标准 cron / Quartz 均不兼容，是混乱之源</span></div>
+      <div class="tl-item"><b>v2</b><br><span>分支版本，引入移除任务等能力，未成为默认</span></div>
+      <div class="tl-item"><b>v3（2019.6，当前推荐）</b><br><span>Go Modules（github.com/robfig/cron/v3）· 标准 5 字段为默认 · Chain/JobWrapper 装饰器 · go-logr 日志接口 · 函数式选项（WithLocation / WithParser / WithChain / WithSeconds / WithLogger）· 修复「删除任务导致下一任务延迟执行」等多个历史 bug</span></div>
+    </div>
+    <p style="margin-top:8px">v3 发布后 API 趋于稳定，社区以维护为主，新项目直接使用 v3 即可。</p>
+  </div>
+</section>
+
+<footer>robfig/cron 技术指南 · 基于 v3 源码与官方 README 整理 · 2026-09</footer>
+</main>
+</div>
+
+<script>
+// 极简 Go 语法高亮（免外部依赖）
+document.querySelectorAll('pre code.lang-go').forEach(function(block){
+  var src = block.textContent;
+  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  var master = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  var out = src.replace(master, function(m, c1, c2, s, kw, typ, num, fn){
+    if (c1 || c2) return '<span class="cmt">'+m+'</span>';
+    if (s) return '<span class="str">'+m+'</span>';
+    if (kw) return '<span class="kw">'+m+'</span>';
+    if (typ) return '<span class="typ">'+m+'</span>';
+    if (num) return '<span class="num">'+m+'</span>';
+    if (fn) return '<span class="fn">'+m+'</span>';
+    return m;
+  });
+  block.innerHTML = out;
+});
+// 代码块标签
+document.querySelectorAll('pre code.lang-go').forEach(function(b){
+  var label=document.createElement('span');label.className='codelabel';label.textContent='Go';
+  b.closest('pre').appendChild(label);
+});
+document.querySelectorAll('pre code.lang-bash').forEach(function(b){
+  var label=document.createElement('span');label.className='codelabel';label.textContent='Shell';
+  b.closest('pre').appendChild(label);
+});
+</script>
+</body>
+</html>

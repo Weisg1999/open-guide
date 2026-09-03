@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InfluxDB 3（Core / Enterprise）技术指南</title>
+<style>
+  :root{
+    --accent:#0891b2; --accent-light:#cffafe; --accent-dark:#155e75;
+    --bg:#f4fafc; --card:#ffffff; --border:#dcecf0; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#04222b; --kw:#67e8f9; --str:#86efac; --cmt:#5f8a94; --num:#fbbf24; --fn:#f472b6; --typ:#a5f3fc;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#164e63 0%,#0891b2 55%,#06b6d4 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(8,145,178,.28)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.92;font-size:15px;max-width:680px}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark)}
+  h4{font-size:15px;margin:16px 0 8px;color:#0f172a}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin-bottom:18px;box-shadow:0 1px 3px rgba(21,94,117,.06)}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fd0dc;background:#0a3d49;padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code{background:#eef8fb;color:#0e7490;border:1px solid #d5edf3;padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(21,94,117,.06)}
+  th{background:#e6f7fc;color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:#f8fcfd}
+  .tip,.warn,.danger{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px;display:flex;gap:10px;align-items:flex-start}
+  .tip{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .tip b,.warn b,.danger b{flex-shrink:0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0;box-shadow:0 1px 3px rgba(21,94,117,.06)}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .pill{display:inline-block;background:var(--accent-light);color:var(--accent-dark);border-radius:16px;padding:2px 12px;font-size:12px;margin:2px 4px 2px 0}
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  .feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin:16px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:0 1px 3px rgba(21,94,117,.06)}
+  .feature .f-icon{font-size:22px;display:block;margin-bottom:8px}
+  .feature b{display:block;color:var(--accent-dark);font-size:14.5px;margin-bottom:6px}
+  .feature p{font-size:13px;color:#475569;margin:0;line-height:1.65}
+  ul.timeline{list-style:none;padding:0;margin:18px 0 6px;position:relative}
+  ul.timeline::before{content:"";position:absolute;left:9.5px;top:8px;bottom:8px;width:2px;background:linear-gradient(180deg,#0891b2,#67e8f9)}
+  ul.timeline li{position:relative;padding:0 0 20px 36px;font-size:14px;color:#334155}
+  ul.timeline li:last-child{padding-bottom:2px}
+  ul.timeline li::before{content:"";position:absolute;left:4px;top:5px;width:13px;height:13px;border-radius:50%;background:#fff;border:3px solid var(--accent)}
+  .t-date{display:inline-block;font-weight:800;color:var(--accent-dark);font-size:12.5px;background:var(--accent-light);border:1px solid #a5f3fc;border-radius:9px;padding:1px 10px;margin-right:8px}
+  .timeline b{color:#0f172a}
+  .pit-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin:16px 0}
+  .pit{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--warn);border-radius:12px;padding:13px 16px;box-shadow:0 1px 3px rgba(21,94,117,.05)}
+  .pit.bad{border-left-color:var(--danger)}
+  .pit.good{border-left-color:var(--ok)}
+  .pit .no{display:inline-block;min-width:22px;height:22px;border-radius:50%;background:#fffbeb;border:1px solid #fde68a;color:#b45309;font-weight:800;font-size:11.5px;text-align:center;line-height:20px;margin-right:8px}
+  .pit.bad .no{background:#fef2f2;border-color:#fca5a5;color:#991b1b}
+  .pit.good .no{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}
+  .pit b{color:#0f172a}
+  .pit p{margin:7px 0 0;font-size:13px;color:#475569;line-height:1.65}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+    .pit-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="sidebar">
+  <div class="logo">InfluxDB 3<span class="ver">GA 2025</span></div>
+  <div class="sub">Core / Enterprise · 时序数据库</div>
+  <a href="#intro">1. 项目简介</a>
+  <a class="sub-link" href="#m-why">1.1 三大动机</a>
+  <a class="sub-link" href="#m-line">1.2 产品线与场景</a>
+  <a class="sub-link" href="#m-run">1.3 快速启动</a>
+  <a href="#arch">2. 核心架构：FDAP 栈</a>
+  <a class="sub-link" href="#a-write">2.1 写入路径 diskless</a>
+  <a class="sub-link" href="#a-query">2.2 查询路径</a>
+  <a class="sub-link" href="#a-model">2.3 数据模型 v2→v3</a>
+  <a class="sub-link" href="#a-pe">2.4 Processing Engine</a>
+  <a href="#practice">3. 使用实战（Go）</a>
+  <a class="sub-link" href="#p-go">3.1 写入与查询</a>
+  <a class="sub-link" href="#p-http">3.2 HTTP API</a>
+  <a class="sub-link" href="#p-cli">3.3 管理命令</a>
+  <a href="#cve">4. Core vs Enterprise</a>
+  <a class="sub-link" href="#cve-limit">4.1 432 限制的本质</a>
+  <a href="#timeline">5. 版本演进</a>
+  <a href="#pitfalls">6. 常见坑与最佳实践</a>
+  <a href="#summary">7. 选型小结</a>
+</nav>
+
+<main>
+
+<div class="hero">
+  <h1>InfluxDB 3（Core / Enterprise）</h1>
+  <p><b>Rust 重写 · FDAP 架构 · SQL 查询 · 对象存储优先</b> —— InfluxData 历时四年从零重写的新世代时序平台：近乎无限的基数支持、开放列式格式与标准 SQL 查询。</p>
+  <div class="meta">
+    <span>Core 开源 · MIT/Apache-2</span>
+    <span>Parquet + DataFusion</span>
+    <span>无限基数</span>
+    <span>Processing Engine</span>
+    <span>GA 2025.4</span>
+  </div>
+</div>
+
+<!-- ============ 1 简介 ============ -->
+<section id="intro">
+  <h2>1. 项目简介<span class="lvl b">入门</span></h2>
+  <p>InfluxDB 3 是 InfluxData 历时四年多、用 Rust 从零重写的时序数据库（仓库 <code>github.com/influxdata/influxdb</code>，2025.4 GA）。它没有延续 v2 的「TSM 引擎 + Flux 语言 + TSI 索引」自研路线，而是整体迁移到 Apache 开放分析生态——动机来自用户呼声最高的三个能力：</p>
+
+  <h3 id="m-why">1.1 三大动机</h3>
+  <div class="feature-grid">
+    <div class="feature"><span class="f-icon">♾️</span><b>无限基数</b><p>v2 的 TSI 索引在高基数下内存爆炸；v3 列式架构让 tag 组合数不再是性能枷锁。</p></div>
+    <div class="feature"><span class="f-icon">🪣</span><b>历史数据放对象存储</b><p>冷数据沉到 S3 等廉价存储，同时保持可查询——成本与查询能力兼得。</p></div>
+    <div class="feature"><span class="f-icon">📜</span><b>标准 SQL</b><p>弃用自研 Flux，查询语言回归工业标准，BI / 分析工具直接对接。</p></div>
+  </div>
+
+  <div class="figure">
+    <svg viewBox="0 0 880 424" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs><marker id="f0a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0891b2"/></marker></defs>
+      <rect x="25" y="28" width="330" height="336" rx="14" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.6"/>
+      <text x="190" y="58" text-anchor="middle" font-size="14" font-weight="800" fill="#991b1b">InfluxDB 2.x —— 自研孤岛</text>
+      <rect x="50" y="72" width="280" height="46" rx="8" fill="#ffffff" stroke="#fecaca"/>
+      <text x="190" y="92" text-anchor="middle" font-size="12.5" font-weight="700" fill="#991b1b">TSM 存储引擎</text>
+      <text x="190" y="109" text-anchor="middle" font-size="10.5" fill="#b91c1c">行式 · 为时序定制</text>
+      <rect x="50" y="126" width="280" height="46" rx="8" fill="#ffffff" stroke="#fecaca"/>
+      <text x="190" y="146" text-anchor="middle" font-size="12.5" font-weight="700" fill="#991b1b">TSI 内存索引</text>
+      <text x="190" y="163" text-anchor="middle" font-size="10.5" fill="#b91c1c">高基数 → 内存爆炸 💥</text>
+      <rect x="50" y="180" width="280" height="46" rx="8" fill="#ffffff" stroke="#fecaca"/>
+      <text x="190" y="200" text-anchor="middle" font-size="12.5" font-weight="700" fill="#991b1b">Flux 自研语言</text>
+      <text x="190" y="217" text-anchor="middle" font-size="10.5" fill="#b91c1c">学习与生态成本高</text>
+      <rect x="50" y="234" width="280" height="46" rx="8" fill="#ffffff" stroke="#fecaca"/>
+      <text x="190" y="254" text-anchor="middle" font-size="12.5" font-weight="700" fill="#991b1b">本地盘绑定</text>
+      <text x="190" y="271" text-anchor="middle" font-size="10.5" fill="#b91c1c">扩容与弹性受限</text>
+      <text x="190" y="318" text-anchor="middle" font-size="12.5" font-weight="700" fill="#dc2626">tag 组合数 = 性能枷锁</text>
+      <rect x="525" y="28" width="330" height="336" rx="14" fill="#ecfeff" stroke="#0891b2" stroke-width="2"/>
+      <text x="690" y="58" text-anchor="middle" font-size="14" font-weight="800" fill="#155e75">InfluxDB 3 —— 开放生态</text>
+      <rect x="550" y="72" width="280" height="46" rx="8" fill="#ffffff" stroke="#67e8f9"/>
+      <text x="690" y="92" text-anchor="middle" font-size="12.5" font-weight="700" fill="#155e75">Parquet 列式存储</text>
+      <text x="690" y="109" text-anchor="middle" font-size="10.5" fill="#0e7490">开放格式 · 出湖即用</text>
+      <rect x="550" y="126" width="280" height="46" rx="8" fill="#ffffff" stroke="#67e8f9"/>
+      <text x="690" y="146" text-anchor="middle" font-size="12.5" font-weight="700" fill="#155e75">DataFusion + Arrow</text>
+      <text x="690" y="163" text-anchor="middle" font-size="10.5" fill="#0e7490">向量化 SQL 查询引擎</text>
+      <rect x="550" y="180" width="280" height="46" rx="8" fill="#ffffff" stroke="#67e8f9"/>
+      <text x="690" y="200" text-anchor="middle" font-size="12.5" font-weight="700" fill="#155e75">标准 SQL</text>
+      <text x="690" y="217" text-anchor="middle" font-size="10.5" fill="#0e7490">JOIN · 窗口函数 · CTE</text>
+      <rect x="550" y="234" width="280" height="46" rx="8" fill="#ffffff" stroke="#67e8f9"/>
+      <text x="690" y="254" text-anchor="middle" font-size="12.5" font-weight="700" fill="#155e75">对象存储优先</text>
+      <text x="690" y="271" text-anchor="middle" font-size="10.5" fill="#0e7490">S3 / MinIO 冷热分层</text>
+      <text x="690" y="318" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0891b2">基数不再是索引负担</text>
+      <text x="440" y="92" text-anchor="middle" font-size="13.5" font-weight="800" fill="#155e75">① 无限基数</text>
+      <line x1="363" y1="110" x2="517" y2="110" stroke="#0891b2" stroke-width="2.2" marker-end="url(#f0a)"/>
+      <text x="440" y="130" text-anchor="middle" font-size="10.5" fill="#0e7490">列式 + Catalog 替代 TSI</text>
+      <text x="440" y="177" text-anchor="middle" font-size="13.5" font-weight="800" fill="#155e75">② 历史沉对象存储</text>
+      <line x1="363" y1="195" x2="517" y2="195" stroke="#0891b2" stroke-width="2.2" marker-end="url(#f0a)"/>
+      <text x="440" y="215" text-anchor="middle" font-size="10.5" fill="#0e7490">冷数据廉价且可查</text>
+      <text x="440" y="262" text-anchor="middle" font-size="13.5" font-weight="800" fill="#155e75">③ 标准 SQL</text>
+      <line x1="363" y1="280" x2="517" y2="280" stroke="#0891b2" stroke-width="2.2" marker-end="url(#f0a)"/>
+      <text x="440" y="300" text-anchor="middle" font-size="10.5" fill="#0e7490">弃 Flux · 回归工业标准</text>
+      <rect x="25" y="380" width="830" height="32" rx="9" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+      <text x="440" y="401" text-anchor="middle" font-size="12" fill="#475569">Rust 重写 · 同一内核两条产品线：Core（开源 · 近期数据引擎）/ Enterprise（完整平台：Compactor · 历史 · HA）</text>
+    </svg>
+    <figcaption>图 1 · v2 → v3 架构跃迁：三大动机——无限基数、历史沉对象存储、标准 SQL</figcaption>
+  </div>
+
+  <h3 id="m-line">1.2 两条产品线（同一内核）</h3>
+  <table>
+    <tr><th style="width:150px">版本</th><th style="width:170px">定位</th><th>关键差异</th></tr>
+    <tr><td><b>Core（开源）</b></td><td>高速「近期数据引擎」</td><td>单进程；内存中保留近期数据 + last cache；历史查询受 Parquet 文件数限制（默认 432 个文件 ≈ 72 小时 @ 默认 10 分钟文件粒度）；MIT / Apache-2 许可</td></tr>
+    <tr><td><b>Enterprise（商业）</b></td><td>完整平台</td><td>Compactor 后台压缩、长期历史查询、HA、多节点、增强安全</td></tr>
+  </table>
+  <p>典型场景：<span class="pill">DevOps / IoT 监控</span><span class="pill">AI Agent 可观测</span><span class="pill">高频传感数据</span><span class="pill">需要 SQL 直接分析时序</span></p>
+
+  <h3 id="m-run">1.3 快速启动</h3>
+  <pre><code class="lang-bash"># 下载 influxdb3 二进制（或 docker run influxdb:3-core）
+influxdb3 serve --node-id local01 \
+  --object-store file \
+  --data-dir ~/.influxdb3
+
+# 默认 HTTP :8181；写入 /api/v3/write_lp，查询走 SQL
+
+# Go 客户端
+go get github.com/InfluxCommunity/influxdb3-go/v2</code></pre>
+</section>
+
+<!-- ============ 2 核心架构 ============ -->
+<section id="arch">
+  <h2>2. 核心架构：FDAP 栈<span class="lvl m">中级</span></h2>
+  <p>v2 是「自研一切」（TSM 引擎 + Flux 语言），v3 是「站在开源分析生态上」：SQL、Flight SQL、与 pandas / Polars / DuckDB 的互操作几乎免费获得。四个 Apache 项目的首字母，自上而下拼成 <b>FDAP</b>：</p>
+
+  <div class="figure">
+    <svg viewBox="0 0 880 400" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs><marker id="f1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+      <line x1="100" y1="48" x2="100" y2="340" stroke="#94a3b8" stroke-width="2" marker-end="url(#f1a)"/>
+      <text transform="rotate(-90 72 194)" x="72" y="194" text-anchor="middle" font-size="12" fill="#64748b">查询下推 · 谓词与列裁剪直达文件</text>
+      <rect x="140" y="30" width="440" height="70" rx="12" fill="#ffffff" stroke="#0891b2" stroke-width="2"/>
+      <circle cx="178" cy="65" r="21" fill="#06b6d4"/><text x="178" y="72" text-anchor="middle" font-size="19" font-weight="800" fill="#fff">F</text>
+      <text x="212" y="58" font-size="15" font-weight="700" fill="#0f172a">Apache Flight / Flight SQL</text>
+      <text x="212" y="80" font-size="11.5" fill="#64748b">高性能列式传输协议（gRPC）</text>
+      <line x1="584" y1="65" x2="614" y2="65" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="620" y="69" font-size="11.5" font-weight="600" fill="#0e7490">DuckDB / pandas / Polars 可直连</text>
+      <rect x="140" y="112" width="440" height="70" rx="12" fill="#ffffff" stroke="#0891b2" stroke-width="2"/>
+      <circle cx="178" cy="147" r="21" fill="#0891b2"/><text x="178" y="154" text-anchor="middle" font-size="19" font-weight="800" fill="#fff">D</text>
+      <text x="212" y="140" font-size="15" font-weight="700" fill="#0f172a">Apache DataFusion</text>
+      <text x="212" y="162" font-size="11.5" fill="#64748b">Rust SQL 查询引擎 · 向量化执行</text>
+      <line x1="584" y1="147" x2="614" y2="147" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="620" y="151" font-size="11.5" font-weight="600" fill="#0e7490">JOIN · 窗口函数 · CTE 全支持</text>
+      <rect x="140" y="194" width="440" height="70" rx="12" fill="#ffffff" stroke="#0891b2" stroke-width="2"/>
+      <circle cx="178" cy="229" r="21" fill="#0e7490"/><text x="178" y="236" text-anchor="middle" font-size="19" font-weight="800" fill="#fff">A</text>
+      <text x="212" y="222" font-size="15" font-weight="700" fill="#0f172a">Apache Arrow</text>
+      <text x="212" y="244" font-size="11.5" fill="#64748b">内存列式格式 · 组件间零拷贝共享</text>
+      <line x1="584" y1="229" x2="614" y2="229" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="620" y="233" font-size="11.5" font-weight="600" fill="#0e7490">零拷贝 · 跨语言统一内存布局</text>
+      <rect x="140" y="276" width="440" height="70" rx="12" fill="#ffffff" stroke="#0891b2" stroke-width="2"/>
+      <circle cx="178" cy="311" r="21" fill="#155e75"/><text x="178" y="318" text-anchor="middle" font-size="19" font-weight="800" fill="#fff">P</text>
+      <text x="212" y="304" font-size="15" font-weight="700" fill="#0f172a">Apache Parquet</text>
+      <text x="212" y="326" font-size="11.5" fill="#64748b">磁盘 / 对象存储列式文件格式</text>
+      <line x1="584" y1="311" x2="614" y2="311" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="620" y="315" font-size="11.5" font-weight="600" fill="#0e7490">S3 / R2 / MinIO / 本地 file</text>
+      <rect x="25" y="362" width="830" height="32" rx="9" fill="#ecfeff" stroke="#a5f3fc" stroke-width="1.4"/>
+      <text x="440" y="383" text-anchor="middle" font-size="12.5" font-weight="600" fill="#155e75">v2「自研一切」（TSM 引擎 + Flux 语言） → v3「站在开源分析生态上」—— 互操作性几乎免费获得</text>
+    </svg>
+    <figcaption>图 2 · FDAP 栈分层：Flight 传输 → DataFusion 查询 → Arrow 内存 → Parquet 存储，全部构建在 Apache 开放生态之上</figcaption>
+  </div>
+
+  <h3 id="a-write">2.1 写入路径（diskless 架构）</h3>
+  <div class="figure">
+    <svg viewBox="0 0 880 474" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs>
+        <marker id="f2a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker>
+        <marker id="f2g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#059669"/></marker>
+        <marker id="f2am" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d97706"/></marker>
+      </defs>
+      <rect x="40" y="28" width="175" height="56" rx="10" fill="#cffafe" stroke="#0891b2" stroke-width="1.8"/>
+      <text x="127.5" y="52" text-anchor="middle" font-size="13" font-weight="700" fill="#155e75">Line Protocol 写入</text>
+      <text x="127.5" y="71" text-anchor="middle" font-size="10.5" fill="#0e7490" font-family="Consolas,monospace">POST /api/v3/write_lp</text>
+      <line x1="219" y1="56" x2="259" y2="56" stroke="#64748b" stroke-width="2" marker-end="url(#f2a)"/>
+      <rect x="265" y="28" width="150" height="56" rx="10" fill="#ffffff" stroke="#0891b2" stroke-width="1.8"/>
+      <text x="340" y="52" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">Router / Server</text>
+      <text x="340" y="71" text-anchor="middle" font-size="10.5" fill="#64748b">Rust 单进程</text>
+      <line x1="340" y1="84" x2="340" y2="116" stroke="#64748b" stroke-width="2" marker-end="url(#f2a)"/>
+      <rect x="265" y="122" width="150" height="60" rx="10" fill="#ffffff" stroke="#0891b2" stroke-width="1.8"/>
+      <text x="340" y="146" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">WAL 预写日志</text>
+      <text x="340" y="166" text-anchor="middle" font-size="10.5" fill="#64748b">本地盘 · 近实时可查询</text>
+      <line x1="419" y1="152" x2="469" y2="152" stroke="#64748b" stroke-width="2" marker-end="url(#f2a)"/>
+      <rect x="475" y="122" width="190" height="60" rx="10" fill="#cffafe" stroke="#0891b2" stroke-width="1.8"/>
+      <text x="570" y="146" text-anchor="middle" font-size="13" font-weight="700" fill="#155e75">内存 Write Buffer</text>
+      <text x="570" y="166" text-anchor="middle" font-size="10.5" fill="#0e7490">按时间分桶</text>
+      <line x1="570" y1="186" x2="570" y2="234" stroke="#64748b" stroke-width="2" marker-end="url(#f2a)"/>
+      <text x="584" y="204" font-size="11" font-weight="600" fill="#b45309">每 gen1 周期（默认 10 分钟）</text>
+      <text x="584" y="220" font-size="10.5" fill="#b45309">内存数据整块转成 Parquet</text>
+      <rect x="475" y="240" width="190" height="68" rx="10" fill="#155e75" stroke="#0e7490" stroke-width="2"/>
+      <text x="570" y="266" text-anchor="middle" font-size="13.5" font-weight="700" fill="#ffffff">Parquet gen1 文件</text>
+      <text x="570" y="287" text-anchor="middle" font-size="10.5" fill="#a5f3fc">对象存储 S3 / R2 / MinIO / file</text>
+      <rect x="720" y="240" width="135" height="68" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.8"/>
+      <text x="787.5" y="266" text-anchor="middle" font-size="12.5" font-weight="700" fill="#92400e">Catalog 元数据</text>
+      <text x="787.5" y="287" text-anchor="middle" font-size="10.5" fill="#b45309">库表 / 文件清单</text>
+      <line x1="669" y1="274" x2="716" y2="274" stroke="#d97706" stroke-width="1.8" marker-start="url(#f2am)" marker-end="url(#f2am)"/>
+      <text x="692" y="259" text-anchor="middle" font-size="10.5" fill="#b45309">登记</text>
+      <rect x="40" y="240" width="330" height="68" rx="10" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+      <text x="205" y="264" text-anchor="middle" font-size="12.5" font-weight="700" fill="#065f46">近期数据查询 ⚡</text>
+      <text x="205" y="284" text-anchor="middle" font-size="10.5" fill="#047857">直接命中 WAL / 内存，不碰对象存储</text>
+      <line x1="300" y1="186" x2="240" y2="234" stroke="#059669" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#f2g)"/>
+      <text x="222" y="208" text-anchor="middle" font-size="11" font-weight="600" fill="#059669">最近几分钟</text>
+      <rect x="40" y="362" width="330" height="62" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+      <text x="205" y="386" text-anchor="middle" font-size="12.5" font-weight="700" fill="#334155">Core：没有后台 Compactor</text>
+      <text x="205" y="406" text-anchor="middle" font-size="10.5" fill="#64748b">gen1 即终点 → 查询可触碰的文件数受限（默认 432）</text>
+      <rect x="475" y="362" width="380" height="62" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.8" stroke-dasharray="7 5"/>
+      <text x="665" y="386" text-anchor="middle" font-size="13" font-weight="700" fill="#92400e">Enterprise：Compactor 后台压缩</text>
+      <text x="665" y="406" text-anchor="middle" font-size="10.5" fill="#b45309">gen1 小文件 → gen2 / gen3 大文件（历史查询性能与成本的关键）</text>
+      <line x1="570" y1="312" x2="570" y2="356" stroke="#d97706" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#f2am)"/>
+      <text x="584" y="338" font-size="11" font-weight="600" fill="#b45309">仅 Enterprise</text>
+      <rect x="25" y="440" width="830" height="30" rx="9" fill="#ecfeff" stroke="#a5f3fc" stroke-width="1.4"/>
+      <text x="440" y="460" text-anchor="middle" font-size="12" fill="#155e75">diskless：持久状态全部放对象存储 + WAL，进程无状态化 —— K8s 中挂掉重启即恢复</text>
+    </svg>
+    <figcaption>图 3 · 写入路径（diskless）：WAL + 内存缓冲承接近期数据，每 10 分钟整块转成 Parquet 落对象存储；Enterprise 的 Compactor 再合并出 gen2 / gen3</figcaption>
+  </div>
+
+  <ul>
+    <li><b>近期数据</b>在 WAL 与内存 buffer 中，查询「最近几分钟」不碰对象存储——低延迟；</li>
+    <li>每 10 分钟把内存数据<b>整块转成 Parquet</b>（gen1 文件）写入对象存储；Catalog 记录「哪段时间在哪个文件」；</li>
+    <li><b>Enterprise 的 Compactor</b> 把小 gen1 文件合并成更大的 gen2 / gen3 层——历史查询性能与成本的关键（Core 没有后台 Compactor，所以查询触碰的文件数受限）；</li>
+    <li><b>diskless</b>：持久状态可全部放对象存储，进程本身无状态化。</li>
+  </ul>
+  <div class="tip"><b>💡 K8s 友好：</b><span>diskless 架构下进程挂了重启即恢复——持久状态全在对象存储（+ 本地 WAL），天然适合容器编排。</span></div>
+
+  <h3 id="a-query">2.2 查询路径</h3>
+  <div class="figure">
+    <svg viewBox="0 0 880 426" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs>
+        <marker id="f3a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker>
+        <marker id="f3am" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d97706"/></marker>
+      </defs>
+      <rect x="25" y="130" width="135" height="78" rx="10" fill="#cffafe" stroke="#0891b2" stroke-width="1.8"/>
+      <text x="92.5" y="158" text-anchor="middle" font-size="13.5" font-weight="700" fill="#155e75">SQL 查询</text>
+      <text x="92.5" y="178" text-anchor="middle" font-size="10.5" fill="#0e7490">Flight SQL / HTTP</text>
+      <text x="92.5" y="195" text-anchor="middle" font-size="10.5" fill="#0e7490">兼容 InfluxQL</text>
+      <line x1="164" y1="169" x2="184" y2="169" stroke="#64748b" stroke-width="2" marker-end="url(#f3a)"/>
+      <rect x="190" y="130" width="140" height="78" rx="10" fill="#ffffff" stroke="#0891b2" stroke-width="1.8"/>
+      <text x="260" y="158" text-anchor="middle" font-size="13.5" font-weight="700" fill="#0f172a">DataFusion</text>
+      <text x="260" y="178" text-anchor="middle" font-size="10.5" fill="#64748b">生成查询计划</text>
+      <text x="260" y="195" text-anchor="middle" font-size="10.5" fill="#64748b">向量化执行</text>
+      <rect x="365" y="42" width="190" height="76" rx="10" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+      <text x="460" y="68" text-anchor="middle" font-size="13" font-weight="700" fill="#065f46">内存 Buffer / WAL</text>
+      <text x="460" y="88" text-anchor="middle" font-size="10.5" fill="#047857">近期数据 · 低延迟</text>
+      <text x="460" y="106" text-anchor="middle" font-size="10.5" font-weight="700" fill="#059669">⚡ 最近几分钟不碰对象存储</text>
+      <rect x="365" y="220" width="190" height="76" rx="10" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.8"/>
+      <text x="460" y="246" text-anchor="middle" font-size="13" font-weight="700" fill="#075985">Parquet 文件</text>
+      <text x="460" y="266" text-anchor="middle" font-size="10.5" fill="#0369a1">对象存储 · 历史数据</text>
+      <text x="460" y="284" text-anchor="middle" font-size="10.5" fill="#0369a1">由 Catalog 定位</text>
+      <line x1="334" y1="152" x2="359" y2="84" stroke="#64748b" stroke-width="2" marker-end="url(#f3a)"/>
+      <line x1="334" y1="186" x2="359" y2="254" stroke="#64748b" stroke-width="2" marker-end="url(#f3a)"/>
+      <line x1="559" y1="84" x2="579" y2="152" stroke="#64748b" stroke-width="2" marker-end="url(#f3a)"/>
+      <line x1="559" y1="254" x2="579" y2="186" stroke="#64748b" stroke-width="2" marker-end="url(#f3a)"/>
+      <rect x="585" y="130" width="135" height="78" rx="10" fill="#ffffff" stroke="#0891b2" stroke-width="1.8"/>
+      <text x="652.5" y="158" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">向量化扫描</text>
+      <text x="652.5" y="178" text-anchor="middle" font-size="10.5" fill="#64748b">谓词下推</text>
+      <text x="652.5" y="195" text-anchor="middle" font-size="10.5" fill="#64748b">只读所需列</text>
+      <line x1="724" y1="169" x2="739" y2="169" stroke="#64748b" stroke-width="2" marker-end="url(#f3a)"/>
+      <rect x="745" y="130" width="110" height="78" rx="10" fill="#155e75" stroke="#0e7490" stroke-width="2"/>
+      <text x="800" y="158" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">Arrow 结果</text>
+      <text x="800" y="178" text-anchor="middle" font-size="10.5" fill="#a5f3fc">零拷贝返回</text>
+      <text x="800" y="195" text-anchor="middle" font-size="10.5" fill="#a5f3fc">客户端 / 引擎</text>
+      <rect x="190" y="310" width="190" height="58" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.8"/>
+      <text x="285" y="334" text-anchor="middle" font-size="12.5" font-weight="700" fill="#92400e">Catalog 元数据</text>
+      <text x="285" y="354" text-anchor="middle" font-size="10.5" fill="#b45309">定位涉及哪些 Parquet 文件</text>
+      <line x1="260" y1="212" x2="260" y2="304" stroke="#d97706" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#f3am)"/>
+      <rect x="25" y="382" width="830" height="32" rx="9" fill="#ecfdf5" stroke="#059669" stroke-width="1.4"/>
+      <text x="440" y="403" text-anchor="middle" font-size="12.5" font-weight="600" fill="#065f46">⚡ 最近几分钟的查询只命中 WAL / 内存 Buffer —— 完全不碰对象存储，低延迟由此而来</text>
+    </svg>
+    <figcaption>图 4 · 查询路径：DataFusion 经 Catalog 定位文件；近期数据直接命中内存 / WAL，向量化扫描后以 Arrow 批返回</figcaption>
+  </div>
+
+  <ul>
+    <li>SQL 完整语法：JOIN、窗口函数、CTE——v2 Flux 里费劲的 join 现在是一句 SQL；</li>
+    <li>兼容 <b>InfluxQL</b>（v1 语法子集）帮助迁移；</li>
+    <li>多个查询引擎可经 Arrow Flight 直连 InfluxDB 3 的 Parquet 生态——DuckDB 查 S3 上的 InfluxDB Parquet 是官方演示场景。</li>
+  </ul>
+
+  <pre><code class="lang-sql">-- 窗口聚合：v2 Flux 里费劲的 join / 分窗，v3 是一句 SQL
+SELECT host,
+       DATE_BIN(INTERVAL '5 minutes', time, TIMESTAMP '1970-01-01T00:00:00Z') AS window,
+       AVG(usage_idle) AS idle
+FROM cpu
+WHERE time &gt; NOW() - INTERVAL '1 hour'
+GROUP BY host, window
+ORDER BY window;</code></pre>
+
+  <div class="warn"><b>⚠️ Flux 不支持：</b><span>v3 无法运行 Flux 查询，官方迁移工具负责转换常见查询——存量 Flux 资产要提前评估（见第 5、6 节）。</span></div>
+
+  <h3 id="a-model">2.3 数据模型：与 v2 的对照</h3>
+  <table>
+    <tr><th style="width:190px">v2</th><th style="width:170px">v3</th><th>说明</th></tr>
+    <tr><td>Organization</td><td>（服务级配置）</td><td>v3 简化</td></tr>
+    <tr><td>Bucket</td><td><b>Database</b></td><td>概念合并：一个 database 即一个库</td></tr>
+    <tr><td>Measurement</td><td><b>Table</b></td><td>表；tags / fields 即列</td></tr>
+    <tr><td>Series / TSI 索引</td><td>（无 Series 概念）</td><td>列式 + Catalog，基数不再是索引负担</td></tr>
+  </table>
+
+  <p>Line Protocol 仍是写入协议：<code>cpu,host=node1 usage_idle=91.2 1735689600000000000</code>，各片段落到 v3 的形态：</p>
+  <table>
+    <tr><th style="width:230px">Line Protocol 片段</th><th>落到 v3 的形态</th></tr>
+    <tr><td><code>cpu</code></td><td>Table 名</td></tr>
+    <tr><td><code>host=node1</code></td><td>普通字符串列（tag）</td></tr>
+    <tr><td><code>usage_idle=91.2</code></td><td>类型化数值列（field）</td></tr>
+    <tr><td><code>1735689600000000000</code></td><td><code>time</code> 列</td></tr>
+  </table>
+  <p>schema 可动态演化：新的 tag / field 以新列形式出现（宽稀疏表），无需 DDL。</p>
+
+  <h3 id="a-pe">2.4 Processing Engine：嵌入式 Python VM</h3>
+  <p>v3 内嵌 Python 虚拟机，<b>插件在数据写入路径上对 Arrow 批零拷贝执行</b>——这是 v2 Tasks 的官方继任者：</p>
+  <ul>
+    <li>触发器：WAL flush 事件 / 定时（cron）；</li>
+    <li>用途：降采样（替代 v2 Task）、异常检测、告警转发（webhook / PagerDuty）、数据清洗；</li>
+    <li>插件就是 Python 文件（官方标准插件库 + 自定义）。</li>
+  </ul>
+  <pre><code class="lang-python"># 处理引擎插件形态示意：对写入路径上的 Arrow 批直接处理
+def process_batch(batch, context):
+    if batch["cpu"].mean() &gt; 90:
+        context.alert("cpu high")</code></pre>
+</section>
+
+<!-- ============ 3 Go 实战 ============ -->
+<section id="practice">
+  <h2>3. 使用实战（Go）<span class="lvl b">初级</span></h2>
+  <p>以下示例基于官方 Go 客户端 <code>influxdb3-go/v2</code>；HTTP API 部分任何语言都能零依赖接入。</p>
+
+  <h3 id="p-go">3.1 写入与查询（influxdb3-go）</h3>
+  <pre><code class="lang-go">client, err := influxdb3.New(influxdb3.ClientConfig{
+    Host:       "http://localhost:8181",
+    Token:      "my-token",
+    Database:   "metrics",
+})
+defer client.Close()
+
+// 写入 Line Protocol
+points := []string{
+    "cpu,host=node1,region=cn usage_idle=91.2,usage_user=6.1",
+    "cpu,host=node2,region=cn usage_idle=88.7,usage_user=7.9",
+}
+err = client.Write(context.Background(), points)
+
+// SQL 查询：DATE_BIN 按 5 分钟分窗聚合
+query := `SELECT host, DATE_BIN(INTERVAL '5 minutes', time, TIMESTAMP '1970-01-01T00:00:00Z')
+                 AS window, AVG(usage_idle) AS idle
+          FROM cpu WHERE time &gt; NOW() - INTERVAL '1 hour'
+          GROUP BY host, window ORDER BY window`
+it, err := client.Query(context.Background(), query)
+for it.Next() {
+    row := it.Value()
+    fmt.Println(row["host"], row["window"], row["idle"])
+}</code></pre>
+
+  <h3 id="p-http">3.2 HTTP API（任何语言零依赖接入）</h3>
+  <pre><code class="lang-bash"># 写入（Line Protocol）
+curl -X POST "http://localhost:8181/api/v3/write_lp?db=metrics&amp;precision=nanosecond" \
+  -H "Authorization: Bearer $TOKEN" \
+  --data-binary 'cpu,host=node1 usage_idle=91.2'
+
+# SQL 查询（可返回 JSON / Arrow / CSV / Parquet 格式）
+curl -X POST "http://localhost:8181/api/v3/query_sql" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"db":"metrics","q":"SELECT host, AVG(usage_idle) FROM cpu WHERE time &gt; NOW() - INTERVAL 1 HOUR GROUP BY host"}'</code></pre>
+
+  <h3 id="p-cli">3.3 管理命令</h3>
+  <pre><code class="lang-bash"># 建库 / 令牌 / 查询
+influxdb3 create database iot --retention-period 30d
+influxdb3 create token --all-databases
+influxdb3 query "SELECT * FROM cpu LIMIT 5" --database metrics
+
+# 启用处理引擎插件（WAL flush / cron 定时触发）
+influxdb3 enable --plugin downsample.py --trigger tables --database metrics
+influxdb3 plugin list</code></pre>
+</section>
+
+<!-- ============ 4 Core vs Enterprise ============ -->
+<section id="cve">
+  <h2>4. Core vs Enterprise：选型必读<span class="lvl m">中级</span></h2>
+  <p>同一内核、两条产品线，最大的分界在<b>历史查询与集群能力</b>：</p>
+  <table>
+    <tr><th style="width:220px">能力</th><th>Core（开源）</th><th>Enterprise</th></tr>
+    <tr><td>近期数据查询（WAL / 内存 / last cache）</td><td>✅ 低延迟</td><td>✅</td></tr>
+    <tr><td>历史查询范围</td><td>受 <code>--query-file-limit</code> 限制（默认 432 个 Parquet 文件 ≈ 3 天 @10min 粒度，可调大但吃内存）</td><td>✅ Compactor 合并 + 完整历史</td></tr>
+    <tr><td>高可用 / 多节点</td><td>❌ 单进程</td><td>✅</td></tr>
+    <tr><td>后台 Compaction</td><td>❌</td><td>✅</td></tr>
+    <tr><td>安全增强（审计等）</td><td>基础</td><td>✅</td></tr>
+  </table>
+
+  <div class="figure">
+    <svg viewBox="0 0 880 392" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs><marker id="f5am" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d97706"/></marker></defs>
+      <rect x="25" y="25" width="830" height="305" rx="16" fill="#fffbeb" stroke="#d97706" stroke-width="1.8" stroke-dasharray="8 5"/>
+      <text x="48" y="54" font-size="14" font-weight="800" fill="#92400e">Enterprise（商业版）—— 完整平台</text>
+      <text x="832" y="54" text-anchor="end" font-size="11.5" fill="#b45309">＝ Core 全部能力 ＋ 右侧增强</text>
+      <rect x="70" y="78" width="520" height="232" rx="14" fill="#ecfeff" stroke="#0891b2" stroke-width="2"/>
+      <text x="92" y="105" font-size="13.5" font-weight="800" fill="#155e75">Core（开源）—— 近期数据引擎 · 单进程</text>
+      <rect x="92" y="120" width="232" height="58" rx="9" fill="#ffffff" stroke="#0891b2" stroke-width="1.6"/>
+      <text x="208" y="143" text-anchor="middle" font-size="12.5" font-weight="700" fill="#155e75">WAL 预写日志</text>
+      <text x="208" y="162" text-anchor="middle" font-size="10.5" fill="#0e7490">本地盘 · 近实时可查询</text>
+      <rect x="338" y="120" width="232" height="58" rx="9" fill="#ffffff" stroke="#0891b2" stroke-width="1.6"/>
+      <text x="454" y="143" text-anchor="middle" font-size="12.5" font-weight="700" fill="#155e75">内存 Write Buffer</text>
+      <text x="454" y="162" text-anchor="middle" font-size="10.5" fill="#0e7490">按时间分桶</text>
+      <rect x="92" y="188" width="232" height="58" rx="9" fill="#ffffff" stroke="#0891b2" stroke-width="1.6"/>
+      <text x="208" y="211" text-anchor="middle" font-size="12.5" font-weight="700" fill="#155e75">Last Cache</text>
+      <text x="208" y="230" text-anchor="middle" font-size="10.5" fill="#0e7490">最新值缓存 · 秒级响应</text>
+      <rect x="338" y="188" width="232" height="58" rx="9" fill="#ffffff" stroke="#0891b2" stroke-width="1.6"/>
+      <text x="454" y="211" text-anchor="middle" font-size="12.5" font-weight="700" fill="#155e75">gen1 Parquet ×N</text>
+      <text x="454" y="230" text-anchor="middle" font-size="10.5" fill="#0e7490">默认上限 432 个文件</text>
+      <text x="330" y="280" text-anchor="middle" font-size="11" fill="#0e7490">近实时查询全部命中内存与少量文件 —— 低延迟</text>
+      <rect x="625" y="78" width="215" height="52" rx="9" fill="#ffffff" stroke="#d97706" stroke-width="1.6"/>
+      <text x="732.5" y="98" text-anchor="middle" font-size="12.5" font-weight="700" fill="#92400e">Compactor 后台压缩</text>
+      <text x="732.5" y="116" text-anchor="middle" font-size="10.5" fill="#b45309">gen1 → gen2 / gen3 合并</text>
+      <rect x="625" y="140" width="215" height="52" rx="9" fill="#ffffff" stroke="#d97706" stroke-width="1.6"/>
+      <text x="732.5" y="160" text-anchor="middle" font-size="12.5" font-weight="700" fill="#92400e">完整历史查询</text>
+      <text x="732.5" y="178" text-anchor="middle" font-size="10.5" fill="#b45309">不受文件数限制</text>
+      <rect x="625" y="202" width="215" height="52" rx="9" fill="#ffffff" stroke="#d97706" stroke-width="1.6"/>
+      <text x="732.5" y="222" text-anchor="middle" font-size="12.5" font-weight="700" fill="#92400e">HA / 多节点</text>
+      <text x="732.5" y="240" text-anchor="middle" font-size="10.5" fill="#b45309">企业级容错</text>
+      <rect x="625" y="264" width="215" height="52" rx="9" fill="#ffffff" stroke="#d97706" stroke-width="1.6"/>
+      <text x="732.5" y="284" text-anchor="middle" font-size="12.5" font-weight="700" fill="#92400e">安全增强</text>
+      <text x="732.5" y="302" text-anchor="middle" font-size="10.5" fill="#b45309">审计日志等</text>
+      <line x1="574" y1="210" x2="619" y2="108" stroke="#d97706" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#f5am)"/>
+      <rect x="25" y="345" width="830" height="34" rx="9" fill="#fff7ed" stroke="#fdba74" stroke-width="1.4"/>
+      <text x="440" y="367" text-anchor="middle" font-size="12" fill="#9a3412">分界线：单次查询可触碰的 Parquet 文件数 —— Core 默认 432（可调大但吃内存），Enterprise 经 Compactor 合并后不再是限制</text>
+    </svg>
+    <figcaption>图 5 · Core 与 Enterprise 的边界：Core 是「近期数据引擎」，Enterprise 在其上增加 Compactor、完整历史、HA 与安全增强</figcaption>
+  </div>
+
+  <h3 id="cve-limit">4.1 「72 小时」限制的本质</h3>
+  <div class="tip"><b>💡 别被「72 小时」误导：</b><span>Core 的限制本质是<b>单次查询可触碰的 Parquet 文件数</b>（432），不是时间硬编码——432 × 10 分钟 ≈ 72 小时只是默认文件粒度下的换算。写入持续、查询范围小的时候，Core 存得远不止 72 小时的数据，只是查询受限。需要「长期廉价保留 + 全量历史查询」→ Enterprise，或自行把 Parquet 交给 DuckDB / Spark 生态。</span></div>
+</section>
+
+<!-- ============ 5 版本演进 ============ -->
+<section id="timeline">
+  <h2>5. 版本演进速览<span class="lvl b">了解</span></h2>
+  <ul class="timeline">
+    <li><span class="t-date">2020–2024</span><b>IOx 项目</b>：验证 Arrow / Parquet 列式路线（v3 的技术前身）</li>
+    <li><span class="t-date">2025.1 → 2025.3</span><b>Alpha → Beta</b>：Rust 重写内核逐步开放试用</li>
+    <li><span class="t-date">2025.4</span><b>GA</b>：Core（开源）与 Enterprise 同时正式发布</li>
+    <li><span class="t-date">2025 全年</span><b>内核快速迭代</b>：last cache 优化、InfluxQL 兼容扩展、Processing Engine 插件生态丰富</li>
+    <li><span class="t-date">2026</span><b>Enterprise 新一代存储引擎</b>：<code>.pt</code> 文件格式、column families、Gorilla / delta-delta 压缩回归时序特化路线，<code>--upgrade-pacha-tree</code> 平滑迁移——解决 Parquet 通用格式在单序列高频查询上的短板</li>
+    <li><span class="t-date">3.x</span><b>Flux 正式终止</b>：v2→v3 迁移以 bucket→database 重写为主（官方迁移工具覆盖常见 Flux 查询）</li>
+  </ul>
+</section>
+
+<!-- ============ 6 常见坑 ============ -->
+<section id="pitfalls">
+  <h2>6. 常见坑与最佳实践<span class="lvl m">中级</span></h2>
+  <div class="pit-grid">
+    <div class="pit bad"><span class="no">1</span><b>Core 别当长期库用</b><p>Core 定位是「最近数据引擎」，把 90 天查询需求压给 Core 必然撞文件数限制——要么 Enterprise，要么把 Parquet 出湖给 DuckDB / Spark 等分析引擎。</p></div>
+    <div class="pit"><span class="no">2</span><b>tag / field 选型习惯保留</b><p>过滤列（tag）仍决定谓词下推效率；高基数不再是禁区，但会放大存储成本。</p></div>
+    <div class="pit"><span class="no">3</span><b>写入仍走 Line Protocol 批量化</b><p>单点 HTTP 写入的性能浪费与 v2 时代相同——攒批再写。</p></div>
+    <div class="pit"><span class="no">4</span><b>时间谓词必须带</b><p>无 time 过滤的查询会扫全部文件——SQL 方言没变，代价还在。</p></div>
+    <div class="pit good"><span class="no">5</span><b>对象存储选型</b><p>S3 / R2 / MinIO 均可（file 模式仅适合试验）；MinIO 是自托管常见组合。</p></div>
+    <div class="pit"><span class="no">6</span><b>内存管理</b><p>write buffer 与 last cache 常驻内存，容量规划按「写入速率 × gen1 周期」估算。</p></div>
+    <div class="pit good"><span class="no">7</span><b>吃足 Arrow 生态红利</b><p>分析场景直接用 DuckDB 查 Parquet、Python 走 Flight SQL 拿 Arrow 批——比 REST JSON 快一个量级。</p></div>
+    <div class="pit good"><span class="no">8</span><b>迁移策略</b><p>双写并行（v2 + v3）观察查询等价性；Flux 查询先用官方转换工具过一遍再人工修。</p></div>
+    <div class="pit good"><span class="no">9</span><b>版本跟进</b><p>3.x 迭代快，升级前读 changelog（Core 的配置项偶有更名）。</p></div>
+  </div>
+</section>
+
+<!-- ============ 7 选型小结 ============ -->
+<section id="summary">
+  <h2>7. 选型小结<span class="lvl b">决策</span></h2>
+  <table>
+    <tr><th style="width:300px">场景</th><th>建议</th></tr>
+    <tr><td>新监控 / 可观测项目、想用 SQL</td><td>InfluxDB 3 Core 起步</td></tr>
+    <tr><td>高基数（成千上万维度组合）事件数据</td><td>v3（v2 请直接跳过）</td></tr>
+    <tr><td>长保留 + 全量历史 + HA</td><td>InfluxDB 3 Enterprise；或 Core + Parquet 外部分析</td></tr>
+    <tr><td>已有大量 Flux 资产</td><td>先评估迁移成本；v2.7 维护期内规划</td></tr>
+    <tr><td>纯指标采集 + PromQL</td><td>Prometheus / VictoriaMetrics 更对口（v3 不是 PromQL 替代品）</td></tr>
+  </table>
+  <div class="tip"><b>💬 一句话：</b><span><b>v3 用「开放格式 + 标准 SQL」换掉了 v2 的「自研孤岛」</b>，代价是近期 / 历史的分层架构需要你理解 Core 与 Enterprise 的边界。</span></div>
+</section>
+
+<footer>InfluxDB 3（Core / Enterprise）技术指南 · 依据 influxdata/influxdb 官方资料整理 · 2026-09</footer>
+</main>
+</div>
+
+<script>
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+document.querySelectorAll('pre code.lang-go').forEach(function(block){
+  var src = esc(block.textContent);
+  var re = /(\/\/[^\n]*)|(`[^`]*`|"(?:\\.|[^"\\\n])*")|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any|ClientConfig|Client|context|fmt|influxdb3)\b|\b(\d[\d_]*(?:\.\d+)?)\b|([a-zA-Z_]\w*)(?=\()/g;
+  block.innerHTML = src.replace(re, function(m, c, s, kw, typ, num, fn){
+    if (c) return '<span class="cmt">'+m+'</span>';
+    if (s) return '<span class="str">'+m+'</span>';
+    if (kw) return '<span class="kw">'+m+'</span>';
+    if (typ) return '<span class="typ">'+m+'</span>';
+    if (num) return '<span class="num">'+m+'</span>';
+    if (fn) return '<span class="fn">'+m+'</span>';
+    return m;
+  });
+});
+
+document.querySelectorAll('pre code.lang-bash').forEach(function(block){
+  var src = esc(block.textContent);
+  var re = /(#[^\n]*)|('(?:[^'\\\n]|\\.)*'|"(?:\\.|[^"\\\n])*")|(--[a-zA-Z][\w-]*|\s-\w+)|(\$\{?[A-Za-z_]\w*\}?)|(\b(?:curl|docker|influxdb3)(?![\w-]))|\b(\d+(?:\.\d+)?)\b/g;
+  block.innerHTML = src.replace(re, function(m, c, s, fl, v, cmd, num){
+    if (c) return '<span class="cmt">'+m+'</span>';
+    if (s) return '<span class="str">'+m+'</span>';
+    if (fl) return '<span class="typ">'+m+'</span>';
+    if (v) return '<span class="num">'+m+'</span>';
+    if (cmd) return '<span class="fn">'+m+'</span>';
+    if (num) return '<span class="num">'+m+'</span>';
+    return m;
+  });
+});
+
+document.querySelectorAll('pre code.lang-sql').forEach(function(block){
+  var src = esc(block.textContent);
+  var re = /(--[^\n]*)|('(?:[^']|'')*')|\b(SELECT|FROM|WHERE|GROUP\s+BY|ORDER\s+BY|AS|AND|OR|NOT|NULL|JOIN|LEFT|RIGHT|INNER|OUTER|ON|WITH|LIMIT|OFFSET|HAVING|CASE|WHEN|THEN|ELSE|END|DISTINCT|INTERVAL|TIMESTAMP|DESC|ASC)\b|\b(DATE_BIN|AVG|COUNT|SUM|MIN|MAX|NOW)\b|\b(\d+(?:\.\d+)?)\b/g;
+  block.innerHTML = src.replace(re, function(m, c, s, kw, fn, num){
+    if (c) return '<span class="cmt">'+m+'</span>';
+    if (s) return '<span class="str">'+m+'</span>';
+    if (kw) return '<span class="kw">'+m+'</span>';
+    if (fn) return '<span class="fn">'+m+'</span>';
+    if (num) return '<span class="num">'+m+'</span>';
+    return m;
+  });
+});
+
+document.querySelectorAll('pre code.lang-python').forEach(function(block){
+  var src = esc(block.textContent);
+  var re = /(#[^\n]*)|("(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*')|\b(def|return|if|else|elif|for|while|import|from|as|class|pass|break|continue|True|False|None|lambda|with|try|except|raise|in|not|and|or)\b|\b(\d+(?:\.\d+)?)\b|([a-zA-Z_]\w*)(?=\()/g;
+  block.innerHTML = src.replace(re, function(m, c, s, kw, num, fn){
+    if (c) return '<span class="cmt">'+m+'</span>';
+    if (s) return '<span class="str">'+m+'</span>';
+    if (kw) return '<span class="kw">'+m+'</span>';
+    if (num) return '<span class="num">'+m+'</span>';
+    if (fn) return '<span class="fn">'+m+'</span>';
+    return m;
+  });
+});
+
+[['lang-go','Go'],['lang-bash','Shell'],['lang-sql','SQL'],['lang-python','Python']].forEach(function(p){
+  document.querySelectorAll('pre code.'+p[0]).forEach(function(b){
+    var label = document.createElement('span');
+    label.className = 'codelabel';
+    label.textContent = p[1];
+    b.closest('pre').appendChild(label);
+  });
+});
+</script>
+</body>
+</html>

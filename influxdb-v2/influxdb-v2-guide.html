@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InfluxDB 2.x（OSS）技术介绍与使用指南</title>
+<style>
+  :root{
+    --accent:#9333ea; --accent-light:#f3e8ff; --accent-dark:#6b21a8;
+    --bg:#faf7fd; --card:#ffffff; --border:#ece4f6; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#1e1030; --kw:#d8b4fe; --str:#86efac; --cmt:#8a7ba3; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#581c87 0%,#9333ea 55%,#a855f7 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(88,28,135,.28)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.92;font-size:15px;max-width:680px}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark)}
+  h4{font-size:15px;margin:16px 0 8px;color:#0f172a}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin-bottom:18px;box-shadow:0 1px 3px rgba(147,51,234,.06)}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#bcaadd;background:#2c1a4a;padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code{background:#f6effd;color:#7e22ce;border:1px solid #eadff8;padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(147,51,234,.06)}
+  th{background:#f3e8ff;color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:#fbf9fe}
+  .tip,.warn,.danger{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px;display:flex;gap:10px;align-items:flex-start}
+  .tip{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .tip b,.warn b,.danger b{flex-shrink:0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0;box-shadow:0 1px 3px rgba(147,51,234,.06)}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .feature-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:16px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:0 1px 3px rgba(147,51,234,.06)}
+  .feature .ft{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:6px}
+  .feature p{font-size:13px;color:#475569;margin:0;line-height:1.7}
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:#f3e8ff;color:#7e22ce;border:1px solid #e9d5ff}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+    .feature-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="sidebar">
+  <div class="logo">InfluxDB 2.x<span class="ver">v2.7</span></div>
+  <div class="sub">时序数据库 · TSM + Flux</div>
+  <a href="#intro">1. 项目简介</a>
+  <a class="sub-link" href="#intro-start">1.1 启动与初始化</a>
+  <a href="#model">2. 数据模型</a>
+  <a class="sub-link" href="#lp">2.1 Line Protocol</a>
+  <a class="sub-link" href="#card">2.2 Series 与基数</a>
+  <a class="sub-link" href="#obt">2.3 Bucket/Org/Token</a>
+  <a href="#storage">3. 存储与查询原理</a>
+  <a class="sub-link" href="#tsm">3.1 TSM 引擎</a>
+  <a class="sub-link" href="#flux">3.2 Flux 查询语言</a>
+  <a class="sub-link" href="#tasks">3.3 Tasks 任务调度</a>
+  <a href="#go">4. 使用实战（Go）</a>
+  <a class="sub-link" href="#go-write">4.1 写入</a>
+  <a class="sub-link" href="#go-query">4.2 查询（Flux）</a>
+  <a class="sub-link" href="#eco">4.3 生态工具</a>
+  <a href="#ops">5. 运维要点</a>
+  <a href="#pitfalls">6. 常见坑与最佳实践</a>
+  <a href="#v3">7. v2 → v3 演进对照</a>
+</nav>
+
+<main>
+
+<div class="hero">
+  <h1>InfluxDB 2.x（OSS）</h1>
+  <p>面向时序数据的开源数据库 v2 世代：<b>TSM 存储引擎</b> + <b>Flux 查询语言</b> + <b>Bucket / Token 模型</b>。DevOps 监控、IoT 传感、金融 tick 数据领域的老牌王者——单二进制内置 Web UI、任务调度与告警。</p>
+  <div class="meta">
+    <span>v2.7（维护期）</span>
+    <span>TSM 引擎</span>
+    <span>Flux 语言</span>
+    <span>Line Protocol</span>
+    <span>Org / Bucket / Token</span>
+  </div>
+</div>
+
+<!-- ============ 1 项目简介 ============ -->
+<section id="intro">
+  <h2>1. 项目简介<span class="lvl b">概念</span></h2>
+
+  <p>InfluxDB 是专门为<b>时序数据</b>（时间戳 + 指标 + 事件）设计的数据库，是 DevOps 监控、IoT 传感、金融 tick 数据领域的老牌王者。v2（2020）相对 v1 的革新在于四点：</p>
+
+  <div class="feature-grid">
+    <div class="feature"><div class="ft">🧩 一体化平台</div><p>数据库 + Web UI + 任务调度 + 告警（Alert）+ Dashboard 全部内置，单二进制交付。</p></div>
+    <div class="feature"><div class="ft">🔗 Flux 查询语言</div><p>函数式数据脚本语言，支持跨源 join 与复杂转换，表达力远超 v1 的 InfluxQL。</p></div>
+    <div class="feature"><div class="ft">🔑 Bucket / Org / Token 模型</div><p>取代 v1 的 database / retention policy，权限以 API Token 精细化发放。</p></div>
+    <div class="feature"><div class="ft">📦 三件套合一</div><p>统一 v1 时代 influxdb + kapacitor + chronograf 的职责，运维面大幅简化。</p></div>
+  </div>
+
+  <div class="danger"><b>⚠️ 版本现状（重要）：</b><span>InfluxData 的开发重心已转向 <b>v3</b>（Rust 重写）。2.7 处于<b>维护状态</b>（安全与缺陷修复），Flux 语言在新版本中不再支持。存量 2.x 集群仍大量运行于生产（含云厂商托管版本），学习价值在于运维存量系统与理解时序模型；<b>新项目建议评估 v3</b>（见第 7 章对照）。</span></div>
+
+  <p>仓库：<a href="https://github.com/influxdata/influxdb" target="_blank">github.com/influxdata/influxdb</a>　·　主线 2.7（维护期，后续演进为 3.x）</p>
+
+  <h3 id="intro-start">1.1 启动与初始化</h3>
+  <pre><code class="lang-bash">docker run -d -p 8086:8086 \
+  -v influxdb-data:/var/lib/influxdb2 \
+  influxdb:2.7
+# 打开 http://localhost:8086 完成初始化（org/bucket/admin token）
+
+# Go 客户端
+go get github.com/influxdata/influxdb-client-go/v2</code></pre>
+  <p>首次打开 <code>http://localhost:8086</code> 按引导完成初始化：创建 Organization、初始 Bucket 与 <b>admin token</b>（务必妥善保存）。Go 客户端实战见第 4 章。</p>
+</section>
+
+<!-- ============ 2 数据模型 ============ -->
+<section id="model">
+  <h2>2. 数据模型<span class="lvl b">核心</span></h2>
+  <p>三条主线：<b>Line Protocol</b> 定义一行数据长什么样，<b>Series / 基数</b> 决定系统的健康度，<b>Bucket / Org / Token</b> 划定数据与权限的边界。</p>
+
+  <h3 id="lp">2.1 Line Protocol（行协议）</h3>
+  <p>一切写入——无论来自 Telegraf、Go 客户端还是 v1 兼容 API——最终都是行协议文本：</p>
+  <pre><code class="lang-lp">measurement,tag1=v1,tag2=v2 field1=1.0,field2="x" 1735689600000000000</code></pre>
+
+  <div class="figure">
+    <svg viewBox="0 0 880 320" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs>
+        <marker id="lp1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9333ea"/></marker>
+        <marker id="lp2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0284c7"/></marker>
+        <marker id="lp3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#059669"/></marker>
+        <marker id="lp4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d97706"/></marker>
+      </defs>
+      <!-- 四段彩色标注 -->
+      <rect x="69" y="52" width="124" height="44" rx="10" fill="#f3e8ff" stroke="#9333ea" stroke-width="2"/>
+      <text x="131" y="80" text-anchor="middle" font-size="15" font-weight="700" font-family="Consolas,monospace" fill="#6b21a8">measurement</text>
+      <text x="201" y="80" text-anchor="middle" font-size="15" font-family="Consolas,monospace" fill="#94a3b8">,</text>
+      <rect x="209" y="52" width="158" height="44" rx="10" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+      <text x="288" y="80" text-anchor="middle" font-size="15" font-weight="700" font-family="Consolas,monospace" fill="#075985">tag1=v1,tag2=v2</text>
+      <rect x="391" y="52" width="200" height="44" rx="10" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+      <text x="491" y="80" text-anchor="middle" font-size="15" font-weight="700" font-family="Consolas,monospace" fill="#065f46">field1=1.0,field2="x"</text>
+      <rect x="615" y="52" width="196" height="44" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+      <text x="713" y="80" text-anchor="middle" font-size="15" font-weight="700" font-family="Consolas,monospace" fill="#92400e">1735689600000000000</text>
+      <!-- 分隔符说明 -->
+      <text x="201" y="114" text-anchor="middle" font-size="10.5" fill="#94a3b8">逗号</text>
+      <text x="379" y="114" text-anchor="middle" font-size="10.5" fill="#94a3b8">空格</text>
+      <text x="603" y="114" text-anchor="middle" font-size="10.5" fill="#94a3b8">空格</text>
+      <!-- 连接线 -->
+      <line x1="131" y1="96" x2="126" y2="146" stroke="#9333ea" stroke-width="1.8" marker-end="url(#lp1)"/>
+      <line x1="288" y1="96" x2="340" y2="146" stroke="#0284c7" stroke-width="1.8" marker-end="url(#lp2)"/>
+      <line x1="491" y1="96" x2="554" y2="146" stroke="#059669" stroke-width="1.8" marker-end="url(#lp3)"/>
+      <line x1="713" y1="96" x2="771" y2="146" stroke="#d97706" stroke-width="1.8" marker-end="url(#lp4)"/>
+      <!-- 说明框 1：measurement -->
+      <rect x="28" y="150" width="196" height="118" rx="12" fill="#faf5ff" stroke="#d8b4fe" stroke-width="1.6"/>
+      <text x="126" y="178" text-anchor="middle" font-size="13.5" font-weight="800" fill="#6b21a8">measurement · 测量名</text>
+      <text x="126" y="202" text-anchor="middle" font-size="12" fill="#475569">表概念的类比</text>
+      <text x="126" y="224" text-anchor="middle" font-size="11.5" font-family="Consolas,monospace" fill="#9333ea">cpu、http_request</text>
+      <text x="126" y="246" text-anchor="middle" font-size="11.5" fill="#64748b">回答「存的是什么」</text>
+      <!-- 说明框 2：tag -->
+      <rect x="242" y="150" width="196" height="118" rx="12" fill="#f0f9ff" stroke="#7dd3fc" stroke-width="1.6"/>
+      <text x="340" y="178" text-anchor="middle" font-size="13.5" font-weight="800" fill="#075985">tag · 索引维度</text>
+      <text x="340" y="202" text-anchor="middle" font-size="12" fill="#475569">仅字符串 · 建立索引</text>
+      <text x="340" y="224" text-anchor="middle" font-size="12" fill="#475569">用于维度过滤</text>
+      <text x="340" y="246" text-anchor="middle" font-size="11.5" font-family="Consolas,monospace" fill="#0369a1">host / region / method</text>
+      <!-- 说明框 3：field -->
+      <rect x="456" y="150" width="196" height="118" rx="12" fill="#f0fdf4" stroke="#6ee7b7" stroke-width="1.6"/>
+      <text x="554" y="178" text-anchor="middle" font-size="13.5" font-weight="800" fill="#065f46">field · 数据值</text>
+      <text x="554" y="202" text-anchor="middle" font-size="11.5" font-family="Consolas,monospace" fill="#047857">float / int / string / bool</text>
+      <text x="554" y="224" text-anchor="middle" font-size="12" fill="#475569">不建索引 · 聚合的对象</text>
+      <text x="554" y="246" text-anchor="middle" font-size="11.5" fill="#64748b">回答「值是多少」</text>
+      <!-- 说明框 4：timestamp -->
+      <rect x="670" y="150" width="182" height="118" rx="12" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.6"/>
+      <text x="761" y="178" text-anchor="middle" font-size="13.5" font-weight="800" fill="#92400e">timestamp · 时间戳</text>
+      <text x="761" y="202" text-anchor="middle" font-size="12" fill="#475569">纳秒精度 · 可省略</text>
+      <text x="761" y="224" text-anchor="middle" font-size="12" fill="#475569">默认取服务器时间</text>
+      <text x="761" y="246" text-anchor="middle" font-size="11.5" font-family="Consolas,monospace" fill="#b45309">1s = 10⁹ ns</text>
+      <text x="440" y="300" text-anchor="middle" font-size="11.5" fill="#6b21a8">💡 语法要点：tag 部分可省略、field 至少一个；逗号与空格是语法的一部分，位置不可互换</text>
+    </svg>
+    <figcaption>图 1 · Line Protocol 解剖：measurement + tags（逗号分隔）+ fields + 纳秒时间戳（空格分隔）——一条写入的完整语法</figcaption>
+  </div>
+
+  <table>
+    <tr><th>部分</th><th>规则</th><th>作用</th></tr>
+    <tr><td><code>measurement</code></td><td>表概念的类比</td><td>如 <code>cpu</code>、<code>http_request</code></td></tr>
+    <tr><td><code>tag</code></td><td>仅字符串，<b>建立索引</b></td><td>维度过滤：host、region、method</td></tr>
+    <tr><td><code>field</code></td><td>float / int / string / bool，<b>不建索引</b></td><td>实际数据值，聚合计算的对象</td></tr>
+    <tr><td><code>timestamp</code></td><td>纳秒精度，可省略</td><td>默认取服务器时间</td></tr>
+  </table>
+  <div class="tip"><b>💡 建模第一问：</b><span>要<b>过滤</b>的维度用 tag（有索引），要<b>计算</b>的数值用 field——这个选择一旦上线就难改，也是第 6 章头号坑的根源。</span></div>
+
+  <h3 id="card">2.2 Series 与基数（Cardinality）—— v2 的命门</h3>
+  <pre><code class="lang-series">Series Key = measurement + 所有 tag 取值的组合
+基数（Cardinality）= 所有 series key 的去重总数</code></pre>
+  <p>基数不是数据量，而是<b>维度组合数</b>——它决定 TSI 索引的规模，是 v2 架构的命门：</p>
+
+  <div class="figure">
+    <svg viewBox="0 0 880 400" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs><marker id="car1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/></marker></defs>
+      <!-- 健康路径：乘法 -->
+      <rect x="36" y="40" width="130" height="78" rx="12" fill="#f3e8ff" stroke="#9333ea" stroke-width="2"/>
+      <text x="101" y="80" text-anchor="middle" font-size="22" font-weight="800" fill="#6b21a8">10</text>
+      <text x="101" y="104" text-anchor="middle" font-size="12" fill="#7e22ce">台主机（host）</text>
+      <text x="184" y="88" text-anchor="middle" font-size="20" font-weight="700" fill="#94a3b8">×</text>
+      <rect x="196" y="40" width="130" height="78" rx="12" fill="#f3e8ff" stroke="#9333ea" stroke-width="2"/>
+      <text x="261" y="80" text-anchor="middle" font-size="22" font-weight="800" fill="#6b21a8">5</text>
+      <text x="261" y="104" text-anchor="middle" font-size="12" fill="#7e22ce">个 region</text>
+      <text x="344" y="88" text-anchor="middle" font-size="20" font-weight="700" fill="#94a3b8">×</text>
+      <rect x="356" y="40" width="130" height="78" rx="12" fill="#f3e8ff" stroke="#9333ea" stroke-width="2"/>
+      <text x="421" y="80" text-anchor="middle" font-size="22" font-weight="800" fill="#6b21a8">60</text>
+      <text x="421" y="104" text-anchor="middle" font-size="12" fill="#7e22ce">个指标（metric）</text>
+      <text x="507" y="88" text-anchor="middle" font-size="20" font-weight="700" fill="#94a3b8">=</text>
+      <rect x="524" y="40" width="320" height="78" rx="12" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+      <text x="684" y="78" text-anchor="middle" font-size="21" font-weight="800" fill="#065f46">3,000 series</text>
+      <text x="684" y="104" text-anchor="middle" font-size="12" fill="#047857">✅ 健康范围 —— TSI 索引轻松承载</text>
+      <!-- 爆炸路径 -->
+      <rect x="36" y="160" width="470" height="56" rx="12" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.8"/>
+      <text x="271" y="184" text-anchor="middle" font-size="13.5" font-weight="700" fill="#991b1b">⚠️ 若再加一个 tag：user_id（100 万用户）……</text>
+      <text x="271" y="206" text-anchor="middle" font-size="11.5" fill="#b91c1c">series 数量按「乘法」继续膨胀</text>
+      <line x1="508" y1="188" x2="534" y2="188" stroke="#dc2626" stroke-width="2.2" marker-end="url(#car1)"/>
+      <rect x="540" y="152" width="304" height="88" rx="12" fill="#fef2f2" stroke="#dc2626" stroke-width="2.5"/>
+      <text x="692" y="178" text-anchor="middle" font-size="12.5" font-family="Consolas,monospace" fill="#b91c1c">3,000 × 1,000,000</text>
+      <text x="692" y="208" text-anchor="middle" font-size="20" font-weight="800" fill="#991b1b">≈ 30 亿 series</text>
+      <text x="692" y="230" text-anchor="middle" font-size="12.5" font-weight="800" fill="#dc2626">💥 基数爆炸</text>
+      <!-- 后果 -->
+      <line x1="167" y1="252" x2="167" y2="264" stroke="#dc2626" stroke-width="1.8" marker-end="url(#car1)"/>
+      <line x1="449" y1="252" x2="449" y2="264" stroke="#dc2626" stroke-width="1.8" marker-end="url(#car1)"/>
+      <line x1="722" y1="252" x2="722" y2="264" stroke="#dc2626" stroke-width="1.8" marker-end="url(#car1)"/>
+      <rect x="36" y="270" width="262" height="34" rx="10" fill="#fff" stroke="#fca5a5" stroke-width="1.6"/>
+      <text x="167" y="292" text-anchor="middle" font-size="12.5" font-weight="700" fill="#b91c1b">TSI 索引内存暴涨</text>
+      <rect x="318" y="270" width="262" height="34" rx="10" fill="#fff" stroke="#fca5a5" stroke-width="1.6"/>
+      <text x="449" y="292" text-anchor="middle" font-size="12.5" font-weight="700" fill="#b91c1b">写入吞吐骤降</text>
+      <rect x="600" y="270" width="244" height="34" rx="10" fill="#fff" stroke="#fca5a5" stroke-width="1.6"/>
+      <text x="722" y="292" text-anchor="middle" font-size="12.5" font-weight="700" fill="#b91c1b">甚至 OOM 宕机</text>
+      <!-- 治理 -->
+      <rect x="36" y="330" width="808" height="58" rx="12" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.8"/>
+      <text x="440" y="354" text-anchor="middle" font-size="12.5" fill="#065f46">✅ 治理原则：v2 做不到「无限基数」——高基数维度（userId、traceId）进 field（可存、不索引）</text>
+      <text x="440" y="376" text-anchor="middle" font-size="12.5" fill="#065f46">或写入前预先聚合；且 OSS 2.x 单节点无集群 —— 单机 + 高基数 = 最大风险组合</text>
+    </svg>
+    <figcaption>图 2 · Series 基数 = 各 tag 取值数的乘积：健康组合 3,000 series；混入 user_id 后按乘法爆炸至 30 亿</figcaption>
+  </div>
+
+  <div class="warn"><b>⚠️ 无限基数做不到：</b><span>把 <code>user_id</code>（100 万用户）当 tag → 基数爆炸，TSI 索引内存暴涨、写入变慢甚至 OOM——<b>v2 的「无限基数」做不到</b>，高基数维度要么进 field 要么预先聚合。</span></div>
+  <div class="warn"><b>⚠️ 单节点放大风险：</b><span>OSS 2.x 无集群能力（单节点），企业版才有 HA——<b>单机 + 高基数 = 最大风险组合</b>。</span></div>
+
+  <h3 id="obt">2.3 Bucket / Organization / Token</h3>
+  <div class="figure">
+    <svg viewBox="0 0 880 360" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs>
+        <marker id="org1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9333ea"/></marker>
+        <marker id="tok1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d97706"/></marker>
+      </defs>
+      <!-- Org -->
+      <rect x="330" y="26" width="220" height="64" rx="14" fill="#9333ea"/>
+      <text x="440" y="54" text-anchor="middle" font-size="14.5" font-weight="800" fill="#ffffff">Organization · my-org</text>
+      <text x="440" y="76" text-anchor="middle" font-size="11.5" fill="#f3e8ff">多租户顶层隔离</text>
+      <!-- 树干 -->
+      <path d="M440,90 L440,124 L230,124 L230,148" fill="none" stroke="#9333ea" stroke-width="2" marker-end="url(#org1)"/>
+      <path d="M440,124 L650,124 L650,148" fill="none" stroke="#9333ea" stroke-width="2" marker-end="url(#org1)"/>
+      <text x="560" y="114" text-anchor="middle" font-size="11" fill="#7e22ce">bucket = 数据库 + 保留策略（合体）</text>
+      <!-- Bucket A -->
+      <rect x="120" y="152" width="220" height="88" rx="12" fill="#f3e8ff" stroke="#9333ea" stroke-width="2"/>
+      <ellipse cx="160" cy="176" rx="12" ry="4" fill="#f5edfd" stroke="#9333ea" stroke-width="1.5"/>
+      <path d="M148,176 v12 a12,4 0 0 0 24,0 v-12" fill="#e9d5ff" stroke="#9333ea" stroke-width="1.5"/>
+      <text x="178" y="184" font-size="13.5" font-weight="800" fill="#6b21a8">Bucket · raw</text>
+      <text x="230" y="206" text-anchor="middle" font-size="11" fill="#7e22ce">数据库 + 保留策略 合体</text>
+      <rect x="140" y="212" width="180" height="22" rx="11" fill="#ffffff" stroke="#d8b4fe"/>
+      <text x="230" y="227" text-anchor="middle" font-size="11.5" font-weight="700" fill="#6b21a8">保留 1d · 全精度原始数据</text>
+      <!-- Bucket B -->
+      <rect x="540" y="152" width="220" height="88" rx="12" fill="#f3e8ff" stroke="#9333ea" stroke-width="2"/>
+      <ellipse cx="580" cy="176" rx="12" ry="4" fill="#f5edfd" stroke="#9333ea" stroke-width="1.5"/>
+      <path d="M568,176 v12 a12,4 0 0 0 24,0 v-12" fill="#e9d5ff" stroke="#9333ea" stroke-width="1.5"/>
+      <text x="598" y="184" font-size="13.5" font-weight="800" fill="#6b21a8">Bucket · agg-5m</text>
+      <text x="650" y="206" text-anchor="middle" font-size="11" fill="#7e22ce">Task 写入的降采样数据</text>
+      <rect x="560" y="212" width="180" height="22" rx="11" fill="#ffffff" stroke="#d8b4fe"/>
+      <text x="650" y="227" text-anchor="middle" font-size="11.5" font-weight="700" fill="#6b21a8">保留 90d · 5 分钟均值</text>
+      <!-- Token 卡片 -->
+      <rect x="90" y="258" width="230" height="68" rx="12" fill="#fffbeb" stroke="#d97706" stroke-width="1.8"/>
+      <text x="205" y="282" text-anchor="middle" font-size="12.5" font-weight="800" fill="#92400e">🔑 Token · write:raw</text>
+      <text x="205" y="302" text-anchor="middle" font-size="11" fill="#b45309">仅可写入 my-org/raw</text>
+      <text x="205" y="320" text-anchor="middle" font-size="10.5" fill="#b45309">发给采集端（Telegraf）</text>
+      <rect x="330" y="258" width="220" height="68" rx="12" fill="#fffbeb" stroke="#d97706" stroke-width="1.8"/>
+      <text x="440" y="282" text-anchor="middle" font-size="12.5" font-weight="800" fill="#92400e">🔑 Token · all-access</text>
+      <text x="440" y="302" text-anchor="middle" font-size="10.5" fill="#b45309">admin 令牌：org 下全部 bucket 读写</text>
+      <text x="440" y="320" text-anchor="middle" font-size="10.5" fill="#b45309">仅初始化 / 管理时使用</text>
+      <rect x="560" y="258" width="230" height="68" rx="12" fill="#fffbeb" stroke="#d97706" stroke-width="1.8"/>
+      <text x="675" y="282" text-anchor="middle" font-size="12.5" font-weight="800" fill="#92400e">🔑 Token · read:agg-5m</text>
+      <text x="675" y="302" text-anchor="middle" font-size="11" fill="#b45309">仅可查询聚合桶</text>
+      <text x="675" y="320" text-anchor="middle" font-size="10.5" fill="#b45309">发给 Grafana 面板</text>
+      <!-- 授权虚线 -->
+      <line x1="230" y1="256" x2="230" y2="242" stroke="#d97706" stroke-width="1.8" stroke-dasharray="4,3" marker-end="url(#tok1)"/>
+      <text x="242" y="253" font-size="10.5" fill="#b45309">只写</text>
+      <line x1="650" y1="256" x2="650" y2="242" stroke="#d97706" stroke-width="1.8" stroke-dasharray="4,3" marker-end="url(#tok1)"/>
+      <text x="662" y="253" font-size="10.5" fill="#b45309">只读</text>
+      <path d="M440,256 L440,132" fill="none" stroke="#d97706" stroke-width="1.8" stroke-dasharray="4,3" marker-end="url(#tok1)"/>
+      <text x="452" y="253" font-size="10.5" fill="#b45309">全部读写</text>
+      <text x="440" y="348" text-anchor="middle" font-size="11.5" fill="#64748b">Token 是 API 凭证（取代 v1 的用户名密码），按 org / bucket / 读写粒度授权</text>
+    </svg>
+    <figcaption>图 3 · 权限模型：Org 隔离租户，Bucket = 数据库 + 保留策略，Token 按 org / bucket / 读写粒度最小化授权</figcaption>
+  </div>
+
+  <ul>
+    <li><b>Organization</b>：多租户顶层隔离；</li>
+    <li><b>Bucket</b>：数据库 + 保留策略合体（如 <code>my-bucket</code> 保留 30 天）；</li>
+    <li><b>Token</b>：按 org / bucket / 读写粒度授权的 API 凭证，替代 v1 的用户名密码。</li>
+  </ul>
+</section>
+
+<!-- ============ 3 存储与查询原理 ============ -->
+<section id="storage">
+  <h2>3. 存储与查询原理<span class="lvl m">进阶</span></h2>
+
+  <h3 id="tsm">3.1 TSM 引擎（Time-Structured Merge Tree）</h3>
+  <p>TSM 是 v2 的自研存储引擎，写路径与 compaction 全景如下：</p>
+
+  <div class="figure">
+    <svg viewBox="0 0 880 400" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs>
+        <marker id="tsm1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6b21a8"/></marker>
+        <marker id="tsm2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0891b2"/></marker>
+      </defs>
+      <!-- ① 写入 -->
+      <rect x="28" y="88" width="140" height="88" rx="12" fill="#f3e8ff" stroke="#9333ea" stroke-width="2"/>
+      <text x="98" y="112" text-anchor="middle" font-size="14" font-weight="800" fill="#6b21a8">① 写入</text>
+      <text x="98" y="134" text-anchor="middle" font-size="11.5" font-family="Consolas,monospace" fill="#9333ea">Line Protocol</text>
+      <text x="98" y="156" text-anchor="middle" font-size="11" fill="#7e22ce">Telegraf / 客户端</text>
+      <line x1="170" y1="132" x2="190" y2="132" stroke="#6b21a8" stroke-width="2" marker-end="url(#tsm1)"/>
+      <!-- ② WAL -->
+      <rect x="194" y="88" width="140" height="88" rx="12" fill="#faf5ff" stroke="#7c3aed" stroke-width="2"/>
+      <text x="264" y="112" text-anchor="middle" font-size="13.5" font-weight="800" fill="#5b21b6">② WAL 写前日志</text>
+      <text x="264" y="134" text-anchor="middle" font-size="11" fill="#6d28d9">顺序写 · 保证持久性</text>
+      <text x="264" y="156" text-anchor="middle" font-size="11" fill="#6d28d9">崩溃后可重放恢复</text>
+      <line x1="336" y1="132" x2="358" y2="132" stroke="#6b21a8" stroke-width="2" marker-end="url(#tsm1)"/>
+      <!-- ③ 内存 -->
+      <rect x="362" y="56" width="226" height="152" rx="12" fill="#ffffff" stroke="#9333ea" stroke-width="2"/>
+      <text x="475" y="80" text-anchor="middle" font-size="14" font-weight="800" fill="#6b21a8">③ 内存</text>
+      <rect x="378" y="92" width="194" height="44" rx="8" fill="#f3e8ff" stroke="#d8b4fe" stroke-width="1.5"/>
+      <text x="475" y="112" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6b21a8">Cache 写缓存</text>
+      <text x="475" y="130" text-anchor="middle" font-size="10.5" fill="#7e22ce">近期写入 · 攒批待刷盘</text>
+      <rect x="378" y="146" width="194" height="52" rx="8" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.5"/>
+      <text x="475" y="166" text-anchor="middle" font-size="11.5" font-weight="700" fill="#92400e">TSI 倒排索引（tag→series）</text>
+      <text x="475" y="186" text-anchor="middle" font-size="10.5" fill="#b45309">v2 内存大头 · 基数敏感的根源</text>
+      <!-- flush -->
+      <line x1="590" y1="120" x2="646" y2="120" stroke="#6b21a8" stroke-width="2" marker-end="url(#tsm1)"/>
+      <text x="619" y="106" text-anchor="middle" font-size="10.5" fill="#6b21a8">flush</text>
+      <!-- ④ .tsm -->
+      <rect x="652" y="88" width="200" height="88" rx="12" fill="#ecfeff" stroke="#0891b2" stroke-width="2"/>
+      <text x="752" y="112" text-anchor="middle" font-size="13.5" font-weight="800" fill="#155e75">④ .tsm 文件</text>
+      <text x="752" y="134" text-anchor="middle" font-size="11" fill="#0e7490">只读 · 按时间分块</text>
+      <text x="752" y="156" text-anchor="middle" font-size="11" fill="#0e7490">列式压缩存储</text>
+      <!-- compaction 金字塔 -->
+      <line x1="752" y1="176" x2="752" y2="208" stroke="#0891b2" stroke-width="2" marker-end="url(#tsm2)"/>
+      <text x="764" y="192" font-size="11.5" font-weight="700" fill="#0e7490">compaction</text>
+      <text x="764" y="206" font-size="10.5" fill="#0e7490">逐级合并</text>
+      <rect x="647" y="214" width="210" height="32" rx="8" fill="#ecfeff" stroke="#22d3ee" stroke-width="1.8"/>
+      <text x="752" y="235" text-anchor="middle" font-size="11.5" fill="#155e75">Level 1 · 刚 flush 的块</text>
+      <line x1="752" y1="246" x2="752" y2="258" stroke="#0891b2" stroke-width="2" marker-end="url(#tsm2)"/>
+      <rect x="667" y="258" width="170" height="32" rx="8" fill="#ecfeff" stroke="#22d3ee" stroke-width="1.8"/>
+      <text x="752" y="279" text-anchor="middle" font-size="11.5" fill="#155e75">Level 2 · 合并压缩</text>
+      <line x1="752" y1="290" x2="752" y2="302" stroke="#0891b2" stroke-width="2" marker-end="url(#tsm2)"/>
+      <rect x="687" y="302" width="130" height="32" rx="8" fill="#ecfeff" stroke="#22d3ee" stroke-width="1.8"/>
+      <text x="752" y="323" text-anchor="middle" font-size="11.5" fill="#155e75">Level 3 · 高压缩</text>
+      <line x1="752" y1="334" x2="752" y2="346" stroke="#0891b2" stroke-width="2" marker-end="url(#tsm2)"/>
+      <rect x="707" y="346" width="90" height="32" rx="8" fill="#ecfeff" stroke="#22d3ee" stroke-width="1.8"/>
+      <text x="752" y="367" text-anchor="middle" font-size="11.5" fill="#155e75">Level 4</text>
+      <!-- 压缩面板 -->
+      <rect x="28" y="214" width="560" height="164" rx="12" fill="#faf5ff" stroke="#d8b4fe" stroke-width="1.6"/>
+      <text x="308" y="242" text-anchor="middle" font-size="13" font-weight="800" fill="#6b21a8">列式压缩 —— 时序数据的红利（监控类数据常见 10x+ 压缩比）</text>
+      <rect x="48" y="256" width="86" height="34" rx="8" fill="#f3e8ff" stroke="#d8b4fe"/>
+      <text x="91" y="277" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6b21a8">时间戳</text>
+      <text x="152" y="277" font-size="12.5" font-weight="700" font-family="Consolas,monospace" fill="#9333ea">delta-of-delta</text>
+      <text x="292" y="277" font-size="11.5" fill="#64748b">相邻时间戳差值的差值，规律采样下极高压缩</text>
+      <rect x="48" y="294" width="86" height="34" rx="8" fill="#f3e8ff" stroke="#d8b4fe"/>
+      <text x="91" y="315" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6b21a8">浮点数</text>
+      <text x="152" y="315" font-size="12.5" font-weight="700" font-family="Consolas,monospace" fill="#9333ea">Gorilla XOR</text>
+      <text x="292" y="315" font-size="11.5" fill="#64748b">相邻值按位异或，多数位为零后极简编码</text>
+      <rect x="48" y="332" width="86" height="34" rx="8" fill="#f3e8ff" stroke="#d8b4fe"/>
+      <text x="91" y="353" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6b21a8">字符串</text>
+      <text x="152" y="353" font-size="12.5" font-weight="700" font-family="Consolas,monospace" fill="#9333ea">snappy</text>
+      <text x="292" y="353" font-size="11.5" fill="#64748b">通用无损压缩，对重复文本效果好</text>
+    </svg>
+    <figcaption>图 4 · TSM 写路径：写入 → WAL → 内存 Cache / TSI → flush 为 .tsm，后台按 Level 逐级 compaction；列式压缩是时序红利</figcaption>
+  </div>
+
+  <ul>
+    <li><b>写路径</b>：先进 WAL（顺序写保证持久性），随后 flush 成只读 <code>.tsm</code> 文件，后台按 level 合并压缩；</li>
+    <li><b>TSI 索引</b>：倒排索引（tag → series），v2 内存占用的主要来源，也是基数敏感的根源；</li>
+    <li><b>查询路径</b>：Flux / InfluxQL 编译为逻辑计划 → 按 series 定位 tsm 块 → 解压 → 聚合。</li>
+  </ul>
+
+  <table>
+    <tr><th>数据类型</th><th>压缩算法</th><th>原理</th></tr>
+    <tr><td>时间戳</td><td><code>delta-of-delta</code></td><td>相邻差值再取差，规律采样下极高压缩</td></tr>
+    <tr><td>浮点数</td><td><code>Gorilla XOR</code></td><td>相邻值按位异或，多数位为零后极简编码</td></tr>
+    <tr><td>字符串</td><td><code>snappy</code></td><td>通用无损压缩</td></tr>
+  </table>
+  <div class="tip"><b>💡 压缩比：</b><span>监控类数据常见 <b>10x+</b> 压缩比——列式存储 + 面向时序的专用编码，是 TSM 对时序场景的核心红利。</span></div>
+
+  <h3 id="flux">3.2 Flux 查询语言</h3>
+  <pre><code class="lang-js">from(bucket: "metrics")
+  |> range(start: -1h)                          // 时间范围必须显式指定
+  |> filter(fn: (r) => r._measurement == "cpu")
+  |> filter(fn: (r) => r._field == "usage_idle")
+  |> aggregateWindow(every: 5m, fn: mean)       // 降采样
+  |> yield()</code></pre>
+  <ul>
+    <li>管道式（<code>|&gt;</code>）数据流语法，类似 Rx / F# 风格；</li>
+    <li>支持跨 bucket join、HTTP / SQL 外部源、自定义函数——表达力强，但<b>学习曲线陡、生态孤岛</b>（这是 v3 弃用它的直接原因）；</li>
+    <li>兼容模式：v2 仍可用 InfluxQL（<code>SELECT mean("value") FROM ...</code>，v1 语法子集）。</li>
+  </ul>
+
+  <h3 id="tasks">3.3 Tasks：内置任务调度</h3>
+  <pre><code class="lang-js">option task = {name: "downsample-5m", every: 5m}
+
+from(bucket: "raw")
+  |> range(start: -task.every)
+  |> aggregateWindow(every: 5m, fn: mean)
+  |> to(bucket: "agg-5m", org: "my-org")        // 原始桶保留 1d，聚合桶保留 90d</code></pre>
+  <p>典型的<b>降采样（downsampling）管道</b>：raw bucket 短保留 + 聚合 bucket 长保留，控制存储成本。任务也用于告警（<code>to()</code> 到 notification endpoint）与数据修整。</p>
+
+  <div class="figure">
+    <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs>
+        <marker id="pipe1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6b21a8"/></marker>
+        <marker id="pipe2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#059669"/></marker>
+      </defs>
+      <!-- raw 桶 -->
+      <path d="M70,58 V178 A80,16 0 0 0 230,178 V58" fill="#f3e8ff" stroke="#9333ea" stroke-width="2"/>
+      <ellipse cx="150" cy="58" rx="80" ry="16" fill="#f3e8ff" stroke="#9333ea" stroke-width="2"/>
+      <circle cx="94" cy="80" r="2.8" fill="#c084fc"/><circle cx="112" cy="80" r="2.8" fill="#c084fc"/><circle cx="130" cy="80" r="2.8" fill="#c084fc"/><circle cx="148" cy="80" r="2.8" fill="#c084fc"/><circle cx="166" cy="80" r="2.8" fill="#c084fc"/><circle cx="184" cy="80" r="2.8" fill="#c084fc"/><circle cx="202" cy="80" r="2.8" fill="#c084fc"/>
+      <circle cx="94" cy="92" r="2.8" fill="#c084fc"/><circle cx="112" cy="92" r="2.8" fill="#c084fc"/><circle cx="130" cy="92" r="2.8" fill="#c084fc"/><circle cx="148" cy="92" r="2.8" fill="#c084fc"/><circle cx="166" cy="92" r="2.8" fill="#c084fc"/><circle cx="184" cy="92" r="2.8" fill="#c084fc"/><circle cx="202" cy="92" r="2.8" fill="#c084fc"/>
+      <text x="150" y="122" text-anchor="middle" font-size="14" font-weight="800" fill="#6b21a8">raw bucket</text>
+      <text x="150" y="140" text-anchor="middle" font-size="11" fill="#7e22ce">全精度原始点</text>
+      <rect x="110" y="148" width="80" height="22" rx="11" fill="#9333ea"/>
+      <text x="150" y="163" text-anchor="middle" font-size="11.5" font-weight="700" fill="#ffffff">保留 1d</text>
+      <!-- Task -->
+      <line x1="236" y1="128" x2="316" y2="128" stroke="#6b21a8" stroke-width="2.2" marker-end="url(#pipe1)"/>
+      <text x="276" y="112" text-anchor="middle" font-size="10.5" font-family="Consolas,monospace" fill="#6b21a8">from(raw)</text>
+      <rect x="330" y="80" width="220" height="94" rx="14" fill="#fffbeb" stroke="#d97706" stroke-width="2.5"/>
+      <text x="440" y="106" text-anchor="middle" font-size="13" font-weight="800" fill="#92400e">⏱ Task · downsample-5m</text>
+      <text x="440" y="128" text-anchor="middle" font-size="11.5" fill="#b45309">every: 5m 定时触发</text>
+      <text x="440" y="152" text-anchor="middle" font-size="11" font-family="Consolas,monospace" fill="#7c2d12">aggregateWindow(fn: mean)</text>
+      <text x="440" y="192" text-anchor="middle" font-size="11" fill="#b45309">Task 同样用于告警（to() → 通知端点）与数据修整</text>
+      <!-- agg 桶 -->
+      <line x1="556" y1="128" x2="636" y2="128" stroke="#059669" stroke-width="2.2" marker-end="url(#pipe2)"/>
+      <text x="596" y="112" text-anchor="middle" font-size="10.5" font-family="Consolas,monospace" fill="#047857">to(agg-5m)</text>
+      <path d="M650,58 V178 A80,16 0 0 0 810,178 V58" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+      <ellipse cx="730" cy="58" rx="80" ry="16" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+      <circle cx="680" cy="80" r="4.5" fill="#34d399"/><circle cx="706" cy="80" r="4.5" fill="#34d399"/><circle cx="732" cy="80" r="4.5" fill="#34d399"/><circle cx="758" cy="80" r="4.5" fill="#34d399"/><circle cx="784" cy="80" r="4.5" fill="#34d399"/>
+      <circle cx="693" cy="93" r="4.5" fill="#34d399"/><circle cx="719" cy="93" r="4.5" fill="#34d399"/><circle cx="745" cy="93" r="4.5" fill="#34d399"/><circle cx="771" cy="93" r="4.5" fill="#34d399"/>
+      <text x="730" y="122" text-anchor="middle" font-size="13.5" font-weight="800" fill="#065f46">agg-5m bucket</text>
+      <text x="730" y="140" text-anchor="middle" font-size="11" fill="#047857">每 5m 一个均值点</text>
+      <rect x="690" y="148" width="80" height="22" rx="11" fill="#059669"/>
+      <text x="730" y="163" text-anchor="middle" font-size="11.5" font-weight="700" fill="#ffffff">保留 90d</text>
+      <!-- 成本说明 -->
+      <rect x="60" y="216" width="760" height="62" rx="12" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.8"/>
+      <text x="440" y="240" text-anchor="middle" font-size="12.5" fill="#065f46">✅ 成本逻辑：原始精度只留 1 天（排障够用），长期趋势读 5m 均值 —— 存储成本大幅下降、长期查询更快</text>
+      <text x="440" y="262" text-anchor="middle" font-size="12.5" fill="#065f46">管道可级联：raw(1d) → agg-5m(90d) → agg-1h(1y)；Task 即代码，可随应用一起版本化部署</text>
+    </svg>
+    <figcaption>图 5 · 降采样管道：Task 每 5m 把 raw 桶聚合成均值写入 agg-5m 桶——短保留 + 长保留组合控制存储成本</figcaption>
+  </div>
+</section>
+
+<!-- ============ 4 使用实战（Go） ============ -->
+<section id="go">
+  <h2>4. 使用实战（Go）<span class="lvl m">实战</span></h2>
+
+  <h3 id="go-write">4.1 写入</h3>
+  <pre><code class="lang-go">client := influxdb2.NewClient("http://localhost:8086", "my-token")
+defer client.Close()
+
+wb := client.WriteAPI("my-org", "my-bucket")
+defer wb.Flush()
+
+// 写点 1：行协议
+wb.WriteRecord("cpu,host=node1,region=cn usage_idle=91.2,usage_user=6.1")
+
+// 写点 2：结构化 Point
+p := influxdb2.NewPoint("http_request",
+    map[string]string{"method": "GET", "path": "/api/orders", "status": "200"}, // tags
+    map[string]interface{}{"duration_ms": 45.2, "bytes_out": 1024},              // fields
+    time.Now())
+wb.WritePoint(p)</code></pre>
+
+  <div class="danger"><b>🚫 静默丢数据：</b><span>WriteAPI 是<b>异步批量</b>（攒批 + 定时 flush），失败不会 panic——<b>务必消费 <code>wb.Errors()</code> channel</b>，否则写入失败会被静默丢弃：</span></div>
+
+  <pre><code class="lang-go">go func() {
+    for err := range wb.Errors() {
+        log.Printf("write failed: %v", err)  // 重试/落盘
+    }
+}()</code></pre>
+
+  <h3 id="go-query">4.2 查询（Flux）</h3>
+  <pre><code class="lang-go">qAPI := client.QueryAPI("my-org")
+result, _ := qAPI.Query(context.Background(), `
+from(bucket: "my-bucket")
+  |> range(start: -1h)
+  |> filter(fn: (r) => r._measurement == "cpu" and r.host == "node1")
+  |> aggregateWindow(every: 5m, fn: mean)`)
+
+for result.Next() {
+    fmt.Println(result.Record().Time(), result.Record().Value())
+}
+if result.Err() != nil { log.Fatal(result.Err()) }</code></pre>
+
+  <h3 id="eco">4.3 生态工具</h3>
+  <div class="feature-grid">
+    <div class="feature"><div class="ft">📡 Telegraf</div><p>300+ 插件的采集代理（Prometheus / MySQL / Redis / 网卡 / 自定义脚本 → InfluxDB），v2 事实上的标准数据入口。</p></div>
+    <div class="feature"><div class="ft">🔌 v1 兼容 API</div><p><code>/write</code>、<code>/query</code> 支持 v1 协议与用户名密码——老代码无痛接入。</p></div>
+    <div class="feature"><div class="ft">📊 Grafana</div><p>InfluxQL / Flux 双数据源，可视化首选。</p></div>
+    <div class="feature"><div class="ft">⌨️ influx CLI</div><p>bucket 管理与命令行查询，运维必备：</p></div>
+  </div>
+  <pre><code class="lang-bash"># 创建保留 1 天的原始桶
+influx bucket create -n raw -r 1d -o my-org
+
+# 命令行执行 Flux 查询
+influx query 'from(bucket:"raw") |> range(start:-1h)'</code></pre>
+</section>
+
+<!-- ============ 5 运维要点 ============ -->
+<section id="ops">
+  <h2>5. 运维要点<span class="lvl m">运维</span></h2>
+  <table>
+    <tr><th>主题</th><th>实践</th></tr>
+    <tr><td>保留策略</td><td>raw 桶 1~7d + 聚合桶 30~90d，用 Task 落盘</td></tr>
+    <tr><td>基数监控</td><td>UI / <code>influx query</code> 观察 <code>cardinality</code>，超十万级就要治理</td></tr>
+    <tr><td>备份</td><td><code>influx backup</code>（全量/增量，目录可加时间戳），定期 + 异地</td></tr>
+    <tr><td>资源</td><td>写入高峰看 WAL flush 压力；内存大头是 TSI 索引</td></tr>
+    <tr><td>升级</td><td>2.0→2.7 可原地升；<b>v2→v3 无原生迁移</b>，需按 bucket 导出/重写</td></tr>
+  </table>
+</section>
+
+<!-- ============ 6 常见坑 ============ -->
+<section id="pitfalls">
+  <h2>6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+  <table>
+    <tr><th style="width:42px">#</th><th style="width:190px">坑</th><th>说明与对策</th></tr>
+    <tr><td>1</td><td><b>tag 与 field 混淆</b></td><td>要过滤的维度用 tag（索引），要算的数值用 field；把高基数值（userId、traceId）放 tag 是 v2 <b>头号事故来源</b></td></tr>
+    <tr><td>2</td><td><b>field 类型不可变</b></td><td>同一 field 先写 float 再写 string 会报 field type conflict——上线前定好 schema</td></tr>
+    <tr><td>3</td><td><b>重复时间戳静默覆盖</b></td><td>同 series 同 field 同时刻的写入，后到者覆盖先到者</td></tr>
+    <tr><td>4</td><td><b>单条 HTTP 写入</b></td><td>既慢又费——用客户端攒批（默认 5000 点/批）</td></tr>
+    <tr><td>5</td><td><b>Flux 查询不写 range</b></td><td>直接报错——防全表扫描，是保护不是缺陷</td></tr>
+    <tr><td>6</td><td><b>单点风险</b></td><td>OSS 2.x 无副本，机器挂了从最近 backup 恢复——重要监控建议双写（v1 兼容 API + Prometheus 远程写双通道）</td></tr>
+    <tr><td>7</td><td><b>Flux 的长期风险</b></td><td>新代码尽量用 InfluxQL 子集或考虑直接上 v3，减少 Flux 资产沉淀</td></tr>
+  </table>
+</section>
+
+<!-- ============ 7 v2 → v3 演进 ============ -->
+<section id="v3">
+  <h2>7. v2 → v3 演进对照<span class="lvl a">决策</span></h2>
+  <table>
+    <tr><th style="width:130px">维度</th><th>v2.7 OSS</th><th>v3 Core / Enterprise</th></tr>
+    <tr><td>语言实现</td><td>Go</td><td>Rust</td></tr>
+    <tr><td>存储引擎</td><td>TSM（行式，自研）</td><td>列式：WAL → 内存 → <b>Parquet</b>（对象存储）</td></tr>
+    <tr><td>查询语言</td><td>Flux + InfluxQL</td><td><b>SQL</b>（DataFusion）+ InfluxQL；<b>Flux 已弃用</b></td></tr>
+    <tr><td>基数</td><td>受 TSI 限制</td><td>设计目标「无限基数」</td></tr>
+    <tr><td>组织模型</td><td>Org / Bucket / Token</td><td>Database（bucket 概念合并）</td></tr>
+    <tr><td>部署</td><td>单二进制（OSS 单节点）</td><td>单进程 Core + 多节点 Enterprise，S3 优先</td></tr>
+    <tr><td>定位</td><td>监控一体化平台</td><td>时序分析 + 事件数据平台</td></tr>
+  </table>
+  <div class="tip"><b>✅ 一句话：</b><span>存量 2.x 继续运维、逐步治理 Flux 资产；<b>新时序项目从 v3 起步</b>。</span></div>
+</section>
+
+<footer>InfluxDB 2.x（OSS）技术指南 · 参考 InfluxData 官方文档与 influxdb GitHub 仓库 · 2026-09</footer>
+</main>
+</div>
+
+<script>
+// Go 高亮
+document.querySelectorAll('pre code.lang-go').forEach(function(block){
+  var src = block.textContent;
+  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  var master = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any|time)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  var out = src.replace(master, function(m, c1, c2, s, kw, typ, num, fn){
+    if (c1 || c2) return '<span class="cmt">'+m+'</span>';
+    if (s) return '<span class="str">'+m+'</span>';
+    if (kw) return '<span class="kw">'+m+'</span>';
+    if (typ) return '<span class="typ">'+m+'</span>';
+    if (num) return '<span class="num">'+m+'</span>';
+    if (fn) return '<span class="fn">'+m+'</span>';
+    return m;
+  });
+  block.innerHTML = out;
+});
+// Bash 高亮
+document.querySelectorAll('pre code.lang-bash').forEach(function(block){
+  var src = block.textContent;
+  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  var master = /(# [^\n]*)|("(?:\\.|[^"\\\n])*"|'[^']*')|(^|\s)(-{1,2}[a-zA-Z][\w-]*)|\b(\d[\d_]*(?:\.\d+)?)\b|\b(docker|influx|influxd|go|curl)\b/g;
+  var out = src.replace(master, function(m, c1, s, pre, flag, num, cmd){
+    if (c1) return '<span class="cmt">'+m+'</span>';
+    if (s) return '<span class="str">'+m+'</span>';
+    if (flag) return pre+'<span class="typ">'+flag+'</span>';
+    if (num) return '<span class="num">'+m+'</span>';
+    if (cmd) return '<span class="fn">'+m+'</span>';
+    return m;
+  });
+  block.innerHTML = out;
+});
+// Flux 高亮（lang-js）
+document.querySelectorAll('pre code.lang-js').forEach(function(block){
+  var src = block.textContent;
+  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  var master = /(\/\/[^\n]*)|("(?:\\.|[^"\\\n])*")|(\|>)|\b(option|import|return|if|then|else|and|or|not)\b|\b(from|range|filter|aggregateWindow|yield|to|mean|last|first|min|max|sum|count|median|sort|limit|join|union|map|rename|drop|keep|group|window)\b|(-?\b\d+(?:\.\d+)?[smhdwy]*)|\b([a-zA-Z_]\w*)(?=\()/g;
+  var out = src.replace(master, function(m, c1, s, pipe, kw, bfn, num, fn){
+    if (c1) return '<span class="cmt">'+m+'</span>';
+    if (s) return '<span class="str">'+m+'</span>';
+    if (pipe || kw) return '<span class="kw">'+m+'</span>';
+    if (bfn) return '<span class="fn">'+m+'</span>';
+    if (num) return '<span class="num">'+m+'</span>';
+    if (fn) return '<span class="fn">'+m+'</span>';
+    return m;
+  });
+  block.innerHTML = out;
+});
+// codelabel
+var labels = {'lang-go':'Go','lang-bash':'Shell','lang-js':'Flux','lang-lp':'Line Protocol','lang-series':'Series'};
+document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+  var label = labels[b.className] || 'Text';
+  var el = document.createElement('span');
+  el.className = 'codelabel';
+  el.textContent = label;
+  b.closest('pre').appendChild(el);
+});
+</script>
+</body>
+</html>

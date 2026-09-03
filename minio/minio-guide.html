@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MinIO 技术介绍与使用指南</title>
+<style>
+  :root{
+    --accent:#e11d48; --accent-light:#ffe4e6; --accent-dark:#9f1239;
+    --bg:#fdf6f7; --card:#ffffff; --border:#f3dfe4; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#2a0a14; --kw:#fda4af; --str:#86efac; --cmt:#a17a85; --num:#fde047; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#881337 0%,#e11d48 55%,#f43f5e 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(225,29,72,.22)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.92;font-size:15px;max-width:680px}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark)}
+  h4{font-size:15px;margin:16px 0 8px;color:#0f172a}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin-bottom:18px;box-shadow:0 1px 3px rgba(136,19,55,.06)}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#d9a0b0;background:#471527;padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code{background:#ffe9ec;color:#be123c;border:1px solid #fbd0d9;padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(136,19,55,.06)}
+  th{background:#fde8ec;color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:#fdf8f9}
+  .tip,.warn,.danger{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px;display:flex;gap:10px;align-items:flex-start}
+  .tip{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .tip b,.warn b,.danger b{flex-shrink:0}
+  .tip ul,.warn ul{margin:6px 0 0;padding-left:20px}
+  .tip li,.warn li{margin-bottom:4px}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0;box-shadow:0 1px 3px rgba(136,19,55,.06)}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:16px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:15px 18px;box-shadow:0 1px 3px rgba(136,19,55,.06);font-size:13.5px;line-height:1.6}
+  .feature b{display:block;color:var(--accent-dark);margin-bottom:5px;font-size:14.5px}
+  .pill{display:inline-block;background:var(--accent-light);color:var(--accent-dark);border-radius:16px;padding:2px 12px;font-size:12px;margin:2px 4px 2px 0}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+    .features{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="sidebar">
+  <div class="logo">MinIO<span class="ver">2025</span></div>
+  <div class="sub">S3 兼容高性能对象存储</div>
+  <a href="#intro">1. 项目简介</a>
+  <a class="sub-link" href="#i-forms">1.1 部署形态（决定性选择）</a>
+  <a href="#concepts">2. 核心概念</a>
+  <a class="sub-link" href="#c-obj">2.1 对象存储模型</a>
+  <a class="sub-link" href="#c-ec">2.2 纠删码（灵魂）</a>
+  <a class="sub-link" href="#c-meta">2.3 元数据内联</a>
+  <a class="sub-link" href="#c-iam">2.4 IAM 与安全</a>
+  <a class="sub-link" href="#c-lifecycle">2.5 数据生命周期能力</a>
+  <a href="#arch">3. 架构与数据路径</a>
+  <a href="#usage">4. 使用实战</a>
+  <a class="sub-link" href="#u-mc">4.1 启动与 mc</a>
+  <a class="sub-link" href="#u-go">4.2 Go SDK</a>
+  <a class="sub-link" href="#u-presign">4.3 Presigned URL</a>
+  <a class="sub-link" href="#u-ver">4.4 版本控制与事件通知</a>
+  <a href="#compat">5. 与 S3 的兼容性</a>
+  <a href="#versions">6. 版本与产品线（2025）</a>
+  <a href="#pitfalls">7. 常见坑与最佳实践</a>
+  <a href="#summary">8. 选型小结</a>
+</nav>
+
+<main>
+
+<div class="hero">
+  <h1>MinIO</h1>
+  <p>用 Go 编写的<b>软件定义对象存储</b>，100% 兼容 AWS S3 API。单二进制、纠删码数据保护、云原生与 AI 数据湖首选的自托管对象存储——任何有磁盘的机器跑一个 <code style="background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3);color:#fff">minio server</code> 就是生产级对象存储。</p>
+  <div class="meta">
+    <span>S3 100% 兼容</span>
+    <span>纠删码 + bit-rot 防护</span>
+    <span>Go 实现 · 单二进制</span>
+    <span>云原生 · K8s Operator</span>
+    <span>社区版 AGPLv3</span>
+  </div>
+</div>
+
+<!-- ============ 1 项目简介 ============ -->
+<section id="intro">
+  <h2>1. 项目简介</h2>
+
+  <p>MinIO 把「对象存储」从专用硬件中解放出来：裸机、VM、K8s、边缘盒子，任何有磁盘的机器都能跑生产级 S3 存储。仓库 <a href="https://github.com/minio/minio">github.com/minio/minio</a>，社区版许可证 AGPLv3（2025 起双产品线，详见 §6）。</p>
+
+  <div class="features">
+    <div class="feature"><b>S3 100% 兼容</b>AWS SDK / aws-cli / S3 生态工具（Spark、Hive、Trino、S3 Select）即插即用——迁移成本近乎为零。</div>
+    <div class="feature"><b>高性能</b>Go 原生实现纠删码与 HighwayHash 校验，实测吞吐可达数百 GB/s 级（JBOD + 万兆网即可）。</div>
+    <div class="feature"><b>云原生</b>单二进制无依赖、K8s Operator 官方支持、原生 Prometheus 指标。</div>
+    <div class="feature"><b>纠删码 + bit-rot 防护</b>Reed-Solomon 纠删码，每块附 HighwayHash 校验——磁盘静默损坏在读时被发现并在线修复。</div>
+    <div class="feature"><b>服务端加密</b>SSE-S3（KMS 托管）/ SSE-KMS / SSE-C（客户密钥），TLS 全链路。</div>
+    <div class="feature"><b>企业特性</b>版本控制、站点 / 桶级复制、生命周期管理（ILM）、事件通知、对象锁定（WORM / 合规保留）、IAM。</div>
+  </div>
+
+  <p><b>典型用途：</b></p>
+  <p>
+    <span class="pill">云原生应用附件存储</span>
+    <span class="pill">数据湖底座（Parquet / Arrow 生态）</span>
+    <span class="pill">AI / ML 训练数据集</span>
+    <span class="pill">备份归档（Velero 后端）</span>
+    <span class="pill">Kafka tiered storage 目标</span>
+    <span class="pill">替代 S3 的私有云存储</span>
+  </p>
+
+  <h3 id="i-forms">1.1 部署形态（决定性选择）</h3>
+  <table>
+    <tr><th>形态</th><th>命令形态</th><th>适用</th></tr>
+    <tr><td>单机单盘（SNDD）</td><td><code>minio server /data</code></td><td>开发</td></tr>
+    <tr><td>单机多盘（SNMD）</td><td><code>minio server /d1 /d2 /d3 /d4</code></td><td>边缘 / 小规模</td></tr>
+    <tr><td>多机多盘（MNMD）</td><td><code>minio server http://n{1...4}/d{1...16}</code></td><td><b>生产</b>（分布式纠删码）</td></tr>
+  </table>
+  <div class="tip"><b>💡 选型起点：</b><span>部署形态在建集群时一次性确定，后期迁移成本高——开发用 SNDD、边缘用 SNMD、生产一律 MNMD（分布式纠删码 + 多故障域）。</span></div>
+</section>
+
+<!-- ============ 2 核心概念 ============ -->
+<section id="concepts">
+  <h2>2. 核心概念</h2>
+
+  <h3 id="c-obj">2.1 对象存储模型</h3>
+  <div class="figure">
+    <svg viewBox="0 0 880 410" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs><marker id="m1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9f1239"/></marker></defs>
+      <text x="32" y="34" font-size="11.5" fill="#be123c" font-family="Consolas,monospace">GET /my-bucket/photos/2026/alice.png</text>
+      <text x="310" y="34" font-size="11" fill="#64748b">← 一个请求 = bucket 名 + 对象 key</text>
+      <line x1="245" y1="42" x2="245" y2="54" stroke="#9f1239" stroke-width="2" marker-end="url(#m1)"/>
+      <!-- Bucket -->
+      <rect x="30" y="58" width="430" height="332" rx="14" fill="#ffe4e6" stroke="#e11d48" stroke-width="2"/>
+      <text x="245" y="84" text-anchor="middle" font-size="14" font-weight="800" fill="#9f1239">Bucket（桶）· 顶层命名空间</text>
+      <!-- Object 1：完整三要素 -->
+      <rect x="52" y="94" width="386" height="92" rx="10" fill="#ffffff" stroke="#fb7185" stroke-width="1.6"/>
+      <rect x="60" y="100" width="54" height="16" rx="4" fill="#e11d48"/>
+      <text x="87" y="112" text-anchor="middle" font-size="10.5" font-weight="700" fill="#ffffff">Object</text>
+      <rect x="124" y="121" width="306" height="19" rx="4" fill="#ffe4e6"/>
+      <text x="132" y="134" font-size="10.5" font-family="Consolas,monospace" fill="#9f1239">key: photos/2026/alice.png</text>
+      <rect x="124" y="143" width="306" height="19" rx="4" fill="#e0f2fe"/>
+      <text x="132" y="156" font-size="10.5" font-family="Consolas,monospace" fill="#075985">data: 任意字节流（KB ~ TB 级）</text>
+      <rect x="124" y="165" width="306" height="19" rx="4" fill="#fef3c7"/>
+      <text x="132" y="178" font-size="10.5" font-family="Consolas,monospace" fill="#92400e">meta: Content-Type · ETag · x-amz-*</text>
+      <!-- Object 2 -->
+      <rect x="52" y="194" width="386" height="56" rx="10" fill="#ffffff" stroke="#fda4af" stroke-width="1.4"/>
+      <rect x="124" y="201" width="306" height="19" rx="4" fill="#ffe4e6"/>
+      <text x="132" y="214" font-size="10.5" font-family="Consolas,monospace" fill="#9f1239">key: photos/2026/bob.jpg</text>
+      <rect x="124" y="223" width="306" height="19" rx="4" fill="#f1f5f9"/>
+      <text x="132" y="236" font-size="10.5" font-family="Consolas,monospace" fill="#475569">data + meta（2.1 MB）</text>
+      <!-- Object 3 -->
+      <rect x="52" y="258" width="386" height="56" rx="10" fill="#ffffff" stroke="#fda4af" stroke-width="1.4"/>
+      <rect x="124" y="265" width="306" height="19" rx="4" fill="#ffe4e6"/>
+      <text x="132" y="278" font-size="10.5" font-family="Consolas,monospace" fill="#9f1239">key: docs/report-2026.pdf</text>
+      <rect x="124" y="287" width="306" height="19" rx="4" fill="#f1f5f9"/>
+      <text x="132" y="300" font-size="10.5" font-family="Consolas,monospace" fill="#475569">data + meta（480 KB）</text>
+      <text x="245" y="352" text-anchor="middle" font-size="12.5" fill="#be123c">…… 海量扁平对象，无目录层级</text>
+      <!-- 对比面板 -->
+      <rect x="490" y="58" width="360" height="332" rx="14" fill="#ffffff" stroke="#fecdd3" stroke-width="1.6"/>
+      <text x="670" y="86" text-anchor="middle" font-size="14.5" font-weight="800" fill="#9f1239">与文件系统的本质差异</text>
+      <rect x="510" y="104" width="320" height="84" rx="10" fill="#fff1f2" stroke="#fecdd3"/>
+      <text x="526" y="128" font-size="12.5" font-weight="700" fill="#be123c">① 没有真正的目录层级</text>
+      <text x="526" y="148" font-size="11" fill="#64748b">「/」只是 key 的字符串形态，</text>
+      <text x="526" y="165" font-size="11" fill="#64748b">不存在目录树与目录语义操作</text>
+      <rect x="510" y="198" width="320" height="84" rx="10" fill="#fff1f2" stroke="#fecdd3"/>
+      <text x="526" y="222" font-size="12.5" font-weight="700" fill="#be123c">② 对象不可变</text>
+      <text x="526" y="242" font-size="11" fill="#64748b">不擅长修改：覆盖即写入新对象，</text>
+      <text x="526" y="259" font-size="11" fill="#64748b">历史版本需开启版本控制保留</text>
+      <rect x="510" y="292" width="320" height="84" rx="10" fill="#fff1f2" stroke="#fecdd3"/>
+      <text x="526" y="316" font-size="12.5" font-weight="700" fill="#be123c">③ 强项是海量与吞吐</text>
+      <text x="526" y="336" font-size="11" fill="#64748b">海量对象 + 一次性整读整写；</text>
+      <text x="526" y="353" font-size="11" fill="#64748b">高频小文件随机改写是反模式</text>
+    </svg>
+    <figcaption>图 1 · 对象存储模型：Bucket 下是扁平的 Object 列表，每个对象 = key + data + meta 三要素；「路径」只是 key 的字符串形态</figcaption>
+  </div>
+
+  <h3 id="c-ec">2.2 纠删码（Erasure Coding）：MinIO 的灵魂</h3>
+  <p>传统三副本存储存 1TB 要花 3TB；MinIO 用 <b>Reed-Solomon 纠删码</b>把对象切成 <b>N 个数据块 + M 个校验块</b>，分散到一组独立磁盘：</p>
+  <div class="figure">
+    <svg viewBox="0 0 880 430" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs><marker id="m2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9f1239"/></marker></defs>
+      <!-- 图例 -->
+      <rect x="742" y="20" width="14" height="14" rx="3" fill="#ffe4e6" stroke="#e11d48" stroke-width="1.4"/>
+      <text x="762" y="31" font-size="11" fill="#9f1239">数据块 ×4</text>
+      <rect x="742" y="42" width="14" height="14" rx="3" fill="#fef3c7" stroke="#d97706" stroke-width="1.4"/>
+      <text x="762" y="53" font-size="11" fill="#92400e">校验块 ×2</text>
+      <!-- 对象 -->
+      <rect x="28" y="92" width="132" height="60" rx="10" fill="#ffe4e6" stroke="#e11d48" stroke-width="2"/>
+      <text x="94" y="116" text-anchor="middle" font-size="12.5" font-weight="800" fill="#9f1239">对象数据</text>
+      <text x="94" y="138" text-anchor="middle" font-size="12" font-family="Consolas,monospace" fill="#be123c">1 MB</text>
+      <!-- 编码箭头 -->
+      <line x1="162" y1="122" x2="242" y2="122" stroke="#9f1239" stroke-width="2" marker-end="url(#m2)"/>
+      <text x="202" y="104" text-anchor="middle" font-size="11" font-weight="700" fill="#9f1239">EC:4+2 编码</text>
+      <text x="202" y="142" text-anchor="middle" font-size="10.5" font-family="Consolas,monospace" fill="#be123c">Reed-Solomon</text>
+      <!-- 纠删集 -->
+      <rect x="238" y="78" width="506" height="138" rx="12" fill="none" stroke="#9f1239" stroke-width="1.2" stroke-dasharray="5 4"/>
+      <text x="246" y="70" font-size="11.5" font-weight="700" fill="#9f1239">纠删集（EC Set）· 一组独立磁盘</text>
+      <!-- 数据块 -->
+      <rect x="250" y="96" width="72" height="44" rx="8" fill="#ffe4e6" stroke="#e11d48" stroke-width="1.8"/>
+      <text x="286" y="124" text-anchor="middle" font-size="13" font-weight="700" font-family="Consolas,monospace" fill="#9f1239">D1</text>
+      <rect x="332" y="96" width="72" height="44" rx="8" fill="#ffe4e6" stroke="#e11d48" stroke-width="1.8"/>
+      <text x="368" y="124" text-anchor="middle" font-size="13" font-weight="700" font-family="Consolas,monospace" fill="#9f1239">D2</text>
+      <rect x="414" y="96" width="72" height="44" rx="8" fill="#ffe4e6" stroke="#e11d48" stroke-width="1.8"/>
+      <text x="450" y="124" text-anchor="middle" font-size="13" font-weight="700" font-family="Consolas,monospace" fill="#9f1239">D3</text>
+      <rect x="496" y="96" width="72" height="44" rx="8" fill="#ffe4e6" stroke="#e11d48" stroke-width="1.8"/>
+      <text x="532" y="124" text-anchor="middle" font-size="13" font-weight="700" font-family="Consolas,monospace" fill="#9f1239">D4</text>
+      <rect x="578" y="96" width="72" height="44" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.8"/>
+      <text x="614" y="124" text-anchor="middle" font-size="13" font-weight="700" font-family="Consolas,monospace" fill="#92400e">P1</text>
+      <rect x="660" y="96" width="72" height="44" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.8"/>
+      <text x="696" y="124" text-anchor="middle" font-size="13" font-weight="700" font-family="Consolas,monospace" fill="#92400e">P2</text>
+      <!-- 连接线 -->
+      <line x1="286" y1="140" x2="286" y2="152" stroke="#cbd5e1" stroke-width="1.5"/>
+      <line x1="368" y1="140" x2="368" y2="152" stroke="#fca5a5" stroke-width="1.5"/>
+      <line x1="450" y1="140" x2="450" y2="152" stroke="#cbd5e1" stroke-width="1.5"/>
+      <line x1="532" y1="140" x2="532" y2="152" stroke="#cbd5e1" stroke-width="1.5"/>
+      <line x1="614" y1="140" x2="614" y2="152" stroke="#fca5a5" stroke-width="1.5"/>
+      <line x1="696" y1="140" x2="696" y2="152" stroke="#cbd5e1" stroke-width="1.5"/>
+      <!-- 磁盘 -->
+      <rect x="250" y="152" width="72" height="58" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+      <text x="286" y="176" text-anchor="middle" font-size="11.5" fill="#475569">磁盘 1</text>
+      <rect x="264" y="186" width="44" height="12" rx="3" fill="#ffffff" stroke="#cbd5e1"/>
+      <rect x="332" y="152" width="72" height="58" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="2.2"/>
+      <text x="368" y="176" text-anchor="middle" font-size="11.5" fill="#b91c1c">磁盘 2</text>
+      <line x1="344" y1="156" x2="392" y2="206" stroke="#dc2626" stroke-width="2.2"/>
+      <line x1="392" y1="156" x2="344" y2="206" stroke="#dc2626" stroke-width="2.2"/>
+      <text x="368" y="228" text-anchor="middle" font-size="10.5" fill="#dc2626">已损坏</text>
+      <rect x="414" y="152" width="72" height="58" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+      <text x="450" y="176" text-anchor="middle" font-size="11.5" fill="#475569">磁盘 3</text>
+      <rect x="428" y="186" width="44" height="12" rx="3" fill="#ffffff" stroke="#cbd5e1"/>
+      <rect x="496" y="152" width="72" height="58" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+      <text x="532" y="176" text-anchor="middle" font-size="11.5" fill="#475569">磁盘 4</text>
+      <rect x="510" y="186" width="44" height="12" rx="3" fill="#ffffff" stroke="#cbd5e1"/>
+      <rect x="578" y="152" width="72" height="58" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="2.2"/>
+      <text x="614" y="176" text-anchor="middle" font-size="11.5" fill="#b91c1c">磁盘 5</text>
+      <line x1="590" y1="156" x2="638" y2="206" stroke="#dc2626" stroke-width="2.2"/>
+      <line x1="638" y1="156" x2="590" y2="206" stroke="#dc2626" stroke-width="2.2"/>
+      <text x="614" y="228" text-anchor="middle" font-size="10.5" fill="#dc2626">已损坏</text>
+      <rect x="660" y="152" width="72" height="58" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+      <text x="696" y="176" text-anchor="middle" font-size="11.5" fill="#475569">磁盘 6</text>
+      <rect x="674" y="186" width="44" height="12" rx="3" fill="#ffffff" stroke="#cbd5e1"/>
+      <!-- 还原说明 -->
+      <rect x="250" y="240" width="482" height="36" rx="18" fill="#fff1f2" stroke="#fecdd3" stroke-width="1.4"/>
+      <text x="491" y="263" text-anchor="middle" font-size="12" font-weight="700" fill="#be123c">任意坏 2 块（数据块 / 校验块皆可）→ 其余 4 块仍可完整还原对象</text>
+      <!-- 空间开销对比 -->
+      <text x="440" y="300" text-anchor="middle" font-size="12.5" font-weight="700" fill="#334155">空间开销对比 —— 存储 1TB 有效数据</text>
+      <text x="36" y="330" font-size="11.5" font-weight="700" fill="#9f1239">MinIO EC:4+2</text>
+      <rect x="190" y="314" width="240" height="24" rx="6" fill="#e11d48"/>
+      <text x="310" y="331" text-anchor="middle" font-size="11.5" font-weight="700" fill="#ffffff">1.5x · 1.5 TB</text>
+      <text x="36" y="374" font-size="11.5" font-weight="700" fill="#475569">传统三副本</text>
+      <rect x="190" y="358" width="480" height="24" rx="6" fill="#94a3b8"/>
+      <text x="430" y="375" text-anchor="middle" font-size="11.5" font-weight="700" fill="#ffffff">3x · 3 TB</text>
+      <line x1="190" y1="386" x2="670" y2="386" stroke="#cbd5e1" stroke-width="1"/>
+      <line x1="350" y1="386" x2="350" y2="394" stroke="#94a3b8" stroke-width="1.5"/>
+      <line x1="510" y1="386" x2="510" y2="394" stroke="#94a3b8" stroke-width="1.5"/>
+      <line x1="670" y1="386" x2="670" y2="394" stroke="#94a3b8" stroke-width="1.5"/>
+      <text x="350" y="408" text-anchor="middle" font-size="10.5" fill="#94a3b8">1x（原始大小）</text>
+      <text x="510" y="408" text-anchor="middle" font-size="10.5" fill="#94a3b8">2x</text>
+      <text x="670" y="408" text-anchor="middle" font-size="10.5" fill="#94a3b8">3x</text>
+    </svg>
+    <figcaption>图 2 · 纠删码原理：EC:4+2 把 1MB 对象切成 4 数据块 + 2 校验块分散 6 块盘，任意坏 2 块仍可完整还原；空间开销 1.5x，远低于三副本的 3x</figcaption>
+  </div>
+
+  <p><b>读写比例可配</b>（N 越大吞吐越高，M 越大越抗坏）：</p>
+  <table>
+    <tr><th>EC 配置</th><th>空间开销</th><th>容忍坏盘数</th></tr>
+    <tr><td><code>EC:4+2</code></td><td>1.5x</td><td>2 盘</td></tr>
+    <tr><td><code>EC:8+4</code></td><td>1.5x</td><td>4 盘</td></tr>
+    <tr><td><code>EC:8+8</code></td><td>2x</td><td>8 盘（一半）</td></tr>
+  </table>
+  <ul>
+    <li><b>读写 quorum</b>：写需 ≥ N/2 块盘可用；读只需任意 N 块；</li>
+    <li>纠删集（EC set）= 一组独立磁盘（4 / 6 / 8 / 12 / 16 盘）；集群扩容按 server pool 横向加。</li>
+  </ul>
+  <div class="tip"><b>💡 bit-rot 防护：</b><span>每个数据块附 <b>HighwayHash 校验</b>——磁盘静默损坏（bit-rot）在读时被发现并<b>用其余块在线修复</b>，这是 MinIO 相比「rsync + 多副本」方案的本质优势。</span></div>
+
+  <h3 id="c-meta">2.3 元数据内联</h3>
+  <p>对象元数据（连同纠删配置、版本信息）<b>与数据块一起原子地写进纠删组</b>，不依赖外部元数据数据库——没有「元数据服务器」这个单点 / 瓶颈，这是 MinIO 能横向扩展到 EB 级的架构根基。</p>
+
+  <h3 id="c-iam">2.4 IAM 与安全</h3>
+  <table>
+    <tr><th>能力</th><th>说明</th></tr>
+    <tr><td>IAM 策略</td><td>策略语法兼容 AWS IAM：按 ARN / 动作授权，可细化到 bucket / prefix</td></tr>
+    <tr><td>身份体系</td><td>用户 / 组 / 服务账号；LDAP / OIDC 外部身份源（企业 / AIStor 能力）</td></tr>
+    <tr><td>STS</td><td>临时凭证：assume role、client certificate 等多种模式</td></tr>
+    <tr><td>加密</td><td>SSE-S3（KMS 托管）、SSE-C（客户密钥）、SSE-KMS；TLS 全链路</td></tr>
+  </table>
+
+  <h3 id="c-lifecycle">2.5 数据生命周期能力</h3>
+  <div class="figure">
+    <svg viewBox="0 0 880 530" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs><marker id="m4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#e11d48"/></marker></defs>
+      <!-- 辐射线（先画，压在盒子下） -->
+      <line x1="390" y1="226" x2="258" y2="134" stroke="#fb7185" stroke-width="2" marker-end="url(#m4)"/>
+      <line x1="490" y1="226" x2="622" y2="134" stroke="#fb7185" stroke-width="2" marker-end="url(#m4)"/>
+      <line x1="358" y1="264" x2="264" y2="282" stroke="#fb7185" stroke-width="2" marker-end="url(#m4)"/>
+      <line x1="522" y1="264" x2="614" y2="282" stroke="#fb7185" stroke-width="2" marker-end="url(#m4)"/>
+      <line x1="440" y1="306" x2="440" y2="417" stroke="#fb7185" stroke-width="2" marker-end="url(#m4)"/>
+      <!-- 中心 Bucket -->
+      <rect x="360" y="228" width="160" height="76" rx="14" fill="#e11d48" stroke="#9f1239" stroke-width="2.2"/>
+      <text x="440" y="262" text-anchor="middle" font-size="15" font-weight="800" fill="#ffffff">Bucket</text>
+      <text x="440" y="284" text-anchor="middle" font-size="10.5" fill="#ffe4e6">一切能力的配置单元</text>
+      <text x="440" y="330" text-anchor="middle" font-size="10.5" fill="#9f1239">（元数据与数据内联存储于纠删组，无外部元数据库）</text>
+      <!-- 版本控制 -->
+      <rect x="52" y="36" width="250" height="96" rx="12" fill="#ffffff" stroke="#fb7185" stroke-width="1.8"/>
+      <text x="177" y="66" text-anchor="middle" font-size="13" font-weight="800" fill="#9f1239">🕓 版本控制</text>
+      <text x="177" y="88" text-anchor="middle" font-size="10.5" fill="#64748b">开启后，删除 / 覆盖产生 delete marker</text>
+      <text x="177" y="106" text-anchor="middle" font-size="10.5" fill="#64748b">历史版本完整保留，可回滚防误删</text>
+      <!-- ILM -->
+      <rect x="578" y="36" width="250" height="96" rx="12" fill="#ffffff" stroke="#fb7185" stroke-width="1.8"/>
+      <text x="703" y="66" text-anchor="middle" font-size="13" font-weight="800" fill="#9f1239">♻️ ILM 生命周期</text>
+      <text x="703" y="88" text-anchor="middle" font-size="10.5" fill="#64748b">按天数 / 版本数 / 标签自动过期</text>
+      <text x="703" y="106" text-anchor="middle" font-size="10.5" fill="#64748b">或转投远程 Tier（S3 / Azure / GCS）</text>
+      <!-- 复制 -->
+      <rect x="20" y="250" width="240" height="96" rx="12" fill="#ffffff" stroke="#fb7185" stroke-width="1.8"/>
+      <text x="140" y="280" text-anchor="middle" font-size="13" font-weight="800" fill="#9f1239">🔁 复制（Replication）</text>
+      <text x="140" y="302" text-anchor="middle" font-size="10.5" fill="#64748b">桶级 / 站点级（active-active）</text>
+      <text x="140" y="320" text-anchor="middle" font-size="10.5" fill="#64748b">同步数据 · 元数据 · 删除操作</text>
+      <!-- 对象锁定 -->
+      <rect x="616" y="250" width="244" height="96" rx="12" fill="#ffffff" stroke="#fb7185" stroke-width="1.8"/>
+      <text x="738" y="280" text-anchor="middle" font-size="13" font-weight="800" fill="#9f1239">🔒 对象锁定（WORM）</text>
+      <text x="738" y="302" text-anchor="middle" font-size="10.5" fill="#64748b">合规保留 / 法定保留（金融留痕）</text>
+      <text x="738" y="320" text-anchor="middle" font-size="10.5" fill="#64748b">锁定期内任何人都无法删除</text>
+      <!-- 事件通知 -->
+      <rect x="315" y="420" width="250" height="96" rx="12" fill="#ffffff" stroke="#fb7185" stroke-width="1.8"/>
+      <text x="440" y="450" text-anchor="middle" font-size="13" font-weight="800" fill="#9f1239">📣 事件通知</text>
+      <text x="440" y="472" text-anchor="middle" font-size="10.5" fill="#64748b">put / delete 等事件推送到</text>
+      <text x="440" y="490" text-anchor="middle" font-size="10.5" fill="#64748b">Kafka · NATS · AMQP · Redis · Webhook</text>
+    </svg>
+    <figcaption>图 3 · 数据生命周期能力辐射图：版本控制、ILM、复制、对象锁定（WORM）、事件通知全部围绕 bucket 配置，构成完整的数据治理平面</figcaption>
+  </div>
+  <ul>
+    <li><b>版本控制</b>：bucket 开版本后，删除 / 覆盖产生 delete marker 与历史版本，可回滚；</li>
+    <li><b>ILM（生命周期）</b>：按天数 / 版本数 / 标签做过期、转 Tier（远程 S3 / Azure / GCS）；</li>
+    <li><b>复制（Replication）</b>：桶级 / 站点级（active-active），含元数据与删除同步；</li>
+    <li><b>对象锁定</b>：WORM 合规（金融留痕）、法定保留；</li>
+    <li><b>事件通知</b>：put / delete 等事件推到 Kafka / NATS / AMQP / Redis / Webhook——可作事件驱动架构的源头。</li>
+  </ul>
+</section>
+
+<!-- ============ 3 架构 ============ -->
+<section id="arch">
+  <h2>3. 架构与数据路径</h2>
+  <div class="figure">
+    <svg viewBox="0 0 880 460" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs>
+        <marker id="m3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9f1239"/></marker>
+        <marker id="m3g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#059669"/></marker>
+      </defs>
+      <text x="36" y="30" font-size="11" fill="#b91c1c">✕ = 故障盘（healing 自动重建）</text>
+      <!-- Client -->
+      <rect x="360" y="16" width="160" height="48" rx="10" fill="#f1f5f9" stroke="#475569" stroke-width="1.8"/>
+      <text x="440" y="37" text-anchor="middle" font-size="13" font-weight="800" fill="#1e293b">Client</text>
+      <text x="440" y="55" text-anchor="middle" font-size="10.5" fill="#64748b">AWS SDK · aws-cli · mc</text>
+      <line x1="440" y1="66" x2="440" y2="94" stroke="#9f1239" stroke-width="2" marker-end="url(#m3)"/>
+      <text x="454" y="84" font-size="11" font-weight="700" fill="#9f1239">S3 API · 任意节点可接入</text>
+      <!-- 节点连接线（压在盘符下） -->
+      <line x1="121" y1="164" x2="121" y2="198" stroke="#cbd5e1" stroke-width="1.5"/>
+      <line x1="325" y1="164" x2="325" y2="198" stroke="#cbd5e1" stroke-width="1.5"/>
+      <line x1="529" y1="164" x2="529" y2="198" stroke="#cbd5e1" stroke-width="1.5"/>
+      <line x1="733" y1="164" x2="733" y2="198" stroke="#cbd5e1" stroke-width="1.5"/>
+      <!-- 4 节点 -->
+      <rect x="28" y="100" width="186" height="64" rx="12" fill="#ffe4e6" stroke="#e11d48" stroke-width="2"/>
+      <text x="121" y="126" text-anchor="middle" font-size="13" font-weight="800" fill="#9f1239">MinIO 节点 1</text>
+      <text x="121" y="147" text-anchor="middle" font-size="10.5" fill="#be123c">对等 · 无主从</text>
+      <rect x="232" y="100" width="186" height="64" rx="12" fill="#ffe4e6" stroke="#e11d48" stroke-width="2"/>
+      <text x="325" y="126" text-anchor="middle" font-size="13" font-weight="800" fill="#9f1239">MinIO 节点 2</text>
+      <text x="325" y="147" text-anchor="middle" font-size="10.5" fill="#be123c">对等 · 无主从</text>
+      <rect x="436" y="100" width="186" height="64" rx="12" fill="#ffe4e6" stroke="#e11d48" stroke-width="2"/>
+      <text x="529" y="126" text-anchor="middle" font-size="13" font-weight="800" fill="#9f1239">MinIO 节点 3</text>
+      <text x="529" y="147" text-anchor="middle" font-size="10.5" fill="#be123c">对等 · 无主从</text>
+      <rect x="640" y="100" width="186" height="64" rx="12" fill="#ffe4e6" stroke="#e11d48" stroke-width="2"/>
+      <text x="733" y="126" text-anchor="middle" font-size="13" font-weight="800" fill="#9f1239">MinIO 节点 4</text>
+      <text x="733" y="147" text-anchor="middle" font-size="10.5" fill="#be123c">对等 · 无主从</text>
+      <text x="440" y="188" text-anchor="middle" font-size="11.5" font-weight="700" fill="#9f1239">对等集群：无元数据服务器 · 无 leader —— 对 key 一致性哈希定位纠删集</text>
+      <!-- 磁盘 -->
+      <g font-family="Consolas,monospace" font-size="10.5" text-anchor="middle">
+        <rect x="33" y="198" width="38" height="30" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/><text x="52" y="217" fill="#475569">d1</text>
+        <rect x="79" y="198" width="38" height="30" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/><text x="98" y="217" fill="#475569">d2</text>
+        <rect x="125" y="198" width="38" height="30" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/><text x="144" y="217" fill="#475569">d3</text>
+        <rect x="171" y="198" width="38" height="30" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/><text x="190" y="217" fill="#475569">d4</text>
+        <rect x="237" y="198" width="38" height="30" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/><text x="256" y="217" fill="#475569">d1</text>
+        <rect x="283" y="198" width="38" height="30" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/><text x="302" y="217" fill="#475569">d2</text>
+        <rect x="329" y="198" width="38" height="30" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/><text x="348" y="217" fill="#475569">d3</text>
+        <rect x="375" y="198" width="38" height="30" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/><text x="394" y="217" fill="#475569">d4</text>
+        <rect x="441" y="198" width="38" height="30" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/><text x="460" y="217" fill="#475569">d1</text>
+        <rect x="487" y="198" width="38" height="30" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="2"/><text x="506" y="217" fill="#b91c1c">d2</text>
+        <rect x="533" y="198" width="38" height="30" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/><text x="552" y="217" fill="#475569">d3</text>
+        <rect x="579" y="198" width="38" height="30" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/><text x="598" y="217" fill="#475569">d4</text>
+        <rect x="645" y="198" width="38" height="30" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/><text x="664" y="217" fill="#475569">d1</text>
+        <rect x="691" y="198" width="38" height="30" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/><text x="710" y="217" fill="#475569">d2</text>
+        <rect x="737" y="198" width="38" height="30" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/><text x="756" y="217" fill="#475569">d3</text>
+        <rect x="783" y="198" width="38" height="30" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/><text x="802" y="217" fill="#475569">d4</text>
+      </g>
+      <line x1="495" y1="203" x2="517" y2="223" stroke="#dc2626" stroke-width="2"/>
+      <line x1="517" y1="203" x2="495" y2="223" stroke="#dc2626" stroke-width="2"/>
+      <!-- healing -->
+      <path d="M 52,240 Q 270,310 497,234" fill="none" stroke="#059669" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#m3g)"/>
+      <text x="270" y="300" text-anchor="middle" font-size="11" font-weight="700" fill="#047857">healing：其余健康块在线重建坏块并回写</text>
+      <!-- 数据路径卡片 -->
+      <rect x="28" y="330" width="272" height="112" rx="12" fill="#ffffff" stroke="#fecdd3" stroke-width="1.5"/>
+      <text x="164" y="356" text-anchor="middle" font-size="12.5" font-weight="800" fill="#9f1239">PUT 写路径</text>
+      <text x="164" y="378" text-anchor="middle" font-size="10.5" fill="#64748b">并行把 N 数据块 + M 校验块写入 EC set</text>
+      <text x="164" y="394" text-anchor="middle" font-size="10.5" fill="#64748b">每块附 HighwayHash 校验值</text>
+      <text x="164" y="410" text-anchor="middle" font-size="10.5" fill="#64748b">写 quorum（≥ 半数盘）成功即返回成功</text>
+      <rect x="316" y="330" width="272" height="112" rx="12" fill="#ffffff" stroke="#fecdd3" stroke-width="1.5"/>
+      <text x="452" y="356" text-anchor="middle" font-size="12.5" font-weight="800" fill="#9f1239">GET 读路径</text>
+      <text x="452" y="378" text-anchor="middle" font-size="10.5" fill="#64748b">并行发起读、先到先得</text>
+      <text x="452" y="394" text-anchor="middle" font-size="10.5" fill="#64748b">拿到最快返回的 N 个数据块即可重组</text>
+      <text x="452" y="410" text-anchor="middle" font-size="10.5" fill="#64748b">天然规避慢盘与坏盘的影响</text>
+      <rect x="604" y="330" width="272" height="112" rx="12" fill="#ffffff" stroke="#fecdd3" stroke-width="1.5"/>
+      <text x="740" y="356" text-anchor="middle" font-size="12.5" font-weight="800" fill="#9f1239">bit-rot 防护与在线修复</text>
+      <text x="740" y="378" text-anchor="middle" font-size="10.5" fill="#64748b">读时校验 HighwayHash，发现静默损坏</text>
+      <text x="740" y="394" text-anchor="middle" font-size="10.5" fill="#64748b">异步用其余健康块重建并回写</text>
+      <text x="740" y="410" text-anchor="middle" font-size="10.5" fill="#64748b">相比「rsync + 多副本」的本质优势</text>
+    </svg>
+    <figcaption>图 4 · 分布式架构：4 节点对等集群、无元数据服务器；PUT 并行写 N+M 块、GET 并行读最快返回的 N 块，坏块由 healing 在线重建</figcaption>
+  </div>
+  <ul>
+    <li><b>对等集群</b>：任何节点接收任何请求，无元数据服务器、无 leader——节点数只受网络与运维约束；</li>
+    <li><b>写路径</b>：节点内并行地把数据 + 校验块写到 EC set 的各盘，多数成功即成功；</li>
+    <li><b>读路径</b>：并行读、先到先得（healing 读：发现坏块异步重建回写）；</li>
+    <li><b>负载</b>：网关与纠删计算都在用户进程空间，无上下文切换——配合 Go 运行时实现高吞吐。</li>
+  </ul>
+</section>
+
+<!-- ============ 4 使用实战 ============ -->
+<section id="usage">
+  <h2>4. 使用实战</h2>
+
+  <h3 id="u-mc">4.1 启动与 mc</h3>
+  <pre><code class="lang-bash"># 分布式 4 节点 × 4 盘
+minio server http://node{1...4}/data{1...4} --console-address ":9001"
+
+# mc（MinIO Client）
+mc alias set local http://127.0.0.1:9000 minioadmin minioadmin
+mc mb local/mybucket
+mc cp ./report.pdf local/mybucket/docs/
+mc ls local/mybucket --recursive
+mc mirror local/mybucket ./backup-dir      # 目录/桶互相同步
+mc admin info local                        # 集群与磁盘状态
+mc ilm add --expiry-days 90 local/mybucket # 生命周期</code></pre>
+
+  <h3 id="u-go">4.2 Go SDK（minio-go，S3 风格）</h3>
+  <pre><code class="lang-bash">go get github.com/minio/minio-go/v7</code></pre>
+  <pre><code class="lang-go">package main
+
+import (
+    "context"
+    "github.com/minio/minio-go/v7"
+    "github.com/minio/minio-go/v7/pkg/credentials"
+)
+
+func main() {
+    cli, err := minio.New("127.0.0.1:9000", &amp;minio.Options{
+        Creds: credentials.NewStaticV4("minioadmin", "minioadmin", ""),
+        Secure: false,
+    })
+    ctx := context.Background()
+
+    // 建桶
+    cli.MakeBucket(ctx, "photos", minio.MakeBucketOptions{Region: "us-east-1"})
+
+    // 上传（服务端自动分片纠删码）
+    cli.FPutObject(ctx, "photos", "2026/alice.png", "./alice.png",
+        minio.PutObjectOptions{ContentType: "image/png"})
+
+    // 下载
+    cli.FGetObject(ctx, "photos", "2026/alice.png", "./out.png",
+        minio.GetObjectOptions{})
+
+    // 流式上传（适合 HTTP 转存场景）
+    cli.PutObject(ctx, "photos", "stream.bin", reader, size,
+        minio.PutObjectOptions{})
+}</code></pre>
+
+  <h3 id="u-presign">4.3 Presigned URL（最常见的集成模式）</h3>
+  <pre><code class="lang-go">// 生成 7 天有效的下载链接，应用不代理流量、客户端直连 MinIO
+url, _ := cli.PresignedGetObject(ctx, "photos", "2026/alice.png",
+    7*24*time.Hour, nil)
+
+// 生成上传链接（让客户端直传，如浏览器上传大文件）
+upURL, _ := cli.PresignedPutObject(ctx, "photos", "user-upload.bin", time.Hour)</code></pre>
+  <div class="figure">
+    <svg viewBox="0 0 880 315" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs>
+        <marker id="m5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#e11d48"/></marker>
+        <marker id="m5s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker>
+      </defs>
+      <rect x="190" y="14" width="500" height="44" rx="10" fill="#fff1f2" stroke="#fecdd3" stroke-width="1.4"/>
+      <text x="440" y="41" text-anchor="middle" font-size="11.5" fill="#be123c">Presigned URL ＝ 带签名的限时 S3 URL（GET 下载 / PUT 上传均可预签）</text>
+      <!-- 浏览器 -->
+      <rect x="36" y="104" width="180" height="80" rx="12" fill="#f1f5f9" stroke="#475569" stroke-width="1.8"/>
+      <text x="126" y="136" text-anchor="middle" font-size="13" font-weight="800" fill="#1e293b">浏览器 / 客户端</text>
+      <text x="126" y="158" text-anchor="middle" font-size="10.5" fill="#64748b">大文件上传方</text>
+      <!-- 应用 -->
+      <rect x="350" y="104" width="190" height="80" rx="12" fill="#ffffff" stroke="#e11d48" stroke-width="2"/>
+      <text x="445" y="136" text-anchor="middle" font-size="13" font-weight="800" fill="#9f1239">应用服务器</text>
+      <text x="445" y="158" text-anchor="middle" font-size="10.5" fill="#be123c">只做授权，不经手数据</text>
+      <!-- MinIO -->
+      <rect x="664" y="104" width="180" height="80" rx="12" fill="#ffe4e6" stroke="#9f1239" stroke-width="2.2"/>
+      <text x="754" y="136" text-anchor="middle" font-size="13" font-weight="800" fill="#9f1239">MinIO</text>
+      <text x="754" y="158" text-anchor="middle" font-size="10.5" fill="#be123c">S3 兼容对象存储</text>
+      <!-- ① -->
+      <line x1="216" y1="128" x2="346" y2="128" stroke="#475569" stroke-width="2" marker-end="url(#m5s)"/>
+      <text x="281" y="118" text-anchor="middle" font-size="11" font-weight="700" fill="#334155">① 请求上传（业务鉴权）</text>
+      <!-- ② -->
+      <line x1="350" y1="172" x2="220" y2="172" stroke="#e11d48" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#m5)"/>
+      <text x="285" y="200" text-anchor="middle" font-size="11" font-weight="700" fill="#be123c">② 返回 Presigned URL（限时有效）</text>
+      <!-- ③ 直传 -->
+      <path d="M 126,184 L 126,248 L 754,248 L 754,186" fill="none" stroke="#e11d48" stroke-width="3.5" marker-end="url(#m5)"/>
+      <text x="440" y="274" text-anchor="middle" font-size="12.5" font-weight="800" fill="#be123c">③ 客户端携预签名 URL 直传 MinIO —— 应用不代理流量</text>
+      <text x="440" y="294" text-anchor="middle" font-size="11" fill="#64748b">大文件不占应用带宽 · AccessKey 密钥不下发到客户端</text>
+    </svg>
+    <figcaption>图 5 · Presigned URL 直传场景：浏览器先向应用请求预签名 URL，随后直连 MinIO 上传——应用只做授权，不代理数据流量</figcaption>
+  </div>
+
+  <h3 id="u-ver">4.4 版本控制 + 事件通知</h3>
+  <pre><code class="lang-bash">mc version enable local/mybucket          # 开版本（防误删）
+mc admin config set local notify_kafka:1 \
+  brokers="kafka:9092" topic="minio-events"
+mc event add local/mybucket arn:minio:sqs::1:kafka \
+  --event put,delete                       # 对象事件推 Kafka</code></pre>
+  <p>事件负载（JSON）包含 bucket / key / size / etag 等——配合 Kafka / NATS 即「对象落库 → 触发处理」的流水线。</p>
+</section>
+
+<!-- ============ 5 S3 兼容性 ============ -->
+<section id="compat">
+  <h2>5. 与 S3 的兼容性说明</h2>
+  <p>核心 API（bucket / object / acl / versioning / lifecycle / replication / encryption / STS / Select）<b>高度兼容</b>；受 S3 自身演进与 MinIO 商业策略影响，少数新 AWS 特性（如某些 S3 Express、Table 系特性）不在社区版。<b>AWS SDK（Java / Python / Go v2 等）与 aws cli 均可直接对 MinIO 使用</b>——只需改 endpoint。</p>
+  <div class="tip"><b>✅ 实操：</b><span>aws cli 加 <code>--endpoint-url http://minio:9000</code> 即可直连 MinIO；Java / Python SDK 修改 endpoint 配置同理。Spark、Hive、Trino 等 S3 生态工具把 s3a endpoint 指向 MinIO 即完成接入。</span></div>
+</section>
+
+<!-- ============ 6 版本与产品线 ============ -->
+<section id="versions">
+  <h2>6. 版本与产品线（2025 起重要变化）</h2>
+  <table>
+    <tr><th>产品</th><th>许可证</th><th>定位</th></tr>
+    <tr><td><b>MinIO Object Store（社区版）</b></td><td>AGPLv3</td><td>开源主体，S3 兼容核心能力完整（EC、版本、复制、ILM、加密）</td></tr>
+    <tr><td><b>MinIO AIStor（商业）</b></td><td>商业许可</td><td>promptObject（LLM 问对象）、AIHub、S3-over-RDMA、Catalog / Firewall / KMS / Cache / 全局控制台等企业特性</td></tr>
+  </table>
+  <div class="warn"><b>⚠️ 社区版 2025 年的调整（务必知悉）：</b>
+    <ul>
+      <li><b>内置 Web Console 收缩为只读 object-browser</b>：LDAP / OIDC 外部身份源登录移入商业版，社区版 UI 主要用于浏览与基础操作（IAM 等经 mc / API 管理）；</li>
+      <li>功能迭代重心转向商业版；社区版继续接收<b>安全与缺陷修复</b>（例如 2025.10 修复的 service-account 权限提升 CVE，社区版同步可用）；</li>
+      <li><b>AGPLv3 的含义</b>：网络服务化使用也需开源派生作品，商业集成前评估合规；S3 API 兼容使替换 / 共存容易。</li>
+    </ul>
+  </div>
+  <p><b>替代生态</b>（选型时对照）：</p>
+  <p>
+    <span class="pill">Ceph RGW（一体化平台 · 重）</span>
+    <span class="pill">SeaweedFS（轻量 · 性能好）</span>
+    <span class="pill">Garage（地理分布式 · 轻量）</span>
+    <span class="pill">OpenIO / Scality</span>
+  </p>
+</section>
+
+<!-- ============ 7 常见坑 ============ -->
+<section id="pitfalls">
+  <h2>7. 常见坑与最佳实践</h2>
+  <div class="danger"><b>🚫 最常见事故：</b><span>生产用单节点 / 单盘——单盘模式<b>无冗余</b>，磁盘坏 = 数据丢。生产至少 4 块盘（一个最小 EC set），并跨主机 / 机架分布故障域。</span></div>
+  <table>
+    <tr><th style="width:42px">#</th><th>坑</th><th>说明与对策</th></tr>
+    <tr><td>1</td><td><b>生产别用单节点</b></td><td>EC 需要 ≥ 4 块盘；单盘模式无冗余，磁盘坏 = 数据丢</td></tr>
+    <tr><td>2</td><td><b>EC set 内磁盘要「独立」</b></td><td>同 EC set 的盘挂同一 HBA / 同一故障域，容错就是纸面数字——按机架 / 主机感知布局</td></tr>
+    <tr><td>3</td><td><b>扩容按 pool，别混盘</b></td><td>新 pool 建议整组节点加入；不同容量的盘混布会导致数据倾斜</td></tr>
+    <tr><td>4</td><td><b>时钟同步</b></td><td>分布式部署对时间敏感（证书与复制），NTP 必备</td></tr>
+    <tr><td>5</td><td><b>大文件分片并行</b></td><td>SDK 默认 part size 16MiB；超 GB 级对象调大 partSize / 并发，吞吐翻倍</td></tr>
+    <tr><td>6</td><td><b>别拿 MinIO 当文件系统</b></td><td>高频小文件随机改写是反模式；真正需要 POSIX 挂载时评估 S3-FS 网关的延迟代价</td></tr>
+    <tr><td>7</td><td><b>监控磁盘与 healing</b></td><td><code>mc admin heal</code>、Prometheus 指标（磁盘离线、healing 队列）告警必须有</td></tr>
+    <tr><td>8</td><td><b>升级前读 release note</b></td><td>社区版个别版本标记 Breaking（如 2025-05-24），滚动升级前备份数据目录元信息</td></tr>
+  </table>
+</section>
+
+<!-- ============ 8 选型小结 ============ -->
+<section id="summary">
+  <h2>8. 选型小结</h2>
+  <table>
+    <tr><th>场景</th><th>建议</th></tr>
+    <tr><td>K8s / 云原生应用附件、备份（Velero）</td><td><b>MinIO 社区版</b>，几乎默认选择</td></tr>
+    <tr><td>数据湖 / Parquet / DuckDB-Trino 查询底座</td><td><b>MinIO</b>（S3 协议 + 高吞吐）</td></tr>
+    <tr><td>AI 训练数据集分发</td><td>MinIO / <b>AIStor</b>（看重 promptObject 等则商业版）</td></tr>
+    <tr><td>超大规模多协议（块 / 文件 / 对象一体）</td><td><b>Ceph</b></td></tr>
+    <tr><td>极轻量边缘</td><td><b>SeaweedFS / Garage</b></td></tr>
+  </table>
+  <div class="tip"><b>✅ 选型口诀：</b><span>K8s 附件与备份默认 MinIO 社区版；数据湖底座选 MinIO；要 promptObject 等 AI 能力看 AIStor；要多协议一体化选 Ceph；极轻量边缘选 SeaweedFS / Garage。记住 AGPLv3 的开源传染性，商业集成前先过合规。</span></div>
+</section>
+
+<footer>MinIO 技术介绍与使用指南 · 参考 MinIO 官方文档与 github.com/minio/minio · 2026-09</footer>
+</main>
+</div>
+
+<script>
+document.querySelectorAll('pre code.lang-go').forEach(function(block){
+  var src = block.textContent;
+  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  var master = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  var out = src.replace(master, function(m, c1, c2, s, kw, typ, num, fn){
+    if (c1 || c2) return '<span class="cmt">'+m+'</span>';
+    if (s) return '<span class="str">'+m+'</span>';
+    if (kw) return '<span class="kw">'+m+'</span>';
+    if (typ) return '<span class="typ">'+m+'</span>';
+    if (num) return '<span class="num">'+m+'</span>';
+    if (fn) return '<span class="fn">'+m+'</span>';
+    return m;
+  });
+  block.innerHTML = out;
+});
+document.querySelectorAll('pre code.lang-bash').forEach(function(block){
+  var src = block.textContent;
+  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  var out = src.replace(/(#[^\n]*)|("(?:\\.|[^"\\\n])*")|(\b(?:minio|mc|go|curl|export)\b)|(--[a-zA-Z][\w-]*)|(\b\d[\d.]*\b)/g, function(m, cmt, s, kw, flag, num){
+    if (cmt) return '<span class="cmt">'+m+'</span>';
+    if (s) return '<span class="str">'+m+'</span>';
+    if (kw) return '<span class="kw">'+m+'</span>';
+    if (flag) return '<span class="typ">'+m+'</span>';
+    if (num) return '<span class="num">'+m+'</span>';
+    return m;
+  });
+  block.innerHTML = out;
+});
+document.querySelectorAll('pre code').forEach(function(b){
+  var label=document.createElement('span');label.className='codelabel';
+  label.textContent = /lang-go/.test(b.className)?'Go':'Bash';
+  b.closest('pre').appendChild(label);
+});
+</script>
+</body>
+</html>

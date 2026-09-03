@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apache Kafka 技术介绍与使用指南</title>
+<style>
+  :root{
+    --accent:#d97706; --accent-light:#fef3c7; --accent-dark:#92400e;
+    --bg:#fdf9f3; --card:#ffffff; --border:#eee0c8; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#1c1206; --kw:#fdba74; --str:#86efac; --cmt:#9c7b5f; --num:#fde047; --fn:#f472b6; --typ:#7dd3fc;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#78350f 0%,#d97706 55%,#f59e0b 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(217,119,6,.28)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.92;font-size:15px;max-width:680px}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:#0f172a}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin-bottom:18px;box-shadow:0 1px 3px rgba(120,53,15,.06)}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#c79a5b;background:#2e1d0b;padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code{background:#fdf3e0;color:#b45309;border:1px solid #f3e0bd;padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(120,53,15,.06)}
+  th{background:#fae7c4;color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:#fdf8ef}
+  .tip,.warn,.danger{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px;display:flex;gap:10px;align-items:flex-start}
+  .tip{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .tip b,.warn b,.danger b{flex-shrink:0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0;box-shadow:0 1px 3px rgba(120,53,15,.06)}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .pill{display:inline-block;background:var(--accent-light);color:var(--accent-dark);border-radius:16px;padding:2px 12px;font-size:12px;margin:2px 4px 2px 0}
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:16px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:0 1px 3px rgba(120,53,15,.06)}
+  .feature .ficon{font-size:24px;margin-bottom:6px}
+  .feature h4{margin:0 0 6px;color:var(--accent-dark)}
+  .feature .fcomp{font-size:11.5px;color:var(--accent);background:var(--accent-light);border-radius:12px;padding:1px 10px;display:inline-block;margin-bottom:8px;font-family:Consolas,monospace}
+  .feature p{font-size:12.8px;color:var(--muted);margin:0;line-height:1.6}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+    .features{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="sidebar">
+  <div class="logo">Apache Kafka<span class="ver">4.x</span></div>
+  <div class="sub">分布式事件流平台 · KRaft</div>
+  <a href="#intro">1. 项目简介</a>
+  <a class="sub-link" href="#quick-start">1.1 快速启动</a>
+  <a href="#concepts">2. 核心概念</a>
+  <a class="sub-link" href="#c-model">2.1 消息模型四要素</a>
+  <a class="sub-link" href="#c-group">2.2 消费组</a>
+  <a class="sub-link" href="#c-semantics">2.3 投递语义</a>
+  <a class="sub-link" href="#c-retention">2.4 保留策略与分层存储</a>
+  <a href="#arch">3. 架构原理</a>
+  <a class="sub-link" href="#a-zk">3.1 ZooKeeper 时代</a>
+  <a class="sub-link" href="#a-kraft">3.2 KRaft 架构</a>
+  <a class="sub-link" href="#a-pillars">3.3 高吞吐三支柱</a>
+  <a class="sub-link" href="#a-write">3.4 一次写入路径</a>
+  <a href="#practice">4. 使用实战（Go）</a>
+  <a class="sub-link" href="#p-producer">4.1 生产者</a>
+  <a class="sub-link" href="#p-consumer">4.2 消费组</a>
+  <a class="sub-link" href="#p-cli">4.3 命令行运维</a>
+  <a class="sub-link" href="#p-config">4.4 关键配置速查</a>
+  <a href="#kafka4">5. Kafka 4.0 变化速览</a>
+  <a href="#pitfalls">6. 常见坑与最佳实践</a>
+  <a href="#compare">7. 选型对比</a>
+</nav>
+
+<main>
+
+<div class="hero">
+  <h1>Apache Kafka</h1>
+  <p>高吞吐分布式事件流平台：<b>日志型存储 + 发布订阅 + 流处理</b>三合一。一句话模型——<b>分布式、分区的、可复制的追加写日志</b>：生产者把事件追加到日志尾部，消费者按 offset 顺序读取，日志按保留策略持久保存、可随时重放。4.0（2025.3.18）彻底移除 ZooKeeper，KRaft 成为唯一模式。</p>
+  <div class="meta">
+    <span>KRaft / 4.0 · 2025.3</span>
+    <span>分区日志 · 可重放</span>
+    <span>百万级分区</span>
+    <span>acks=all · 幂等 · 事务</span>
+    <span>Go segmentio/kafka-go 实战</span>
+  </div>
+</div>
+
+<!-- ============ 1 简介 ============ -->
+<section id="intro">
+  <h2>1. 项目简介<span class="lvl b">入门</span></h2>
+
+  <p>Kafka 起源于 LinkedIn（2011 年开源），最初为解决<b>海量活动日志的订阅分发</b>，如今已是事实标准的事件流平台（Event Streaming Platform）。官网 <a href="https://kafka.apache.org" target="_blank">kafka.apache.org</a>。</p>
+
+  <div class="tip"><b>💡 一句话模型：</b><span>「分布式、分区的、可复制的追加写日志（append-only log）」。生产者把事件追加到日志尾部，消费者按 offset 顺序读取；日志按保留策略持久保存，可安全重放。</span></div>
+
+  <h3>三大能力域</h3>
+  <div class="features">
+    <div class="feature">
+      <div class="ficon">📨</div>
+      <h4>消息系统</h4>
+      <span class="fcomp">Broker / Producer / Consumer</span>
+      <p>发布订阅 + 消费组负载均衡，可替代传统 MQ，支撑削峰填谷与服务解耦。</p>
+    </div>
+    <div class="feature">
+      <div class="ficon">🗄️</div>
+      <h4>存储系统</h4>
+      <span class="fcomp">Topic / Partition / Log</span>
+      <p>数据按策略保留（时长 / 大小 / 分层存储），安全可重放，天然的事件溯源底座。</p>
+    </div>
+    <div class="feature">
+      <div class="ficon">⚡</div>
+      <h4>流处理</h4>
+      <span class="fcomp">Kafka Streams / ksqlDB</span>
+      <p>在 Kafka 之上做有状态实时计算，免额外集群即可完成轻量流式作业。</p>
+    </div>
+  </div>
+
+  <h4>适用场景</h4>
+  <p>
+    <span class="pill">事件溯源</span>
+    <span class="pill">微服务解耦</span>
+    <span class="pill">削峰填谷</span>
+    <span class="pill">CDC 数据管道</span>
+    <span class="pill">用户行为埋点</span>
+    <span class="pill">实时风控 / 大屏</span>
+  </p>
+
+  <div class="warn"><b>⚠️ 不适用：</b><span>需要复杂路由与优先级队列的传统 MQ 场景（考虑 RabbitMQ）、海量小文件的存储（那是对象存储的事）。</span></div>
+
+  <h3 id="quick-start">1.1 快速启动（4.x KRaft 模式，无需 ZooKeeper）</h3>
+  <pre><code class="lang-bash"># 生成集群 UUID
+KAFKA_CLUSTER_ID="$(bin/kafka-storage.sh random-uuid)"
+
+# 格式化存储（KRaft 把元数据放进日志自身，不再依赖 ZooKeeper）
+bin/kafka-storage.sh format -t $KAFKA_CLUSTER_ID -c config/kraft/server.properties
+
+# 启动
+bin/kafka-server-start.sh config/kraft/server.properties</code></pre>
+
+  <div class="tip"><b>✅ 三条命令起一个单机集群：</b><span>KRaft 模式下元数据存储在日志自身，不再需要先搭一套 ZooKeeper——这是 4.x 最大的部署简化。</span></div>
+</section>
+
+<!-- ============ 2 核心概念 ============ -->
+<section id="concepts">
+  <h2>2. 核心概念<span class="lvl b">基础</span></h2>
+
+  <h3 id="c-model">2.1 消息模型四要素</h3>
+  <div class="figure">
+    <svg viewBox="0 0 880 418" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs><marker id="ag1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker>
+      <marker id="ag1o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d97706"/></marker></defs>
+      <!-- Topic -->
+      <rect x="270" y="24" width="340" height="58" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="1.8"/>
+      <text x="440" y="50" text-anchor="middle" font-size="15" font-weight="800" fill="#92400e">Topic · orders</text>
+      <text x="440" y="70" text-anchor="middle" font-size="10.5" fill="#b45309">消息的逻辑分类（如 orders、user-events）</text>
+      <!-- messages -->
+      <g font-family="Consolas,monospace" font-size="12" fill="#1e293b">
+        <rect x="60" y="96" width="200" height="40" rx="8" fill="#fff" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="160" y="121" text-anchor="middle">key="order-1001"</text>
+        <rect x="340" y="96" width="200" height="40" rx="8" fill="#fff" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="440" y="121" text-anchor="middle">key="order-1002"</text>
+        <rect x="620" y="96" width="200" height="40" rx="8" fill="#fff" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="720" y="121" text-anchor="middle">key="order-1003"</text>
+      </g>
+      <!-- hash -->
+      <rect x="330" y="164" width="220" height="44" rx="10" fill="#92400e"/>
+      <text x="440" y="192" text-anchor="middle" font-family="Consolas,monospace" font-size="13" font-weight="700" fill="#fff">hash(key) % 3</text>
+      <!-- arrows msg → hash -->
+      <line x1="160" y1="136" x2="366" y2="164" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#ag1)"/>
+      <line x1="440" y1="136" x2="440" y2="164" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#ag1)"/>
+      <line x1="720" y1="136" x2="514" y2="164" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#ag1)"/>
+      <!-- arrows hash → partitions -->
+      <line x1="408" y1="208" x2="168" y2="238" stroke="#d97706" stroke-width="2" marker-end="url(#ag1o)"/>
+      <line x1="440" y1="208" x2="440" y2="238" stroke="#d97706" stroke-width="2" marker-end="url(#ag1o)"/>
+      <line x1="472" y1="208" x2="712" y2="238" stroke="#d97706" stroke-width="2" marker-end="url(#ag1o)"/>
+      <!-- partitions -->
+      <g>
+        <rect x="30" y="238" width="270" height="118" rx="12" fill="#fff" stroke="#e7d5b0" stroke-width="1.6"/>
+        <text x="44" y="262" font-size="13" font-weight="800" fill="#92400e">Partition 0</text>
+        <text x="286" y="262" text-anchor="end" font-size="10.5" fill="#64748b">Broker 1 · Leader</text>
+        <g font-size="11.5" font-weight="700">
+          <rect x="42" y="274" width="38" height="30" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="61" y="294" text-anchor="middle" fill="#92400e">0</text>
+          <rect x="85" y="274" width="38" height="30" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="104" y="294" text-anchor="middle" fill="#92400e">1</text>
+          <rect x="128" y="274" width="38" height="30" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="147" y="294" text-anchor="middle" fill="#92400e">2</text>
+          <rect x="171" y="274" width="38" height="30" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="190" y="294" text-anchor="middle" fill="#92400e">3</text>
+          <rect x="214" y="274" width="38" height="30" rx="4" fill="#d97706"/><text x="233" y="294" text-anchor="middle" fill="#fff">4</text>
+        </g>
+        <line x1="256" y1="289" x2="284" y2="289" stroke="#d97706" stroke-width="2" marker-end="url(#ag1o)"/>
+        <text x="44" y="340" font-size="10.5" fill="#64748b">RF=3 · 副本 [B1·L, B2·F, B3·F]</text>
+      </g>
+      <g>
+        <rect x="305" y="238" width="270" height="118" rx="12" fill="#fff" stroke="#e7d5b0" stroke-width="1.6"/>
+        <text x="319" y="262" font-size="13" font-weight="800" fill="#92400e">Partition 1</text>
+        <text x="561" y="262" text-anchor="end" font-size="10.5" fill="#64748b">Broker 2 · Leader</text>
+        <g font-size="11.5" font-weight="700">
+          <rect x="317" y="274" width="38" height="30" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="336" y="294" text-anchor="middle" fill="#92400e">0</text>
+          <rect x="360" y="274" width="38" height="30" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="379" y="294" text-anchor="middle" fill="#92400e">1</text>
+          <rect x="403" y="274" width="38" height="30" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="422" y="294" text-anchor="middle" fill="#92400e">2</text>
+          <rect x="446" y="274" width="38" height="30" rx="4" fill="#d97706"/><text x="465" y="294" text-anchor="middle" fill="#fff">3</text>
+          <rect x="489" y="274" width="38" height="30" rx="4" fill="#fffaf0" stroke="#e7c99a" stroke-dasharray="4 3"/><text x="508" y="294" text-anchor="middle" fill="#c4a26a">…</text>
+        </g>
+        <line x1="531" y1="289" x2="559" y2="289" stroke="#d97706" stroke-width="2" marker-end="url(#ag1o)"/>
+        <text x="319" y="340" font-size="10.5" fill="#64748b">RF=3 · 副本 [B2·L, B3·F, B1·F]</text>
+      </g>
+      <g>
+        <rect x="580" y="238" width="270" height="118" rx="12" fill="#fff" stroke="#e7d5b0" stroke-width="1.6"/>
+        <text x="594" y="262" font-size="13" font-weight="800" fill="#92400e">Partition 2</text>
+        <text x="836" y="262" text-anchor="end" font-size="10.5" fill="#64748b">Broker 3 · Leader</text>
+        <g font-size="11.5" font-weight="700">
+          <rect x="592" y="274" width="38" height="30" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="611" y="294" text-anchor="middle" fill="#92400e">0</text>
+          <rect x="635" y="274" width="38" height="30" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="654" y="294" text-anchor="middle" fill="#92400e">1</text>
+          <rect x="678" y="274" width="38" height="30" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="697" y="294" text-anchor="middle" fill="#92400e">2</text>
+          <rect x="721" y="274" width="38" height="30" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="740" y="294" text-anchor="middle" fill="#92400e">3</text>
+          <rect x="764" y="274" width="38" height="30" rx="4" fill="#d97706"/><text x="783" y="294" text-anchor="middle" fill="#fff">4</text>
+        </g>
+        <line x1="806" y1="289" x2="834" y2="289" stroke="#d97706" stroke-width="2" marker-end="url(#ag1o)"/>
+        <text x="594" y="340" font-size="10.5" fill="#64748b">RF=3 · 副本 [B3·L, B1·F, B2·F]</text>
+      </g>
+      <!-- notes -->
+      <text x="440" y="382" text-anchor="middle" font-size="11" fill="#64748b">每个分区 = 一个有序、不可变的追加写日志 · 格中数字 = 消息在分区内的 offset · 橙色格 = 最新追加</text>
+      <text x="440" y="404" text-anchor="middle" font-size="11" fill="#b45309">分区内部严格有序，跨分区不保证顺序 → 同一订单的状态流用相同 key，恒定哈希到同一分区</text>
+    </svg>
+    <figcaption>图 1 · Topic / Partition 模型：Topic 按 key 哈希分成多个分区，每个分区是一个带 offset 的有序追加日志，多副本分布在不同 Broker</figcaption>
+  </div>
+
+  <table>
+    <tr><th style="width:130px">要素</th><th>说明</th></tr>
+    <tr><td><b>Topic</b></td><td>消息的逻辑分类（如 <code>orders</code>、<code>user-events</code>）</td></tr>
+    <tr><td><b>Partition</b></td><td>分片单位。<b>分区内部严格有序，跨分区不保证顺序</b>——需要顺序的消息（同一订单的状态流）要用相同的 key（如 order_id），相同 key 哈希到同一分区</td></tr>
+    <tr><td><b>Offset</b></td><td>消费者在分区内的进度游标，由<b>消费者自己提交</b>到内部 topic <code>__consumer_offsets</code></td></tr>
+    <tr><td><b>Replication</b></td><td>每个分区有多个副本（<code>replication.factor=3</code>），一个 leader 处理读写，其余 follower 同步；leader 挂掉时从 ISR（同步副本集合）中选举新 leader</td></tr>
+  </table>
+
+  <h3 id="c-group">2.2 消费组（Consumer Group）</h3>
+  <div class="figure">
+    <svg viewBox="0 0 880 452" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs><marker id="ag2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker>
+      <marker id="ag2o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d97706"/></marker></defs>
+      <!-- topic -->
+      <rect x="200" y="20" width="480" height="92" rx="12" fill="#fef3c7" stroke="#d97706" stroke-width="1.8"/>
+      <text x="440" y="44" text-anchor="middle" font-size="14" font-weight="800" fill="#92400e">Topic · orders（6 个分区）</text>
+      <g font-size="11.5" font-weight="700">
+        <rect x="253" y="58" width="54" height="28" rx="5" fill="#fff" stroke="#e7c99a"/><text x="280" y="77" text-anchor="middle" fill="#92400e">P0</text>
+        <rect x="317" y="58" width="54" height="28" rx="5" fill="#fff" stroke="#e7c99a"/><text x="344" y="77" text-anchor="middle" fill="#92400e">P1</text>
+        <rect x="381" y="58" width="54" height="28" rx="5" fill="#fff" stroke="#e7c99a"/><text x="408" y="77" text-anchor="middle" fill="#92400e">P2</text>
+        <rect x="445" y="58" width="54" height="28" rx="5" fill="#fff" stroke="#e7c99a"/><text x="472" y="77" text-anchor="middle" fill="#92400e">P3</text>
+        <rect x="509" y="58" width="54" height="28" rx="5" fill="#fff" stroke="#e7c99a"/><text x="536" y="77" text-anchor="middle" fill="#92400e">P4</text>
+        <rect x="573" y="58" width="54" height="28" rx="5" fill="#fff" stroke="#e7c99a"/><text x="600" y="77" text-anchor="middle" fill="#92400e">P5</text>
+      </g>
+      <line x1="330" y1="112" x2="232" y2="150" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#ag2)"/>
+      <line x1="550" y1="112" x2="648" y2="150" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#ag2)"/>
+      <!-- Group A -->
+      <rect x="30" y="150" width="400" height="252" rx="12" fill="#fff" stroke="#f3e0bd" stroke-width="1.6"/>
+      <text x="50" y="176" font-size="13.5" font-weight="800" fill="#92400e">Group A · billing-service</text>
+      <text x="50" y="196" font-size="10.5" fill="#64748b">组内平分：3 个消费者 × 各 2 分区（单播负载均衡）</text>
+      <g>
+        <rect x="55" y="212" width="100" height="44" rx="8" fill="#e0f2fe" stroke="#7dd3fc" stroke-width="1.5"/>
+        <text x="105" y="238" text-anchor="middle" font-size="11.5" font-weight="700" fill="#075985">Consumer 1</text>
+        <rect x="55" y="280" width="100" height="44" rx="8" fill="#e0f2fe" stroke="#7dd3fc" stroke-width="1.5"/>
+        <text x="105" y="306" text-anchor="middle" font-size="11.5" font-weight="700" fill="#075985">Consumer 2</text>
+        <rect x="55" y="348" width="100" height="44" rx="8" fill="#e0f2fe" stroke="#7dd3fc" stroke-width="1.5"/>
+        <text x="105" y="374" text-anchor="middle" font-size="11.5" font-weight="700" fill="#075985">Consumer 3</text>
+      </g>
+      <g font-size="11.5" font-weight="700">
+        <rect x="172" y="204" width="136" height="60" rx="8" fill="#fff7e8" stroke="#f0dcae"/>
+        <rect x="180" y="214" width="60" height="40" rx="5" fill="#d97706"/><text x="210" y="239" text-anchor="middle" fill="#fff">P0</text>
+        <rect x="244" y="214" width="60" height="40" rx="5" fill="#d97706"/><text x="274" y="239" text-anchor="middle" fill="#fff">P1</text>
+        <rect x="172" y="272" width="136" height="60" rx="8" fill="#fff7e8" stroke="#f0dcae"/>
+        <rect x="180" y="282" width="60" height="40" rx="5" fill="#d97706"/><text x="210" y="307" text-anchor="middle" fill="#fff">P2</text>
+        <rect x="244" y="282" width="60" height="40" rx="5" fill="#d97706"/><text x="274" y="307" text-anchor="middle" fill="#fff">P3</text>
+        <rect x="172" y="340" width="136" height="60" rx="8" fill="#fff7e8" stroke="#f0dcae"/>
+        <rect x="180" y="350" width="60" height="40" rx="5" fill="#d97706"/><text x="210" y="375" text-anchor="middle" fill="#fff">P4</text>
+        <rect x="244" y="350" width="60" height="40" rx="5" fill="#d97706"/><text x="274" y="375" text-anchor="middle" fill="#fff">P5</text>
+      </g>
+      <line x1="155" y1="234" x2="172" y2="234" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#ag2)"/>
+      <line x1="155" y1="302" x2="172" y2="302" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#ag2)"/>
+      <line x1="155" y1="370" x2="172" y2="370" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#ag2)"/>
+      <text x="230" y="394" text-anchor="middle" font-size="10.5" fill="#b45309">扩容极限 = 分区数：分区只有 6 个，第 7 个消费者只能空闲</text>
+      <!-- Group B -->
+      <rect x="450" y="150" width="400" height="252" rx="12" fill="#fff" stroke="#f3e0bd" stroke-width="1.6"/>
+      <text x="470" y="176" font-size="13.5" font-weight="800" fill="#92400e">Group B · risk-service</text>
+      <text x="470" y="196" font-size="10.5" fill="#64748b">独立消费全量：与 Group A 互不影响（组间广播）</text>
+      <rect x="475" y="212" width="110" height="44" rx="8" fill="#e0f2fe" stroke="#7dd3fc" stroke-width="1.5"/>
+      <text x="530" y="238" text-anchor="middle" font-size="11.5" font-weight="700" fill="#075985">Consumer 1</text>
+      <g font-size="11.5" font-weight="700">
+        <rect x="610" y="196" width="220" height="124" rx="8" fill="#fff7e8" stroke="#f0dcae"/>
+        <rect x="620" y="210" width="60" height="34" rx="5" fill="#d97706"/><text x="650" y="232" text-anchor="middle" fill="#fff">P0</text>
+        <rect x="690" y="210" width="60" height="34" rx="5" fill="#d97706"/><text x="720" y="232" text-anchor="middle" fill="#fff">P1</text>
+        <rect x="760" y="210" width="60" height="34" rx="5" fill="#d97706"/><text x="790" y="232" text-anchor="middle" fill="#fff">P2</text>
+        <rect x="620" y="258" width="60" height="34" rx="5" fill="#d97706"/><text x="650" y="280" text-anchor="middle" fill="#fff">P3</text>
+        <rect x="690" y="258" width="60" height="34" rx="5" fill="#d97706"/><text x="720" y="280" text-anchor="middle" fill="#fff">P4</text>
+        <rect x="760" y="258" width="60" height="34" rx="5" fill="#d97706"/><text x="790" y="280" text-anchor="middle" fill="#fff">P5</text>
+      </g>
+      <line x1="585" y1="234" x2="610" y2="234" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#ag2)"/>
+      <text x="650" y="368" text-anchor="middle" font-size="10.5" fill="#b45309">订单服务与风控服务各自消费全量消息</text>
+      <!-- bottom note -->
+      <text x="440" y="430" text-anchor="middle" font-size="11" fill="#64748b">一个分区同一时刻只分配给组内一个消费者；成员变化（扩缩容 / 宕机）触发 Rebalance 重新分配分区</text>
+      <text x="440" y="450" text-anchor="middle" font-size="11" fill="#64748b">KIP-848 新协议（4.0 GA）：增量式 rebalance，告别 stop-the-world 全组冻结</text>
+    </svg>
+    <figcaption>图 2 · 消费组工作模型：组内平分分区（单播 + 负载均衡），组间独立消费全量（广播）</figcaption>
+  </div>
+
+  <ul>
+    <li>同一 group 内的消费者<b>平分分区</b>（一个分区同一时刻只给组内一个消费者）——组内水平扩容的极限是分区数；</li>
+    <li>不同 group 之间互不影响（广播语义）：订单服务与风控服务各自消费全量消息；</li>
+    <li><b>Rebalance</b>：组内成员变化（扩缩容 / 宕机）触发分区重分配。KIP-848 新协议（4.0 GA）把 stop-the-world 式 rebalance 变为增量式，大幅减少抖动。</li>
+  </ul>
+
+  <h3 id="c-semantics">2.3 投递语义</h3>
+  <table>
+    <tr><th style="width:150px">语义</th><th>生产者</th><th>消费者</th></tr>
+    <tr><td><b>At most once</b></td><td><code>acks=1/0</code>，不重试</td><td>先提交 offset 再处理（可能丢）</td></tr>
+    <tr><td><b>At least once</b>（默认推荐）</td><td><code>acks=all</code> + retries + 幂等</td><td>先处理再提交 offset（可能重）</td></tr>
+    <tr><td><b>Exactly once</b></td><td>幂等生产者 + 事务</td><td><code>isolation.level=read_committed</code></td></tr>
+  </table>
+  <p><b>幂等生产者</b>：<code>enable.idempotence=true</code>（broker 按 PID + 序列号去重）；<b>事务</b>：跨分区原子写 + 消费-转换-生产（Kafka Streams 的 exactly-once）。</p>
+
+  <h3 id="c-retention">2.4 保留策略与分层存储</h3>
+  <ul>
+    <li>基于时间 / 大小的日志保留（<code>retention.ms=604800000</code> 即 7 天），到期分区<b>头部</b>的旧数据被截断；</li>
+    <li><b>Tiered Storage（KIP-405，3.6 引入、生产可用）</b>：把冷数据卸载到 S3 等对象存储，本地只留热数据——「无限保留 + 便宜的历史回溯」成为可能。</li>
+  </ul>
+  <div class="tip"><b>💡 日志不是队列：</b><span>消息不会消费即删，而是按保留策略统一过期——消费多少次都不影响数据，这让「回放 / 重建索引 / 新业务从头消费」零成本。</span></div>
+</section>
+
+<!-- ============ 3 架构原理 ============ -->
+<section id="arch">
+  <h2>3. 架构原理<span class="lvl m">进阶</span></h2>
+
+  <h3 id="a-zk">3.1 4.0 之前的架构（ZooKeeper 时代）</h3>
+  <p>老架构中元数据（broker 注册、controller 选举、分区分配）放在独立的 ZooKeeper 集群，Broker 集群与 ZK 双向联动：</p>
+  <pre><code class="lang-bash">Producer/Consumer ──► Broker 集群 ──► ZooKeeper（元数据、controller 选举）</code></pre>
+  <div class="danger"><b>🚫 ZK 时代四大痛点：</b><span>① 两套系统双份运维；② ZK watch 风暴（批量分区变更时通知雪崩）；③ 分区规模上限约 20 万；④ controller 故障切换 18~30s。</span></div>
+
+  <h3 id="a-kraft">3.2 KRaft 架构（Kafka Raft，4.0 唯一模式）</h3>
+  <div class="figure">
+    <svg viewBox="0 0 880 510" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs><marker id="ag3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker>
+      <marker id="ag3o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d97706"/></marker></defs>
+      <!-- Controller quorum -->
+      <rect x="30" y="22" width="460" height="124" rx="12" fill="#fff" stroke="#d97706" stroke-width="2"/>
+      <text x="50" y="46" font-size="13.5" font-weight="800" fill="#92400e">Controller Quorum（Raft 选举）</text>
+      <rect x="63" y="56" width="102" height="18" rx="9" fill="#b45309"/>
+      <text x="114" y="69" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">★ Leader</text>
+      <g font-size="11.5" font-weight="700">
+        <rect x="55" y="80" width="118" height="44" rx="8" fill="#d97706"/><text x="114" y="106" text-anchor="middle" fill="#fff">Controller 1</text>
+        <rect x="193" y="80" width="118" height="44" rx="8" fill="#fff" stroke="#e7c99a" stroke-width="1.5"/><text x="252" y="106" text-anchor="middle" fill="#92400e">Controller 2</text>
+        <rect x="331" y="80" width="118" height="44" rx="8" fill="#fff" stroke="#e7c99a" stroke-width="1.5"/><text x="390" y="106" text-anchor="middle" fill="#92400e">Controller 3</text>
+      </g>
+      <line x1="175" y1="96" x2="191" y2="96" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#ag3)"/>
+      <line x1="191" y1="108" x2="175" y2="108" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#ag3)"/>
+      <line x1="313" y1="96" x2="329" y2="96" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#ag3)"/>
+      <line x1="329" y1="108" x2="313" y2="108" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#ag3)"/>
+      <text x="260" y="138" text-anchor="middle" font-size="10.5" fill="#64748b">多数派（3 取 2）达成共识后提交元数据</text>
+      <!-- metadata log -->
+      <rect x="530" y="22" width="320" height="124" rx="12" fill="#fff" stroke="#f3e0bd" stroke-width="1.6"/>
+      <text x="690" y="44" text-anchor="middle" font-size="13" font-weight="800" fill="#92400e" font-family="Consolas,monospace">@metadata 元数据日志</text>
+      <text x="690" y="62" text-anchor="middle" font-size="10.5" fill="#64748b">内部 topic __cluster_metadata · Raft 维护一致性</text>
+      <g font-size="11" font-weight="700">
+        <rect x="574" y="74" width="40" height="28" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="594" y="93" text-anchor="middle" fill="#92400e">0</text>
+        <rect x="622" y="74" width="40" height="28" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="642" y="93" text-anchor="middle" fill="#92400e">1</text>
+        <rect x="670" y="74" width="40" height="28" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="690" y="93" text-anchor="middle" fill="#92400e">2</text>
+        <rect x="718" y="74" width="40" height="28" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="738" y="93" text-anchor="middle" fill="#92400e">3</text>
+        <rect x="766" y="74" width="40" height="28" rx="4" fill="#d97706"/><text x="786" y="93" text-anchor="middle" fill="#fff">4</text>
+      </g>
+      <text x="690" y="126" text-anchor="middle" font-size="10.5" fill="#64748b">各 Broker 通过 快照 + 日志增量 同步元数据</text>
+      <!-- quorum → metadata -->
+      <line x1="490" y1="84" x2="530" y2="84" stroke="#d97706" stroke-width="2" marker-end="url(#ag3o)"/>
+      <text x="510" y="74" text-anchor="middle" font-size="10" fill="#b45309">维护</text>
+      <!-- metadata → brokers -->
+      <line x1="690" y1="146" x2="690" y2="188" stroke="#d97706" stroke-width="2" marker-end="url(#ag3o)"/>
+      <text x="700" y="172" font-size="10.5" fill="#b45309">元数据同步</text>
+      <!-- Broker cluster -->
+      <rect x="170" y="190" width="540" height="196" rx="12" fill="#fff" stroke="#f3e0bd" stroke-width="1.6"/>
+      <text x="190" y="214" font-size="13.5" font-weight="800" fill="#92400e">Broker 集群（数据面）</text>
+      <text x="190" y="232" font-size="10.5" fill="#64748b">分区多副本 · Leader 处理读写，Follower 同步</text>
+      <g>
+        <rect x="190" y="244" width="160" height="100" rx="8" fill="#fffaf0" stroke="#e7c99a" stroke-width="1.5"/>
+        <text x="270" y="264" text-anchor="middle" font-size="11.5" font-weight="800" fill="#1e293b">Broker 1</text>
+        <g font-size="10.5" font-weight="700">
+          <rect x="198" y="274" width="44" height="34" rx="4" fill="#d97706"/><text x="220" y="296" text-anchor="middle" fill="#fff">P0·L</text>
+          <rect x="248" y="274" width="44" height="34" rx="4" fill="#fff" stroke="#e7c99a"/><text x="270" y="296" text-anchor="middle" fill="#92400e">P1·F</text>
+          <rect x="298" y="274" width="44" height="34" rx="4" fill="#fff" stroke="#e7c99a"/><text x="320" y="296" text-anchor="middle" fill="#92400e">P2·F</text>
+        </g>
+        <rect x="365" y="244" width="160" height="100" rx="8" fill="#fffaf0" stroke="#e7c99a" stroke-width="1.5"/>
+        <text x="445" y="264" text-anchor="middle" font-size="11.5" font-weight="800" fill="#1e293b">Broker 2</text>
+        <g font-size="10.5" font-weight="700">
+          <rect x="373" y="274" width="44" height="34" rx="4" fill="#fff" stroke="#e7c99a"/><text x="395" y="296" text-anchor="middle" fill="#92400e">P0·F</text>
+          <rect x="423" y="274" width="44" height="34" rx="4" fill="#d97706"/><text x="445" y="296" text-anchor="middle" fill="#fff">P1·L</text>
+          <rect x="473" y="274" width="44" height="34" rx="4" fill="#fff" stroke="#e7c99a"/><text x="495" y="296" text-anchor="middle" fill="#92400e">P2·F</text>
+        </g>
+        <rect x="540" y="244" width="160" height="100" rx="8" fill="#fffaf0" stroke="#e7c99a" stroke-width="1.5"/>
+        <text x="620" y="264" text-anchor="middle" font-size="11.5" font-weight="800" fill="#1e293b">Broker 3</text>
+        <g font-size="10.5" font-weight="700">
+          <rect x="548" y="274" width="44" height="34" rx="4" fill="#fff" stroke="#e7c99a"/><text x="570" y="296" text-anchor="middle" fill="#92400e">P0·F</text>
+          <rect x="598" y="274" width="44" height="34" rx="4" fill="#fff" stroke="#e7c99a"/><text x="620" y="296" text-anchor="middle" fill="#92400e">P1·F</text>
+          <rect x="648" y="274" width="44" height="34" rx="4" fill="#d97706"/><text x="670" y="296" text-anchor="middle" fill="#fff">P2·L</text>
+        </g>
+      </g>
+      <text x="440" y="368" text-anchor="middle" font-size="10.5" fill="#64748b">L = Leader（读写） · F = Follower（同步副本） · RF=3 · ISR=[1,2,3]</text>
+      <!-- producer / consumer -->
+      <rect x="30" y="262" width="120" height="60" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="1.8"/>
+      <text x="90" y="288" text-anchor="middle" font-size="12.5" font-weight="800" fill="#92400e">Producer</text>
+      <text x="90" y="306" text-anchor="middle" font-size="10.5" fill="#b45309">push 写入</text>
+      <line x1="150" y1="292" x2="188" y2="292" stroke="#d97706" stroke-width="2" marker-end="url(#ag3o)"/>
+      <rect x="730" y="262" width="120" height="60" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="1.8"/>
+      <text x="790" y="288" text-anchor="middle" font-size="12.5" font-weight="800" fill="#92400e">Consumer</text>
+      <text x="790" y="306" text-anchor="middle" font-size="10.5" fill="#b45309">pull 拉取</text>
+      <line x1="710" y1="292" x2="728" y2="292" stroke="#d97706" stroke-width="2" marker-end="url(#ag3o)"/>
+      <!-- compare strip -->
+      <rect x="30" y="408" width="395" height="84" rx="10" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.6" stroke-dasharray="6 4"/>
+      <text x="227" y="432" text-anchor="middle" font-size="12" font-weight="800" fill="#991b1b">ZooKeeper 时代痛点</text>
+      <text x="227" y="454" text-anchor="middle" font-size="10.5" fill="#b91c1c">两套系统双份运维 · ZK watch 风暴</text>
+      <text x="227" y="474" text-anchor="middle" font-size="10.5" fill="#b91c1c">分区上限约 20 万 · controller 切换 18~30s</text>
+      <line x1="428" y1="450" x2="452" y2="450" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#ag3)"/>
+      <rect x="455" y="408" width="395" height="84" rx="10" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.6"/>
+      <text x="652" y="432" text-anchor="middle" font-size="12" font-weight="800" fill="#065f46">KRaft 收益</text>
+      <text x="652" y="454" text-anchor="middle" font-size="10.5" fill="#047857">运维面减半 · controller 切换秒级（小于 5s）</text>
+      <text x="652" y="474" text-anchor="middle" font-size="10.5" fill="#047857">分区百万级 · topic 创建等元操作 O(1)</text>
+    </svg>
+    <figcaption>图 3 · KRaft 架构：元数据写进 @metadata 日志（Raft 多数派共识），Controller Quorum 选举 Leader，Broker 通过快照 + 增量同步元数据</figcaption>
+  </div>
+
+  <ul>
+    <li>元数据存进内部 topic <code>__cluster_metadata</code>，用 Raft 维护一致性；</li>
+    <li><b>收益</b>：运维面减半、controller 切换秒级（&lt;5s）、分区上限从几十万到<b>百万级</b>、topic 创建等元操作 O(1)；</li>
+    <li>部署形态：可组合（broker + controller 同机，小集群）或分离（大规模推荐）。</li>
+  </ul>
+
+  <h3 id="a-pillars">3.3 高吞吐的三大支柱</h3>
+  <div class="figure">
+    <svg viewBox="0 0 880 295" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs><marker id="ag5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d97706"/></marker></defs>
+      <!-- card 1 -->
+      <rect x="30" y="25" width="260" height="232" rx="12" fill="#fff" stroke="#f3e0bd" stroke-width="1.6"/>
+      <text x="160" y="52" text-anchor="middle" font-size="13.5" font-weight="800" fill="#92400e">① 顺序写磁盘</text>
+      <rect x="60" y="70" width="200" height="44" rx="6" fill="#fffaf0" stroke="#e7c99a" stroke-width="1.5"/>
+      <g font-size="11" font-weight="700">
+        <rect x="71" y="76" width="40" height="32" rx="4" fill="#d97706"/><text x="91" y="97" text-anchor="middle" fill="#fff">0</text>
+        <rect x="117" y="76" width="40" height="32" rx="4" fill="#d97706"/><text x="137" y="97" text-anchor="middle" fill="#fff">1</text>
+        <rect x="163" y="76" width="40" height="32" rx="4" fill="#d97706"/><text x="183" y="97" text-anchor="middle" fill="#fff">2</text>
+        <rect x="209" y="76" width="40" height="32" rx="4" fill="none" stroke="#e7c99a" stroke-dasharray="4 3"/><text x="229" y="97" text-anchor="middle" fill="#c4a26a">…</text>
+      </g>
+      <line x1="71" y1="130" x2="243" y2="130" stroke="#d97706" stroke-width="2" marker-end="url(#ag5)"/>
+      <text x="160" y="152" text-anchor="middle" font-size="10.5" fill="#b45309">只追加、不修改 → offset 单调递增</text>
+      <text x="160" y="180" text-anchor="middle" font-size="10.8" fill="#64748b">追加日志避免随机 IO 寻址</text>
+      <text x="160" y="202" text-anchor="middle" font-size="10.8" fill="#64748b">普通磁盘也能数百 MB/s</text>
+      <text x="160" y="224" text-anchor="middle" font-size="10.8" fill="#64748b">磁盘顺序写 ≈ 内存随机写</text>
+      <!-- card 2 -->
+      <rect x="310" y="25" width="260" height="232" rx="12" fill="#fff" stroke="#f3e0bd" stroke-width="1.6"/>
+      <text x="440" y="52" text-anchor="middle" font-size="13.5" font-weight="800" fill="#92400e">② 页缓存 + 零拷贝</text>
+      <rect x="330" y="72" width="86" height="36" rx="6" fill="#e0f2fe" stroke="#7dd3fc" stroke-width="1.5"/>
+      <text x="373" y="95" text-anchor="middle" font-size="11.5" font-weight="700" fill="#075985">页缓存</text>
+      <rect x="464" y="72" width="86" height="36" rx="6" fill="#e0f2fe" stroke="#7dd3fc" stroke-width="1.5"/>
+      <text x="507" y="95" text-anchor="middle" font-size="11.5" font-weight="700" fill="#075985">网卡</text>
+      <line x1="416" y1="90" x2="462" y2="90" stroke="#d97706" stroke-width="2.5" marker-end="url(#ag5)"/>
+      <text x="440" y="124" text-anchor="middle" font-size="10.5" fill="#b45309">sendfile 系统调用</text>
+      <text x="440" y="146" text-anchor="middle" font-size="10.5" fill="#dc2626">✗ 不进用户态（零拷贝）</text>
+      <text x="440" y="180" text-anchor="middle" font-size="10.8" fill="#64748b">消费时页缓存数据直达网卡</text>
+      <text x="440" y="202" text-anchor="middle" font-size="10.8" fill="#64748b">不占用户态 CPU 拷贝开销</text>
+      <text x="440" y="224" text-anchor="middle" font-size="10.8" fill="#64748b">读写走 OS page cache，重启不丢</text>
+      <!-- card 3 -->
+      <rect x="590" y="25" width="260" height="232" rx="12" fill="#fff" stroke="#f3e0bd" stroke-width="1.6"/>
+      <text x="720" y="52" text-anchor="middle" font-size="13.5" font-weight="800" fill="#92400e">③ 批量 + 压缩</text>
+      <g font-size="10.5" font-weight="700">
+        <rect x="610" y="72" width="42" height="32" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="631" y="92" text-anchor="middle" fill="#92400e">msg</text>
+        <rect x="660" y="72" width="42" height="32" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="681" y="92" text-anchor="middle" fill="#92400e">msg</text>
+        <rect x="710" y="72" width="42" height="32" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="731" y="92" text-anchor="middle" fill="#92400e">msg</text>
+      </g>
+      <line x1="756" y1="88" x2="774" y2="88" stroke="#d97706" stroke-width="2" marker-end="url(#ag5)"/>
+      <rect x="778" y="66" width="60" height="44" rx="6" fill="#d97706"/>
+      <text x="808" y="93" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">batch</text>
+      <text x="720" y="130" text-anchor="middle" font-size="10.5" fill="#b45309">多条消息 → 整批压缩传输</text>
+      <text x="720" y="180" text-anchor="middle" font-size="10.8" fill="#64748b">攒批：batch.size / linger.ms</text>
+      <text x="720" y="202" text-anchor="middle" font-size="10.8" fill="#64748b">压缩：lz4 / zstd</text>
+      <text x="720" y="224" text-anchor="middle" font-size="10.8" fill="#64748b">吞吐成倍提升：CPU 换带宽</text>
+      <!-- summary -->
+      <text x="440" y="283" text-anchor="middle" font-size="11.5" font-weight="700" fill="#92400e">三支柱合力：单集群每秒百万级消息、毫秒级端到端延迟</text>
+    </svg>
+    <figcaption>图 4 · 高吞吐三大支柱：顺序写磁盘、页缓存 + 零拷贝（sendfile）、批量攒批 + 压缩</figcaption>
+  </div>
+
+  <h3 id="a-write">3.4 一次写入路径</h3>
+  <div class="figure">
+    <svg viewBox="0 0 880 520" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs><marker id="ag4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker>
+      <marker id="ag4o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d97706"/></marker>
+      <marker id="ag4g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#059669"/></marker></defs>
+      <!-- Producer -->
+      <rect x="30" y="22" width="410" height="124" rx="12" fill="#fff" stroke="#f3e0bd" stroke-width="1.6"/>
+      <text x="50" y="46" font-size="13.5" font-weight="800" fill="#92400e">Producer（生产者）</text>
+      <rect x="50" y="60" width="170" height="50" rx="8" fill="#fef3c7" stroke="#f0dcae" stroke-width="1.5"/>
+      <text x="135" y="80" text-anchor="middle" font-size="11.5" font-weight="700" fill="#92400e">① key 哈希路由</text>
+      <text x="135" y="98" text-anchor="middle" font-size="10.5" fill="#b45309">同 key → 同分区保序</text>
+      <line x1="220" y1="85" x2="240" y2="85" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#ag4)"/>
+      <rect x="240" y="60" width="180" height="50" rx="8" fill="#fef3c7" stroke="#f0dcae" stroke-width="1.5"/>
+      <text x="330" y="80" text-anchor="middle" font-size="11.5" font-weight="700" fill="#92400e">② 攒批 + 压缩</text>
+      <text x="330" y="98" text-anchor="middle" font-size="10.5" fill="#b45309">batch · linger.ms · lz4</text>
+      <text x="235" y="134" text-anchor="middle" font-size="10.5" fill="#64748b">客户端按分区攒批，压缩后一次发出</text>
+      <!-- acks -->
+      <rect x="480" y="22" width="370" height="124" rx="12" fill="#fff" stroke="#f3e0bd" stroke-width="1.6"/>
+      <text x="500" y="46" font-size="13.5" font-weight="800" fill="#92400e">acks 应答级别</text>
+      <text x="500" y="74" font-size="10.8" fill="#64748b">acks=0 / 1：不等 / 仅 leader 确认 —— 快，但可能丢</text>
+      <text x="500" y="96" font-size="10.8" fill="#64748b">acks=all：等 ISR 全部落盘才应答 —— 不丢（推荐）</text>
+      <text x="500" y="118" font-size="10.8" fill="#64748b">幂等：enable.idempotence=true，PID + 序列号去重</text>
+      <!-- push / ack arrows -->
+      <line x1="180" y1="146" x2="180" y2="188" stroke="#d97706" stroke-width="2.2" marker-end="url(#ag4o)"/>
+      <text x="192" y="172" font-size="10.5" fill="#b45309">push（批量压缩后）</text>
+      <line x1="400" y1="190" x2="400" y2="148" stroke="#059669" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#ag4g)"/>
+      <text x="388" y="172" text-anchor="end" font-size="10.5" fill="#059669">acks=all ✓</text>
+      <!-- Broker leader -->
+      <rect x="30" y="190" width="410" height="152" rx="12" fill="#fff" stroke="#f3e0bd" stroke-width="1.6"/>
+      <text x="50" y="214" font-size="13.5" font-weight="800" fill="#92400e">Broker · Partition 0 Leader</text>
+      <g font-size="11.5" font-weight="700">
+        <rect x="71" y="228" width="48" height="32" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="95" y="249" text-anchor="middle" fill="#92400e">0</text>
+        <rect x="127" y="228" width="48" height="32" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="151" y="249" text-anchor="middle" fill="#92400e">1</text>
+        <rect x="183" y="228" width="48" height="32" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="207" y="249" text-anchor="middle" fill="#92400e">2</text>
+        <rect x="239" y="228" width="48" height="32" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="263" y="249" text-anchor="middle" fill="#92400e">3</text>
+        <rect x="295" y="228" width="48" height="32" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="319" y="249" text-anchor="middle" fill="#92400e">4</text>
+        <rect x="351" y="228" width="48" height="32" rx="4" fill="#d97706"/><text x="375" y="249" text-anchor="middle" fill="#fff">新</text>
+      </g>
+      <line x1="71" y1="278" x2="399" y2="278" stroke="#d97706" stroke-width="2" marker-end="url(#ag4o)"/>
+      <text x="235" y="300" text-anchor="middle" font-size="10.5" fill="#b45309">顺序追加写 · append-only · 顺序 IO</text>
+      <text x="235" y="328" text-anchor="middle" font-size="10.5" fill="#64748b">先写页缓存，OS 异步刷盘</text>
+      <!-- Follower -->
+      <rect x="480" y="190" width="370" height="152" rx="12" fill="#fff" stroke="#f3e0bd" stroke-width="1.6"/>
+      <text x="500" y="214" font-size="13.5" font-weight="800" fill="#92400e">Follower ×2（ISR 内）</text>
+      <g font-size="11.5" font-weight="700">
+        <rect x="529" y="228" width="48" height="32" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="553" y="249" text-anchor="middle" fill="#92400e">0</text>
+        <rect x="585" y="228" width="48" height="32" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="609" y="249" text-anchor="middle" fill="#92400e">1</text>
+        <rect x="641" y="228" width="48" height="32" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="665" y="249" text-anchor="middle" fill="#92400e">2</text>
+        <rect x="697" y="228" width="48" height="32" rx="4" fill="#fffaf0" stroke="#e7c99a"/><text x="721" y="249" text-anchor="middle" fill="#92400e">3</text>
+        <rect x="753" y="228" width="48" height="32" rx="4" fill="#fffaf0" stroke="#e7c99a" stroke-dasharray="4 3"/><text x="777" y="249" text-anchor="middle" fill="#c4a26a">…</text>
+      </g>
+      <line x1="440" y1="258" x2="478" y2="258" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#ag4)"/>
+      <line x1="480" y1="282" x2="442" y2="282" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#ag4)"/>
+      <text x="460" y="250" text-anchor="middle" font-size="10" fill="#64748b">拉取</text>
+      <text x="665" y="300" text-anchor="middle" font-size="10.5" fill="#64748b">主动拉取 leader 日志，追加到本地副本</text>
+      <text x="665" y="324" text-anchor="middle" font-size="10.5" fill="#b45309">leader 宕机 → 从 ISR 中选举新 leader</text>
+      <!-- pull arrow -->
+      <line x1="235" y1="342" x2="235" y2="390" stroke="#d97706" stroke-width="2.2" marker-end="url(#ag4o)"/>
+      <text x="247" y="372" font-size="10.5" fill="#b45309">pull（Fetch 按批次）</text>
+      <!-- Consumer -->
+      <rect x="30" y="392" width="410" height="116" rx="12" fill="#fff" stroke="#f3e0bd" stroke-width="1.6"/>
+      <text x="50" y="416" font-size="13.5" font-weight="800" fill="#92400e">Consumer（pull 模型）</text>
+      <g font-size="11.5" font-weight="700">
+        <rect x="50" y="430" width="110" height="40" rx="8" fill="#e0f2fe" stroke="#7dd3fc" stroke-width="1.5"/><text x="105" y="455" text-anchor="middle" fill="#075985">① 批量拉取</text>
+        <rect x="174" y="430" width="110" height="40" rx="8" fill="#e0f2fe" stroke="#7dd3fc" stroke-width="1.5"/><text x="229" y="455" text-anchor="middle" fill="#075985">② 处理</text>
+        <rect x="298" y="430" width="110" height="40" rx="8" fill="#e0f2fe" stroke="#7dd3fc" stroke-width="1.5"/><text x="353" y="455" text-anchor="middle" fill="#075985">③ 提交 offset</text>
+      </g>
+      <line x1="160" y1="450" x2="172" y2="450" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#ag4)"/>
+      <line x1="284" y1="450" x2="296" y2="450" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#ag4)"/>
+      <text x="235" y="494" text-anchor="middle" font-size="10.5" fill="#64748b">按自身能力拉取 → 天然背压，broker 无需维护每个消费者的推送状态</text>
+      <!-- offsets topic -->
+      <rect x="480" y="392" width="370" height="116" rx="12" fill="#fff" stroke="#f3e0bd" stroke-width="1.6"/>
+      <text x="665" y="416" text-anchor="middle" font-size="12.5" font-weight="800" fill="#92400e" font-family="Consolas,monospace">__consumer_offsets</text>
+      <text x="665" y="436" text-anchor="middle" font-size="10.5" fill="#64748b">内部 topic：保存消费进度游标</text>
+      <text x="665" y="462" text-anchor="middle" font-size="10.8" fill="#64748b">消费者把 offset 提交到这里</text>
+      <text x="665" y="484" text-anchor="middle" font-size="10.8" fill="#64748b">Rebalance 后从提交位继续消费</text>
+      <line x1="408" y1="450" x2="478" y2="450" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#ag4)"/>
+      <text x="443" y="440" text-anchor="middle" font-size="10.5" fill="#64748b">commit</text>
+    </svg>
+    <figcaption>图 5 · 一次完整的写入路径：key 哈希 → 攒批压缩 → push → leader 顺序追加 → ISR 同步 → acks=all 应答；消费侧 pull 拉取 + 提交 offset</figcaption>
+  </div>
+
+  <div class="tip"><b>💡 pull 模型天然背压：</b><span>Kafka 消费是 <b>pull</b> 模型：消费者按自己的能力拉取，快慢不影响 broker；broker 无需维护每个消费者的推送状态——这是它支撑海量消费者的重要设计。</span></div>
+</section>
+
+<!-- ============ 4 使用实战 ============ -->
+<section id="practice">
+  <h2>4. 使用实战（Go：segmentio/kafka-go）<span class="lvl b">实战</span></h2>
+
+  <pre><code class="lang-bash">go get github.com/segmentio/kafka-go</code></pre>
+
+  <h3 id="p-producer">4.1 生产者</h3>
+  <pre><code class="lang-go">writer := &amp;kafka.Writer{
+    Addr:     kafka.TCP("localhost:9092"),
+    Topic:    "orders",
+    Balancer:         &amp;kafka.Hash{},        // 相同 key 进同一分区（保序）
+    RequiredAcks:     kafka.RequireAll,     // acks=all：全部 ISR 确认
+    AllowAutoTopicCreation: true,
+    BatchSize:   100,                       // 攒批提吞吐
+    Compression: kafka.Snappy,
+}
+defer writer.Close()
+
+err := writer.WriteMessages(context.Background(),
+    kafka.Message{
+        Key:   []byte("order-1001"),        // 用 orderId 做 key
+        Value: []byte(`{"amount":99}`),
+    },
+)</code></pre>
+
+  <div class="tip"><b>✅ 三个关键点：</b><span><code>Balancer: &amp;kafka.Hash{}</code> 让相同 key 恒定进同一分区（保序）；<code>RequiredAcks: kafka.RequireAll</code> 即 acks=all（不丢）；<code>BatchSize</code> 攒批提吞吐。</span></div>
+
+  <h3 id="p-consumer">4.2 消费组</h3>
+  <pre><code class="lang-go">reader := kafka.NewReader(kafka.ReaderConfig{
+    Brokers:  []string{"localhost:9092"},
+    GroupID:  "billing-service",     // 消费组：组内平分分区
+    Topic:    "orders",
+    MinBytes: 1,                     // 单次拉取下限
+    MaxBytes: 10e6,                  // 单次拉取上限（攒批拉取）
+})
+defer reader.Close()
+
+for {
+    m, err := reader.ReadMessage(context.Background())
+    if err != nil { break }
+    process(m)                                     // 先处理……
+    reader.CommitMessages(context.Background(), m) // ……再提交（at-least-once）
+}</code></pre>
+
+  <div class="warn"><b>⚠️ 先处理、再提交：</b><span>提交时机决定语义——先提交后处理会<b>丢</b>消息，先处理后提交会<b>重</b>（at-least-once）。重复靠消费端幂等（upsert / 去重表）兜底。</span></div>
+
+  <p>Go 客户端还有 <b>franz-go</b>（性能最强、特性最全）与 <b>confluent-kafka-go</b>（官方但基于 librdkafka C 库，需要 cgo）。</p>
+
+  <h3 id="p-cli">4.3 命令行运维</h3>
+  <pre><code class="lang-bash"># 建 topic：6 分区、3 副本
+bin/kafka-topics.sh --create --topic orders --partitions 6 --replication-factor 3 \
+  --bootstrap-server localhost:9092
+
+# 查看详情（leader / 副本 / ISR 分布）
+bin/kafka-topics.sh --describe --topic orders --bootstrap-server localhost:9092
+
+# 控制台收发（快速冒烟）
+bin/kafka-console-producer.sh --topic orders --bootstrap-server localhost:9092
+bin/kafka-console-consumer.sh --topic orders --from-beginning --bootstrap-server localhost:9092
+
+# 看消费组 lag（消费延迟，消费侧健康第一指标）
+bin/kafka-consumer-groups.sh --describe --group billing-service \
+  --bootstrap-server localhost:9092
+
+# KRaft quorum 状态
+bin/kafka-metadata-quorum.sh describe --status -b localhost:9092</code></pre>
+
+  <h3 id="p-config">4.4 关键配置速查</h3>
+  <table>
+    <tr><th style="width:130px">场景</th><th>配置</th></tr>
+    <tr><td><b>不丢消息</b></td><td>producer：<code>acks=all</code>、<code>retries=MAX</code>、<code>enable.idempotence=true</code>；broker：<code>min.insync.replicas=2</code>；topic：<code>replication.factor=3</code></td></tr>
+    <tr><td><b>高吞吐</b></td><td>producer：<code>linger.ms=20</code>、<code>batch.size=64KB</code>、<code>compression=lz4/zstd</code></td></tr>
+    <tr><td><b>顺序性</b></td><td>同 key 同分区 + <code>max.in.flight</code> ≤5（幂等开启后无碍）</td></tr>
+    <tr><td><b>消费能力不足</b></td><td>增加分区数 → 扩消费者；或用 share group（4.0 EA，见第 5 章）</td></tr>
+  </table>
+</section>
+
+<!-- ============ 5 Kafka 4.0 ============ -->
+<section id="kafka4">
+  <h2>5. Kafka 4.0 变化速览<span class="lvl m">版本</span></h2>
+
+  <table>
+    <tr><th style="width:170px">变化</th><th>说明</th></tr>
+    <tr><td><b>ZooKeeper 移除</b></td><td>KRaft 唯一模式；旧 ZK 集群需经 3.9 桥接版本完成迁移</td></tr>
+    <tr><td><b>KIP-848 GA</b></td><td>新消费组协议：增量 rebalance、更快的成员变更，消除 stop-the-world</td></tr>
+    <tr><td><b>KIP-932（EA）</b></td><td>Share Groups：同组多消费者并发消费<b>同一分区</b>，支持单条 ack——Kafka 兼具队列语义</td></tr>
+    <tr><td><b>Tiered Storage 成熟</b></td><td>冷数据下沉对象存储，本地盘只留热段</td></tr>
+    <tr><td><b>元数据能力</b></td><td>分区百万级，元操作 O(1)</td></tr>
+    <tr><td><b>移除的 API</b></td><td>部分老协议 / 旧配置清理，升级前必读迁移文档</td></tr>
+  </table>
+
+  <div class="tip"><b>💡 升级路径：</b><span>ZK 模式 → 3.9（迁移）→ 4.0；3.3+ 已是 KRaft 的集群可直接升 4.0。</span></div>
+</section>
+
+<!-- ============ 6 常见坑 ============ -->
+<section id="pitfalls">
+  <h2>6. 常见坑与最佳实践<span class="lvl a">经验</span></h2>
+
+  <div class="warn"><b>📏 分区数别拍脑袋：</b><span>分区 = 并行度上限 + Rebalance 成本。过多分区拖慢 leader 选举与元数据同步；常见起点 6 / 12，按吞吐增长再扩——<b>分区只能加不能减</b>。</span></div>
+
+  <div class="warn"><b>🌀 小心 rebalance 风暴：</b><span><code>session.timeout</code> 过小、处理超时（<code>max.poll.interval.ms</code> 默认 5min）会触发反复 rebalance——长任务要调大该值，或先转储再异步处理。</span></div>
+
+  <div class="danger"><b>💥 offset 提交时机：</b><span>先提交后处理 → 宕机时<b>丢</b>消息；先处理后提交 → 重启时<b>重</b>消息。消费端做幂等（upsert / 去重表）是标配。</span></div>
+
+  <div class="tip"><b>📈 盯住消费延迟（lag）：</b><span>lag 是消费侧健康的第一指标——Burrow / kafka exporter + 告警，lag 持续增长说明消费能力不足或下游故障。</span></div>
+
+  <div class="warn"><b>⚖️ min.insync.replicas 与可用性权衡：</b><span>=2 时一台 broker 宕机仍可写，两台同时宕机则整分区不可写——这是保一致性的正确取舍，别盲目调小。</span></div>
+
+  <div class="warn"><b>📦 大消息：</b><span>默认单条上限 1MB（<code>message.max.bytes</code>）；大对象建议外置对象存储（如 MinIO），消息里只放引用。</span></div>
+
+  <div class="danger"><b>🚫 别拿 Kafka 当强时限任务队列：</b><span>没有原生 DLQ / 延迟队列——需要自行搭建 retry topic + DLQ topic 的分层重试拓扑。</span></div>
+
+  <div class="tip"><b>🔗 客户端版本对齐：</b><span>客户端协议版本与 broker 差异过大会有兼容性坑，升级按官方兼容矩阵灰度进行。</span></div>
+</section>
+
+<!-- ============ 7 选型对比 ============ -->
+<section id="compare">
+  <h2>7. 选型对比<span class="lvl b">选型</span></h2>
+
+  <table>
+    <tr><th style="width:110px">维度</th><th>Kafka</th><th>RabbitMQ</th><th>NATS JetStream</th><th>Pulsar</th></tr>
+    <tr><td><b>模型</b></td><td>分区日志</td><td>交换机路由队列</td><td>Subject + 流</td><td>分区日志 + 分层</td></tr>
+    <tr><td><b>吞吐</b></td><td>极高（百万/s）</td><td>中</td><td>高（轻量）</td><td>极高</td></tr>
+    <tr><td><b>回放 / 保留</b></td><td>强（原生）</td><td>弱</td><td>强（JetStream）</td><td>强</td></tr>
+    <tr><td><b>运维复杂度</b></td><td>中（4.0 后大降）</td><td>低</td><td>极低</td><td>高（BookKeeper + ZK）</td></tr>
+    <tr><td><b>生态</b></td><td>事实标准、Connect / Streams</td><td>传统企业</td><td>云原生 / AI 轻量总线</td><td>多租户强</td></tr>
+  </table>
+
+  <div class="tip"><b>💡 一句话选型：</b><span><b>主流高吞吐事件流默认 Kafka；轻量微服务 / 边缘消息选 NATS；需要复杂路由的传统 MQ 选 RabbitMQ。</b></span></div>
+</section>
+
+<footer>Apache Kafka 技术指南 · 依据 kafka.apache.org 官方文档与 KIP-405 / 848 / 932 · 2026-09</footer>
+</main>
+</div>
+
+<script>
+document.querySelectorAll('pre code.lang-go').forEach(function(block){
+  var src = block.textContent;
+  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  var master = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  var out = src.replace(master, function(m, c1, c2, s, kw, typ, num, fn){
+    if (c1 || c2) return '<span class="cmt">'+m+'</span>';
+    if (s) return '<span class="str">'+m+'</span>';
+    if (kw) return '<span class="kw">'+m+'</span>';
+    if (typ) return '<span class="typ">'+m+'</span>';
+    if (num) return '<span class="num">'+m+'</span>';
+    if (fn) return '<span class="fn">'+m+'</span>';
+    return m;
+  });
+  block.innerHTML = out;
+});
+document.querySelectorAll('pre code.lang-bash').forEach(function(block){
+  var src = block.textContent;
+  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  var master = /(#[^\n]*)|("(?:\\.|[^"\\\n])*")|(\$[A-Z_]+|\b[A-Z][A-Z_]{2,}\b)|(--[a-z][\w-]*)|\b(bin\/[\w.-]+)\b/g;
+  var out = src.replace(master, function(m, c, s, v, f, cmd){
+    if (c) return '<span class="cmt">'+m+'</span>';
+    if (s) return '<span class="str">'+m+'</span>';
+    if (v) return '<span class="num">'+m+'</span>';
+    if (f) return '<span class="fn">'+m+'</span>';
+    if (cmd) return '<span class="kw">'+m+'</span>';
+    return m;
+  });
+  block.innerHTML = out;
+});
+document.querySelectorAll('pre code[class*="lang-"]').forEach(function(b){
+  var label=document.createElement('span');label.className='codelabel';
+  label.textContent=b.classList.contains('lang-go')?'Go':'Shell';
+  b.closest('pre').appendChild(label);
+});
+</script>
+</body>
+</html>

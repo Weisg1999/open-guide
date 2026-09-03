@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Go 泛型（Generics）由浅入深教程</title>
+<style>
+  :root{
+    --accent:#0d9488; --accent-light:#ccfbf1; --accent-dark:#115e59;
+    --bg:#f4faf9; --card:#ffffff; --border:#e2eceb; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#03211d; --kw:#7dd3fc; --str:#86efac; --cmt:#5f7a76; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#134e4a 0%,#0d9488 55%,#14b8a6 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(13,148,136,.25)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.92;font-size:15px;max-width:660px}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark)}
+  h4{font-size:15px;margin:16px 0 8px;color:#0f172a}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin-bottom:18px;box-shadow:0 1px 3px rgba(19,78,74,.06)}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fb5b0;background:#0a3630;padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code{background:#eef7f5;color:#0d9488;border:1px solid #dbeceb;padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(19,78,74,.06)}
+  th{background:#e6f5f2;color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:#fafefd}
+  .tip,.warn,.danger{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px;display:flex;gap:10px;align-items:flex-start}
+  .tip{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .tip b,.warn b,.danger b{flex-shrink:0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0;box-shadow:0 1px 3px rgba(19,78,74,.06)}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .pill{display:inline-block;background:var(--accent-light);color:var(--accent-dark);border-radius:16px;padding:2px 12px;font-size:12px;margin:2px 4px 2px 0}
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="sidebar">
+  <div class="logo">Go 泛型<span class="ver">1.18+</span></div>
+  <div class="sub">Type Parameters 由浅入深</div>
+  <a href="#why">1. 为什么需要泛型</a>
+  <a class="sub-link" href="#w-pain">1.1 没有泛型的痛苦</a>
+  <a class="sub-link" href="#w-syntax">1.3 语法速览</a>
+  <a href="#constraint">2. 类型约束</a>
+  <a class="sub-link" href="#c-union">2.4 联合与 ~</a>
+  <a href="#type">3. 泛型类型与方法</a>
+  <a href="#advanced">4. 进阶技巧</a>
+  <a href="#impl">5. 实现原理</a>
+  <a href="#limits">6. 限制与常见坑</a>
+  <a href="#practice">7. 综合实战：泛型缓存</a>
+</nav>
+
+<main>
+
+<div class="hero">
+  <h1>Go 泛型（Generics）</h1>
+  <p>Go 1.18（2022.3）引入的<b>类型参数</b>（Type Parameters）是语言十年来最大的变革：一套代码适配所有类型，编译期类型检查 + 零装箱开销。本教程从痛点出发，一路深入到 GC Shape 实现原理。</p>
+  <div class="meta">
+    <span>Go ≥ 1.18</span>
+    <span>Type Parameters Proposal</span>
+    <span>标准库 slices / maps</span>
+    <span>由浅入深 · 7 章</span>
+  </div>
+</div>
+
+<!-- ============ 1 为什么 ============ -->
+<section id="why">
+  <h2>1. 为什么需要泛型<span class="lvl b">入门</span></h2>
+
+  <h3 id="w-pain">1.1 没有泛型的痛苦</h3>
+  <div class="figure">
+    <svg viewBox="0 0 880 330" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+      <!-- 左：复制粘贴 -->
+      <rect x="25" y="30" width="400" height="270" rx="14" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.6"/>
+      <text x="225" y="62" text-anchor="middle" font-size="14.5" font-weight="800" fill="#991b1b">方案 A：复制粘贴</text>
+      <g font-family="Consolas,monospace" font-size="11.5" fill="#7f1d1d">
+        <rect x="50" y="80" width="350" height="28" rx="6" fill="#fff" stroke="#fecaca"/><text x="62" y="99">func MaxInt(a, b int) int</text>
+        <rect x="50" y="114" width="350" height="28" rx="6" fill="#fff" stroke="#fecaca"/><text x="62" y="133">func MaxInt64(a, b int64) int64</text>
+        <rect x="50" y="148" width="350" height="28" rx="6" fill="#fff" stroke="#fecaca"/><text x="62" y="167">func MaxFloat64(a, b float64)…</text>
+        <rect x="50" y="182" width="350" height="28" rx="6" fill="#fff" stroke="#fecaca"/><text x="62" y="201">func MaxString(a, b string)…</text>
+      </g>
+      <text x="225" y="248" text-anchor="middle" font-size="12" fill="#b91c1c">N 种类型 = N 份几乎相同的代码</text>
+      <text x="225" y="270" text-anchor="middle" font-size="12" fill="#b91c1c">改一处漏三处，bug 温床</text>
+      <!-- 右：interface{} -->
+      <rect x="455" y="30" width="400" height="270" rx="14" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.6"/>
+      <text x="655" y="62" text-anchor="middle" font-size="14.5" font-weight="800" fill="#92400e">方案 B：interface{}</text>
+      <g font-family="Consolas,monospace" font-size="11.5" fill="#78350f">
+        <rect x="480" y="80" width="350" height="46" rx="6" fill="#fff" stroke="#fde68a"/>
+        <text x="492" y="99">func Max(a, b interface{})</text>
+        <text x="492" y="117">  interface{}</text>
+        <rect x="480" y="134" width="350" height="76" rx="6" fill="#fff" stroke="#fde68a"/>
+        <text x="492" y="153">switch a.(type) {</text>
+        <text x="492" y="171">case int:  a.(int) > b.(int)…</text>
+        <text x="492" y="189">case …    // 分支爆炸</text>
+      </g>
+      <text x="655" y="248" text-anchor="middle" font-size="12" fill="#b45309">失去编译期类型检查（运行时才炸）</text>
+      <text x="655" y="270" text-anchor="middle" font-size="12" fill="#b45309">装箱逃逸到堆 + 调用处满屏断言</text>
+      <!-- 底部结论 -->
+      <rect x="25" y="312" width="830" height="0" fill="none"/>
+    </svg>
+    <figcaption>图 1 · 1.18 之前的两难：要么重复代码，要么放弃类型安全 —— 泛型同时终结两者</figcaption>
+  </div>
+
+  <h3>1.2 泛型：编译期的多态</h3>
+  <pre><code class="lang-go"><span class="kw">func</span> <span class="fn">Max</span>[T cmp.<span class="typ">Ordered</span>](a, b T) T {
+    <span class="kw">if</span> a &gt; b {
+        <span class="kw">return</span> a
+    }
+    <span class="kw">return</span> b
+}
+
+<span class="fn">Max</span>(1, 2)          <span class="cmt">// T 推导为 int</span>
+<span class="fn">Max</span>(3.14, 2.71)    <span class="cmt">// T 推导为 float64</span>
+<span class="fn">Max</span>(<span class="str">"a"</span>, <span class="str">"b"</span>)      <span class="cmt">// T 推导为 string</span>
+<span class="fn">Max</span>(1, <span class="str">"a"</span>)       <span class="cmt">// ❌ 编译错误，当场发现</span></code></pre>
+
+  <h3 id="w-syntax">1.3 语法速览与术语</h3>
+  <div class="figure">
+    <svg viewBox="0 0 880 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <text x="440" y="60" text-anchor="middle" font-family="Consolas,monospace" font-size="26" font-weight="700">
+        <tspan fill="#0d9488">func</tspan> <tspan fill="#1e293b">Map</tspan><tspan fill="#b45309" font-size="30">[</tspan><tspan fill="#be185d">T</tspan><tspan fill="#475569">, </tspan><tspan fill="#be185d">U</tspan><tspan fill="#475569"> </tspan><tspan fill="#0369a1">any</tspan><tspan fill="#b45309" font-size="30">]</tspan><tspan fill="#1e293b">(xs </tspan><tspan fill="#be185d">[]T</tspan><tspan fill="#1e293b">, f </tspan><tspan fill="#be185d">func</tspan><tspan fill="#1e293b">(</tspan><tspan fill="#be185d">T</tspan><tspan fill="#1e293b">) </tspan><tspan fill="#be185d">U</tspan><tspan fill="#1e293b">) </tspan><tspan fill="#be185d">[]U</tspan>
+      </text>
+      <g stroke-width="1.6" fill="none" stroke="#94a3b8">
+        <line x1="293" y1="75" x2="293" y2="108"/><line x1="418" y1="75" x2="418" y2="108"/>
+        <line x1="510" y1="75" x2="510" y2="108"/><line x1="120" y1="75" x2="120" y2="108"/>
+      </g>
+      <g text-anchor="middle" font-size="12.5">
+        <rect x="45" y="110" width="150" height="30" rx="8" fill="#ccfbf1" stroke="#0d9488"/><text x="120" y="130" fill="#115e59" font-weight="700">关键字：泛型函数</text>
+        <rect x="228" y="110" width="130" height="30" rx="8" fill="#fde68a" stroke="#d97706"/><text x="293" y="130" fill="#92400e" font-weight="700">类型参数列表</text>
+        <rect x="353" y="110" width="130" height="30" rx="8" fill="#fce7f3" stroke="#ec4899"/><text x="418" y="130" fill="#be185d" font-weight="700">类型参数 T、U</text>
+        <rect x="455" y="110" width="110" height="30" rx="8" fill="#e0f2fe" stroke="#0284c7"/><text x="510" y="130" fill="#075985" font-weight="700">约束 any</text>
+      </g>
+      <!-- 调用侧 -->
+      <text x="240" y="185" font-family="Consolas,monospace" font-size="16" fill="#1e293b">ys := <tspan fill="#0d9488" font-weight="700">Map</tspan><tspan fill="#b45309" font-size="19">[</tspan><tspan fill="#0369a1">int</tspan><tspan fill="#475569">, </tspan><tspan fill="#0369a1">string</tspan><tspan fill="#b45309" font-size="19">]</tspan>(xs, f)</text>
+      <text x="600" y="185" font-size="12" fill="#64748b">← 显式实例化</text>
+      <text x="240" y="220" font-size="12.5" fill="#64748b">通常可省略：Map(xs, f) —— 类型推导自动补全 T、U</text>
+    </svg>
+    <figcaption>图 2 · 泛型语法解剖：方括号声明类型参数，约束限定"允许哪些类型、能做什么操作"</figcaption>
+  </div>
+
+  <table>
+    <tr><th style="width:150px">术语</th><th>说明</th><th>示例</th></tr>
+    <tr><td>类型参数 parameter</td><td>声明中的"占位类型"</td><td><code>T</code>、<code>K</code>、<code>V</code></td></tr>
+    <tr><td>类型实参 argument</td><td>调用时传入的具体类型</td><td><code>Max[int](1,2)</code> 中的 <code>int</code></td></tr>
+    <tr><td>约束 constraint</td><td>限定类型参数的要求</td><td><code>any</code>、<code>cmp.Ordered</code></td></tr>
+    <tr><td>实例化 instantiation</td><td>实参替换形参生成具体版本</td><td><code>Map[int,string]</code></td></tr>
+  </table>
+</section>
+
+<!-- ============ 2 约束 ============ -->
+<section id="constraint">
+  <h2>2. 类型约束<span class="lvl b">初级</span></h2>
+
+  <h3>2.1 内置与标准库约束</h3>
+  <pre><code class="lang-go">any          <span class="cmt">// = interface{}，任意类型，但什么操作都做不了（只能赋值传参）</span>
+comparable   <span class="cmt">// 可用 == / != 比较的类型（int/string/指针/struct…，不含 slice/map/func）</span>
+
+cmp.Ordered             <span class="cmt">// ~int|~int64|~uint|~float32|~float64|~string（可排序可比较）</span>
+constraints.Integer     <span class="cmt">// golang.org/x/exp/constraints：所有整数</span>
+constraints.Float       <span class="cmt">// 所有浮点</span></code></pre>
+
+  <h3>2.2 约束即接口：方法约束</h3>
+  <p>Go 泛型最优雅的设计：<b>约束就是接口</b>。约束代表一个「类型集合」，类型实参必须落在集合内。</p>
+  <pre><code class="lang-go"><span class="cmt">// T 必须实现 String() 方法</span>
+<span class="kw">type</span> <span class="typ">Stringer</span> <span class="kw">interface</span> {
+    <span class="fn">String</span>() <span class="typ">string</span>
+}
+
+<span class="kw">func</span> <span class="fn">Join</span>[T <span class="typ">Stringer</span>](items []T) <span class="typ">string</span> {
+    <span class="kw">var</span> sb strings.<span class="typ">Builder</span>
+    <span class="kw">for</span> _, v := <span class="kw">range</span> items {
+        sb.<span class="fn">WriteString</span>(v.<span class="fn">String</span>())  <span class="cmt">// 编译器保证 T 有此方法</span>
+    }
+    <span class="kw">return</span> sb.<span class="fn">String</span>()
+}</code></pre>
+
+  <h3 id="c-union">2.4 联合类型与 ~（最常被忽略的知识点）</h3>
+  <div class="figure">
+    <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <!-- 左：不带~ -->
+      <rect x="30" y="30" width="390" height="230" rx="14" fill="#fff" stroke="#cbd5e1" stroke-width="1.6"/>
+      <text x="225" y="60" text-anchor="middle" font-family="Consolas,monospace" font-size="14.5" font-weight="700" fill="#1e293b">interface { int | float64 }</text>
+      <text x="225" y="88" text-anchor="middle" font-size="12" fill="#64748b">只接受「确切」的这两个类型</text>
+      <g text-anchor="middle">
+        <ellipse cx="225" cy="165" rx="160" ry="70" fill="#f1f5f9" stroke="#94a3b8" stroke-dasharray="5 4"/>
+        <circle cx="150" cy="150" r="17" fill="#ccfbf1" stroke="#0d9488" stroke-width="2"/><text x="150" y="155" font-size="11.5" fill="#115e59" font-weight="700">int</text>
+        <circle cx="300" cy="150" r="19" fill="#ccfbf1" stroke="#0d9488" stroke-width="2"/><text x="300" y="155" font-size="10.5" fill="#115e59" font-weight="700">float64</text>
+        <circle cx="225" cy="205" r="17" fill="#fef2f2" stroke="#fca5a5" stroke-width="2"/><text x="225" y="210" font-size="10.5" fill="#991b1b" font-weight="700">MyInt</text>
+      </g>
+      <text x="225" y="248" text-anchor="middle" font-size="11.5" fill="#dc2626">type MyInt int 是「新类型」→ 被排除在外 ❌</text>
+      <!-- 右：带~ -->
+      <rect x="460" y="30" width="390" height="230" rx="14" fill="#fff" stroke="#0d9488" stroke-width="2"/>
+      <text x="655" y="60" text-anchor="middle" font-family="Consolas,monospace" font-size="14.5" font-weight="700" fill="#115e59">interface { ~int | ~float64 }</text>
+      <text x="655" y="88" text-anchor="middle" font-size="12" fill="#64748b">接受底层类型相同的「任何」类型</text>
+      <g text-anchor="middle">
+        <ellipse cx="655" cy="165" rx="165" ry="70" fill="#ecfdf5" stroke="#0d9488" stroke-dasharray="5 4"/>
+        <circle cx="575" cy="150" r="17" fill="#ccfbf1" stroke="#0d9488" stroke-width="2"/><text x="575" y="155" font-size="11.5" fill="#115e59" font-weight="700">int</text>
+        <circle cx="735" cy="150" r="19" fill="#ccfbf1" stroke="#0d9488" stroke-width="2"/><text x="735" y="155" font-size="10.5" fill="#115e59" font-weight="700">float64</text>
+        <circle cx="655" cy="205" r="19" fill="#d1fae5" stroke="#0d9488" stroke-width="2"/><text x="655" y="210" font-size="10.5" fill="#065f46" font-weight="700">MyInt</text>
+      </g>
+      <text x="655" y="248" text-anchor="middle" font-size="11.5" fill="#059669">~ = 底层类型匹配 → MyInt 也被接纳 ✅</text>
+    </svg>
+    <figcaption>图 3 · 约束即类型集合：~（tilde）把「精确匹配」放宽为「底层类型匹配」，自定义类型（type MyInt int）才能进入集合</figcaption>
+  </div>
+
+  <h3>2.5 混合约束：类型集合 + 方法</h3>
+  <pre><code class="lang-go"><span class="cmt">// T 必须是整数类型，且实现 fmt.Stringer —— 两种条件取交集</span>
+<span class="kw">type</span> <span class="typ">StringableInt</span> <span class="kw">interface</span> {
+    ~int | ~int64 | ~int32
+    <span class="fn">String</span>() <span class="typ">string</span>
+}</code></pre>
+</section>
+
+<!-- ============ 3 泛型类型 ============ -->
+<section id="type">
+  <h2>3. 泛型类型与方法<span class="lvl b">初级 → 中级</span></h2>
+
+  <pre><code class="lang-go"><span class="kw">type</span> <span class="typ">Stack</span>[T <span class="kw">any</span>] <span class="kw">struct</span> {
+    items []T
+}
+
+<span class="cmt">// 关键：方法的 receiver 必须带 [T]，不能新增类型参数</span>
+<span class="kw">func</span> (s *<span class="typ">Stack</span>[T]) <span class="fn">Push</span>(v T) {
+    s.items = <span class="fn">append</span>(s.items, v)
+}
+
+<span class="kw">func</span> (s *<span class="typ">Stack</span>[T]) <span class="fn">Pop</span>() (T, <span class="typ">bool</span>) {
+    <span class="kw">if</span> <span class="fn">len</span>(s.items) == 0 {
+        <span class="kw">var</span> zero T              <span class="cmt">// var 声明拿到 T 的零值</span>
+        <span class="kw">return</span> zero, <span class="kw">false</span>
+    }
+    n := <span class="fn">len</span>(s.items) - 1
+    v := s.items[n]
+    s.items = s.items[:n]
+    <span class="kw">return</span> v, <span class="kw">true</span>
+}
+
+<span class="cmt">// 使用：实例化后就是普通类型</span>
+s := &amp;<span class="typ">Stack</span>[<span class="typ">int</span>]{}
+s.<span class="fn">Push</span>(1)
+v, ok := s.<span class="fn">Pop</span>()   <span class="cmt">// v=1, ok=true</span></code></pre>
+
+  <h4>更多泛型类型形态</h4>
+  <pre><code class="lang-go"><span class="kw">type</span> <span class="typ">Map</span>[K <span class="kw">comparable</span>, V <span class="kw">any</span>] <span class="kw">map</span>[K]V       <span class="cmt">// map 的 key 必须可比较</span>
+<span class="kw">type</span> <span class="typ">Transformer</span>[T, U <span class="kw">any</span>] <span class="kw">func</span>(T) U           <span class="cmt">// 泛型函数类型</span>
+<span class="kw">type</span> <span class="typ">Pair</span>[K <span class="kw">comparable</span>, V <span class="kw">any</span>] <span class="kw">struct</span> {    <span class="cmt">// 多类型参数</span>
+    Key K
+    Val V
+}</code></pre>
+
+  <div class="tip"><b>💡 零值技巧：</b><span>泛型代码里不能写 <code>T{}</code>（T 可能是内置类型）也不能随便用 <code>nil</code>（T 可能是值类型）。标准姿势：<code>var zero T</code> 或 <code>*new(T)</code>。</span></div>
+
+  <h4>类型推导</h4>
+  <pre><code class="lang-go"><span class="kw">func</span> <span class="fn">Map</span>[T, U <span class="kw">any</span>](xs []T, f <span class="kw">func</span>(T) U) []U
+
+xs := []<span class="typ">int</span>{1, 2, 3}
+ys := <span class="fn">Map</span>(xs, <span class="kw">func</span>(i <span class="typ">int</span>) <span class="typ">string</span> { <span class="kw">return</span> <span class="str">""</span> })
+<span class="cmt">// T=int, U=string 全部自动推导；推导失败时才需要显式 Map[int, string](xs, f)</span></code></pre>
+</section>
+
+<!-- ============ 4 进阶 ============ -->
+<section id="advanced">
+  <h2>4. 进阶技巧<span class="lvl m">中级</span></h2>
+
+  <h3>4.1 指针与值方法集的坑</h3>
+  <div class="warn"><b>⚠️ 核心规则：</b><span>泛型代码中，<code>T</code> 不会自动拥有 <code>*T</code> 的方法，反之亦然。<code>[T Speaker]</code> 传 <code>Cat{}</code> 还是 <code>&amp;Cat{}</code>，取决于方法用的是值接收者还是指针接收者。</span></div>
+  <pre><code class="lang-go"><span class="kw">type</span> <span class="typ">Cat</span> <span class="kw">struct</span>{}
+<span class="kw">func</span> (c <span class="typ">Cat</span>) <span class="fn">Speak</span>() <span class="typ">string</span>  { <span class="kw">return</span> <span class="str">"meow"</span> }   <span class="cmt">// 值接收者：Cat 和 *Cat 都实现</span>
+<span class="kw">func</span> (c *<span class="typ">Cat</span>) <span class="fn">Speak2</span>() <span class="typ">string</span> { <span class="kw">return</span> <span class="str">"meow"</span> } <span class="cmt">// 指针接收者：只有 *Cat 实现</span>
+
+<span class="kw">func</span> <span class="fn">MakeSound</span>[T <span class="typ">Speaker</span>](t T) <span class="typ">string</span> { <span class="kw">return</span> t.<span class="fn">Speak</span>() }
+
+<span class="fn">MakeSound</span>(<span class="typ">Cat</span>{})      <span class="cmt">// ✅ 值方法集满足</span>
+<span class="fn">MakeSound</span>(&amp;<span class="typ">Cat</span>{})     <span class="cmt">// ✅ 指针方法集包含值方法</span></code></pre>
+
+  <h3>4.2 递归约束：让方法返回「自身类型」</h3>
+  <pre><code class="lang-go"><span class="kw">type</span> <span class="typ">Clonable</span>[T <span class="kw">any</span>] <span class="kw">interface</span> {
+    <span class="fn">Clone</span>() T          <span class="cmt">// 约束引用类型参数自身</span>
+}
+
+<span class="kw">func</span> <span class="fn">CloneAll</span>[T <span class="typ">Clonable</span>[T]](xs []T) []T {  <span class="cmt">// 注意嵌套写法</span>
+    out := <span class="fn">make</span>([]T, <span class="fn">len</span>(xs))
+    <span class="kw">for</span> i, x := <span class="kw">range</span> xs {
+        out[i] = x.<span class="fn">Clone</span>()
+    }
+    <span class="kw">return</span> out
+}</code></pre>
+
+  <h3>4.3 关联值与指针：interface{ *T }</h3>
+  <pre><code class="lang-go"><span class="cmt">// PT 约束：既是 *T，又实现 String —— 编译期把「类型」和「它的指针」绑定起来</span>
+<span class="kw">func</span> <span class="fn">Process</span>[T <span class="kw">any</span>, PT <span class="kw">interface</span>{ *T; <span class="fn">String</span>() <span class="typ">string</span> }](v PT) {
+    fmt.<span class="fn">Println</span>(v.<span class="fn">String</span>())
+}</code></pre>
+
+  <h3>4.4 泛型 channel 工具与 Option 类型</h3>
+  <pre><code class="lang-go"><span class="cmt">// FanIn：多 channel 合一</span>
+<span class="kw">func</span> <span class="fn">FanIn</span>[T <span class="kw">any</span>](chans ...&lt;-<span class="kw">chan</span> T) &lt;-<span class="kw">chan</span> T {
+    out := <span class="fn">make</span>(<span class="kw">chan</span> T)
+    <span class="kw">var</span> wg sync.<span class="typ">WaitGroup</span>
+    wg.<span class="fn">Add</span>(<span class="fn">len</span>(chans))
+    <span class="kw">for</span> _, ch := <span class="kw">range</span> chans {
+        <span class="kw">go func</span>(c &lt;-<span class="kw">chan</span> T) { <span class="kw">defer</span> wg.<span class="fn">Done</span>(); <span class="kw">for</span> v := <span class="kw">range</span> c { out &lt;- v } }(ch)
+    }
+    <span class="kw">go func</span>() { wg.<span class="fn">Wait</span>(); <span class="fn">close</span>(out) }()
+    <span class="kw">return</span> out
+}
+
+<span class="cmt">// 类型安全的可选值（Rust 风味）</span>
+<span class="kw">type</span> <span class="typ">Option</span>[T <span class="kw">any</span>] <span class="kw">struct</span> { val T; valid <span class="typ">bool</span> }
+<span class="kw">func</span> <span class="fn">Some</span>[T <span class="kw">any</span>](v T) <span class="typ">Option</span>[T] { <span class="kw">return</span> <span class="typ">Option</span>[T]{v, <span class="kw">true</span> } }
+<span class="kw">func</span> (o <span class="typ">Option</span>[T]) <span class="fn">UnwrapOr</span>(fallback T) T {
+    <span class="kw">if</span> o.valid { <span class="kw">return</span> o.val }
+    <span class="kw">return</span> fallback
+}</code></pre>
+</section>
+
+<!-- ============ 5 原理 ============ -->
+<section id="impl">
+  <h2>5. 实现原理：GC Shape Stenciling<span class="lvl a">高级</span></h2>
+  <p>Go 没有采用 C++ 的全量单态化（每个实参生成独立机器码，代码膨胀），也没有采用 Java 式完全擦除（性能损失大），而是<b>混合方案</b>：</p>
+
+  <div class="figure">
+    <svg viewBox="0 0 880 360" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs><marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+      <!-- 源 -->
+      <rect x="30" y="140" width="180" height="56" rx="10" fill="#ccfbf1" stroke="#0d9488" stroke-width="2"/>
+      <text x="120" y="163" text-anchor="middle" font-size="13" font-weight="700" fill="#115e59" font-family="Consolas,monospace">Max[T Ordered]</text>
+      <text x="120" y="183" text-anchor="middle" font-size="10.5" fill="#0f766e">一份泛型源码</text>
+      <!-- 分派 -->
+      <g text-anchor="middle" font-family="Consolas,monospace" font-size="12">
+        <text x="330" y="70" fill="#1e293b">Max[int]</text>
+        <text x="330" y="150" fill="#1e293b">Max[MyInt]</text>
+        <text x="330" y="230" fill="#1e293b">Max[string]</text>
+        <text x="330" y="310" fill="#1e293b">Max[*User]</text>
+      </g>
+      <line x1="212" y1="155" x2="292" y2="75" stroke="#64748b" stroke-width="1.8" marker-end="url(#arr2)"/>
+      <line x1="212" y1="163" x2="292" y2="145" stroke="#64748b" stroke-width="1.8" marker-end="url(#arr2)"/>
+      <line x1="212" y1="175" x2="292" y2="225" stroke="#64748b" stroke-width="1.8" marker-end="url(#arr2)"/>
+      <line x1="212" y1="185" x2="292" y2="305" stroke="#64748b" stroke-width="1.8" marker-end="url(#arr2)"/>
+      <!-- 形状分组 -->
+      <rect x="400" y="38" width="180" height="86" rx="12" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+      <text x="490" y="66" text-anchor="middle" font-size="12.5" font-weight="700" fill="#075985">同 GC Shape：数值</text>
+      <text x="490" y="88" text-anchor="middle" font-size="11" fill="#0369a1">int / MyInt / uint</text>
+      <text x="490" y="106" text-anchor="middle" font-size="11" fill="#0369a1">内存布局相同 → 共享机器码</text>
+      <line x1="368" y1="75" x2="396" y2="75" stroke="#0284c7" stroke-width="2" marker-end="url(#arr2)"/>
+      <line x1="368" y1="150" x2="396" y2="110" stroke="#0284c7" stroke-width="2" marker-end="url(#arr2)"/>
+
+      <rect x="400" y="198" width="180" height="66" rx="12" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+      <text x="490" y="224" text-anchor="middle" font-size="12.5" font-weight="700" fill="#92400e">形状：string</text>
+      <text x="490" y="246" text-anchor="middle" font-size="11" fill="#b45309">单独一份机器码</text>
+      <line x1="368" y1="230" x2="396" y2="230" stroke="#d97706" stroke-width="2" marker-end="url(#arr2)"/>
+
+      <rect x="400" y="284" width="180" height="66" rx="12" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2"/>
+      <text x="490" y="310" text-anchor="middle" font-size="12.5" font-weight="700" fill="#5b21b6">形状：指针</text>
+      <text x="490" y="332" text-anchor="middle" font-size="11" fill="#6d28d9">*User / *Order 共享一份</text>
+      <line x1="368" y1="310" x2="396" y2="310" stroke="#7c3aed" stroke-width="2" marker-end="url(#arr2)"/>
+      <!-- 机器码+字典 -->
+      <g text-anchor="middle">
+        <rect x="640" y="80" width="200" height="90" rx="12" fill="#fff" stroke="#334155" stroke-width="2"/>
+        <text x="740" y="108" font-size="12.5" font-weight="700" fill="#1e293b">共享机器码</text>
+        <text x="740" y="128" font-size="11" fill="#475569">+ 隐藏参数「字典 dict」</text>
+        <text x="740" y="146" font-size="11" fill="#475569">携带类型大小/判等/方法表</text>
+        <rect x="640" y="230" width="200" height="120" rx="12" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+        <text x="740" y="258" font-size="12.5" font-weight="700" fill="#065f46">结果</text>
+        <text x="740" y="282" font-size="11" fill="#047857">✅ 代码体积不膨胀</text>
+        <text x="740" y="302" font-size="11" fill="#047857">✅ 类型操作经字典间接寻址</text>
+        <text x="740" y="322" font-size="11" fill="#d97706">⚠️ 指针形状略慢于单态化</text>
+      </g>
+      <line x1="582" y1="80" x2="636" y2="110" stroke="#64748b" stroke-width="2" marker-end="url(#arr2)"/>
+      <line x1="582" y1="230" x2="636" y2="235" stroke="#64748b" stroke-width="2" marker-end="url(#arr2)"/>
+      <line x1="582" y1="317" x2="636" y2="300" stroke="#64748b" stroke-width="2" marker-end="url(#arr2)"/>
+    </svg>
+    <figcaption>图 4 · GC Shape Stenciling：相同内存布局（shape）的实参共享一份机器码，类型差异通过编译期生成的「字典」在运行时传递</figcaption>
+  </div>
+
+  <h3>接口 vs 泛型 选型</h3>
+  <table>
+    <tr><th>维度</th><th>接口（运行时多态）</th><th>泛型（编译期多态）</th></tr>
+    <tr><td>绑定时机</td><td>运行时</td><td>编译期</td></tr>
+    <tr><td>异构集合 <code>[]any</code> 混装</td><td>✅</td><td>❌</td></tr>
+    <tr><td>同构算法（对 []T 统一处理）</td><td>一般</td><td>✅ 类型安全 + 性能双优</td></tr>
+    <tr><td>存储/传递「未知类型」</td><td>✅</td><td>❌</td></tr>
+    <tr><td>算子类需求（T op T）</td><td>❌ 接口无法表达</td><td>✅ 约束直接表达</td></tr>
+  </table>
+</section>
+
+<!-- ============ 6 限制 ============ -->
+<section id="limits">
+  <h2>6. 限制与常见坑<span class="lvl a">高级</span></h2>
+
+  <div class="danger"><b>🚫 方法不能有额外类型参数：</b><span>提案 #49085 讨论多年仍未放开。变通：写成顶层泛型函数。</span></div>
+  <pre><code class="lang-go"><span class="kw">func</span> (s <span class="typ">Stack</span>[T]) <span class="fn">Map</span>[U <span class="kw">any</span>](f <span class="kw">func</span>(T) U) []U  <span class="cmt">// ❌ 编译错误</span>
+
+<span class="cmt">// ✅ 变通方案</span>
+<span class="kw">func</span> <span class="fn">MapStack</span>[T, U <span class="kw">any</span>](s <span class="typ">Stack</span>[T], f <span class="kw">func</span>(T) U) []U { ... }</code></pre>
+
+  <div class="danger"><b>🚫 泛型类型不能做类型断言 / switch 的 case：</b><span>只能先转成 <code>any</code> 再断言。</span></div>
+  <pre><code class="lang-go"><span class="kw">switch</span> v := x.(type) {
+<span class="kw">case</span> T:              <span class="cmt">// ❌ T 不是具体类型</span>
+}</code></pre>
+
+  <div class="warn"><b>⚠️ 不要为了泛型而泛型：</b><span>约束是 <code>any</code> 然后内部各种类型断言的写法，完全违背泛型初衷——那不如直接用 <code>any</code>。泛型的<b>前置条件是算法与类型无关</b>（比较、索引、映射……）。</span></div>
+  <div class="warn"><b>⚠️ comparable ≠ 可排序：</b><span>slice/map/func 不满足 comparable；<code>cmp.Ordered</code> 才支持 <code>&lt; &gt;</code>。结构体含不可比较字段（如 slice）时 <code>==</code> 会运行时 panic。</span></div>
+  <div class="warn"><b>⚠️ 接口零值陷阱：</b><span>T 实例化为接口类型时 <code>var zero T</code> 是 nil，业务判断需用类型信息而非简单比较。</span></div>
+</section>
+
+<!-- ============ 7 实战 ============ -->
+<section id="practice">
+  <h2>7. 综合实战：类型安全的 TTL 缓存<span class="lvl a">高级</span></h2>
+  <pre><code class="lang-go"><span class="kw">package</span> cache
+
+<span class="kw">import</span> (
+    <span class="str">"sync"</span>
+    <span class="str">"time"</span>
+)
+
+<span class="kw">type</span> <span class="typ">entry</span>[V <span class="kw">any</span>] <span class="kw">struct</span> {
+    val       V
+    expiresAt time.<span class="typ">Time</span>
+}
+
+<span class="cmt">// 并发安全、带 TTL、K/V 类型编译期绑定的内存缓存</span>
+<span class="kw">type</span> <span class="typ">Cache</span>[K <span class="kw">comparable</span>, V <span class="kw">any</span>] <span class="kw">struct</span> {
+    mu     sync.<span class="typ">RWMutex</span>
+    data   <span class="kw">map</span>[K]<span class="typ">entry</span>[V]      <span class="cmt">// K comparable → 可做 map 键</span>
+    ttl    time.<span class="typ">Duration</span>
+    loader <span class="kw">func</span>(K) (V, <span class="typ">error</span>)
+}
+
+<span class="kw">func</span> <span class="fn">New</span>[K <span class="kw">comparable</span>, V <span class="kw">any</span>](ttl time.<span class="typ">Duration</span>, loader <span class="kw">func</span>(K) (V, <span class="typ">error</span>)) *<span class="typ">Cache</span>[K, V] {
+    <span class="kw">return</span> &amp;<span class="typ">Cache</span>[K, V]{
+        data:   <span class="fn">make</span>(<span class="kw">map</span>[K]<span class="typ">entry</span>[V]),
+        ttl:    ttl,
+        loader: loader,
+    }
+}
+
+<span class="kw">func</span> (c *<span class="typ">Cache</span>[K, V]) <span class="fn">Get</span>(k K) (V, <span class="typ">bool</span>) {
+    c.mu.<span class="fn">RLock</span>()
+    e, ok := c.data[k]
+    c.mu.<span class="fn">RUnlock</span>()
+    <span class="kw">if</span> !ok || time.<span class="fn">Now</span>().<span class="fn">After</span>(e.expiresAt) {
+        <span class="kw">var</span> zero V           <span class="cmt">// 零值技巧处理失败路径</span>
+        <span class="kw">return</span> zero, <span class="kw">false</span>
+    }
+    <span class="kw">return</span> e.val, <span class="kw">true</span>
+}
+
+<span class="kw">func</span> (c *<span class="typ">Cache</span>[K, V]) <span class="fn">GetOrLoad</span>(k K) (V, <span class="typ">error</span>) {
+    <span class="kw">if</span> v, ok := c.<span class="fn">Get</span>(k); ok {
+        <span class="kw">return</span> v, <span class="kw">nil</span>
+    }
+    v, err := c.loader(k)
+    <span class="kw">if</span> err != <span class="kw">nil</span> {
+        <span class="kw">var</span> zero V
+        <span class="kw">return</span> zero, err
+    }
+    c.<span class="fn">Set</span>(k, v)
+    <span class="kw">return</span> v, <span class="kw">nil</span>
+}
+
+<span class="kw">func</span> (c *<span class="typ">Cache</span>[K, V]) <span class="fn">Set</span>(k K, v V) {
+    c.mu.<span class="fn">Lock</span>()
+    c.data[k] = <span class="typ">entry</span>[V]{v, time.<span class="fn">Now</span>().<span class="fn">Add</span>(c.ttl)}
+    c.mu.<span class="fn">Unlock</span>()
+}</code></pre>
+  <div class="tip"><b>✅ 泛型化收益：</b><span>对比 1.18 之前的 <code>map[interface{}]interface{}</code> 版本——调用处零断言、编译期防错、值类型不装箱。要点：<code>K comparable</code> 做 map 键、<code>var zero V</code> 处理失败、receiver 带 <code>[K, V]</code>。</span></div>
+
+  <h3>学习路线</h3>
+  <table>
+    <tr><th>阶段</th><th>目标</th></tr>
+    <tr><td>第 1 周</td><td>掌握 <code>[T any]</code> 语法与 <code>comparable</code>/<code>cmp.Ordered</code>，重写项目里 2~3 个工具函数</td></tr>
+    <tr><td>第 2 周</td><td>写泛型容器（Stack/Queue/Set），吃透 receiver 的 <code>[T]</code> 与零值技巧</td></tr>
+    <tr><td>第 3 周</td><td>阅读标准库 <code>slices</code>/<code>maps</code> 与 <code>x/exp/constraints</code> 源码</td></tr>
+    <tr><td>第 4 周</td><td>递归约束、指针约束、GC Shape 原理，精读 Type Parameters Proposal</td></tr>
+  </table>
+</section>
+
+<footer>Go 泛型由浅入深教程 · 参考 Type Parameters Proposal 与官方泛型教程 · 2026-09</footer>
+</main>
+</div>
+
+<script>
+document.querySelectorAll('pre code.lang-go').forEach(function(block){
+  var src = block.textContent;
+  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  var master = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  var out = src.replace(master, function(m, c1, c2, s, kw, typ, num, fn){
+    if (c1 || c2) return '<span class="cmt">'+m+'</span>';
+    if (s) return '<span class="str">'+m+'</span>';
+    if (kw) return '<span class="kw">'+m+'</span>';
+    if (typ) return '<span class="typ">'+m+'</span>';
+    if (num) return '<span class="num">'+m+'</span>';
+    if (fn) return '<span class="fn">'+m+'</span>';
+    return m;
+  });
+  block.innerHTML = out;
+});
+document.querySelectorAll('pre code.lang-go').forEach(function(b){
+  var label=document.createElement('span');label.className='codelabel';label.textContent='Go';
+  b.closest('pre').appendChild(label);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>samber/lo 技术指南 — Go 泛型 Lodash 风格工具库</title>
+<style>
+  :root{
+    --accent:#7c3aed; --accent-light:#ede9fe; --accent-dark:#5b21b6;
+    --bg:#f8f7fc; --card:#ffffff; --border:#e8e5f0; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#1a1033; --kw:#c4b5fd; --str:#86efac; --cmt:#7c6f9c; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:250px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:20px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+
+  .hero{background:linear-gradient(135deg,#4c1d95 0%,#7c3aed 55%,#a855f7 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(124,58,237,.28)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.92;font-size:15px;max-width:660px}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin-bottom:18px;box-shadow:0 1px 3px rgba(76,29,149,.06)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:14px}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ic{font-size:22px;margin-bottom:6px}
+  .feature b{display:block;font-size:14.5px;margin-bottom:4px}
+  .feature span{font-size:12.8px;color:var(--muted);line-height:1.55}
+
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#a5a1c4;background:#2b1e52;padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code{background:#f3f0fa;color:#9333ea;border:1px solid #e8e5f0;padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(76,29,149,.06)}
+  th{background:#f1ecfb;color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:#fbfaff}
+
+  .tip,.warn,.danger{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px;display:flex;gap:10px;align-items:flex-start}
+  .tip{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .tip b,.warn b,.danger b{flex-shrink:0}
+
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0;box-shadow:0 1px 3px rgba(76,29,149,.06)}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+
+  .pill{display:inline-block;background:var(--accent-light);color:var(--accent-dark);border-radius:16px;padding:2px 12px;font-size:12px;margin:2px 4px 2px 0}
+  .badge{display:inline-block;font-size:11px;border-radius:6px;padding:1px 8px;margin-left:6px;vertical-align:1px}
+  .badge.new{background:#ecfdf5;color:#059669;border:1px solid #a7f3d0}
+  .badge.err{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+
+  .chip{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:34px;border-radius:8px;font-family:Consolas,monospace;font-size:13px;font-weight:700;margin:2px}
+
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="sidebar">
+  <div class="logo">samber/lo<span class="ver">v1</span></div>
+  <div class="sub">Go 泛型 Lodash 风格工具库</div>
+  <a href="#intro">1. 库简介</a>
+  <a href="#features">2. 功能全景</a>
+  <a href="#principle">3. 设计原理</a>
+  <a class="sub-link" href="#p-generic">泛型签名</a>
+  <a class="sub-link" href="#p-err">Err 变体</a>
+  <a class="sub-link" href="#p-sub">子包矩阵</a>
+  <a class="sub-link" href="#p-perf">性能画像</a>
+  <a href="#slice">4. Slice 实战</a>
+  <a href="#mapdict">5. Map / 查找 / 集合</a>
+  <a href="#types">6. Tuple / 条件 / 类型操作</a>
+  <a href="#errcon">7. 错误处理与并发</a>
+  <a href="#channel">8. Channel 工具箱</a>
+  <a href="#subpkg">9. parallel / mutable 子包</a>
+  <a href="#stdlib">10. 对比标准库</a>
+  <a href="#best">11. 最佳实践</a>
+</nav>
+
+<main>
+
+<div class="hero">
+  <h1>samber/lo</h1>
+  <p>基于 <b>Go 1.18+ 泛型</b>的 Lodash 风格工具库：200+ 帮助函数覆盖 slice、map、string、channel、并发与错误处理，把「写了几百遍的 for 循环样板」变成一行声明式代码。零第三方依赖，v1 严格遵循 SemVer。</p>
+  <div class="meta">
+    <span>github.com/samber/lo</span>
+    <span>Go ≥ 1.18</span>
+    <span>零依赖</span>
+    <span>MIT License</span>
+    <span>文档 lo.samber.dev</span>
+  </div>
+</div>
+
+<!-- ================= 1 简介 ================= -->
+<section id="intro">
+  <h2>1. 库简介</h2>
+  <div class="card">
+    <p><b>samber/lo</b> 灵感来自 JavaScript 生态的 Lodash，只做一件事：<b>把日常编码中重复出现的集合操作样板代码，封装成可复用的泛型函数。</b>它不引入框架概念、不改变代码结构，即取即用。</p>
+    <pre><code class="lang-go"><span class="cmt">// 没有 lo 的日子</span>
+names := <span class="fn">make</span>([]<span class="typ">string</span>, 0, <span class="fn">len</span>(users))
+<span class="kw">for</span> _, u := <span class="kw">range</span> users {
+    <span class="kw">if</span> u.Age &gt;= 18 {
+        names = <span class="fn">append</span>(names, u.Name)
+    }
+}
+
+<span class="cmt">// 有 lo 的日子</span>
+names := lo.<span class="fn">Map</span>(lo.<span class="fn">Filter</span>(users, <span class="kw">func</span>(u <span class="typ">User</span>, _ <span class="typ">int</span>) <span class="typ">bool</span> {
+    <span class="kw">return</span> u.Age &gt;= 18
+}), <span class="kw">func</span>(u <span class="typ">User</span>, _ <span class="typ">int</span>) <span class="typ">string</span> {
+    <span class="kw">return</span> u.Name
+})</code></pre>
+    <pre><code class="lang-bash">go get github.com/samber/lo@v1</code></pre>
+    <pre><code class="lang-go"><span class="kw">import</span> (
+    <span class="str">"github.com/samber/lo"</span>
+    lop <span class="str">"github.com/samber/lo/parallel"</span> <span class="cmt">// 并行版本</span>
+    lom <span class="str">"github.com/samber/lo/mutable"</span>  <span class="cmt">// 原地修改版本</span>
+)</code></pre>
+    <p style="margin-top:6px">同系列生态：<code>mo</code>（Monad：Option/Result）、<code>do</code>（依赖注入）、<code>ro</code>（响应式/无限流）。定位区分：<b>lo 处理有限集合的同步计算，ro 处理无限事件流。</b></p>
+  </div>
+</section>
+
+<!-- ================= 2 功能全景 ================= -->
+<section id="features">
+  <h2>2. 功能全景</h2>
+  <div class="grid">
+    <div class="feature"><div class="ic">🧮</div><b>60+ Slice 函数</b><span>Map / Filter / Reduce / Uniq / GroupBy / Chunk / FlatMap / PartitionBy / KeyBy / Take / Drop …</span></div>
+    <div class="feature"><div class="ic">🗂️</div><b>20+ Map 函数</b><span>Keys / Values / PickBy / OmitBy / Entries / FromEntries / Invert / Assign / MapValues …</span></div>
+    <div class="feature"><div class="ic">🔍</div><b>查找与集合运算</b><span>Find / IndexOf / Contains / Every / Some / Intersect / Union / Difference / Min / Max …</span></div>
+    <div class="feature"><div class="ic">🧲</div><b>元组 Tuple</b><span>T2–T9 类型、Unpack、Zip2–Zip9、CrossJoin 笛卡尔积</span></div>
+    <div class="feature"><div class="ic">🔀</div><b>条件表达式</b><span>Ternary / TernaryF / If-ElseIf-Else 链 / Switch-Case-Default 链</span></div>
+    <div class="feature"><div class="ic">📦</div><b>类型与指针</b><span>ToPtr / FromPtr / ToSlicePtr / Coalesce / IsEmpty / ToAnySlice …</span></div>
+    <div class="feature"><div class="ic">🚦</div><b>并发控制</b><span>Attempt 重试 / Debounce 防抖 / Throttle 节流 / Synchronize / Async / WaitFor …</span></div>
+    <div class="feature"><div class="ic">📡</div><b>Channel 工具箱</b><span>Generator / Buffer / FanIn / FanOut / ChannelDispatcher / SliceToChannel …</span></div>
+    <div class="feature"><div class="ic">🧯</div><b>错误处理</b><span>Validate / Must / Try / TryCatch / ErrorsAs / Assert</span></div>
+    <div class="feature"><div class="ic">🧵</div><b>字符串与数学</b><span>RandomString / Substring / CamelCase / SnakeCase / Range / Clamp / Sum / Mean / Mode</span></div>
+    <div class="feature"><div class="ic">⚡</div><b>parallel 子包</b><span>一行并行的 Map / ForEach：每元素一个 goroutine，结果保序</span></div>
+    <div class="feature"><div class="ic">♻️</div><b>mutable 子包</b><span>原地修改版本：复用底层数组，减少内存分配</span></div>
+  </div>
+</section>
+
+<!-- ================= 3 原理 ================= -->
+<section id="principle">
+  <h2>3. 设计原理</h2>
+
+  <h3 id="p-generic">3.1 泛型签名：一套代码适配所有类型</h3>
+  <div class="figure">
+    <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7c6f9c"/></marker></defs>
+      <!-- 中间泛型函数 -->
+      <rect x="290" y="60" width="300" height="180" rx="14" fill="#ede9fe" stroke="#7c3aed" stroke-width="2.5"/>
+      <text x="440" y="100" text-anchor="middle" font-size="16" font-weight="800" fill="#5b21b6" font-family="Consolas,monospace">Filter[T any]</text>
+      <text x="440" y="128" text-anchor="middle" font-size="12" fill="#475569" font-family="Consolas,monospace">(collection []T, predicate) []T</text>
+      <text x="440" y="160" text-anchor="middle" font-size="12" fill="#64748b">编译期单态化（monomorphization）</text>
+      <text x="440" y="180" text-anchor="middle" font-size="12" fill="#64748b">无反射 · 无 interface{} 装箱</text>
+      <text x="440" y="206" text-anchor="middle" font-size="11.5" fill="#059669">一套源码 → 按类型生成特化版本</text>
+      <!-- 左：输入类型 -->
+      <g font-family="Consolas,monospace" font-size="12.5">
+        <rect x="30" y="40" width="180" height="34" rx="8" fill="#fff" stroke="#cbd5e1"/><text x="120" y="62" text-anchor="middle" fill="#334155">[]int{1,2,3}</text>
+        <rect x="30" y="90" width="180" height="34" rx="8" fill="#fff" stroke="#cbd5e1"/><text x="120" y="112" text-anchor="middle" fill="#334155">[]string{"a","b"}</text>
+        <rect x="30" y="140" width="180" height="34" rx="8" fill="#fff" stroke="#cbd5e1"/><text x="120" y="162" text-anchor="middle" fill="#334155">[]User{...}</text>
+        <rect x="30" y="190" width="180" height="34" rx="8" fill="#fff" stroke="#cbd5e1"/><text x="120" y="212" text-anchor="middle" fill="#334155">[]*Order{...}</text>
+      </g>
+      <line x1="212" y1="57" x2="288" y2="110" stroke="#7c6f9c" stroke-width="1.8" marker-end="url(#arr)"/>
+      <line x1="212" y1="107" x2="288" y2="130" stroke="#7c6f9c" stroke-width="1.8" marker-end="url(#arr)"/>
+      <line x1="212" y1="157" x2="288" y2="160" stroke="#7c6f9c" stroke-width="1.8" marker-end="url(#arr)"/>
+      <line x1="212" y1="207" x2="288" y2="190" stroke="#7c6f9c" stroke-width="1.8" marker-end="url(#arr)"/>
+      <!-- 右：输出 -->
+      <g font-family="Consolas,monospace" font-size="12.5">
+        <rect x="670" y="90" width="180" height="34" rx="8" fill="#ecfdf5" stroke="#6ee7b7"/><text x="760" y="112" text-anchor="middle" fill="#065f46">[]int（新切片）</text>
+        <rect x="670" y="140" width="180" height="34" rx="8" fill="#ecfdf5" stroke="#6ee7b7"/><text x="760" y="162" text-anchor="middle" fill="#065f46">[]string（新切片）</text>
+        <rect x="670" y="190" width="180" height="34" rx="8" fill="#ecfdf5" stroke="#6ee7b7"/><text x="760" y="212" text-anchor="middle" fill="#065f46">[]User（新切片）</text>
+      </g>
+      <line x1="592" y1="130" x2="668" y2="112" stroke="#7c6f9c" stroke-width="1.8" marker-end="url(#arr)"/>
+      <line x1="592" y1="155" x2="668" y2="155" stroke="#7c6f9c" stroke-width="1.8" marker-end="url(#arr)"/>
+      <line x1="592" y1="185" x2="668" y2="200" stroke="#7c6f9c" stroke-width="1.8" marker-end="url(#arr)"/>
+      <text x="440" y="278" text-anchor="middle" font-size="11.5" fill="#64748b">回调统一携带 (item, index) 两个参数，与 JS 的 map((v, i) =&gt; …) 心智模型对齐</text>
+    </svg>
+    <figcaption>图 1 · 泛型原理：类型参数 T 在编译期被具体类型替换，性能等同手写专用版本，远优于 reflect / interface{} 方案</figcaption>
+  </div>
+
+  <h3 id="p-err">3.2 Err 变体：函数式的错误传播</h3>
+  <p>大部分转换函数都有 <code>XxxErr</code> 兄弟：回调多返回一个 <code>error</code>，<b>遇到错误立即短路返回</b>，把「循环里逐个 if err != nil」的模板也省掉了。</p>
+  <pre><code class="lang-go">result, err := lo.<span class="fn">MapErr</span>([]<span class="typ">int</span>{1, 2, 3}, <span class="kw">func</span>(x <span class="typ">int</span>, _ <span class="typ">int</span>) (<span class="typ">string</span>, <span class="typ">error</span>) {
+    <span class="kw">if</span> x == 3 {
+        <span class="kw">return</span> <span class="str">""</span>, fmt.<span class="fn">Errorf</span>(<span class="str">"number 3 is not allowed"</span>)
+    }
+    <span class="kw">return</span> strconv.<span class="fn">Itoa</span>(x), <span class="kw">nil</span>
+})
+<span class="cmt">// result == nil, err == "number 3 is not allowed"</span></code></pre>
+  <p><span class="pill">FilterErr</span><span class="pill">MapErr</span><span class="pill">FlatMapErr</span><span class="pill">ReduceErr</span><span class="pill">ReduceRightErr</span><span class="pill">GroupByErr</span><span class="pill">…全家族覆盖</p>
+
+  <h3 id="p-sub">3.3 子包矩阵</h3>
+  <table>
+    <tr><th>导入</th><th>定位</th><th>说明</th></tr>
+    <tr><td><code>lo</code></td><td>同步 · 不可变</td><td>主包，所有函数返回<b>新集合</b>，不修改入参</td></tr>
+    <tr><td><code>lo/parallel</code></td><td>并发</td><td>Map / ForEach 的并行版：每元素一个 goroutine，<b>结果顺序与输入一致</b></td></tr>
+    <tr><td><code>lo/mutable</code></td><td>原地修改</td><td>复用底层数组、减少分配（注意副作用与数据竞争）</td></tr>
+    <tr><td><code>lo/it</code></td><td>惰性迭代</td><td>基于 Go 1.23 <code>iter.Seq</code> 的迭代器版本（实验性质）</td></tr>
+  </table>
+
+  <h3 id="p-perf">3.4 性能画像</h3>
+  <div class="warn"><b>⚠️ Eager 求值：</b><span>所有函数调用即完整遍历，中间产生临时切片。<code>Map(Filter(xs))</code> 会遍历两次、分配两次 —— 可用 <code>FilterMap</code> 合并；极热路径上手写 for 循环仍最快（省去回调开销）。lo 的核心收益是<b>可读性与正确性</b>，不是极致性能。</span></div>
+</section>
+
+<!-- ================= 4 Slice ================= -->
+<section id="slice">
+  <h2>4. Slice 实战：最常用的一组</h2>
+
+  <div class="figure">
+    <svg viewBox="0 0 880 340" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs><marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7c6f9c"/></marker></defs>
+      <!-- 输入 -->
+      <text x="70" y="42" text-anchor="middle" font-size="12.5" fill="#64748b">输入</text>
+      <g text-anchor="middle">
+        <rect class="chip" x="18" y="54" width="44" height="36" rx="8" fill="#ede9fe" stroke="#a78bfa"/><text x="40" y="77" font-size="14" fill="#5b21b6" font-weight="700">1</text>
+        <rect class="chip" x="66" y="54" width="44" height="36" rx="8" fill="#ede9fe" stroke="#a78bfa"/><text x="88" y="77" font-size="14" fill="#5b21b6" font-weight="700">2</text>
+        <rect class="chip" x="114" y="54" width="44" height="36" rx="8" fill="#ede9fe" stroke="#a78bfa"/><text x="136" y="77" font-size="14" fill="#5b21b6" font-weight="700">3</text>
+        <rect class="chip" x="162" y="54" width="44" height="36" rx="8" fill="#ede9fe" stroke="#a78bfa"/><text x="184" y="77" font-size="14" fill="#5b21b6" font-weight="700">4</text>
+        <rect class="chip" x="210" y="54" width="44" height="36" rx="8" fill="#ede9fe" stroke="#a78bfa"/><text x="232" y="77" font-size="14" fill="#5b21b6" font-weight="700">5</text>
+      </g>
+      <!-- Filter -->
+      <rect x="330" y="44" width="220" height="58" rx="12" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+      <text x="440" y="68" text-anchor="middle" font-size="13.5" font-weight="700" fill="#1e40af" font-family="Consolas,monospace">Filter(x%2==0)</text>
+      <text x="440" y="88" text-anchor="middle" font-size="11" fill="#64748b">只保留满足谓词的元素</text>
+      <line x1="262" y1="72" x2="326" y2="72" stroke="#7c6f9c" stroke-width="2" marker-end="url(#arr2)"/>
+      <g text-anchor="middle">
+        <rect class="chip" x="610" y="42" width="44" height="36" rx="8" fill="#dbeafe" stroke="#93c5fd" opacity=".55"/><text x="632" y="65" font-size="13" fill="#94a3b8">1</text>
+        <rect class="chip" x="658" y="42" width="44" height="36" rx="8" fill="#dbeafe" stroke="#3b82f6"/><text x="680" y="65" font-size="14" fill="#1e40af" font-weight="700">2</text>
+        <rect class="chip" x="706" y="42" width="44" height="36" rx="8" fill="#dbeafe" stroke="#93c5fd" opacity=".55"/><text x="728" y="65" font-size="13" fill="#94a3b8">3</text>
+        <rect class="chip" x="754" y="42" width="44" height="36" rx="8" fill="#dbeafe" stroke="#3b82f6"/><text x="776" y="65" font-size="14" fill="#1e40af" font-weight="700">4</text>
+        <rect class="chip" x="802" y="42" width="44" height="36" rx="8" fill="#dbeafe" stroke="#93c5fd" opacity=".55"/><text x="824" y="65" font-size="13" fill="#94a3b8">5</text>
+      </g>
+      <line x1="554" y1="72" x2="606" y2="62" stroke="#7c6f9c" stroke-width="2" marker-end="url(#arr2)"/>
+      <text x="740" y="100" text-anchor="middle" font-size="11" fill="#64748b">→ []int{2, 4}（新切片）</text>
+
+      <!-- Map -->
+      <rect x="330" y="140" width="220" height="58" rx="12" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+      <text x="440" y="164" text-anchor="middle" font-size="13.5" font-weight="700" fill="#065f46" font-family="Consolas,monospace">Map(x → x×10)</text>
+      <text x="440" y="184" text-anchor="middle" font-size="11" fill="#64748b">类型转换 / 变换，T → R</text>
+      <line x1="440" y1="106" x2="440" y2="136" stroke="#7c6f9c" stroke-width="2" marker-end="url(#arr2)" transform="translate(-160,0)"/>
+      <g text-anchor="middle">
+        <rect class="chip" x="610" y="140" width="56" height="36" rx="8" fill="#d1fae5" stroke="#6ee7b7"/><text x="638" y="163" font-size="14" fill="#065f46" font-weight="700">20</text>
+        <rect class="chip" x="670" y="140" width="56" height="36" rx="8" fill="#d1fae5" stroke="#6ee7b7"/><text x="698" y="163" font-size="14" fill="#065f46" font-weight="700">40</text>
+      </g>
+      <line x1="554" y1="169" x2="606" y2="160" stroke="#7c6f9c" stroke-width="2" marker-end="url(#arr2)"/>
+      <text x="740" y="196" text-anchor="middle" font-size="11" fill="#64748b">→ []int{20, 40}</text>
+
+      <!-- Reduce -->
+      <rect x="330" y="236" width="220" height="58" rx="12" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+      <text x="440" y="260" text-anchor="middle" font-size="13.5" font-weight="700" fill="#92400e" font-family="Consolas,monospace">Reduce(agg + x, init=0)</text>
+      <text x="440" y="280" text-anchor="middle" font-size="11" fill="#64748b">聚合为单个值</text>
+      <line x1="280" y1="169" x2="326" y2="200" stroke="none"/>
+      <line x1="728" y1="180" x2="728" y2="232" stroke="#7c6f9c" stroke-width="2" marker-end="url(#arr2)" transform="translate(-90,0)"/>
+      <rect x="620" y="236" width="180" height="44" rx="10" fill="#fef3c7" stroke="#fcd34d" stroke-width="2"/>
+      <text x="710" y="264" text-anchor="middle" font-size="16" font-weight="800" fill="#92400e">60</text>
+      <line x1="554" y1="265" x2="616" y2="262" stroke="#7c6f9c" stroke-width="2" marker-end="url(#arr2)"/>
+      <text x="440" y="326" text-anchor="middle" font-size="11.5" fill="#64748b">FilterMap 可将前两步合并为一次遍历；ReduceRight 则从右向左聚合</text>
+    </svg>
+    <figcaption>图 2 · 三大高阶函数数据流：Filter 收窄 → Map 变换 → Reduce 聚合，每一步都返回新集合（不可变风格）</figcaption>
+  </div>
+
+  <h3>转换与聚合</h3>
+  <pre><code class="lang-go"><span class="cmt">// Map：类型转换</span>
+lo.<span class="fn">Map</span>([]<span class="typ">int64</span>{1, 2, 3, 4}, <span class="kw">func</span>(x <span class="typ">int64</span>, _ <span class="typ">int</span>) <span class="typ">string</span> {
+    <span class="kw">return</span> strconv.<span class="fn">FormatInt</span>(x, 10)
+}) <span class="cmt">// []string{"1", "2", "3", "4"}</span>
+
+<span class="cmt">// FilterMap：过滤 + 转换一步到位（回调返回 (结果, 是否保留)）</span>
+lo.<span class="fn">FilterMap</span>([]<span class="typ">string</span>{<span class="str">"cpu"</span>, <span class="str">"gpu"</span>, <span class="str">"mouse"</span>}, <span class="kw">func</span>(x <span class="typ">string</span>, _ <span class="typ">int</span>) (<span class="typ">string</span>, <span class="typ">bool</span>) {
+    <span class="kw">if</span> strings.<span class="fn">HasSuffix</span>(x, <span class="str">"pu"</span>) {
+        <span class="kw">return</span> <span class="str">"xpu"</span>, <span class="kw">true</span>
+    }
+    <span class="kw">return</span> <span class="str">""</span>, <span class="kw">false</span>
+}) <span class="cmt">// []string{"xpu", "xpu"}</span>
+
+<span class="cmt">// FlatMap：转换后拍平（返回 nil 则不加元素）</span>
+lo.<span class="fn">FlatMap</span>([]<span class="typ">int64</span>{0, 1, 2}, <span class="kw">func</span>(x <span class="typ">int64</span>, _ <span class="typ">int</span>) []<span class="typ">string</span> {
+    <span class="kw">return</span> []<span class="typ">string</span>{strconv.<span class="fn">FormatInt</span>(x, 10), strconv.<span class="fn">FormatInt</span>(x, 10)}
+}) <span class="cmt">// []string{"0","0","1","1","2","2"}</span>
+
+<span class="cmt">// Reduce：聚合（ReduceRight 反向）</span>
+lo.<span class="fn">Reduce</span>([]<span class="typ">int</span>{1, 2, 3, 4}, <span class="kw">func</span>(agg, item <span class="typ">int</span>, _ <span class="typ">int</span>) <span class="typ">int</span> { <span class="kw">return</span> agg + item }, 0) <span class="cmt">// 10</span></code></pre>
+
+  <h3>去重与分组</h3>
+  <div class="figure">
+    <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs><marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7c6f9c"/></marker></defs>
+      <text x="105" y="40" text-anchor="middle" font-size="12.5" fill="#64748b">输入 []int{0,1,2,3,4,5}</text>
+      <g text-anchor="middle">
+        <rect x="24" y="56" width="34" height="34" rx="7" fill="#ede9fe" stroke="#a78bfa"/><text x="41" y="78" font-size="13" fill="#5b21b6">0</text>
+        <rect x="62" y="56" width="34" height="34" rx="7" fill="#ede9fe" stroke="#a78bfa"/><text x="79" y="78" font-size="13" fill="#5b21b6">1</text>
+        <rect x="100" y="56" width="34" height="34" rx="7" fill="#ede9fe" stroke="#a78bfa"/><text x="117" y="78" font-size="13" fill="#5b21b6">2</text>
+        <rect x="138" y="56" width="34" height="34" rx="7" fill="#ede9fe" stroke="#a78bfa"/><text x="155" y="78" font-size="13" fill="#5b21b6">3</text>
+        <rect x="176" y="56" width="34" height="34" rx="7" fill="#ede9fe" stroke="#a78bfa"/><text x="193" y="78" font-size="13" fill="#5b21b6">4</text>
+        <rect x="214" y="56" width="34" height="34" rx="7" fill="#ede9fe" stroke="#a78bfa"/><text x="231" y="78" font-size="13" fill="#5b21b6">5</text>
+      </g>
+      <rect x="300" y="52" width="180" height="46" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+      <text x="390" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#1e40af" font-family="Consolas,monospace">GroupBy(x % 3)</text>
+      <line x1="252" y1="73" x2="296" y2="73" stroke="#7c6f9c" stroke-width="2" marker-end="url(#arr3)"/>
+      <!-- 桶 -->
+      <g>
+        <path d="M480,75 C520,75 530,55 560,55" fill="none" stroke="#7c6f9c" stroke-width="1.8" marker-end="url(#arr3)"/>
+        <path d="M480,75 C520,75 530,115 560,115" fill="none" stroke="#7c6f9c" stroke-width="1.8" marker-end="url(#arr3)"/>
+        <path d="M480,75 C520,75 530,175 560,175" fill="none" stroke="#7c6f9c" stroke-width="1.8" marker-end="url(#arr3)"/>
+        <rect x="562" y="30" width="200" height="52" rx="10" fill="#fff" stroke="#cbd5e1"/>
+        <text x="580" y="52" font-size="12" font-family="Consolas,monospace" fill="#334155">map[0]: [0, 3]</text>
+        <text x="580" y="72" font-size="10.5" fill="#94a3b8">余数为 0 的桶</text>
+        <rect x="562" y="92" width="200" height="52" rx="10" fill="#fff" stroke="#cbd5e1"/>
+        <text x="580" y="114" font-size="12" font-family="Consolas,monospace" fill="#334155">map[1]: [1, 4]</text>
+        <text x="580" y="134" font-size="10.5" fill="#94a3b8">余数为 1 的桶</text>
+        <rect x="562" y="154" width="200" height="52" rx="10" fill="#fff" stroke="#cbd5e1"/>
+        <text x="580" y="176" font-size="12" font-family="Consolas,monospace" fill="#334155">map[2]: [2, 5]</text>
+        <text x="580" y="196" font-size="10.5" fill="#94a3b8">余数为 2 的桶</text>
+      </g>
+      <text x="440" y="238" text-anchor="middle" font-size="11.5" fill="#64748b">GroupBy 返回 map[K][]T —— 报表统计、按状态分桶、索引构建的一行代码解法</text>
+    </svg>
+    <figcaption>图 3 · GroupBy 分桶示意：谓词计算 key，元素按 key 聚成新切片</figcaption>
+  </div>
+
+  <pre><code class="lang-go"><span class="cmt">// Uniq / UniqMap / IsUniq</span>
+lo.<span class="fn">Uniq</span>([]<span class="typ">int</span>{1, 2, 2, 3})              <span class="cmt">// []int{1, 2, 3}</span>
+lo.<span class="fn">UniqMap</span>(users, <span class="kw">func</span>(u <span class="typ">User</span>, _ <span class="typ">int</span>) <span class="typ">string</span> { <span class="kw">return</span> u.Name })
+<span class="cmt">// Map + 去重一步完成：[]string{"Alex", "Bob", "Alice"}</span>
+
+<span class="cmt">// GroupBy：按 key 分桶</span>
+lo.<span class="fn">GroupBy</span>([]<span class="typ">int</span>{0, 1, 2, 3, 4, 5}, <span class="kw">func</span>(item <span class="typ">int</span>, _ <span class="typ">int</span>) <span class="typ">int</span> {
+    <span class="kw">return</span> item % 3
+}) <span class="cmt">// map[int][]int{0: [0,3], 1: [1,4], 2: [2,5]}</span>
+
+<span class="cmt">// Chunk：切分固定大小子块（分批处理神器）</span>
+lo.<span class="fn">Chunk</span>([]<span class="typ">int</span>{0, 1, 2, 3, 4, 5}, 2) <span class="cmt">// [][]int{{0,1}, {2,3}, {4,5}}</span>
+
+<span class="cmt">// PartitionBy：按「连续」key 切段</span>
+lo.<span class="fn">PartitionBy</span>([]<span class="typ">int</span>{1, 1, 2, 2, 3}, <span class="kw">func</span>(x <span class="typ">int</span>, _ <span class="typ">int</span>) <span class="typ">string</span> {
+    <span class="kw">if</span> x &lt; 2 { <span class="kw">return</span> <span class="str">"low"</span> } <span class="kw">else</span> { <span class="kw">return</span> <span class="str">"high"</span> }
+}) <span class="cmt">// [][]int{{1,1}, {2,2,3}}</span>
+
+<span class="cmt">// KeyBy / SliceToMap(Associate)：切片转 map</span>
+lo.<span class="fn">SliceToMap</span>(users, <span class="kw">func</span>(u <span class="typ">User</span>, _ <span class="typ">int</span>) (<span class="typ">string</span>, <span class="typ">int</span>) {
+    <span class="kw">return</span> u.Name, u.Age
+}) <span class="cmt">// map[string]int{"Alex": 10, ...}</span></code></pre>
+
+  <h3>取舍与统计速查</h3>
+  <table>
+    <tr><th>函数</th><th>效果</th><th>函数</th><th>效果</th></tr>
+    <tr><td><code>Take(xs, 2)</code></td><td>取前 n</td><td><code>Drop(xs, 2)</code></td><td>丢前 n</td></tr>
+    <tr><td><code>TakeWhile / DropWhile</code></td><td>按谓词取/丢</td><td><code>DropRight</code></td><td>从尾部丢</td></tr>
+    <tr><td><code>Reject(xs, pred)</code></td><td>Filter 反义</td><td><code>Compact</code></td><td>去零值</td></tr>
+    <tr><td><code>Count(xs, 1)</code></td><td>元素计数</td><td><code>CountValues</code></td><td>直方图 map</td></tr>
+    <tr><td><code>Reverse</code></td><td>反转（新版返回新切片）</td><td><code>Shuffle</code></td><td>随机打乱</td></tr>
+    <tr><td><code>Fill / Repeat</code></td><td>填充 / 重复</td><td><code>Subset / Slice</code></td><td>取子集</td></tr>
+    <tr><td><code>Replace / ReplaceAll</code></td><td>替换前 n 个/全部</td><td><code>Flatten / Concat</code></td><td>拍平 / 拼接</td></tr>
+  </table>
+</section>
+
+<!-- ================= 5 Map/查找/集合 ================= -->
+<section id="mapdict">
+  <h2>5. Map / 查找 / 集合运算</h2>
+  <pre><code class="lang-go"><span class="cmt">//// Map 字典操作</span>
+lo.<span class="fn">Keys</span>(m) / lo.<span class="fn">Values</span>(m)              <span class="cmt">// 键/值切片</span>
+lo.<span class="fn">PickBy</span>(m, <span class="kw">func</span>(k <span class="typ">string</span>, v <span class="typ">int</span>) <span class="typ">bool</span> { <span class="kw">return</span> v &gt; 10 }) <span class="cmt">// 保留满足项</span>
+lo.<span class="fn">OmitBy</span>(m, pred)                          <span class="cmt">// PickBy 反义</span>
+lo.<span class="fn">Entries</span>(<span class="kw">map</span>[<span class="typ">string</span>]<span class="typ">int</span>{<span class="str">"a"</span>: 1})    <span class="cmt">// []Tuple2{{"a",1}}</span>
+lo.<span class="fn">FromEntries</span>(pairs)                      <span class="cmt">// pairs → map（逆向）</span>
+lo.<span class="fn">Invert</span>(m)                                <span class="cmt">// 键值互换</span>
+lo.<span class="fn">Assign</span>(m1, m2, m3)                      <span class="cmt">// 合并（后者覆盖）</span>
+lo.<span class="fn">MapKeys</span>(m, fn) / lo.<span class="fn">MapValues</span>(m, fn)   <span class="cmt">// 变换键/值</span>
+lo.<span class="fn">ValueOr</span>(m, <span class="str">"k"</span>, 42)                    <span class="cmt">// 带默认值取值</span>
+
+<span class="cmt">//// 查找与判断</span>
+lo.<span class="fn">IndexOf</span>([]<span class="typ">int</span>{5, 6, 7}, 6)             <span class="cmt">// 1（不存在返回 -1）</span>
+v, ok := lo.<span class="fn">Find</span>(xs, pred)                 <span class="cmt">// (值, 是否找到)</span>
+lo.<span class="fn">FindOrElse</span>(xs, fallback, pred)           <span class="cmt">// 找不到给默认值</span>
+lo.<span class="fn">FindKey</span>(m, 20)                          <span class="cmt">// 按值反查键</span>
+lo.<span class="fn">Contains</span>(xs, 5)                         <span class="cmt">// 包含</span>
+lo.<span class="fn">Every</span> / lo.<span class="fn">Some</span> / lo.<span class="fn">None</span>               <span class="cmt">// 全部/任一/都不满足（均有 By 变体）</span>
+
+<span class="cmt">//// 集合运算</span>
+lo.<span class="fn">Intersect</span>(a, b)                          <span class="cmt">// 交集</span>
+lo.<span class="fn">Difference</span>(a, b)                        <span class="cmt">// 差集</span>
+lo.<span class="fn">Union</span>(a, b)                             <span class="cmt">// 并集</span>
+lo.<span class="fn">Without</span>(xs, 2, 3)                       <span class="cmt">// 剔除指定元素</span>
+lo.<span class="fn">FindUniques</span> / lo.<span class="fn">FindDuplicates</span>        <span class="cmt">// 只出现一次的 / 重复的</span>
+
+<span class="cmt">//// 极值与取样</span>
+lo.<span class="fn">Min</span> / lo.<span class="fn">Max</span> / lo.<span class="fn">MinBy</span> / lo.<span class="fn">MaxBy</span> / lo.<span class="fn">MinIndexBy</span>
+lo.<span class="fn">First</span> / lo.<span class="fn">Last</span> / lo.<span class="fn">Nth</span>(xs, -1)            <span class="cmt">// 负索引支持</span>
+lo.<span class="fn">FirstOr</span>(xs, def)                         <span class="cmt">// 空集合安全取首</span>
+lo.<span class="fn">Sample</span>(xs) / lo.<span class="fn">Samples</span>(xs, 3)           <span class="cmt">// 随机取样</span></code></pre>
+</section>
+
+<!-- ================= 6 Tuple/条件/类型 ================= -->
+<section id="types">
+  <h2>6. Tuple / 条件表达式 / 类型操作</h2>
+
+  <h3>Tuple：多返回值的容器化（最高 9 元）</h3>
+  <pre><code class="lang-go"><span class="cmt">// Zip：多个等长切片「拉链」成元组切片</span>
+lo.<span class="fn">Zip2</span>([]<span class="typ">string</span>{<span class="str">"a"</span>, <span class="str">"b"</span>}, []<span class="typ">int</span>{1, 2})
+<span class="cmt">// []lo.Tuple2[string,int]{{A:"a",B:1},{A:"b",B:2}}，最高 Zip9</span>
+
+<span class="cmt">// Unpack：元组解包成多返回值</span>
+a, b := lo.<span class="fn">Unpack2</span>(lo.Tuple2[<span class="typ">string</span>, <span class="typ">int</span>]{A: <span class="str">"x"</span>, B: 1})
+
+<span class="cmt">// CrossJoin：笛卡尔积</span>
+lo.<span class="fn">CrossJoin2</span>([]<span class="typ">string</span>{<span class="str">"a"</span>}, []<span class="typ">int</span>{1, 2})
+<span class="cmt">// []Tuple2{{"a",1},{"a",2}}</span></code></pre>
+
+  <h3>条件表达式：让 Go 拥有「三元运算符」</h3>
+  <pre><code class="lang-go"><span class="cmt">// Ternary：注意两分支都会求值！</span>
+lo.<span class="fn">Ternary</span>(ok, <span class="str">"yes"</span>, <span class="str">"no"</span>)
+
+<span class="cmt">// TernaryF：惰性求值版本（仅计算命中分支）</span>
+lo.<span class="fn">TernaryF</span>(ok, <span class="kw">func</span>() <span class="typ">T</span> { <span class="kw">return</span> <span class="fn">expensive</span>() }, <span class="kw">func</span>() <span class="typ">T</span> { <span class="kw">return</span> <span class="fn">cheap</span>() })
+
+<span class="cmt">// 链式 if</span>
+lo.<span class="fn">If</span>(ok, <span class="str">"a"</span>).<span class="fn">ElseIf</span>(ok2, <span class="str">"b"</span>).<span class="fn">Else</span>(<span class="str">"c"</span>)
+
+<span class="cmt">// 链式 switch</span>
+lo.<span class="fn">Switch</span>(value).<span class="fn">Case</span>(1, <span class="str">"one"</span>).<span class="fn">Case</span>(2, <span class="str">"two"</span>).<span class="fn">Default</span>(<span class="str">"many"</span>)</code></pre>
+
+  <h3>类型与指针：消灭 nil 判空样板</h3>
+  <pre><code class="lang-go">lo.<span class="fn">ToPtr</span>(42)               <span class="cmt">// *int：字面量直接取地址</span>
+lo.<span class="fn">FromPtr</span>(p)              <span class="cmt">// 解引用；nil → 零值</span>
+lo.<span class="fn">FromPtrOr</span>(p, 99)        <span class="cmt">// 解引用；nil → 默认值</span>
+lo.<span class="fn">ToSlicePtr</span>([]<span class="typ">int</span>{1, 2})   <span class="cmt">// []*int</span>
+lo.<span class="fn">FromSlicePtrOr</span>(ps, 0)   <span class="cmt">// []*int → []T（nil 安全）</span>
+lo.<span class="fn">IsEmpty</span>(xs) / lo.<span class="fn">IsNotEmpty</span>(xs)
+lo.<span class="fn">Coalesce</span>(0, 1, 2)        <span class="cmt">// 返回第一个非零值 → 1（默认值串联神器）</span>
+lo.<span class="fn">IsNil</span>(x) / lo.<span class="fn">IsNotNil</span>(x)  <span class="cmt">// 任意类型的 nil 判断</span>
+
+<span class="cmt">// 字符串与数学（节选）</span>
+lo.<span class="fn">RandomString</span>(16, lo.LowerCaseLettersCharset)
+lo.<span class="fn">Substring</span>(<span class="str">"hello"</span>, 0, 3)    <span class="cmt">// "hel"（支持负索引）</span>
+lo.<span class="fn">RuneLength</span>(<span class="str">"你好"</span>)          <span class="cmt">// 2（按 rune 而非 byte）</span>
+lo.<span class="fn">SnakeCase</span>(<span class="str">"MyFunc"</span>)        <span class="cmt">// "my_func"</span>
+lo.<span class="fn">CamelCase</span>(<span class="str">"http_server"</span>)   <span class="cmt">// "httpServer"</span>
+lo.<span class="fn">KebabCase</span>(<span class="str">"HelloWorld"</span>)    <span class="cmt">// "hello-world"</span>
+lo.<span class="fn">Range</span>(5)                    <span class="cmt">// []int{0,1,2,3,4}</span>
+lo.<span class="fn">RangeWithSteps</span>(0, 10, 3)    <span class="cmt">// []int{0,3,6,9}</span>
+lo.<span class="fn">Clamp</span>(42, 0, 100)           <span class="cmt">// 区间钳制</span>
+lo.<span class="fn">Sum</span> / lo.<span class="fn">Mean</span> / lo.<span class="fn">Mode</span>       <span class="cmt">// 求和 / 均值 / 众数</span></code></pre>
+</section>
+
+<!-- ================= 7 错误/并发 ================= -->
+<section id="errcon">
+  <h2>7. 错误处理与并发控制</h2>
+  <pre><code class="lang-go"><span class="cmt">//// 错误处理</span>
+<span class="cmt">// Validate：条件不满足即返回错误（参数校验常用）</span>
+err := lo.<span class="fn">Validate</span>(user.Age &gt;= 18, <span class="str">"user must be adult, got %d"</span>, user.Age)
+
+<span class="cmt">// Must：「我保证不出错」，出错 panic（仅初始化期使用）</span>
+val := lo.<span class="fn">Must</span>(strconv.<span class="fn">Atoi</span>(<span class="str">"42"</span>))
+
+<span class="cmt">// Try：函数式 recover</span>
+err = lo.<span class="fn">Try</span>(<span class="kw">func</span>() <span class="typ">error</span> { <span class="kw">return</span> <span class="fn">doSomething</span>() })
+lo.<span class="fn">TryCatch</span>(fn, catchFn)                    <span class="cmt">// 捕获后交给 catch 处理</span>
+
+<span class="cmt">// ErrorsAs：一行完成 errors.As</span>
+<span class="kw">if</span> lo.<span class="fn">ErrorsAs</span>[*<span class="typ">MyError</span>](err) { ... }
+
+<span class="cmt">//// 并发控制</span>
+<span class="cmt">// Attempt：带重试的执行（返回最终错误）</span>
+err = lo.<span class="fn">Attempt</span>(3, <span class="kw">func</span>(index <span class="typ">int</span>) <span class="typ">error</span> {
+    <span class="kw">return</span> <span class="fn">callFlakyAPI</span>()
+})
+
+<span class="cmt">// AttemptWithDelay：带退避延迟的重试</span>
+err = lo.<span class="fn">AttemptWithDelay</span>(5, 2*time.Second, <span class="kw">func</span>(i <span class="typ">int</span>, d time.Duration) <span class="typ">error</span> {
+    <span class="kw">return</span> <span class="fn">retryableOp</span>()
+})
+
+<span class="cmt">// Debounce：防抖（200ms 内多次调用只执行最后一次）</span>
+debounced := lo.<span class="fn">Debounce</span>(200*time.Millisecond, <span class="kw">func</span>() { <span class="fn">search</span>() })
+debounced()
+
+<span class="cmt">// Throttle：节流（1 秒内最多执行一次，其余丢弃）</span>
+throttled := lo.<span class="fn">Throttle</span>(1*time.Second, fn)
+
+<span class="cmt">// Synchronize：把任意函数变成并发安全版本</span>
+safeFn := lo.<span class="fn">Synchronize</span>(fn)
+
+<span class="cmt">// Async：立即起 goroutine，返回 channel 收结果（另有 Async0~Async6）</span>
+ch := lo.<span class="fn">Async</span>(<span class="kw">func</span>() <span class="typ">int</span> { <span class="kw">return</span> <span class="fn">heavyCompute</span>() })
+result := &lt;-ch
+
+<span class="cmt">// WaitFor：轮询等待条件成立</span>
+err = lo.<span class="fn">WaitFor</span>(<span class="kw">func</span>() <span class="typ">bool</span> { <span class="kw">return</span> <span class="fn">ready</span>() }, 3*time.Second, 100*time.Millisecond)
+
+<span class="cmt">// Transaction：多个函数顺序执行，遇错即停（并回滚你自行编排的清理逻辑）</span>
+err = lo.<span class="fn">Transaction</span>(fn1, fn2, fn3)</code></pre>
+</section>
+
+<!-- ================= 8 Channel ================= -->
+<section id="channel">
+  <h2>8. Channel 工具箱</h2>
+
+  <div class="figure">
+    <svg viewBox="0 0 880 380" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs><marker id="arr5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7c6f9c"/></marker></defs>
+      <!-- FanIn -->
+      <g>
+        <text x="200" y="34" text-anchor="middle" font-size="13" font-weight="700" fill="#5b21b6">FanIn：多流合一</text>
+        <rect x="40" y="50" width="110" height="30" rx="7" fill="#ede9fe" stroke="#a78bfa"/><text x="95" y="70" text-anchor="middle" font-size="11.5" fill="#5b21b6" font-family="Consolas,monospace">chan A</text>
+        <rect x="40" y="90" width="110" height="30" rx="7" fill="#ede9fe" stroke="#a78bfa"/><text x="95" y="110" text-anchor="middle" font-size="11.5" fill="#5b21b6" font-family="Consolas,monospace">chan B</text>
+        <rect x="40" y="130" width="110" height="30" rx="7" fill="#ede9fe" stroke="#a78bfa"/><text x="95" y="150" text-anchor="middle" font-size="11.5" fill="#5b21b6" font-family="Consolas,monospace">chan C</text>
+        <circle cx="230" cy="105" r="26" fill="#fff" stroke="#7c3aed" stroke-width="2"/>
+        <text x="230" y="110" text-anchor="middle" font-size="11" fill="#5b21b6" font-weight="700">FanIn</text>
+        <line x1="152" y1="65" x2="205" y2="93" stroke="#7c6f9c" stroke-width="1.8" marker-end="url(#arr5)"/>
+        <line x1="152" y1="105" x2="203" y2="105" stroke="#7c6f9c" stroke-width="1.8" marker-end="url(#arr5)"/>
+        <line x1="152" y1="145" x2="205" y2="117" stroke="#7c6f9c" stroke-width="1.8" marker-end="url(#arr5)"/>
+        <line x1="258" y1="105" x2="320" y2="105" stroke="#7c6f9c" stroke-width="2" marker-end="url(#arr5)"/>
+        <rect x="322" y="88" width="110" height="34" rx="7" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2"/><text x="377" y="110" text-anchor="middle" font-size="11.5" fill="#5b21b6" font-family="Consolas,monospace">merged</text>
+      </g>
+      <!-- FanOut -->
+      <g>
+        <text x="660" y="34" text-anchor="middle" font-size="13" font-weight="700" fill="#1e40af">FanOut：一派多</text>
+        <rect x="500" y="88" width="110" height="34" rx="7" fill="#dbeafe" stroke="#3b82f6"/><text x="555" y="110" text-anchor="middle" font-size="11.5" fill="#1e40af" font-family="Consolas,monospace">source</text>
+        <circle cx="675" cy="105" r="26" fill="#fff" stroke="#2563eb" stroke-width="2"/>
+        <text x="675" y="110" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">FanOut</text>
+        <line x1="612" y1="105" x2="646" y2="105" stroke="#7c6f9c" stroke-width="2" marker-end="url(#arr5)"/>
+        <line x1="700" y1="93" x2="745" y2="65" stroke="#7c6f9c" stroke-width="1.8" marker-end="url(#arr5)"/>
+        <line x1="702" y1="105" x2="745" y2="105" stroke="#7c6f9c" stroke-width="1.8" marker-end="url(#arr5)"/>
+        <line x1="700" y1="117" x2="745" y2="150" stroke="#7c6f9c" stroke-width="1.8" marker-end="url(#arr5)"/>
+        <g font-family="Consolas,monospace">
+          <rect x="747" y="48" width="100" height="28" rx="7" fill="#eff6ff" stroke="#93c5fd"/><text x="797" y="67" text-anchor="middle" font-size="11" fill="#1e40af">worker 1</text>
+          <rect x="747" y="91" width="100" height="28" rx="7" fill="#eff6ff" stroke="#93c5fd"/><text x="797" y="110" text-anchor="middle" font-size="11" fill="#1e40af">worker 2</text>
+          <rect x="747" y="136" width="100" height="28" rx="7" fill="#eff6ff" stroke="#93c5fd"/><text x="797" y="155" text-anchor="middle" font-size="11" fill="#1e40af">worker N</text>
+        </g>
+      </g>
+      <!-- Buffer -->
+      <g>
+        <text x="440" y="200" text-anchor="middle" font-size="13" font-weight="700" fill="#92400e">Buffer / BufferWithTimeout：攒批消费</text>
+        <g text-anchor="middle" font-family="Consolas,monospace">
+          <rect x="60" y="240" width="26" height="26" rx="5" fill="#fef3c7" stroke="#fcd34d"/><text x="73" y="258" font-size="11" fill="#92400e">1</text>
+          <rect x="90" y="240" width="26" height="26" rx="5" fill="#fef3c7" stroke="#fcd34d"/><text x="103" y="258" font-size="11" fill="#92400e">2</text>
+          <rect x="120" y="240" width="26" height="26" rx="5" fill="#fef3c7" stroke="#fcd34d"/><text x="133" y="258" font-size="11" fill="#92400e">3</text>
+          <rect x="150" y="240" width="26" height="26" rx="5" fill="#fef3c7" stroke="#fcd34d"/><text x="163" y="258" font-size="11" fill="#92400e">4</text>
+          <rect x="180" y="240" width="26" height="26" rx="5" fill="#fef3c7" stroke="#fcd34d"/><text x="193" y="258" font-size="11" fill="#92400e">5</text>
+        </g>
+        <text x="140" y="292" text-anchor="middle" font-size="11" fill="#64748b">流入的零散元素</text>
+        <rect x="330" y="228" width="220" height="50" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+        <text x="440" y="250" text-anchor="middle" font-size="12" font-weight="700" fill="#92400e" font-family="Consolas,monospace">Buffer(size=10, timeout=1s)</text>
+        <text x="440" y="268" text-anchor="middle" font-size="10.5" fill="#b45309">攒满 10 个 或 超时 1s → 输出一批</text>
+        <line x1="214" y1="253" x2="326" y2="253" stroke="#7c6f9c" stroke-width="2" marker-end="url(#arr5)"/>
+        <line x1="554" y1="253" x2="640" y2="253" stroke="#7c6f9c" stroke-width="2" marker-end="url(#arr5)"/>
+        <rect x="642" y="226" width="200" height="54" rx="10" fill="#fef3c7" stroke="#fcd34d" stroke-width="2"/>
+        <text x="742" y="249" text-anchor="middle" font-size="12" fill="#92400e" font-family="Consolas,monospace">[][]T{batch…}</text>
+        <text x="742" y="268" text-anchor="middle" font-size="10.5" fill="#b45309">下游按批处理（写库/发消息）</text>
+        <text x="440" y="336" text-anchor="middle" font-size="11.5" fill="#64748b">另有 ChannelDispatcher：按轮询 / 最少连接 / 哈希策略把输入分发到多个输出 channel</text>
+        <text x="440" y="358" text-anchor="middle" font-size="11.5" fill="#64748b">Generator / SliceToChannel / ChannelToSlice：切片与 channel 的双向桥梁</text>
+      </g>
+    </svg>
+    <figcaption>图 4 · Channel 工具箱三剑客：FanIn 聚合多源、FanOut 扇出负载、Buffer 攒批输出</figcaption>
+  </div>
+
+  <pre><code class="lang-go"><span class="cmt">// Generator：把切片生产为 channel（带缓冲）</span>
+ch := lo.<span class="fn">Generator</span>(10, []<span class="typ">int</span>{1, 2, 3})
+
+<span class="cmt">// 切片 ⇄ channel 互转</span>
+ch = lo.<span class="fn">SliceToChannel</span>(10, []<span class="typ">int</span>{1, 2, 3})
+<span class="kw">for</span> v := <span class="kw">range</span> ch { ... }
+xs := lo.<span class="fn">ChannelToSlice</span>(ch) <span class="cmt">// []int{1, 2, 3}</span>
+
+<span class="cmt">// 每 10 个元素或超时 1s 输出一批</span>
+<span class="kw">for</span> batch := <span class="kw">range</span> lo.<span class="fn">BufferWithTimeout</span>(ctx, ch, 10, time.Second) {
+    <span class="fn">flushToDB</span>(batch)
+}
+
+merged := lo.<span class="fn">FanIn</span>(ch1, ch2, ch3)   <span class="cmt">// 多 channel 合一</span>
+chs := lo.<span class="fn">FanOut</span>(ch, 5)              <span class="cmt">// 一 channel 派发到 5 个</span></code></pre>
+</section>
+
+<!-- ================= 9 子包 ================= -->
+<section id="subpkg">
+  <h2>9. parallel / mutable 子包</h2>
+
+  <div class="figure">
+    <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs><marker id="arr6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7c6f9c"/></marker></defs>
+      <!-- 输入 -->
+      <text x="90" y="60" text-anchor="middle" font-size="12.5" fill="#64748b">输入切片（保序）</text>
+      <g text-anchor="middle">
+        <rect x="20" y="80" width="44" height="36" rx="8" fill="#ede9fe" stroke="#a78bfa"/><text x="42" y="103" font-size="14" fill="#5b21b6">u₁</text>
+        <rect x="68" y="80" width="44" height="36" rx="8" fill="#ede9fe" stroke="#a78bfa"/><text x="90" y="103" font-size="14" fill="#5b21b6">u₂</text>
+        <rect x="116" y="80" width="44" height="36" rx="8" fill="#ede9fe" stroke="#a78bfa"/><text x="138" y="103" font-size="14" fill="#5b21b6">u₃</text>
+        <rect x="164" y="80" width="44" height="36" rx="8" fill="#ede9fe" stroke="#a78bfa"/><text x="186" y="103" font-size="14" fill="#5b21b6">u₄</text>
+      </g>
+      <!-- goroutines -->
+      <g text-anchor="middle" font-family="Consolas,monospace">
+        <rect x="380" y="24" width="180" height="32" rx="8" fill="#dcfce7" stroke="#4ade80"/><text x="470" y="45" font-size="11.5" fill="#166534">go worker(0) → out[0]</text>
+        <rect x="380" y="72" width="180" height="32" rx="8" fill="#dcfce7" stroke="#4ade80"/><text x="470" y="93" font-size="11.5" fill="#166534">go worker(1) → out[1]</text>
+        <rect x="380" y="120" width="180" height="32" rx="8" fill="#dcfce7" stroke="#4ade80"/><text x="470" y="141" font-size="11.5" fill="#166534">go worker(2) → out[2]</text>
+        <rect x="380" y="168" width="180" height="32" rx="8" fill="#dcfce7" stroke="#4ade80"/><text x="470" y="189" font-size="11.5" fill="#166534">go worker(3) → out[3]</text>
+      </g>
+      <line x1="66" y1="98" x2="376" y2="40" stroke="#7c6f9c" stroke-width="1.6" marker-end="url(#arr6)"/>
+      <line x1="90" y1="118" x2="376" y2="88" stroke="#7c6f9c" stroke-width="1.6" marker-end="url(#arr6)"/>
+      <line x1="138" y1="118" x2="376" y2="136" stroke="#7c6f9c" stroke-width="1.6" marker-end="url(#arr6)"/>
+      <line x1="186" y1="98" x2="376" y2="184" stroke="#7c6f9c" stroke-width="1.6" marker-end="url(#arr6)"/>
+      <!-- 输出 -->
+      <text x="740" y="60" text-anchor="middle" font-size="12.5" fill="#64748b">结果切片</text>
+      <g text-anchor="middle">
+        <rect x="660" y="80" width="44" height="36" rx="8" fill="#d1fae5" stroke="#6ee7b7"/><text x="682" y="103" font-size="14" fill="#065f46">r₁</text>
+        <rect x="708" y="80" width="44" height="36" rx="8" fill="#d1fae5" stroke="#6ee7b7"/><text x="730" y="103" font-size="14" fill="#065f46">r₂</text>
+        <rect x="756" y="80" width="44" height="36" rx="8" fill="#d1fae5" stroke="#6ee7b7"/><text x="778" y="103" font-size="14" fill="#065f46">r₃</text>
+        <rect x="804" y="80" width="44" height="36" rx="8" fill="#d1fae5" stroke="#6ee7b7"/><text x="826" y="103" font-size="14" fill="#065f46">r₄</text>
+      </g>
+      <line x1="562" y1="40" x2="656" y2="94" stroke="#7c6f9c" stroke-width="1.6" marker-end="url(#arr6)"/>
+      <line x1="562" y1="88" x2="704" y2="96" stroke="#7c6f9c" stroke-width="1.6" marker-end="url(#arr6)"/>
+      <line x1="562" y1="136" x2="752" y2="104" stroke="#7c6f9c" stroke-width="1.6" marker-end="url(#arr6)"/>
+      <line x1="562" y1="184" x2="800" y2="112" stroke="#7c6f9c" stroke-width="1.6" marker-end="url(#arr6)"/>
+      <text x="440" y="240" text-anchor="middle" font-size="12" fill="#475569">lop.Map：每个索引一个 goroutine，结果按索引写入预分配切片 —— 并行执行但顺序保持</text>
+      <text x="440" y="264" text-anchor="middle" font-size="11.5" fill="#64748b">适合 I/O 密集（HTTP 请求、DB 查询）；纯计算并行收益受 GOMAXPROCS 限制</text>
+      <text x="440" y="288" text-anchor="middle" font-size="11.5" fill="#64748b">⚠ 回调被并发调用，闭包内共享变量需自行加锁</text>
+    </svg>
+    <figcaption>图 5 · parallel 子包实现原理：index → goroutine → out[index]，保序并行</figcaption>
+  </div>
+
+  <pre><code class="lang-go"><span class="kw">import</span> lop <span class="str">"github.com/samber/lo/parallel"</span>
+
+<span class="cmt">// 并行抓取多个 URL，结果顺序与输入一致</span>
+urls := []<span class="typ">string</span>{<span class="str">"https://a.com"</span>, <span class="str">"https://b.com"</span>, <span class="str">"https://c.com"</span>}
+bodies := lop.<span class="fn">Map</span>(urls, <span class="kw">func</span>(url <span class="typ">string</span>, _ <span class="typ">int</span>) <span class="typ">string</span> {
+    resp, _ := http.<span class="fn">Get</span>(url)
+    <span class="kw">defer</span> resp.Body.<span class="fn">Close</span>()
+    b, _ := io.<span class="fn">ReadAll</span>(resp.Body)
+    <span class="kw">return</span> <span class="typ">string</span>(b)
+})
+
+lop.<span class="fn">ForEach</span>(xs, <span class="kw">func</span>(x <span class="typ">T</span>, _ <span class="typ">int</span>) { <span class="fn">process</span>(x) }) <span class="cmt">// 并行副作用</span></code></pre>
+
+  <h3>mutable：原地修改版</h3>
+  <pre><code class="lang-go"><span class="kw">import</span> lom <span class="str">"github.com/samber/lo/mutable"</span>
+
+list := []<span class="typ">int</span>{1, 2, 3, 4}
+newList := lom.<span class="fn">Filter</span>(list, <span class="kw">func</span>(x <span class="typ">int</span>) <span class="typ">bool</span> { <span class="kw">return</span> x%2 == 0 })
+<span class="cmt">// newList == []int{2, 4}；list 底层数组被改写（内容不再可信）</span>
+<span class="cmt">// 省一次内存分配，代价是共享底层数组的副作用</span></code></pre>
+</section>
+
+<!-- ================= 10 对比 ================= -->
+<section id="stdlib">
+  <h2>10. 对比标准库 slices / maps</h2>
+  <p>Go 1.21 起 <code>slices</code> / <code>maps</code> 进入标准库，功能有交集：</p>
+  <table>
+    <tr><th>能力</th><th>标准库</th><th>samber/lo</th></tr>
+    <tr><td>Contains / Index / Max / Min</td><td>✅ <code>slices</code></td><td>✅ 均有，另有 By / Err 变体</td></tr>
+    <tr><td>Clone / Sort / BinarySearch</td><td>✅ <code>slices</code>（编译器深度优化）</td><td>➖ 不做排序，保持不可变定位</td></tr>
+    <tr><td>Map / Filter / Reduce</td><td>❌ 无</td><td>✅ <b>核心优势</b></td></tr>
+    <tr><td>GroupBy / Chunk / KeyBy / Uniq</td><td>❌ 无</td><td>✅ 独有</td></tr>
+    <tr><td>Ternary / Coalesce / Attempt / Channel 系列</td><td>❌ 无</td><td>✅ 独有</td></tr>
+  </table>
+  <div class="tip"><b>✅ 共存策略：</b><span>排序查找优先标准库（性能最优）；转换、分组、并发、错误处理类样板代码用 lo。两者可在同一项目共存，互不冲突。</span></div>
+</section>
+
+<!-- ================= 11 最佳实践 ================= -->
+<section id="best">
+  <h2>11. 最佳实践与注意事项</h2>
+  <div class="danger"><b>🚫 超热路径慎用链式调用：</b><span><code>Map(Filter(Map(xs)))</code> 多次遍历 + 分配。用 <code>FilterMap</code> 合并，或回到手写 for。</span></div>
+  <div class="warn"><b>⚠️ Ternary 两分支都会求值：</b><span>含副作用或高成本计算时必须改用 <code>TernaryF</code>（惰性求值）。</span></div>
+  <div class="warn"><b>⚠️ lo.Must 只用于初始化期：</b><span>配置解析、正则编译等「出错即致命」的场景；业务路径禁用。</span></div>
+  <div class="warn"><b>⚠️ parallel 回调安全性：</b><span>回调被并发调用，闭包里的共享变量需自行加锁。</span></div>
+  <div class="warn"><b>⚠️ 历史版本行为变化：</b><span><code>lo.Reverse</code> 等函数曾原地修改、新版改为返回新切片，升级版本前查 changelog，避免共享底层数组的坑。</span></div>
+  <div class="warn"><b>⚠️ 区分子包别名：</b><span>团队约定 <code>lop</code> / <code>lom</code> 别名，避免误用原地版本引发数据竞争。</span></div>
+  <div class="tip"><b>✅ 可读性优先：</b><span>lo 的价值是让代码意图（「我在做映射/过滤/分组」）一目了然。三层以上嵌套回调不如拆成命名函数 —— 一切以团队可维护性为准绳。</span></div>
+
+  <h3>选型小结</h3>
+  <table>
+    <tr><th>场景</th><th>建议</th></tr>
+    <tr><td>业务代码里的切片/字典转换、分组、去重</td><td>强烈推荐 lo</td></tr>
+    <tr><td>参数校验、重试、防抖节流</td><td>lo.Validate / Attempt / Debounce 一行解决</td></tr>
+    <tr><td>channel 扇入扇出、攒批</td><td>lo 的 channel 工具箱</td></tr>
+    <tr><td>纯计算超大规模数据、排序</td><td>标准库 slices 或手写</td></tr>
+    <tr><td>无限流 / 响应式</td><td>换 samber/ro</td></tr>
+    <tr><td>Maybe / Result 等 Monad</td><td>换 samber/mo</td></tr>
+  </table>
+</section>
+
+<footer>samber/lo 技术指南 · 基于官方 README 与文档整理 · 2026-09</footer>
+</main>
+</div>
+
+<script>
+// 极简 Go 语法高亮（免外部依赖）
+document.querySelectorAll('pre code.lang-go').forEach(function(block){
+  var src = block.textContent;
+  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  var master = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  var out = src.replace(master, function(m, c1, c2, s, kw, typ, num, fn){
+    if (c1 || c2) return '<span class="cmt">'+m+'</span>';
+    if (s) return '<span class="str">'+m+'</span>';
+    if (kw) return '<span class="kw">'+m+'</span>';
+    if (typ) return '<span class="typ">'+m+'</span>';
+    if (num) return '<span class="num">'+m+'</span>';
+    if (fn) return '<span class="fn">'+m+'</span>';
+    return m;
+  });
+  block.innerHTML = out;
+});
+document.querySelectorAll('pre code.lang-go').forEach(function(b){
+  var label=document.createElement('span');label.className='codelabel';label.textContent='Go';
+  b.closest('pre').appendChild(label);
+});
+document.querySelectorAll('pre code.lang-bash').forEach(function(b){
+  var label=document.createElement('span');label.className='codelabel';label.textContent='Shell';
+  b.closest('pre').appendChild(label);
+});
+</script>
+</body>
+</html>

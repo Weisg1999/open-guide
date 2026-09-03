@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>go-zero 技术指南</title>
+<style>
+  :root{
+    --accent:#0284c7; --accent-light:#e0f2fe; --accent-dark:#075985;
+    --bg:#f4f9fc; --card:#ffffff; --border:#d3e7f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#062033; --kw:#7dd3fc; --str:#86efac; --cmt:#5f8ea3; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#075985 0%,#0284c7 55%,#0ea5e9 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(2,132,199,.25)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.92;font-size:15px;max-width:680px}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:#0c4a6e}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin-bottom:18px;box-shadow:0 1px 3px rgba(6,32,51,.06)}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#7dd3fc;background:#0a3a5c;padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code{background:#e6f2fb;color:#0369a1;border:1px solid #cfe6f5;padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(6,32,51,.06)}
+  th{background:#d9ecf8;color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:#f2f8fc}
+  .tip,.warn,.danger{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px;display:flex;gap:10px;align-items:flex-start}
+  .tip{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .tip b,.warn b,.danger b{flex-shrink:0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0;box-shadow:0 1px 3px rgba(6,32,51,.06)}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:0 1px 3px rgba(6,32,51,.06)}
+  .feature .ft{font-weight:700;font-size:14px;color:var(--accent-dark);margin-bottom:6px}
+  .feature .fd{font-size:12.5px;color:var(--muted);line-height:1.65}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+    .features{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="sidebar">
+  <div class="logo">go-zero<span class="ver">v1.10</span></div>
+  <div class="sub">云原生微服务框架指南</div>
+  <a href="#intro">1. 项目简介</a>
+  <a class="sub-link" href="#intro-why">1.1 定位与设计原则</a>
+  <a class="sub-link" href="#intro-diff">1.2 框架差异点</a>
+  <a class="sub-link" href="#intro-install">1.3 安装与快速开始</a>
+  <a href="#features">2. 功能特性总览</a>
+  <a href="#concepts">3. 核心概念与原理</a>
+  <a class="sub-link" href="#c-api">3.1 .api DSL</a>
+  <a class="sub-link" href="#c-layout">3.2 生成分层结构</a>
+  <a class="sub-link" href="#c-resilience">3.3 弹性设计</a>
+  <a class="sub-link" href="#c-discov">3.4 服务发现与负载均衡</a>
+  <a class="sub-link" href="#c-model">3.5 model 与缓存一致性</a>
+  <a class="sub-link" href="#c-gateway">3.6 微服务网关</a>
+  <a class="sub-link" href="#c-mcp">3.7 MCP 与 AI 生态</a>
+  <a href="#practice">4. 使用实战</a>
+  <a class="sub-link" href="#p-api">4.1 API 服务实战</a>
+  <a class="sub-link" href="#p-svc">4.2 依赖注入完整服务</a>
+  <a class="sub-link" href="#p-rpc">4.3 RPC 服务（zrpc）</a>
+  <a class="sub-link" href="#p-model">4.4 model 生成实战</a>
+  <a class="sub-link" href="#p-mid">4.5 中间件与配置</a>
+  <a href="#versions">5. 版本演进速览</a>
+  <a href="#pitfalls">6. 常见坑与最佳实践</a>
+  <a href="#compare">7. 选型对比</a>
+</nav>
+
+<main>
+
+<div class="hero">
+  <h1>go-zero</h1>
+  <p>好未来开源的云原生 Go 微服务框架：<b>goctl 代码生成消灭样板代码、弹性设计（自适应熔断 / 限流 / 负载卸载）默认内建、web 与 rpc 一体</b>——把多年大流量工程实践固化进框架，业务开发者「想不稳定都难」。</p>
+  <div class="meta">
+    <span>v1.10.3 · 2026.8</span>
+    <span>MIT 协议</span>
+    <span>CNCF Landscape 收录</span>
+    <span>MCP SDK 内置</span>
+    <span>goctl 工具链</span>
+    <span>etcd 服务发现</span>
+  </div>
+</div>
+
+<!-- ============ 1 项目简介 ============ -->
+<section id="intro">
+  <h2>1. 项目简介</h2>
+
+  <p>go-zero 起源于 2018 年好未来从 Java+MongoDB 单体架构向微服务的迁移（作者 Kevin Wan / kevwan），在千万级日活业务上打磨多年后开源，已被 CNCF Landscape 收录。它的定位一句话讲清：</p>
+  <div class="tip"><b>💡 一句话定位：</b><span>一个自带大量工程实践（engineering practices）的 <b>web + rpc 框架</b>——把微服务的稳定性设施（超时、熔断、限流、负载卸载、缓存）内建到框架里，让业务开发者想不稳定都难。</span></div>
+
+  <h3 id="intro-why">1.1 定位与核心设计原则</h3>
+  <ul>
+    <li><b>简单</b>：一条路做一件事，DSL、目录结构与工具链全部朝同一方向收敛；</li>
+    <li><b>高可用</b>：高并发下保持稳定，多年千万级日活生产验证；</li>
+    <li><b>弹性</b>：面向失败的编程，自适应保护内建（见 3.3）；</li>
+    <li><b>工具化</b>：goctl 消灭样板代码，生成的结构即工程规范。</li>
+  </ul>
+  <p>适用场景：高并发 C 端接口（教育 / 电商 / 直播类业务是它的主场）、需要前后端多端客户端生成的团队、追求「框架兜底稳定性」的中大型微服务集群。</p>
+
+  <h3 id="intro-diff">1.2 与其他 Go 微服务框架的差异</h3>
+  <table>
+    <tr><th style="width:180px">差异点</th><th>说明</th></tr>
+    <tr><td><b>.api DSL 而非 proto</b></td><td>用自定义的简洁语法描述 HTTP API，一条命令生成 Go 服务端 + 多语言客户端（TypeScript / Dart / Kotlin / Java / iOS / Android）</td></tr>
+    <tr><td><b>弹性内建、零配置</b></td><td>自适应熔断（按错误统计自动开合）、自适应负载卸载（按 CPU / 并发丢弃低优先级请求）、链路级超时控制——<b>默认开启无需配置</b></td></tr>
+    <tr><td><b>model 层也生成</b></td><td>goctl 从 MySQL DDL 生成 CRUD 代码，内置缓存一致性方案（singleflight + 缓存自动失效）</td></tr>
+    <tr><td><b>单体友好</b></td><td>API 服务可独立部署（无需注册中心），也可以走完整微服务模式（etcd 服务发现 + zrpc）</td></tr>
+  </table>
+
+  <h3 id="intro-install">1.3 安装与快速开始</h3>
+  <pre><code class="lang-bash"># 安装 goctl（代码生成工具，go-zero 的灵魂）
+go install github.com/zeromicro/go-zero/tools/goctl@latest
+# 或 brew install goctl / docker pull kevinwan/goctl
+
+# 项目中引入框架
+go get -u github.com/zeromicro/go-zero</code></pre>
+  <div class="tip"><b>💡 体验路径：</b><span>装好 goctl 后，最快 4 条命令跑起一个服务：<code>goctl api -o greet.api</code> → <code>goctl api go -api greet.api -dir greet</code> → <code>go mod tidy</code> → <code>go run greet.go -f etc/greet-api.yaml</code>（详见 <a href="#p-api">4.1</a>）。</span></div>
+</section>
+
+<!-- ============ 2 功能特性 ============ -->
+<section id="features">
+  <h2>2. 功能特性总览</h2>
+  <div class="features">
+    <div class="feature"><div class="ft">🔌 API 服务（rest）</div><div class="fd">自定义 .api DSL 描述路由 / 参数 / 校验，net/http 兼容，自动参数校验（options 枚举、range 等）。</div></div>
+    <div class="feature"><div class="ft">🚀 RPC 服务（zrpc）</div><div class="fd">基于 gRPC 的封装：服务发现（etcd / K8s 直连）、负载均衡（p2c / 一致性哈希）、中间件链。</div></div>
+    <div class="feature"><div class="ft">⚙️ goctl 代码生成</div><div class="fd">api→服务端 + 多语言客户端；proto→zrpc；DDL→model CRUD + 缓存；K8s 部署 yaml；Dockerfile。</div></div>
+    <div class="feature"><div class="ft">🛡️ 弹性设计</div><div class="fd">链式超时控制、并发控制（maxConns / maxThreads）、自适应熔断、自适应 load shedding、限流——默认开启。</div></div>
+    <div class="feature"><div class="ft">🗄️ 缓存体系</div><div class="fd">内置 redis 缓存（cacheRedis）+ sqlc / sqlx 模型层缓存：singleflight 防击穿、时间衰减过期。</div></div>
+    <div class="feature"><div class="ft">🧭 服务治理</div><div class="fd">服务发现（discov：etcd 直连 / K8s endpoint）、健康检查、Prometheus 指标内置。</div></div>
+    <div class="feature"><div class="ft">👁️ 可观测</div><div class="fd">logx 结构化日志（敏感数据脱敏）、OpenTelemetry tracing、内置 metrics、SSE。</div></div>
+    <div class="feature"><div class="ft">🚪 微服务网关</div><div class="fd">gateway 组件：HTTP→gRPC 协议转换、洋葱模型自定义中间件、trace 头透传。</div></div>
+    <div class="feature"><div class="ft">🤖 MCP Server SDK</div><div class="fd">v1.8.3+ 内置 Model Context Protocol 服务端：SSE 通道、工具注册、动态 Prompt——把 Go 服务直接挂进 AI Agent 生态。</div></div>
+    <div class="feature"><div class="ft">🧠 AI 原生开发</div><div class="fd">ai-context / zero-skills / mcp-zero 三件套：让 Claude / Copilot / Cursor 生成符合框架规范的代码。</div></div>
+    <div class="feature"><div class="ft">🧰 工具箱（core）</div><div class="fd">300+ 实用工具：sqlx / mapreduce / threading / collection / stringx / bloom / rolling window 等。</div></div>
+  </div>
+  <div class="tip"><b>💡 单体友好：</b><span>API 服务可独立部署（无需注册中心）——同一套框架从单体平滑长到完整微服务（etcd + zrpc），不用中途换技术栈。</span></div>
+</section>
+
+<!-- ============ 3 核心概念 ============ -->
+<section id="concepts">
+  <h2>3. 核心概念与原理</h2>
+
+  <h3 id="c-api">3.1 .api DSL：比 proto 更直白的接口描述</h3>
+  <p>go-zero 用自定义的 <code>.api</code> DSL 描述 HTTP 接口——语法就是「Go 结构体 + service 声明」，心智成本接近零，<b>tag 即校验规则</b>（path / header / form / json + options / range）：</p>
+  <pre><code class="lang-api">type (
+    Request {
+        Name string `path:"name,options=[you,me]"`   // 路径参数 + 枚举自动校验
+    }
+    Response {
+        Message string `json:"message"`
+    }
+)
+
+service greet-api {
+    @handler GreetHandler
+    get /greet/from/:name(Request) returns (Response)
+}</code></pre>
+  <ul>
+    <li><code>goctl api go</code> 生成完整服务端骨架，<code>goctl api ts / dart / java / ...</code> 生成各端客户端——<b>前后端从同一契约出发</b>；</li>
+    <li>生成的目录结构是框架强约束的工程规范（见 <a href="#c-layout">3.2</a>）。</li>
+  </ul>
+
+  <div class="figure">
+    <svg viewBox="0 0 880 456" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs>
+        <marker id="gz1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0284c7"/></marker>
+      </defs>
+      <text x="440" y="24" text-anchor="middle" font-size="13" font-weight="800" fill="#075985">goctl 代码生成全景 —— 一份契约，多端产物</text>
+      <!-- 输入 1：.api -->
+      <rect x="22" y="44" width="225" height="104" rx="12" fill="#062033" stroke="#0284c7" stroke-width="1.8"/>
+      <text x="40" y="68" font-family="Consolas,monospace" font-size="12" font-weight="700" fill="#ffffff">greet.api</text>
+      <text x="241" y="68" text-anchor="end" font-size="10" fill="#7dd3fc">.api DSL</text>
+      <g font-family="Consolas,monospace" font-size="10.5" fill="#7dd3fc">
+        <text x="40" y="88">type Request {</text>
+        <text x="40" y="104">Name string</text>
+        <text x="40" y="120">service greet-api {</text>
+        <text x="40" y="136">get /greet/from/:name</text>
+      </g>
+      <!-- 输入 2：.proto -->
+      <rect x="22" y="176" width="225" height="88" rx="12" fill="#062033" stroke="#0284c7" stroke-width="1.8"/>
+      <text x="40" y="200" font-family="Consolas,monospace" font-size="12" font-weight="700" fill="#ffffff">order.proto</text>
+      <text x="241" y="200" text-anchor="end" font-size="10" fill="#7dd3fc">.proto</text>
+      <g font-family="Consolas,monospace" font-size="10.5" fill="#7dd3fc">
+        <text x="40" y="220">service Order {</text>
+        <text x="40" y="236">rpc ListByUser(ListReq)</text>
+        <text x="40" y="252">returns (ListResp);</text>
+      </g>
+      <!-- 输入 3：DDL -->
+      <rect x="22" y="292" width="225" height="88" rx="12" fill="#062033" stroke="#0284c7" stroke-width="1.8"/>
+      <text x="40" y="316" font-family="Consolas,monospace" font-size="12" font-weight="700" fill="#ffffff">user.sql</text>
+      <text x="241" y="316" text-anchor="end" font-size="10" fill="#7dd3fc">MySQL DDL</text>
+      <g font-family="Consolas,monospace" font-size="10.5" fill="#7dd3fc">
+        <text x="40" y="336">create table user (</text>
+        <text x="40" y="352">id bigint primary key,</text>
+        <text x="40" y="368">name varchar(64) ...);</text>
+      </g>
+      <!-- goctl -->
+      <line x1="247" y1="96" x2="322" y2="160" stroke="#0284c7" stroke-width="1.8" marker-end="url(#gz1a)"/>
+      <line x1="247" y1="220" x2="322" y2="213" stroke="#0284c7" stroke-width="1.8" marker-end="url(#gz1a)"/>
+      <line x1="247" y1="336" x2="322" y2="266" stroke="#0284c7" stroke-width="1.8" marker-end="url(#gz1a)"/>
+      <rect x="322" y="118" width="170" height="190" rx="16" fill="#0284c7" stroke="#075985" stroke-width="2.5"/>
+      <text x="407" y="168" text-anchor="middle" font-size="26">⚙️</text>
+      <text x="407" y="208" text-anchor="middle" font-family="Consolas,monospace" font-size="21" font-weight="800" fill="#ffffff">goctl</text>
+      <text x="407" y="234" text-anchor="middle" font-size="12" fill="#bae6fd">代码生成工具</text>
+      <text x="407" y="254" text-anchor="middle" font-size="10.5" fill="#bae6fd">go-zero 的灵魂</text>
+      <rect x="352" y="266" width="110" height="24" rx="12" fill="#075985"/>
+      <text x="407" y="282" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#e0f2fe">goctl v1.10.2</text>
+      <!-- 产物 -->
+      <line x1="492" y1="150" x2="552" y2="79" stroke="#0284c7" stroke-width="1.8" marker-end="url(#gz1a)"/>
+      <line x1="492" y1="200" x2="552" y2="167" stroke="#0284c7" stroke-width="1.8" marker-end="url(#gz1a)"/>
+      <line x1="492" y1="246" x2="552" y2="255" stroke="#0284c7" stroke-width="1.8" marker-end="url(#gz1a)"/>
+      <line x1="492" y1="292" x2="552" y2="343" stroke="#0284c7" stroke-width="1.8" marker-end="url(#gz1a)"/>
+      <rect x="552" y="44" width="306" height="70" rx="10" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.8"/>
+      <text x="705" y="68" text-anchor="middle" font-size="12.5" font-weight="700" fill="#075985">Go 服务端骨架</text>
+      <text x="705" y="88" text-anchor="middle" font-size="10.5" fill="#475569">handler / logic / svc / types 分层 · routes · etc 配置</text>
+      <rect x="552" y="132" width="306" height="70" rx="10" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.8"/>
+      <text x="705" y="156" text-anchor="middle" font-size="12.5" font-weight="700" fill="#075985">多语言客户端</text>
+      <text x="705" y="176" text-anchor="middle" font-size="10.5" fill="#475569">TypeScript · Dart · Java · Kotlin · Swift（前后端同源）</text>
+      <rect x="552" y="220" width="306" height="70" rx="10" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.8"/>
+      <text x="705" y="244" text-anchor="middle" font-size="12.5" font-weight="700" fill="#075985">model CRUD + 缓存</text>
+      <text x="705" y="264" text-anchor="middle" font-size="10.5" fill="#475569">FindOne 缓存优先 · 写后失效 · singleflight 防击穿</text>
+      <rect x="552" y="308" width="306" height="70" rx="10" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.8"/>
+      <text x="705" y="332" text-anchor="middle" font-size="12.5" font-weight="700" fill="#075985">部署产物</text>
+      <text x="705" y="352" text-anchor="middle" font-size="10.5" fill="#475569">K8s 部署 yaml · Dockerfile —— 发布物一并生成</text>
+      <!-- 底部横幅 -->
+      <rect x="22" y="404" width="836" height="38" rx="19" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="440" y="428" text-anchor="middle" font-size="11.5" font-weight="700" fill="#075985">接口改一处 → 重新生成：服务端与多端客户端永不漂移</text>
+    </svg>
+    <figcaption>图 1 · goctl 代码生成全景：.api DSL / .proto / MySQL DDL 三种输入，一条工具链产出服务端骨架、多语言客户端、model 层与部署物——「一份契约，多端产物」</figcaption>
+  </div>
+
+  <h3 id="c-layout">3.2 生成项目的分层结构</h3>
+  <p>一条 <code>goctl api go</code> 生成的项目结构固定如下（也是框架强约束的工程规范）：</p>
+  <pre><code class="lang-txt"><span class="kw">greet/</span>
+<span class="kw">├── etc/greet-api.yaml</span>        <span class="cmt"># 配置（结构由 conf 生成器/手写）</span>
+<span class="kw">├── greet.go</span>                  <span class="cmt"># 入口</span>
+<span class="kw">└── internal/</span>
+    <span class="kw">├── config/config.go</span>      <span class="cmt"># 配置定义（强类型）</span>
+    <span class="kw">├── handler/</span>              <span class="cmt"># 路由 handler：参数绑定→调 logic（薄层）</span>
+    <span class="kw">│   ├── greethandler.go</span>
+    <span class="kw">│   └── routes.go</span>
+    <span class="typ">├── logic/greetlogic.go</span>   <span class="cmt"># 业务逻辑唯一去处（框架给的正道）</span>
+    <span class="typ">├── svc/servicecontext.go</span> <span class="cmt"># 依赖容器：mysql/redis/rpc client 在此装配</span>
+    <span class="kw">└── types/types.go</span>        <span class="cmt"># 请求/响应结构</span></code></pre>
+
+  <div class="figure">
+    <svg viewBox="0 0 880 440" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs>
+        <marker id="gz2a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0284c7"/></marker>
+        <marker id="gz2g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker>
+      </defs>
+      <!-- 左：目录树 -->
+      <rect x="18" y="64" width="258" height="292" rx="14" fill="#ffffff" stroke="#bae6fd" stroke-width="1.6"/>
+      <text x="147" y="88" text-anchor="middle" font-size="12.5" font-weight="800" fill="#0284c7">goctl 生成的标准结构</text>
+      <g font-family="Consolas,monospace" font-size="12" fill="#334155">
+        <text x="38" y="112" font-weight="700" fill="#075985">greet/</text>
+        <text x="38" y="134">├─ etc/greet-api.yaml</text>
+        <text x="38" y="156">├─ greet.go</text>
+        <text x="38" y="178">└─ internal/</text>
+        <text x="58" y="200">├─ config/  强类型配置</text>
+        <text x="58" y="222">├─ handler/ 路由薄层</text>
+      </g>
+      <rect x="30" y="230" width="234" height="21" rx="5" fill="#e0f2fe" opacity="0.9"/>
+      <rect x="30" y="252" width="234" height="21" rx="5" fill="#e0f2fe" opacity="0.9"/>
+      <g font-family="Consolas,monospace" font-size="12" font-weight="700" fill="#075985">
+        <text x="58" y="244">├─ logic/ 业务唯一去处</text>
+        <text x="58" y="266">├─ svc/    依赖容器</text>
+      </g>
+      <text x="58" y="288" font-family="Consolas,monospace" font-size="12" fill="#334155">└─ types/  请求/响应结构</text>
+      <text x="147" y="340" text-anchor="middle" font-size="10.5" fill="#64748b">handler / routes / types 均为生成物</text>
+      <!-- 树 → 流程 -->
+      <line x1="276" y1="150" x2="356" y2="150" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#gz2g)"/>
+      <text x="316" y="140" text-anchor="middle" font-size="10.5" fill="#64748b">强约束</text>
+      <!-- 右：请求流向 -->
+      <rect x="360" y="42" width="400" height="62" rx="10" fill="#ffffff" stroke="#0284c7" stroke-width="1.8"/>
+      <text x="560" y="64" text-anchor="middle" font-size="13" font-weight="700" fill="#075985">handler · 路由薄层</text>
+      <text x="560" y="86" text-anchor="middle" font-size="10.5" fill="#475569">参数绑定 → 调 logic，永不写业务</text>
+      <rect x="642" y="30" width="112" height="22" rx="11" fill="#fef2f2" stroke="#dc2626" stroke-width="1.2"/>
+      <text x="698" y="45" text-anchor="middle" font-size="10" font-weight="700" fill="#991b1b">生成物 · 勿手改</text>
+      <line x1="560" y1="104" x2="560" y2="128" stroke="#0284c7" stroke-width="2" marker-end="url(#gz2a)"/>
+      <rect x="360" y="128" width="400" height="62" rx="10" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+      <text x="560" y="150" text-anchor="middle" font-size="13" font-weight="700" fill="#075985">logic · 业务逻辑</text>
+      <text x="560" y="172" text-anchor="middle" font-size="10.5" fill="#075985">业务唯一去处，返回 (resp, err)</text>
+      <rect x="630" y="116" width="124" height="22" rx="11" fill="#ecfdf5" stroke="#059669" stroke-width="1.2"/>
+      <text x="692" y="131" text-anchor="middle" font-size="10" font-weight="700" fill="#065f46">✏️ 业务写这里</text>
+      <line x1="560" y1="190" x2="560" y2="214" stroke="#0284c7" stroke-width="2" marker-end="url(#gz2a)"/>
+      <text x="578" y="208" font-size="10.5" fill="#475569">l.svcCtx 访问依赖</text>
+      <rect x="360" y="214" width="400" height="62" rx="10" fill="#ffffff" stroke="#0284c7" stroke-width="1.8"/>
+      <text x="560" y="236" text-anchor="middle" font-size="13" font-weight="700" fill="#075985">svc · ServiceContext 依赖容器</text>
+      <text x="560" y="258" text-anchor="middle" font-size="10.5" fill="#475569">mysql / redis / rpc client 在此集中装配</text>
+      <!-- svc → 三个依赖 -->
+      <line x1="423" y1="276" x2="423" y2="316" stroke="#0284c7" stroke-width="1.8" marker-end="url(#gz2a)"/>
+      <line x1="560" y1="276" x2="560" y2="316" stroke="#0284c7" stroke-width="1.8" marker-end="url(#gz2a)"/>
+      <line x1="697" y1="276" x2="697" y2="316" stroke="#0284c7" stroke-width="1.8" marker-end="url(#gz2a)"/>
+      <rect x="360" y="316" width="126" height="46" rx="8" fill="#f0f9ff" stroke="#7dd3fc" stroke-width="1.5"/>
+      <text x="423" y="336" text-anchor="middle" font-size="11.5" font-weight="700" fill="#0369a1">model（带缓存）</text>
+      <text x="423" y="352" text-anchor="middle" font-size="10.5" fill="#64748b">goctl 生成</text>
+      <rect x="497" y="316" width="126" height="46" rx="8" fill="#f0f9ff" stroke="#7dd3fc" stroke-width="1.5"/>
+      <text x="560" y="336" text-anchor="middle" font-size="11.5" font-weight="700" fill="#0369a1">cacheRedis</text>
+      <text x="560" y="352" text-anchor="middle" font-size="10.5" fill="#64748b">内置缓存</text>
+      <rect x="634" y="316" width="126" height="46" rx="8" fill="#f0f9ff" stroke="#7dd3fc" stroke-width="1.5"/>
+      <text x="697" y="336" text-anchor="middle" font-size="11.5" font-weight="700" fill="#0369a1">zrpc client</text>
+      <text x="697" y="352" text-anchor="middle" font-size="10.5" fill="#64748b">下游 RPC</text>
+      <!-- 底部横幅 -->
+      <rect x="18" y="386" width="844" height="38" rx="19" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="440" y="410" text-anchor="middle" font-size="11.5" font-weight="700" fill="#075985">handler 永远薄、logic 装业务、svc 集中注入依赖 —— 请求单向流动，杜绝业务散落</text>
+    </svg>
+    <figcaption>图 2 · 生成项目分层与请求流向：所有请求走 handler → logic →（svc 里的依赖）单向流动；handler / routes / types 是生成物，业务只写在 logic</figcaption>
+  </div>
+
+  <div class="tip"><b>💡 关键约定：</b><span><b>handler 永远薄、logic 装业务、svc 集中注入依赖</b>。所有请求走 <code>handler → logic →（svc 里的依赖）</code> 单向流动，杜绝业务散落——这是框架给的正道，也是团队协作的共同语言。</span></div>
+
+  <h3 id="c-resilience">3.3 弹性设计（go-zero 的灵魂）</h3>
+  <p>框架内置的防护体系，<b>默认开启、多数无需配置</b>，请求进入 rest / zrpc 后依次经过：</p>
+  <pre><code class="lang-flow"><span class="str">请求进入 rest / zrpc</span>
+  <span class="fn">→</span> <span class="kw">并发控制</span>（CPU 高时拒绝新请求）
+  <span class="fn">→</span> <span class="kw">自适应负载卸载 load shedding</span>（按 CPU/响应时间丢弃，保护过载节点）
+  <span class="fn">→</span> <span class="kw">限流</span>（内置算法，可按 API 粒度配置）
+  <span class="fn">→</span> <span class="kw">熔断器 breaker</span>（滑动窗口统计错误率，自动熔断/半开探测恢复）
+  <span class="fn">→</span> <span class="kw">链式超时 timeout control</span>（上游剩余时间沿 context 传递给下游）
+  <span class="fn">→</span> <span class="typ">业务逻辑</span></code></pre>
+
+  <div class="figure">
+    <svg viewBox="0 0 880 436" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs>
+        <marker id="gz3a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0284c7"/></marker>
+        <marker id="gz3n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker>
+      </defs>
+      <!-- 入口 -->
+      <rect x="110" y="18" width="280" height="30" rx="15" fill="#062033" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="250" y="38" text-anchor="middle" font-size="11.5" fill="#7dd3fc">请求进入 rest / zrpc</text>
+      <line x1="250" y1="48" x2="250" y2="66" stroke="#0284c7" stroke-width="2" marker-end="url(#gz3a)"/>
+      <!-- 漏斗 -->
+      <polygon points="70,66 430,66 407.5,114 92.5,114" fill="#e0f2fe" stroke="#7dd3fc" stroke-width="1.5"/>
+      <polygon points="92.5,114 407.5,114 385,162 115,162" fill="#bae6fd" stroke="#38bdf8" stroke-width="1.5"/>
+      <polygon points="115,162 385,162 362.5,210 137.5,210" fill="#7dd3fc" stroke="#0284c7" stroke-width="1.5"/>
+      <polygon points="137.5,210 362.5,210 340,258 160,258" fill="#38bdf8" stroke="#0284c7" stroke-width="1.5"/>
+      <polygon points="160,258 340,258 325,306 175,306" fill="#0284c7" stroke="#075985" stroke-width="1.5"/>
+      <g text-anchor="middle" font-weight="700" font-size="11.5">
+        <text x="250" y="94" fill="#075985">① 并发控制（MaxConns / CPU 过载拒绝）</text>
+        <text x="250" y="142" fill="#075985">② 自适应负载卸载 · load shedding</text>
+        <text x="250" y="190" fill="#075985">③ 限流（并发 / 权重算法）</text>
+        <text x="250" y="238" fill="#0c4a6e">④ 自适应熔断 breaker</text>
+        <text x="250" y="286" fill="#ffffff">⑤ 链式超时</text>
+      </g>
+      <!-- 出口 -->
+      <line x1="250" y1="306" x2="250" y2="328" stroke="#0284c7" stroke-width="2" marker-end="url(#gz3a)"/>
+      <rect x="150" y="328" width="200" height="40" rx="10" fill="#075985"/>
+      <text x="250" y="345" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">业务逻辑（你的代码）</text>
+      <text x="250" y="361" text-anchor="middle" font-size="10.5" fill="#bae6fd">只放行健康流量</text>
+      <!-- 右侧徽章 + 明细卡 -->
+      <rect x="478" y="20" width="380" height="28" rx="14" fill="#0284c7"/>
+      <text x="668" y="39" text-anchor="middle" font-size="11.5" font-weight="700" fill="#ffffff">🛡️ 默认开启 · 多数无需配置</text>
+      <line x1="420" y1="86" x2="478" y2="86" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#gz3n)"/>
+      <rect x="478" y="58" width="380" height="56" rx="10" fill="#ffffff" stroke="#bae6fd" stroke-width="1.5"/>
+      <text x="494" y="78" font-size="11.5" font-weight="700" fill="#075985">并发控制 MaxConns / MaxThreads</text>
+      <text x="494" y="98" font-size="10.5" fill="#475569">CPU 过载时新请求直接拒绝，守住入口</text>
+      <line x1="390" y1="150" x2="478" y2="150" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#gz3n)"/>
+      <rect x="478" y="122" width="380" height="56" rx="10" fill="#ffffff" stroke="#bae6fd" stroke-width="1.5"/>
+      <text x="494" y="142" font-size="11.5" font-weight="700" fill="#075985">自适应负载卸载 load shedding</text>
+      <text x="494" y="162" font-size="10.5" fill="#475569">按 CPU / 响应时间丢弃请求，保护过载节点</text>
+      <line x1="360" y1="214" x2="478" y2="214" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#gz3n)"/>
+      <rect x="478" y="186" width="380" height="56" rx="10" fill="#ffffff" stroke="#bae6fd" stroke-width="1.5"/>
+      <text x="494" y="206" font-size="11.5" font-weight="700" fill="#075985">限流</text>
+      <text x="494" y="226" font-size="10.5" fill="#475569">内置并发 / 权重两种算法，可按 API 粒度配置</text>
+      <line x1="330" y1="278" x2="478" y2="278" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#gz3n)"/>
+      <rect x="478" y="250" width="380" height="56" rx="10" fill="#ffffff" stroke="#bae6fd" stroke-width="1.5"/>
+      <text x="494" y="270" font-size="11.5" font-weight="700" fill="#075985">自适应熔断 breaker</text>
+      <text x="494" y="290" font-size="10.5" fill="#475569">滑动窗口错误率 → 自动熔断 → 半开探测恢复</text>
+      <line x1="313" y1="342" x2="478" y2="342" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#gz3n)"/>
+      <rect x="478" y="314" width="380" height="56" rx="10" fill="#ffffff" stroke="#bae6fd" stroke-width="1.5"/>
+      <text x="494" y="334" font-size="11.5" font-weight="700" fill="#075985">链式超时 timeout control</text>
+      <text x="494" y="354" font-size="10.5" fill="#475569">剩余预算沿 context 传递，杜绝下游空跑</text>
+      <!-- 底部横幅 -->
+      <rect x="18" y="388" width="844" height="34" rx="17" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="440" y="410" text-anchor="middle" font-size="11.5" font-weight="700" fill="#075985">自适应是关键词：阈值按统计自动调节 —— 把稳定性内建进框架，「想不稳定都难」</text>
+    </svg>
+    <figcaption>图 3 · 弹性防护体系漏斗：请求逐层穿过并发控制 → 负载卸载 → 限流 → 自适应熔断 → 链式超时，只有健康流量到达业务逻辑——全部默认开启</figcaption>
+  </div>
+
+  <ul>
+    <li><b>自适应</b>是关键词：熔断按统计自动开合，load shedding 按 CPU 负载动态调节，不需要为每个依赖手配阈值；</li>
+    <li>超时是<b>链式</b>的：API 入口设 800ms，调了 3 个下游，剩余预算通过 context 自动传递——避免「上游已超时、下游还在跑」的资源浪费。</li>
+  </ul>
+
+  <h3 id="c-discov">3.4 服务发现与负载均衡（zrpc + discov）</h3>
+  <ul>
+    <li><b>discov</b>：基于 etcd 的服务发现（<code>discov://etcd-hosts/key</code>）；K8s 环境可直连 endpoint（无需 etcd）；</li>
+    <li><b>负载均衡</b>：默认 <b>p2c</b>（power of two choices，随机两节点选负载低者，比轮询更抗抖动）；v1.9.3 新增<b>一致性哈希</b>（session affinity：<code>zrpc.SetHashKey(ctx, "user_123")</code> 同 key 路由到同后端，提升缓存命中）；</li>
+    <li>客户端内置熔断与超时传递，<b>出站调用默认被保护</b>。</li>
+  </ul>
+
+  <div class="figure">
+    <svg viewBox="0 0 880 448" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs>
+        <marker id="gz4a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0284c7"/></marker>
+        <marker id="gz4n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker>
+        <marker id="gz4d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#075985"/></marker>
+      </defs>
+      <!-- 前端 -->
+      <rect x="22" y="120" width="140" height="72" rx="12" fill="#ffffff" stroke="#0284c7" stroke-width="2"/>
+      <text x="92" y="148" text-anchor="middle" font-size="12.5" font-weight="700" fill="#075985">前端 / App</text>
+      <text x="92" y="168" text-anchor="middle" font-size="10.5" fill="#64748b">TS / Dart 等客户端</text>
+      <text x="92" y="184" text-anchor="middle" font-size="10.5" fill="#64748b">由 .api 生成</text>
+      <!-- gateway -->
+      <rect x="230" y="36" width="190" height="92" rx="12" fill="#ffffff" stroke="#0284c7" stroke-width="2"/>
+      <text x="325" y="60" text-anchor="middle" font-size="13" font-weight="700" fill="#075985">gateway 网关</text>
+      <text x="325" y="80" text-anchor="middle" font-size="10.5" fill="#475569">HTTP/JSON ↔ gRPC/protobuf</text>
+      <text x="325" y="98" text-anchor="middle" font-size="10.5" fill="#475569">洋葱中间件 · trace 透传</text>
+      <text x="325" y="116" text-anchor="middle" font-size="10.5" fill="#475569">.api 直接引用 proto 服务</text>
+      <!-- API 服务 -->
+      <rect x="230" y="150" width="190" height="88" rx="12" fill="#ffffff" stroke="#0284c7" stroke-width="2"/>
+      <text x="325" y="174" text-anchor="middle" font-size="13" font-weight="700" fill="#075985">API 服务（rest）</text>
+      <text x="325" y="194" text-anchor="middle" font-size="10.5" fill="#475569">.api DSL · 参数校验</text>
+      <text x="325" y="212" text-anchor="middle" font-size="10.5" fill="#475569">单体友好 · 可独立部署</text>
+      <text x="325" y="230" text-anchor="middle" font-size="10.5" fill="#475569">无需注册中心</text>
+      <!-- 前端 → gateway / API -->
+      <line x1="162" y1="136" x2="230" y2="86" stroke="#0284c7" stroke-width="1.8" marker-end="url(#gz4a)"/>
+      <text x="192" y="102" text-anchor="middle" font-size="10" fill="#64748b">HTTPS</text>
+      <line x1="162" y1="168" x2="230" y2="182" stroke="#0284c7" stroke-width="1.8" marker-end="url(#gz4a)"/>
+      <text x="192" y="160" text-anchor="middle" font-size="10" fill="#64748b">HTTP/JSON</text>
+      <!-- MCP -->
+      <rect x="230" y="254" width="190" height="48" rx="10" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.8"/>
+      <text x="325" y="274" text-anchor="middle" font-size="11.5" font-weight="700" fill="#075985">MCP Server（内置）</text>
+      <text x="325" y="292" text-anchor="middle" font-size="10.5" fill="#075985">SSE · 工具 · 动态 Prompt</text>
+      <line x1="325" y1="254" x2="325" y2="238" stroke="#64748b" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#gz4n)"/>
+      <text x="335" y="250" font-size="10" fill="#64748b">复用 svc/logic</text>
+      <!-- AI Agent -->
+      <rect x="22" y="272" width="140" height="68" rx="12" fill="#062033" stroke="#0284c7" stroke-width="2"/>
+      <text x="92" y="298" text-anchor="middle" font-size="12.5" font-weight="700" fill="#7dd3fc">AI Agent</text>
+      <text x="92" y="318" text-anchor="middle" font-size="10.5" fill="#bae6fd">Claude / Cursor</text>
+      <text x="92" y="334" text-anchor="middle" font-size="10.5" fill="#bae6fd">Copilot / 自建</text>
+      <line x1="162" y1="300" x2="230" y2="285" stroke="#0284c7" stroke-width="2" marker-end="url(#gz4a)"/>
+      <text x="196" y="278" text-anchor="middle" font-size="10" font-weight="700" fill="#075985">MCP 协议</text>
+      <!-- zrpc 集群 -->
+      <rect x="580" y="36" width="280" height="120" rx="12" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+      <text x="720" y="58" text-anchor="middle" font-size="12.5" font-weight="700" fill="#075985">zrpc 服务集群（gRPC）</text>
+      <rect x="598" y="70" width="126" height="26" rx="7" fill="#ffffff" stroke="#7dd3fc" stroke-width="1.5"/>
+      <text x="661" y="87" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#0369a1">order-rpc :9000</text>
+      <rect x="736" y="70" width="126" height="26" rx="7" fill="#ffffff" stroke="#7dd3fc" stroke-width="1.5"/>
+      <text x="799" y="87" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#0369a1">user-rpc :9000</text>
+      <rect x="598" y="102" width="126" height="26" rx="7" fill="#ffffff" stroke="#7dd3fc" stroke-width="1.5"/>
+      <text x="661" y="119" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#0369a1">pay-rpc :9000</text>
+      <rect x="736" y="102" width="126" height="26" rx="7" fill="#ffffff" stroke="#7dd3fc" stroke-width="1.5"/>
+      <text x="799" y="119" text-anchor="middle" font-size="10.5" fill="#64748b">……更多服务</text>
+      <text x="720" y="146" text-anchor="middle" font-size="10.5" fill="#64748b">服务端注册到 etcd</text>
+      <!-- gateway / API → zrpc -->
+      <line x1="420" y1="82" x2="580" y2="82" stroke="#0284c7" stroke-width="2" marker-end="url(#gz4a)"/>
+      <text x="500" y="72" text-anchor="middle" font-size="10.5" font-weight="700" fill="#075985">HTTP → gRPC 转换</text>
+      <text x="500" y="96" text-anchor="middle" font-size="10" fill="#64748b">zrpc client 出站保护</text>
+      <line x1="420" y1="194" x2="580" y2="150" stroke="#0284c7" stroke-width="2" marker-end="url(#gz4a)"/>
+      <text x="500" y="166" text-anchor="middle" font-size="10.5" fill="#075985">zrpc 调用 · p2c/一致性哈希</text>
+      <!-- etcd -->
+      <rect x="560" y="300" width="280" height="74" rx="12" fill="#ffffff" stroke="#0284c7" stroke-width="2" stroke-dasharray="8 5"/>
+      <text x="700" y="324" text-anchor="middle" font-size="12.5" font-weight="700" fill="#075985">etcd · discov 服务发现</text>
+      <text x="700" y="344" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#0369a1">discov://etcd-hosts/key</text>
+      <text x="700" y="362" text-anchor="middle" font-size="10.5" fill="#64748b">K8s 可直连 endpoint（免 etcd）</text>
+      <!-- Register / Watch -->
+      <line x1="720" y1="156" x2="720" y2="300" stroke="#075985" stroke-width="2" marker-end="url(#gz4d)"/>
+      <text x="734" y="220" font-family="Consolas,monospace" font-size="10.5" font-weight="700" fill="#075985">Register</text>
+      <text x="734" y="238" font-size="10" fill="#64748b">注册 endpoint</text>
+      <line x1="560" y1="330" x2="424" y2="222" stroke="#64748b" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#gz4n)"/>
+      <text x="492" y="290" text-anchor="middle" font-size="10.5" fill="#64748b">Watch 订阅</text>
+      <text x="492" y="308" text-anchor="middle" font-size="10.5" fill="#64748b">实例变更推送</text>
+      <!-- 底部横幅 -->
+      <rect x="22" y="400" width="836" height="34" rx="17" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="440" y="422" text-anchor="middle" font-size="11" font-weight="700" fill="#075985">zrpc client 出站默认被保护（p2c / 一致性哈希 · 熔断 · 超时传递）；MCP 让同一套服务直连 AI Agent 生态</text>
+    </svg>
+    <figcaption>图 4 · 微服务全景架构：前端与 AI Agent 从两侧进入；gateway 做 HTTP→gRPC 转换；zrpc 集群注册到 etcd，客户端 Watch 发现 + 负载均衡后直连调用</figcaption>
+  </div>
+
+  <div class="tip"><b>💡 p2c 为什么抗抖动：</b><span>随机取两个节点、选负载较低者——比固定轮询更能避开瞬时高负载 / 慢节点；需要会话亲和（如缓存命中）时切换一致性哈希（v1.9.3+）。</span></div>
+
+  <h3 id="c-model">3.5 model 层生成与缓存一致性（goctl model）</h3>
+  <pre><code class="lang-bash">goctl model mysql ddl -src user.sql -dir internal/model -c   # -c 开启缓存</code></pre>
+  <p>从 DDL 生成：CRUD 方法、<code>FindOne</code>（<b>优先查缓存</b>）、<code>Insert / Update / Delete</code>（<b>自动失效缓存</b>）。缓存一致性方案——读与写两条路径：</p>
+
+  <div class="figure">
+    <svg viewBox="0 0 880 578" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs>
+        <marker id="gz5a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0284c7"/></marker>
+        <marker id="gz5r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker>
+      </defs>
+      <!-- 生命线头 -->
+      <rect x="15" y="24" width="150" height="36" rx="9" fill="#ffffff" stroke="#0284c7" stroke-width="1.8"/>
+      <text x="90" y="47" text-anchor="middle" font-size="12.5" font-weight="700" fill="#075985">logic · 业务代码</text>
+      <rect x="205" y="24" width="150" height="36" rx="9" fill="#ffffff" stroke="#0284c7" stroke-width="1.8"/>
+      <text x="280" y="47" text-anchor="middle" font-size="12.5" font-weight="700" fill="#075985">model · 生成层</text>
+      <rect x="395" y="24" width="150" height="36" rx="9" fill="#ffffff" stroke="#0284c7" stroke-width="1.8"/>
+      <text x="470" y="47" text-anchor="middle" font-size="12.5" font-weight="700" fill="#075985">cache · Redis</text>
+      <rect x="585" y="24" width="150" height="36" rx="9" fill="#ffffff" stroke="#0284c7" stroke-width="1.8"/>
+      <text x="660" y="47" text-anchor="middle" font-size="12.5" font-weight="700" fill="#075985">DB · MySQL</text>
+      <!-- 生命线 -->
+      <g stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="4 4">
+        <line x1="90" y1="60" x2="90" y2="524"/>
+        <line x1="280" y1="60" x2="280" y2="524"/>
+        <line x1="470" y1="60" x2="470" y2="524"/>
+        <line x1="660" y1="60" x2="660" y2="524"/>
+      </g>
+      <!-- 读路径 -->
+      <rect x="60" y="66" width="170" height="24" rx="12" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.2"/>
+      <text x="145" y="82" text-anchor="middle" font-size="11" font-weight="700" fill="#075985">读路径 · FindOne</text>
+      <line x1="90" y1="106" x2="280" y2="106" stroke="#0284c7" stroke-width="1.8" marker-end="url(#gz5a)"/>
+      <text x="185" y="98" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#334155">FindOne(ctx, 42)</text>
+      <line x1="280" y1="138" x2="470" y2="138" stroke="#0284c7" stroke-width="1.8" marker-end="url(#gz5a)"/>
+      <text x="375" y="130" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#334155">GET user:42</text>
+      <!-- alt 框 -->
+      <rect x="60" y="152" width="650" height="180" rx="8" fill="none" stroke="#7dd3fc" stroke-width="1.5"/>
+      <text x="76" y="172" font-size="11" font-weight="700" fill="#0369a1">cache 命中？</text>
+      <line x1="470" y1="192" x2="280" y2="192" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#gz5r)"/>
+      <text x="375" y="184" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#64748b">hit</text>
+      <line x1="280" y1="222" x2="90" y2="222" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#gz5r)"/>
+      <text x="185" y="214" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#64748b">直接返回 · 不碰 DB</text>
+      <line x1="60" y1="244" x2="710" y2="244" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+      <text x="700" y="240" text-anchor="end" font-size="10.5" font-weight="700" fill="#64748b">miss</text>
+      <rect x="300" y="254" width="230" height="22" rx="6" fill="#fffbeb" stroke="#fbbf24" stroke-width="1.3"/>
+      <text x="415" y="269" text-anchor="middle" font-size="10.5" fill="#92400e">singleflight 合并并发回源（防击穿）</text>
+      <line x1="280" y1="290" x2="660" y2="290" stroke="#0284c7" stroke-width="1.8" marker-end="url(#gz5a)"/>
+      <text x="470" y="282" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#334155">SELECT * FROM user WHERE id=42</text>
+      <line x1="660" y1="318" x2="280" y2="318" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#gz5r)"/>
+      <text x="470" y="310" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#64748b">row</text>
+      <!-- 回写缓存与返回 -->
+      <line x1="280" y1="352" x2="470" y2="352" stroke="#0284c7" stroke-width="1.8" marker-end="url(#gz5a)"/>
+      <text x="375" y="344" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#334155">SETEX user:42（TTL+衰减）</text>
+      <line x1="280" y1="384" x2="90" y2="384" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#gz5r)"/>
+      <text x="185" y="376" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#64748b">return user</text>
+      <!-- 写路径 -->
+      <rect x="60" y="404" width="170" height="24" rx="12" fill="#fffbeb" stroke="#d97706" stroke-width="1.2"/>
+      <text x="145" y="420" text-anchor="middle" font-size="11" font-weight="700" fill="#92400e">写路径 · Update</text>
+      <line x1="90" y1="448" x2="280" y2="448" stroke="#d97706" stroke-width="1.8" marker-end="url(#gz5a)"/>
+      <text x="185" y="440" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#334155">Update(ctx, u)</text>
+      <line x1="280" y1="478" x2="660" y2="478" stroke="#d97706" stroke-width="1.8" marker-end="url(#gz5a)"/>
+      <text x="470" y="470" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#334155">UPDATE user SET ...</text>
+      <line x1="280" y1="508" x2="470" y2="508" stroke="#d97706" stroke-width="1.8" marker-end="url(#gz5a)"/>
+      <text x="375" y="500" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#334155">DEL user:42 · 失效缓存</text>
+      <!-- 底部横幅 -->
+      <rect x="22" y="536" width="836" height="32" rx="16" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="440" y="557" text-anchor="middle" font-size="11" font-weight="700" fill="#075985">读：miss → singleflight → DB → 回写缓存（带过期 + 衰减防雪崩）；写：先更新 DB → 再失效缓存 —— 业务代码零缓存细节</text>
+    </svg>
+    <figcaption>图 5 · model 缓存一致性时序：读路径 cache hit 直接返回、miss 经 singleflight 合并回源 DB 后写缓存（带过期 + 随机衰减防雪崩）；写路径先更新 DB 再删缓存</figcaption>
+  </div>
+
+  <ul>
+    <li><b>读</b>：cache miss → singleflight 合并并发击穿 → 回源 DB → 写缓存（带过期时间 + 随机衰减防雪崩）；</li>
+    <li><b>写</b>：先更新 DB，再删除 / 更新缓存；</li>
+    <li>业务代码不碰缓存细节，model 接口天然带缓存。</li>
+  </ul>
+
+  <h3 id="c-gateway">3.6 微服务网关（gateway）</h3>
+  <p>HTTP API → gRPC 后端的<b>协议转换网关</b>：在 <code>.api</code> 里直接引用 proto 定义的服务方法，自动做 HTTP/JSON ↔ gRPC/protobuf 转换；v1.9.0 起支持<b>洋葱模型自定义中间件</b>，并修复了 W3C trace 头（traceparent / baggage）向 gRPC metadata 的透传。</p>
+  <div class="tip"><b>💡 什么时候需要它：</b><span>前端只讲 HTTP、后端全是 zrpc（gRPC）时，gateway 让你不用为每个服务手写一层 HTTP 适配——.api 里引用 proto 方法即可，转换、路由、trace 透传全部自动。</span></div>
+
+  <h3 id="c-mcp">3.7 MCP：把 Go 服务挂进 AI 生态（v1.8.3+ 重磅）</h3>
+  <p>go-zero 内置 <b>Model Context Protocol Server SDK</b>：</p>
+  <pre><code class="lang-go">server := mcp.NewMcpServer(c)
+server.AddTool(tool, func(ctx context.Context, req *mcp.ServerRequest) (*mcp.ToolResult, error) {
+    // 业务逻辑，直接复用 go-zero 的 svc/logic 体系
+    return &amp;mcp.ToolResult{...}, nil
+})</code></pre>
+  <ul>
+    <li>完整的 <b>SSE 推送通道</b>、JSON-RPC 协议、能力协商、错误码规范；</li>
+    <li>支持<b>工具</b>（Schema 校验入参）、静态 Prompt 模板 + 动态 Prompt Handler、<b>资源</b>（文件 / 图片 / 二进制）注册与推送；</li>
+    <li>v1.10.2 增加 <code>WithRequestMetadataExtractor</code>：HTTP 请求头 / query / path 注入工具 handler 的 context（多租户透传）。</li>
+  </ul>
+
+  <div class="figure">
+    <svg viewBox="0 0 880 372" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs>
+        <marker id="gz6a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0284c7"/></marker>
+        <marker id="gz6n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker>
+      </defs>
+      <!-- 左：go-zero 服务 -->
+      <rect x="22" y="56" width="320" height="250" rx="14" fill="#ffffff" stroke="#0284c7" stroke-width="2"/>
+      <text x="182" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#075985">go-zero 服务（rest / zrpc）</text>
+      <rect x="42" y="94" width="280" height="40" rx="9" fill="#0284c7"/>
+      <text x="182" y="112" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">MCP Server SDK</text>
+      <text x="182" y="127" text-anchor="middle" font-size="10.5" fill="#bae6fd">v1.8.3+ 内置 · JSON-RPC</text>
+      <g>
+        <rect x="42" y="144" width="280" height="26" rx="7" fill="#f0f9ff" stroke="#7dd3fc" stroke-width="1.4"/>
+        <text x="182" y="161" text-anchor="middle" font-size="10.5" fill="#0369a1">📡 SSE 推送通道 · 能力协商</text>
+        <rect x="42" y="176" width="280" height="26" rx="7" fill="#f0f9ff" stroke="#7dd3fc" stroke-width="1.4"/>
+        <text x="182" y="193" text-anchor="middle" font-size="10.5" fill="#0369a1">🧰 工具注册（Schema 校验入参）</text>
+        <rect x="42" y="208" width="280" height="26" rx="7" fill="#f0f9ff" stroke="#7dd3fc" stroke-width="1.4"/>
+        <text x="182" y="225" text-anchor="middle" font-size="10.5" fill="#0369a1">💬 静态/动态 Prompt · 资源推送</text>
+        <rect x="42" y="240" width="280" height="26" rx="7" fill="#f0f9ff" stroke="#7dd3fc" stroke-width="1.4"/>
+        <text x="182" y="257" text-anchor="middle" font-size="10.5" fill="#0369a1">🔑 v1.10.2 请求头/query 注入 ctx</text>
+      </g>
+      <text x="182" y="288" text-anchor="middle" font-size="10.5" fill="#64748b">工具 handler 复用 svc / logic 体系</text>
+      <!-- 中：MCP 双向箭头 -->
+      <line x1="342" y1="120" x2="640" y2="120" stroke="#0284c7" stroke-width="2" marker-start="url(#gz6a)" marker-end="url(#gz6a)"/>
+      <text x="491" y="104" text-anchor="middle" font-size="10.5" font-weight="700" fill="#075985">MCP 协议（JSON-RPC over SSE）</text>
+      <text x="491" y="140" text-anchor="middle" font-size="10.5" fill="#64748b">工具调用 · Prompt · 资源 · 能力协商</text>
+      <!-- 右：AI Agent -->
+      <rect x="640" y="72" width="218" height="96" rx="12" fill="#062033" stroke="#0284c7" stroke-width="2"/>
+      <text x="749" y="98" text-anchor="middle" font-size="13" font-weight="700" fill="#7dd3fc">AI Agent</text>
+      <text x="749" y="120" text-anchor="middle" font-size="11" fill="#bae6fd">Claude · Cursor · Copilot</text>
+      <text x="749" y="140" text-anchor="middle" font-size="10.5" fill="#7dd3fc">自然语言 → 工具调用</text>
+      <text x="749" y="158" text-anchor="middle" font-size="10.5" fill="#5f8ea3">亦可自建 Agent</text>
+      <!-- 三件套 -->
+      <line x1="470" y1="200" x2="680" y2="170" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#gz6n)"/>
+      <line x1="619" y1="200" x2="730" y2="170" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#gz6n)"/>
+      <line x1="770" y1="200" x2="782" y2="170" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#gz6n)"/>
+      <rect x="390" y="200" width="140" height="104" rx="10" fill="#ffffff" stroke="#bae6fd" stroke-width="1.6"/>
+      <text x="460" y="224" text-anchor="middle" font-family="Consolas,monospace" font-size="11.5" font-weight="700" fill="#0284c7">ai-context</text>
+      <text x="460" y="248" text-anchor="middle" font-size="10.5" fill="#475569">工作流指引</text>
+      <text x="460" y="270" text-anchor="middle" font-size="10.5" fill="#64748b">喂给 Copilot / Cursor</text>
+      <rect x="545" y="200" width="140" height="104" rx="10" fill="#ffffff" stroke="#bae6fd" stroke-width="1.6"/>
+      <text x="615" y="224" text-anchor="middle" font-family="Consolas,monospace" font-size="11.5" font-weight="700" fill="#0284c7">zero-skills</text>
+      <text x="615" y="248" text-anchor="middle" font-size="10.5" fill="#475569">模式库与示例</text>
+      <text x="615" y="270" text-anchor="middle" font-size="10.5" fill="#64748b">沉淀框架最佳实践</text>
+      <rect x="700" y="200" width="140" height="104" rx="10" fill="#ffffff" stroke="#bae6fd" stroke-width="1.6"/>
+      <text x="770" y="224" text-anchor="middle" font-family="Consolas,monospace" font-size="11.5" font-weight="700" fill="#0284c7">mcp-zero</text>
+      <text x="770" y="248" text-anchor="middle" font-size="10.5" fill="#475569">MCP 实时调 goctl</text>
+      <text x="770" y="270" text-anchor="middle" font-size="10.5" fill="#64748b">AI 直接生成工程代码</text>
+      <!-- 底部横幅 -->
+      <rect x="22" y="326" width="836" height="34" rx="17" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="440" y="348" text-anchor="middle" font-size="11" font-weight="700" fill="#075985">内置 MCP SDK + AI 原生三件套 —— 让 Claude / Copilot / Cursor 产出符合 go-zero 规范的代码</text>
+    </svg>
+    <figcaption>图 6 · MCP 与 AI 原生三件套：go-zero 服务内置 MCP Server（SSE / 工具 / Prompt）桥接 AI Agent；ai-context / zero-skills / mcp-zero 喂给编码助手生成框架规范代码</figcaption>
+  </div>
+
+  <div class="tip"><b>💡 配套的 AI 原生三件套：</b><span><code>ai-context</code>（AI 助手的工作流指引，喂给 Copilot / Cursor）、<code>zero-skills</code>（模式库与示例）、<code>mcp-zero</code>（通过 MCP 实时调 goctl 生成代码）——让 AI 编码助手产出符合框架规范的代码。</span></div>
+</section>
+
+<!-- ============ 4 使用实战 ============ -->
+<section id="practice">
+  <h2>4. 使用实战</h2>
+
+  <h3 id="p-api">4.1 API 服务：从 DSL 到跑起来</h3>
+  <pre><code class="lang-bash">goctl api -o greet.api                                    # 生成 api 模板
+goctl api go -api greet.api -dir greet                    # 生成 Go 服务端
+goctl api ts -api greet.api -dir ./frontend/src/api       # 生成 TS 客户端
+cd greet &amp;&amp; go mod tidy
+go run greet.go -f etc/greet-api.yaml                     # 默认 8888 端口
+curl -i http://localhost:8888/greet/from/you</code></pre>
+
+  <p>写业务（只改 logic）：</p>
+  <pre><code class="lang-go">// internal/logic/greetlogic.go
+func (l *GreetLogic) Greet(req *types.Request) (*types.Response, error) {
+    // 业务逻辑写这里；svc 里的依赖通过 l.svcCtx 访问
+    return &amp;types.Response{Message: "hello " + req.Name}, nil
+}</code></pre>
+  <div class="tip"><b>💡 整个流程只动了一个文件：</b><span>服务端骨架、路由、参数绑定、TS 客户端全部由 <code>.api</code> 生成——改接口也是改 DSL 再重新生成，<code>curl</code> 一发即验证。</span></div>
+
+  <h3 id="p-svc">4.2 带依赖注入的完整服务</h3>
+  <pre><code class="lang-go">// internal/svc/servicecontext.go —— 依赖集中装配
+type ServiceContext struct {
+    Config    config.Config
+    UserModel model.UserModel   // goctl model 生成（带缓存）
+    OrderRpc  order.Order       // goctl rpc 生成的客户端
+}
+
+func NewServiceContext(c config.Config) *ServiceContext {
+    conn := sqlx.NewMysql(c.Mysql.DataSource)
+    return &amp;ServiceContext{
+        Config:    c,
+        UserModel: model.NewUserModel(conn, c.CacheRedis),
+        OrderRpc:  order.NewOrder(zrpc.MustNewClient(c.OrderRpc)),
+    }
+}
+
+// internal/logic/userlogic.go —— logic 里用依赖
+func (l *GetUserLogic) GetUser(req *types.GetUserReq) (*types.UserResp, error) {
+    u, err := l.svcCtx.UserModel.FindOne(l.ctx, req.Id)  // 自动走缓存
+    if err != nil {
+        return nil, err
+    }
+    orders, err := l.svcCtx.OrderRpc.ListByUser(l.ctx, &amp;order.ListReq{UserId: req.Id})
+    // ...
+}</code></pre>
+  <div class="tip"><b>💡 读法：</b><span><code>svc</code> 是唯一的装配点：mysql 连接、redis 缓存、rpc client 全在 <code>NewServiceContext</code> 里创建；logic 通过 <code>l.svcCtx</code> 取用——依赖可替换、可 mock，单测友好。</span></div>
+
+  <h3 id="p-rpc">4.3 RPC 服务（zrpc）</h3>
+  <pre><code class="lang-bash">goctl rpc new order                                    # 生成 zrpc 服务骨架
+goctl rpc protoc order.proto --go_out=. --go-grpc_out=. --zrpc_out=.</code></pre>
+  <pre><code class="lang-yaml"># etc/order.yaml
+Name: order-rpc
+ListenOn: 0.0.0.0:9000
+Etcd:
+  Hosts:
+    - 127.0.0.1:2379
+  Key: order.rpc</code></pre>
+  <pre><code class="lang-go">// 调用方
+conf := zrpc.RpcClientConf{
+    Endpoints:  []string{"127.0.0.1:9000"},   // 直连（小规模/测试）
+    // Etcd: discov配置（生产），或 K8s 直连
+    BalancerName: "consistent_hash",           // 可选：一致性哈希
+}
+client := zrpc.MustNewClient(conf)
+orderCli := order.NewOrder(client)</code></pre>
+  <div class="tip"><b>💡 直连 vs 注册中心：</b><span>小规模 / 测试用 <code>Endpoints</code> 直连即可；生产走 etcd（discov），K8s 内可直连 endpoint 省一套 etcd 运维（见第 6 节第 7 条）。</span></div>
+
+  <h3 id="p-model">4.4 model 生成（DDL → CRUD + 缓存）</h3>
+  <pre><code class="lang-bash"># DDL 建表后
+goctl model mysql ddl -src schema/user.sql -dir internal/model -c</code></pre>
+  <pre><code class="lang-go">um := model.NewUserModel(sqlx.NewMysql(dsn), cache.CacheConf{
+    {RedisConf: redis.RedisConf{Host: "127.0.0.1:6379"}, Weight: 100},
+})
+u, err := um.FindOne(ctx, 42)    // 命中缓存直接返回；miss 自动 singleflight + 回源
+err = um.Update(ctx, u)          // 更新后自动失效缓存</code></pre>
+
+  <h3 id="p-mid">4.5 中间件与配置</h3>
+  <pre><code class="lang-go">// 自定义中间件（洋葱模型，签名简单）
+func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        if r.Header.Get("X-Token") == "" {
+            httpx.Error(w, errors.New("unauthorized"))
+            return
+        }
+        next(w, r)
+    }
+}
+
+// .api 里声明
+// @middleware AuthMiddleware</code></pre>
+  <pre><code class="lang-yaml"># etc/greet-api.yaml —— 配置即治理开关
+Name: greet-api
+Host: 0.0.0.0
+Port: 8888
+Timeout: 8000           # 链式超时入口预算
+MaxConns: 1000          # 并发控制
+CPUBusyThreshold: 800   # load shedding CPU 阈值（1/1000）
+Prometheus:
+  Host: 0.0.0.0
+  Port: 9091
+Telemetry:
+  Endpoint: http://jaeger:14268/api/traces</code></pre>
+  <div class="tip"><b>💡 配置即治理：</b><span><code>Timeout / MaxConns / CPUBusyThreshold</code> 一行配置即开关弹性防护；<code>Prometheus</code> 与 <code>Telemetry</code> 打开即得指标与链路追踪——治理能力与业务代码解耦。</span></div>
+</section>
+
+<!-- ============ 5 版本演进 ============ -->
+<section id="versions">
+  <h2>5. 版本演进速览（v1.8 → v1.10）</h2>
+  <table>
+    <tr><th style="width:110px">版本</th><th style="width:110px">时间</th><th>要点</th></tr>
+    <tr><td><b>v1.8.3</b></td><td>2024 末</td><td><b>MCP Server SDK</b>（SSE、工具系统、动态 Prompt、资源推送）</td></tr>
+    <tr><td><b>v1.8.4</b></td><td>2025 初</td><td>持续性能剖析（对接 pyroscope）、embed.FS 文件服务</td></tr>
+    <tr><td><b>v1.8.5</b></td><td>2025</td><td><b>SQL 读写分离</b>、REST serverless 模式支持</td></tr>
+    <tr><td><b>v1.9.0</b></td><td>2025.8</td><td>mongo-driver v2、logx 敏感数据脱敏、gateway 洋葱中间件、redis 消费者组</td></tr>
+    <tr><td><b>v1.9.3</b></td><td>2025</td><td><b>一致性哈希负载均衡</b>（session affinity）、gateway trace 头透传修复、trace agent 单次初始化</td></tr>
+    <tr><td><b>v1.10.x</b></td><td>2026</td><td>MCP 元数据桥（请求头 / query 注入 context）、Go 1.26 etcd URI 兼容修复、JSON5 配置、stringx 安全修复、Redis XGroupSetID</td></tr>
+  </table>
+  <p>版本策略保守稳定（大版本内无破坏性变更），goctl 与框架分开发布（当前 goctl v1.10.2）。</p>
+  <div class="tip"><b>💡 升级观感：</b><span>主线节奏是「每年一个 minor、大版本内零破坏」——v1.8 到 v1.10 的演进重点依次是 MCP（AI 生态）→ 可观测与数据层 → 负载均衡与兼容性打磨，方向清晰且无迁移阵痛。</span></div>
+</section>
+
+<!-- ============ 6 常见坑 ============ -->
+<section id="pitfalls">
+  <h2>6. 常见坑与最佳实践</h2>
+
+  <div class="danger"><b>🚫 别改生成物：</b><span>handler / types / routes 是生成物，重新生成会覆盖；自定义中间件与业务逻辑放 logic 与独立文件；<code>goctl api go --style go_zero</code> 控制命名风格，要一开始定好。</span></div>
+
+  <div class="warn"><b>📋 api DSL 的校验是入口级：</b><span>options / range 只覆盖简单校验，复杂规则在 logic 里用 <code>github.com/go-playground/validator</code> 或手写。</span></div>
+
+  <div class="warn"><b>🧩 svc 不是全局变量仓库：</b><span>依赖按需注入，跨服务共享 client 用 package 级单例 + conf 驱动，避免循环依赖。</span></div>
+
+  <div class="danger"><b>🗄️ 模型缓存的一致性边界：</b><span>goctl 缓存方案是「先 DB 后删缓存」，对「读己之写」敏感的流程要显式绕过缓存或用 <code>CacheNull</code> / 版本号策略。</span></div>
+
+  <div class="danger"><b>⏱️ 超时预算要合理分级：</b><span>入口 Timeout 应小于网关 / SLB 超时；下游默认继承 context 剩余时间，单独设置时不能超过上游预算。</span></div>
+
+  <div class="warn"><b>🚦 load shedding 会拒绝请求：</b><span>CPUBusyThreshold 调试期看日志 <code>dropped</code> 计数，别把阈值调太低误伤流量；被拒请求返回 503，前端要有降级文案。</span></div>
+
+  <div class="tip"><b>🧭 etcd 依赖是可选的：</b><span>单体 / 小规模用 Endpoints 直连即可；K8s 内用 k8s 直连省一套 etcd 运维。</span></div>
+
+  <div class="warn"><b>🔧 goctl 与框架版本对齐：</b><span>生成代码风格随 goctl 版本变化，团队统一版本（Makefile 固定），避免 diff 噪音。</span></div>
+
+  <div class="danger"><b>⚠️ Go 1.26+ 用户注意：</b><span>v1.10.2 修复了 etcd 多地址 URI 的解析兼容，老版本在 Go 1.26 下服务发现会挂——保持框架更新。</span></div>
+
+  <div class="tip"><b>🕶️ 日志脱敏尽早启用：</b><span>logx v1.9+ 支持敏感字段掩码（<code>logx.SetUp</code> 配置 masking），涉及手机号 / 身份证的服务尽早启用。</span></div>
+</section>
+
+<!-- ============ 7 选型对比 ============ -->
+<section id="compare">
+  <h2>7. 选型对比</h2>
+  <table>
+    <tr><th style="width:110px">维度</th><th>go-zero</th><th>Kratos</th><th>Gin/Echo</th><th>go-micro</th></tr>
+    <tr><td>接口契约</td><td><b>.api DSL（自研，极简）</b></td><td>proto（google.api.http 注解）</td><td>手写路由</td><td>proto-first</td></tr>
+    <tr><td>代码生成</td><td><b>服务端 + 6 类语言客户端 + model + 部署物</b></td><td>服务端 + HTTP/gRPC + OpenAPI</td><td>无</td><td>少</td></tr>
+    <tr><td>弹性内建</td><td><b>自适应熔断/卸载/链式超时，默认开启</b></td><td>中间件按需组装</td><td>无</td><td>部分</td></tr>
+    <tr><td>数据层</td><td><b>DDL→CRUD+缓存一体生成</b></td><td>不涉及（自选 GORM/ent）</td><td>不涉及</td><td>不涉及</td></tr>
+    <tr><td>AI 生态</td><td><b>MCP SDK + AI 编码三件套</b></td><td>无</td><td>无</td><td>无</td></tr>
+    <tr><td>学习曲线</td><td>低（DSL 直白，约定多）</td><td>中（proto/wire/layout）</td><td>低</td><td>中-高</td></tr>
+    <tr><td>社区</td><td>国内活跃、文档完善</td><td>国内活跃</td><td>全球最广</td><td>海外</td></tr>
+  </table>
+  <div class="tip"><b>💡 一句话：</b><span>要「框架兜底稳定性 + 生成到客户端和 model 层」的工具流选 <b>go-zero</b>；要 proto 契约与更自由的架构组装选 Kratos；两者都比裸 Gin 更适合长期演进的微服务集群。</span></div>
+  <p style="font-size:12.5px;color:var(--muted)">参考：go-zero.dev 官方文档 · github.com/zeromicro/go-zero · github.com/zeromicro/go-zero-examples · github.com/zeromicro/zero-doc（shorturl / bookstore 快速教程）· github.com/zeromicro/zero-contrib 扩展仓库</p>
+</section>
+
+<footer>go-zero 技术指南 · 内容整理自 go-zero.dev 官方文档与 zeromicro/go-zero 仓库（v1.10）· 2026-09</footer>
+</main>
+</div>
+
+<script>
+document.querySelectorAll('pre code.lang-go').forEach(function(block){
+  var src = block.textContent;
+  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  var master = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any|Context|Config|ServiceContext|UserModel|Order|GreetLogic|GetUserLogic|Request|Response|GetUserReq|UserResp|ListReq|ToolResult|ServerRequest|McpServer|CacheConf|RedisConf|RpcClientConf|HandlerFunc|ResponseWriter|mcp|zrpc|sqlx|httpx|logx|model|order|cache|redis|config|types)\b|\b(\d+(?:\.\d+)*)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  var out = src.replace(master, function(m, c1, c2, s, kw, typ, num, fn){
+    if (c1 || c2) return '<span class="cmt">'+m+'</span>';
+    if (s) return '<span class="str">'+m+'</span>';
+    if (kw) return '<span class="kw">'+m+'</span>';
+    if (typ) return '<span class="typ">'+m+'</span>';
+    if (num) return '<span class="num">'+m+'</span>';
+    if (fn) return '<span class="fn">'+m+'</span>';
+    return m;
+  });
+  block.innerHTML = out;
+});
+document.querySelectorAll('pre code.lang-bash').forEach(function(block){
+  var src = block.textContent;
+  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  var master = /(#[^\n]*)|("(?:\\.|[^"\\\n])*")|(--?[a-zA-Z][a-zA-Z0-9-]*)|\b(goctl|go|cd|curl|brew|docker|make)\b|\b(api|ts|model|mysql|ddl|rpc|new|protoc|run|mod|tidy|install|get|pull)\b|\b(\d+(?:\.\d+)*)\b/g;
+  var out = src.replace(master, function(m, c, s, flag, cmd, sub, num){
+    if (c) return '<span class="cmt">'+m+'</span>';
+    if (s) return '<span class="str">'+m+'</span>';
+    if (flag) return '<span class="typ">'+m+'</span>';
+    if (cmd) return '<span class="kw">'+m+'</span>';
+    if (sub) return '<span class="fn">'+m+'</span>';
+    if (num) return '<span class="num">'+m+'</span>';
+    return m;
+  });
+  block.innerHTML = out;
+});
+document.querySelectorAll('pre code.lang-yaml').forEach(function(block){
+  var src = block.textContent;
+  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  var master = /(#[^\n]*)|("(?:\\.|[^"\\\n])*")|(^[ \t]*-?[ \t]*[A-Za-z_][A-Za-z0-9_.-]*(?=[ \t]*:))|\b(true|false|null)\b|\b(\d+(?:\.\d+)*)\b/gm;
+  var out = src.replace(master, function(m, c, s, key, bool, num){
+    if (c) return '<span class="cmt">'+m+'</span>';
+    if (s) return '<span class="str">'+m+'</span>';
+    if (key) return '<span class="kw">'+m+'</span>';
+    if (bool) return '<span class="typ">'+m+'</span>';
+    if (num) return '<span class="num">'+m+'</span>';
+    return m;
+  });
+  block.innerHTML = out;
+});
+document.querySelectorAll('pre code.lang-api').forEach(function(block){
+  var src = block.textContent;
+  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  var master = /(\/\/[^\n]*)|(`[^`]*`|"(?:\\.|[^"\\\n])*")|(@handler)|\b(type|service|returns|server|info|import)\b|\b(get|post|put|delete|patch)\b|\b(string|int|int64|float|bool|any|Request|Response)\b|(\/[A-Za-z0-9_\-:.$]*)/g;
+  var out = src.replace(master, function(m, c, s, h, kw, mth, typ, path){
+    if (c) return '<span class="cmt">'+m+'</span>';
+    if (s) return '<span class="str">'+m+'</span>';
+    if (h) return '<span class="kw">'+m+'</span>';
+    if (kw) return '<span class="kw">'+m+'</span>';
+    if (mth) return '<span class="fn">'+m+'</span>';
+    if (typ) return '<span class="typ">'+m+'</span>';
+    if (path) return '<span class="typ">'+m+'</span>';
+    return m;
+  });
+  block.innerHTML = out;
+});
+document.querySelectorAll('pre code').forEach(function(b){
+  var m = (b.className || '').match(/lang-(\w+)/);
+  if (!m) return;
+  var map = {go:'Go', bash:'Shell', yaml:'YAML', api:'API DSL', txt:'Layout', flow:'Flow'};
+  var label = map[m[1]];
+  if (!label) return;
+  var s = document.createElement('span');
+  s.className = 'codelabel';
+  s.textContent = label;
+  b.closest('pre').appendChild(s);
+});
+</script>
+</body>
+</html>
