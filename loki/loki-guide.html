@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grafana Loki · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#db2777; --accent-light:#fce7f3; --accent-dark:#9d174d;
+    --bg:#fdf6fa; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#2a0a1e; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#9d174d 0%,#db2777 58%,#9d174d 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">Grafana Loki<span class="ver">3.x</span></div>
+  <div class="sub">只索引标签 · LogQL · 低成本日志</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#安装与本地起服务">安装与本地起服务</a>
+  <a class="sub-link" href="#最小可运行示例">最小可运行示例</a>
+  <a href="#2-功能特性总览">2. 功能特性总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-只索引标签为什么便宜">3.1 只索引标签：为什么便宜</a>
+  <a class="sub-link" href="#32-数据路径">3.2 数据路径</a>
+  <a class="sub-link" href="#33-查询路径与两段式-logql">3.3 查询路径与两段式 LogQL</a>
+  <a class="sub-link" href="#34-与-elasticsearch-的根本差异">3.4 与 Elasticsearch 的根本差异</a>
+  <a class="sub-link" href="#35-高基数loki-的头号事故">3.5 高基数：Loki 的头号事故</a>
+  <a class="sub-link" href="#36-结构化元数据structured-metadata">3.6 结构化元数据（structured metadata）</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-本地配置开发用">4.1 本地配置（开发用）</a>
+  <a class="sub-link" href="#42-采集grafana-alloypromtail-的继任者">4.2 采集：Grafana Alloy（Promtail 的继任者）</a>
+  <a class="sub-link" href="#43-logql-常用查询速查">4.3 LogQL 常用查询速查</a>
+  <a class="sub-link" href="#44-告警规则">4.4 告警规则</a>
+  <a class="sub-link" href="#45-go-侧查询-loki标准库即可">4.5 Go 侧：查询 Loki（标准库即可）</a>
+  <a class="sub-link" href="#46-从日志跳到链路">4.6 从日志跳到链路</a>
+  <a href="#5-版本演进速览">5. 版本演进速览</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>Grafana Loki 技术介绍与使用指南（Go 日志检索）</h1>
+<p>只索引标签、不索引正文的日志系统：用对象存储与轻量标签索引把日志成本压到 ES 的零头，靠 LogQL 与 Zap / OpenTelemetry 打通排障链路。</p>
+<p style="opacity:.8;font-size:13.5px">只索引标签 · LogQL · 低成本日志</p>
+<div class="meta"><span>只索引标签</span><span>chunk + TSDB 索引</span><span>LogQL 两段式</span><span>高基数是头号事故</span><span>Grafana Alloy 采集</span><span>compactor + retention</span></div>
+</div>
+<blockquote><p>只索引标签、不索引正文的日志系统：用对象存储 + 轻量标签索引把日志成本压到 ES 的零头，靠 LogQL 与 Zap / OpenTelemetry 打通排障链路。 上游：<a href="https://github.com/grafana/loki">https://github.com/grafana/loki</a>　|　主线：<strong>3.x</strong>（整理于 2026-11）　|　采集端：Grafana Alloy / Fluent Bit / OTel Collector（<strong>Promtail 已进入维护期</strong>） 协议：AGPLv3；具体版本以上游最新 release 为准。</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p><a href="../zap/zap-guide.html">Zap 篇</a> 解决「应用怎么输出结构化日志」，<a href="../elasticsearch/elasticsearch-guide.html">Elasticsearch 篇</a> 解决「日志怎么被全文检索」，Loki 走的是第三条路：<strong>不给日志正文建倒排索引，只给标签建索引</strong>。</p>
+<p>这个取舍换来的是成本：日志原始数据压缩后直接扔进对象存储，索引只有「哪些标签组合对应哪些 chunk」。代价是<strong>按正文搜索是查询时的暴力扫描</strong>，必须先靠标签把范围缩到足够小。</p>
+<ul><li><strong>适用场景</strong>：K8s / 容器日志集中检索、与 Prometheus + Grafana 组成统一可观测栈、日志量大但查询以「某个服务/某段时间」为主、成本敏感</li><li><strong>不适合</strong>：需要任意关键词的毫秒级全文检索（用 <a href="../elasticsearch/elasticsearch-guide.html">ES</a>）、需要复杂相关性与排序、日志内容要做聚合分析报表（用 <a href="../clickhouse/clickhouse-guide.html">ClickHouse</a>）、高基数字段（trace_id、user_id）必须作为检索维度</li></ul>
+<blockquote><p>与 <a href="../prometheus/prometheus-guide.html">Prometheus 篇</a> 是同一套标签哲学：指标用 <code>metric{labels}</code>，日志用 <code>{labels}</code>。<strong>两者标签规范统一，<code>service.name</code> / <code>app</code> / <code>env</code> 一致，才能从告警曲线一键跳到日志</strong>。</p></blockquote>
+<h3 id="安装与本地起服务">安装与本地起服务</h3>
+<pre><code class="lang-bash">docker run --rm -d --name loki -p 3100:3100 \
+  -v "$(pwd)/loki-config.yaml:/etc/loki/local-config.yaml" \
+  grafana/loki:3 make local-config
+curl -G http://localhost:3100/ready</code></pre>
+<h3 id="最小可运行示例">最小可运行示例</h3>
+<pre><code class="lang-go">// 应用侧唯一要做的事：把结构化日志写到 stdout，交给采集器
+package main
+
+import (
+    "log/slog"
+    "os"
+)
+
+func main() {
+    h := slog.NewJSONHandler(os.Stdout, &amp;slog.HandlerOptions{Level: slog.LevelInfo})
+    logger := slog.New(h).With(
+        slog.String("service.name", "checkout-api"), // 与 Prometheus / OTel 统一
+        slog.String("env", "prod"),
+    )
+    logger.Info("order created",
+        slog.String("order_id", "A1001"),
+        slog.String("trace_id", "4bf92f3577b34da6a3ce929d0e0e4736"),
+        slog.Int("amount", 12800))
+}</code></pre>
+<pre><code class="lang-logql">{app="checkout-api"} |= "order created" | json | amount &gt; 10000</code></pre>
+<blockquote class="warn"><p>⚠️ <strong>Loki 标签名只接受 <code>[a-zA-Z_][a-zA-Z0-9_]*</code>，不能含点</strong>：OTel 语义约定里的 <code>service.name</code> 必须在采集端映射成 <code>app</code> / <code>service_name</code>，否则无法作为标签。正文里保留原名即可。</p>
+<p>用 <a href="../zap/zap-guide.html">Zap 篇</a> 的 <code>zap.NewProduction()</code> 或 <a href="../slog/slog-guide.html">slog 篇</a> 都可以，<strong>关键是输出 JSON 到 stdout</strong>，别写文件——容器日志由采集器统一收走。</p></blockquote>
+<hr>
+
+</section>
+<section data-anchor="2-功能特性总览">
+<h2 id="2-功能特性总览">2. 功能特性总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>索引模型</td><td><strong>只索引标签</strong>；标签集唯一确定一条「流（stream）」，正文不建倒排</td></tr><tr><td>存储</td><td>chunk（压缩的日志块）放对象存储（S3 / GCS / Azure / <a href="../minio/minio-guide.html">MinIO</a>）；index（TSDB）记录 label → chunk 映射</td></tr><tr><td>写入路径</td><td>Distributor → Ingester（内存 chunk + WAL）→ flush 到对象存储</td></tr><tr><td>查询路径</td><td>Query Frontend / Querier：按标签定位 chunk → 下载 → 查询时过滤正文，可并行与分片</td></tr><tr><td>查询语言</td><td><strong>LogQL</strong>：流选择器 + 行过滤器 + 解析器 + 标签/行格式化；另有指标查询</td></tr><tr><td>解析器</td><td><code>json</code> / <code>logfmt</code> / <code>regexp</code> / <code>pattern</code> / <code>unpack</code>，在查询时把正文提取成临时标签</td></tr><tr><td>指标能力</td><td><code>rate</code> / <code>count_over_time</code> / <code>sum by(...)</code> 直接对日志算速率，可生成告警</td></tr><tr><td>生命周期</td><td>compactor 合并索引、retention 按流/全局过期删除、schema 分版本演进</td></tr><tr><td>多租户</td><td><code>X-Scope-OrgID</code> 租户隔离；<code>auth_enabled: true</code> 时必填</td></tr><tr><td>部署形态</td><td>单二进制（all-in-one，开发）/ <strong>可伸缩微服务模式</strong>（生产）</td></tr><tr><td>生态</td><td>Grafana 数据源、logcli、Alertmanager 规则、原生 OTLP 日志摄入（3.x）</td></tr></tbody></table></div>
+<hr>
+
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-只索引标签为什么便宜">3.1 只索引标签：为什么便宜</h3>
+<pre><code class="lang-text">一行日志 = 时间戳 + 标签集 + 正文
+
+{app="checkout", env="prod", level="info"}  → 一条 stream
+{"msg":"order created","order_id":"A1001","trace_id":"..."}  → 正文（不建索引）
+
+索引里只有：这组标签 → 哪些 chunk（含时间范围）
+正文全部压缩进 chunk，躺在对象存储里</code></pre>
+<ul><li><strong>写放大极小</strong>：不需要像 ES 那样为正文分词、构建倒排、维护 doc_values</li><li><strong>存储成本低一个数量级</strong>：压缩日志块 + 便宜的对象存储</li><li><strong>代价</strong>：查 <code>|= "error"</code> 时要把候选 chunk 拉出来做 grep 式过滤；没有标签剪枝就等于全量扫描</li></ul>
+<p>所以 Loki 的性能公式是：<strong>候选 chunk 数量 ≈ 标签选择度 × 时间范围</strong>。标签选得越宽、时间越长，查询越慢。</p>
+<h3 id="32-数据路径">3.2 数据路径</h3>
+<pre><code class="lang-text">采集器 (Alloy / Fluent Bit)
+   │ 批量 push  /loki/api/v1/push
+   ▼
+Distributor  ──校验、按 stream 哈希、按复制因子分发──►
+   ▼
+Ingester     内存构建 chunk + WAL（防崩溃丢失）
+   │ 达到 chunk 大小 / 超时 / flush 触发
+   ▼
+对象存储 (chunks) + Index (TSDB, 记录 label→chunk)
+   │
+   ▼
+Compactor    合并索引、执行 retention 删除过期数据</code></pre>
+<h3 id="33-查询路径与两段式-logql">3.3 查询路径与两段式 LogQL</h3>
+<pre><code class="lang-text">Query Frontend（拆分时间片、缓存、并发限制）
+   ▼
+Querier  ── 用流选择器查 index，缩小到 chunk 集合 ──► 对象存储
+   ▼ 下载 chunk，解压，逐行应用过滤器 / 解析器
+结果返回</code></pre>
+<p>LogQL 查询由两段组成：</p>
+<pre><code class="lang-logql">{app="checkout", env="prod"}          ← ① 流选择器：只用标签，走索引（最关键）
+  |= "error" !~ "healthz"             ← ② 行过滤器：扫描正文，廉价但不过索引
+  | json                              ← ③ 解析器：把 JSON 字段提取成临时标签
+  | level="error" | duration_ms &gt; 500 ← ④ 标签过滤（解析后才可用）
+  | line_format "{{.msg}}"            ← ⑤ 输出格式化</code></pre>
+<p><strong>把能下推的条件尽量放进 ①</strong>，是 Loki 查询优化的第一原则。解析器里的字段不能直接当流选择器用（它们不在索引里）。</p>
+<h3 id="34-与-elasticsearch-的根本差异">3.4 与 Elasticsearch 的根本差异</h3>
+<div class="table-wrap"><table><thead><tr><th></th><th>Loki</th><th>Elasticsearch</th></tr></thead><tbody><tr><td>索引对象</td><td>标签（元数据）</td><td>正文分词 + doc_values</td></tr><tr><td>写入成本</td><td>低（追加压缩块）</td><td>高（分词、构建倒排、refresh/merge）</td></tr><tr><td>存储成本</td><td><strong>低</strong>（对象存储 + 压缩）</td><td>高（多份索引结构 + JVM 堆）</td></tr><tr><td>任意关键词检索</td><td>慢（查询时扫描）</td><td><strong>快</strong></td></tr><tr><td>相关性排序 / 聚合</td><td>弱</td><td><strong>强</strong></td></tr><tr><td>运维复杂度</td><td>中（对象存储 + 多组件）</td><td>高（JVM 调优、分片、ILM）</td></tr></tbody></table></div>
+<p>一句话：<strong>Loki 是「按服务/时间找日志」，ES 是「按内容找日志」</strong>。多数排障场景属于前者，所以 Loki 在 K8s 日志场景性价比更高。</p>
+<h3 id="35-高基数loki-的头号事故">3.5 高基数：Loki 的头号事故</h3>
+<p><strong>每个唯一的标签组合 = 一条独立 stream</strong>，每条 stream 都有自己的 chunk 序列与内存开销。把 <code>trace_id</code>、<code>user_id</code>、<code>request_id</code>、原始 URL 做成标签，会瞬间生成几百万条流：</p>
+<ul><li>Ingester 内存被打满、chunk 切得极碎</li><li>索引膨胀、查询变慢</li><li>触发 <code>per_stream_rate_limit</code> / <code>max_streams_per_user</code> 后开始丢日志</li></ul>
+<p>正确做法：<strong>高基数字段留在正文</strong>（用 <code>| json | trace_id="..."</code> 在查询时过滤），标签只放低基数枚举（<code>app</code>、<code>env</code>、<code>level</code>、<code>cluster</code>、<code>namespace</code>、<code>pod</code> 的模板名）。</p>
+<h3 id="36-结构化元数据structured-metadata">3.6 结构化元数据（structured metadata）</h3>
+<p>3.x 支持把 <code>trace_id</code> 这类高基数字段作为「结构化元数据」随 chunk 存储但<strong>不进索引</strong>——既能随日志保留、可在查询里过滤，又不会造成流爆炸。这是替代「正文解析」与「高基数标签」的第三条路，也是接 <a href="../opentelemetry/opentelemetry-guide.html">OpenTelemetry 篇</a> 的推荐方式。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-本地配置开发用">4.1 本地配置（开发用）</h3>
+<pre><code class="lang-yaml"># loki-config.yaml
+auth_enabled: false
+server:
+  http_listen_port: 3100
+common:
+  path_prefix: /loki
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+schema_config:
+  configs:
+    - from: 2024-01-01
+      store: tsdb
+      object_store: filesystem      # 生产改 s3 / s3-compatible
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+limits_config:
+  retention_period: 168h           # 7 天；不设会无限增长
+compactor:
+  working_directory: /loki/compactor
+  retention_enabled: true</code></pre>
+<blockquote><p>生产必须改三处：<code>object_store</code> 换成 S3 / <a href="../minio/minio-guide.html">MinIO</a>、<code>replication_factor: 3</code>、<code>ring.kvstore</code> 换 consul/etcd 并启用可伸缩部署模式。<code>filesystem + inmemory ring</code> 只能用于本地。</p></blockquote>
+<h3 id="42-采集grafana-alloypromtail-的继任者">4.2 采集：Grafana Alloy（Promtail 的继任者）</h3>
+<pre><code class="lang-alloy">discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+loki.source.docker "default" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.docker.containers.targets
+  forward_to = [loki.process.json.receiver]
+}
+
+loki.process "json" {
+  stage.json {
+    // 左边是 Loki 合法标签名，右边是日志正文里的字段路径
+    expressions = { level = "level", msg = "msg", app = "service.name" }
+  }
+  stage.labels {
+    values = { level = "", app = "" }       // 只提升低基数字段为标签
+  }
+  forward_to = [loki.write.local.receiver]
+}
+
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}</code></pre>
+<blockquote class="warn"><p>K8s 环境通常用 Alloy 的 <code>discovery.kubernetes</code> + <code>loki.source.kubernetes</code> 自动附加 <code>namespace</code> / <code>pod</code> / <code>container</code> 标签；<strong>注意 pod 名带随机后缀时基数会随发布次数增长</strong>，用 <code>pod</code> 的 owner（Deployment 名）更稳。多行日志（Java 异常栈）要在采集端配置 <code>stage.multiline</code> 合并。</p></blockquote>
+<h3 id="43-logql-常用查询速查">4.3 LogQL 常用查询速查</h3>
+<pre><code class="lang-logql"># 某服务最近的错误（先用标签剪枝，再过滤正文）
+{app="checkout-api", env="prod"} |= "error" !~ "healthz"
+
+# 解析 JSON 后按字段过滤（字段在正文，不在索引）
+{app="checkout-api"} | json | level="error" | duration_ms &gt; 500
+
+# 提取指定 trace_id 的全链路日志（呼应 OpenTelemetry 篇）
+{app=~"checkout-api|payment-api"} | json | trace_id="4bf92f3577b34da6a3ce929d0e0e4736"
+
+# 从日志生成指标：每分钟 5xx 错误数
+sum(count_over_time({app="checkout-api"} | json | status &gt;= 500 [1m])) by (app)
+
+# 错误的速率（可直接做告警规则）
+sum(rate({app="checkout-api"} |= "level=error" [5m])) by (app)
+
+# 正则提取 + 格式化输出
+{app="nginx"} | regexp `(?P&lt;ip&gt;\S+) .* (?P&lt;status&gt;\d{3})` | status &gt;= 500
+              | line_format "{{.ip}} -&gt; {{.status}}"</code></pre>
+<h3 id="44-告警规则">4.4 告警规则</h3>
+<pre><code class="lang-yaml"># rules/fake/rules.yaml
+groups:
+  - name: app-logs
+    rules:
+      - alert: HighErrorLogRate
+        expr: sum(rate({app="checkout-api"} | json | level="error" [5m])) &gt; 1
+        for: 10m
+        labels: {severity: warning}
+        annotations:
+          summary: "checkout-api error logs &gt; 1/s for 10m"
+          dashboard_url: "http://grafana/explore?..."   # 跳回日志</code></pre>
+<p>Loki Ruler 把结果发给 Alertmanager，与 <a href="../prometheus/prometheus-guide.html">Prometheus 篇</a> 的告警共用同一套分组/静默策略。</p>
+<h3 id="45-go-侧查询-loki标准库即可">4.5 Go 侧：查询 Loki（标准库即可）</h3>
+<pre><code class="lang-go">package logs
+
+import (
+    "context"
+    "encoding/json"
+    "fmt"
+    "net/http"
+    "net/url"
+    "time"
+)
+
+type Result struct {
+    Data struct {
+        Result []struct {
+            Stream map[string]string `json:"stream"`
+            Values [][]string        `json:"values"` // [ts, line]
+        } `json:"result"`
+    } `json:"data"`
+}
+
+func Query(ctx context.Context, lokiURL, query string, since time.Duration) (*Result, error) {
+    q := url.Values{}
+    q.Set("query", query)
+    q.Set("limit", "100")
+    q.Set("since", since.String())
+    req, err := http.NewRequestWithContext(ctx, http.MethodGet,
+        lokiURL+"/loki/api/v1/query_range?"+q.Encode(), nil)
+    if err != nil { return nil, err }
+    resp, err := http.DefaultClient.Do(req)
+    if err != nil { return nil, err }
+    defer resp.Body.Close()
+    if resp.StatusCode != http.StatusOK {
+        return nil, fmt.Errorf("loki query: %s", resp.Status)
+    }
+    var out Result
+    return &amp;out, json.NewDecoder(resp.Body).Decode(&amp;out)
+}</code></pre>
+<blockquote><p>应用一般<strong>不要直接向 Loki 推日志</strong>（会让 Loki 成为业务链路的同步依赖）。正确做法是 stdout + 采集器异步上报，与 <a href="../docker-k8s/docker-k8s-guide.html">Docker/K8s 篇</a> 的「容器只写 stdout」一致。</p></blockquote>
+<h3 id="46-从日志跳到链路">4.6 从日志跳到链路</h3>
+<p>在 Grafana 里给 Loki 数据源配置 <strong>derived field</strong>：从 <code>trace_id</code> 正则提取值，指向 Tempo / Jaeger 数据源。这样在日志行上点一下就能打开 <a href="../opentelemetry/opentelemetry-guide.html">OpenTelemetry</a> 的完整调用链——三支柱闭环的最后一步。</p>
+<pre><code class="lang-bash"># 命令行排查
+logcli query '{app="checkout-api"} |= "error"' --since=1h --limit=50
+logcli labels app</code></pre>
+<hr>
+
+</section>
+<section data-anchor="5-版本演进速览">
+<h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>阶段</th><th>关键变化与迁移注意点</th></tr></thead><tbody><tr><td>2.0~2.8</td><td>索引从 BoltDB Shipper 迁到 <strong>TSDB</strong>、<code>schema v12/v13</code>；LogQL 增加 <code>pattern</code> / <code>unpack</code> 解析器；结构化元数据引入；查询并行化</td></tr><tr><td><strong>3.x</strong></td><td><strong>原生 OTLP 日志摄入</strong>（可由 OTel Collector 直推）、查询性能与缓存改进、结构化元数据进 GA、规则与 retention 增强</td></tr><tr><td>采集端</td><td><strong>Promtail 进入维护期</strong>，官方推荐 <strong>Grafana Alloy</strong>；存量 Promtail 配置需迁移到 Alloy 的 River 语法</td></tr></tbody></table></div>
+<p><strong>升级注意</strong>：</p>
+<ul><li><code>schema_config</code> 的 <code>store</code> / <code>schema</code> / <code>object_store</code> 变更需要新增一段 <code>from</code> 日期配置，<strong>不能直接改历史段</strong>，否则旧数据查不到</li><li>Promtail → Alloy 不是改镜像名，配置文件语法完全不同</li><li>大版本升级前读官方 upgrade guide，尤其涉及 index schema 与 compactor 行为的部分</li><li>采集端、Loki、Grafana 版本建议同代，跨太多版本可能出现 LogQL 语法或 API 不兼容</li></ul>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>高基数标签</strong>：把 <code>trace_id</code> / <code>user_id</code> / <code>request_id</code> / 原始 URL 做标签 → 流爆炸、内存打满、丢日志。高基数字段放正文或结构化元数据，标签只放低基数枚举。</li><li><strong>正文当标签</strong>：<code>stage.labels</code> 里提升动态字段，等于把每条日志变成一条新流。采集端要显式白名单。</li><li><strong>拿 Loki 做全文搜索引擎</strong>：<code>{app=~".*"} |= "xxx"</code> 是全量扫描。先用标签把范围缩到单个服务 + 短时间窗。</li><li><strong>查询必带流选择器</strong>：LogQL 要求至少一个标签匹配器；<code>{}</code> 或只写 <code>|=</code> 会报错或被拒。</li><li><strong>时间范围过大 / 无 <code>limit</code></strong>：一次拉 30 天日志会打爆 Querier。拆分时间片、加 <code>limit</code>、用 Query Frontend 的并发与缓存限制。</li><li><strong>保留策略没配</strong>：不设 <code>retention_period</code> + 不开 <code>compactor.retention_enabled</code>，对象存储无限增长。</li><li><strong>本地 filesystem 后端上生产</strong>：单点、无法水平扩展。用 S3 / <a href="../minio/minio-guide.html">MinIO</a> 等对象存储 + 可伸缩部署模式。</li><li><strong>单二进制模式上生产</strong>：<code>replication_factor: 1</code> + <code>inmemory ring</code> 无高可用。生产用微服务模式 + 3 副本 + 外部 KV。</li><li><strong>乱序写入 / 时间戳错误</strong>：采集器时间未同步或解析了错误的时间字段，会触发 <code>entry out of order</code> 丢弃。统一 NTP，多行日志正确设置时间戳。</li><li><strong>多行日志没合并</strong>：异常栈被拆成几十条独立日志，检索与计数全错。在采集端配 <code>stage.multiline</code>。</li><li><strong>单行过大 / 单行超长</strong>：超 <code>max_line_size</code> 会被截断或丢弃；大 payload 应只记 ID 与摘要，别把整个请求体写进日志（参见 <a href="../zap/zap-guide.html">Zap 篇</a>）。</li><li><strong>ingestion rate limit 误配</strong>：<code>ingestion_rate_mb</code> / <code>per_stream_rate_limit</code> 过小会在流量高峰静默丢日志。压测并监控 <code>loki_discarded_samples_total</code>。</li><li><strong>日志不是结构化 JSON</strong>：纯文本导致每次查询都要 <code>regexp</code> 解析，慢且易错。应用侧输出 JSON，字段名与 <a href="../slog/slog-guide.html">slog 篇</a> 的词典统一。</li><li><strong>标签规范与 Prometheus 不一致</strong>：指标叫 <code>service_name</code>、日志叫 <code>app</code>，Grafana 里无法联动。给 OTel 的 <code>service.name</code> 定一条固定映射（如统一映射为 <code>app</code>），并让指标、日志、链路三套系统用同一套 <code>app</code> / <code>env</code> / <code>cluster</code> 值。</li><li><strong>采集器不带 K8s 元数据</strong>：查不到「哪个 Pod / 哪个 namespace」，排障价值大减。用 <code>discovery.kubernetes</code> 自动附加。</li><li><strong>敏感信息进日志</strong>：Loki 长期留存且检索方便，密码/token/身份证必须脱敏（采集端 <code>stage.replace</code> 或应用侧过滤）。</li><li><strong>把 Loki 当指标或链路存储</strong>：趋势与告警用 <a href="../prometheus/prometheus-guide.html">Prometheus</a>，跨服务调用链用 <a href="../opentelemetry/opentelemetry-guide.html">OpenTelemetry</a>；Loki 的 metric query 只适合从日志临时算速率。</li></ol>
+<hr>
+
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>Loki</th><th>Elasticsearch / OpenSearch</th><th>ClickHouse（日志）</th><th>Graylog</th><th>云日志服务</th></tr></thead><tbody><tr><td>索引策略</td><td><strong>只索引标签</strong></td><td>全文倒排 + doc_values</td><td>列存 + 跳过索引</td><td>ES 之上封装</td><td>托管</td></tr><tr><td>存储成本</td><td><strong>最低</strong>（对象存储 + 压缩）</td><td>高</td><td>低～中</td><td>高</td><td>按量计费</td></tr><tr><td>写入吞吐</td><td>高</td><td>高</td><td><strong>极高</strong></td><td>中</td><td>高</td></tr><tr><td>全文检索</td><td>弱（查询时扫描）</td><td><strong>最强</strong></td><td>中（SQL like / tokenbf）</td><td>强</td><td>中～强</td></tr><tr><td>聚合分析</td><td>弱（LogQL 指标查询）</td><td>强</td><td><strong>最强（SQL）</strong></td><td>强</td><td>中</td></tr><tr><td>运维复杂度</td><td>中</td><td>高（JVM）</td><td>中</td><td>中高</td><td><strong>极低</strong></td></tr><tr><td>生态联动</td><td><strong>Grafana / Prometheus 原生</strong></td><td>Kibana / OpenSearch Dashboards</td><td>自建看板</td><td>自带</td><td>厂商生态</td></tr><tr><td>典型场景</td><td>K8s 日志、成本敏感</td><td>业务搜索 + 日志检索</td><td>日志分析报表</td><td>传统日志平台</td><td>不想自建</td></tr></tbody></table></div>
+<p>一句话决策：</p>
+<ul><li><strong>已用 Prometheus + Grafana、日志主要按服务/时间查、想省钱</strong> → <strong>Loki</strong>，与现有栈几乎零摩擦。</li><li><strong>既要业务全文检索又要日志、需要相关性与复杂聚合</strong> → <a href="../elasticsearch/elasticsearch-guide.html">Elasticsearch</a>；许可要求纯 Apache-2.0 → OpenSearch。</li><li><strong>日志主要做 SQL 聚合报表、量级极大</strong> → <a href="../clickhouse/clickhouse-guide.html">ClickHouse</a>。</li><li><strong>团队小、完全不想运维</strong> → 云日志服务，用成本换人力。</li></ul>
+<blockquote><p>落地顺序建议：先统一应用侧的 JSON 字段词典（<a href="../zap/zap-guide.html">Zap</a> / <a href="../slog/slog-guide.html">slog</a>）→ 定死低基数标签规范 → 配好采集器与多行合并 → 再开 retention 与告警。<strong>标签规范一旦定错，后面迁移历史数据的代价极高。</strong></p></blockquote>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

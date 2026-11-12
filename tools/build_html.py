@@ -64,6 +64,7 @@ LANG_LABELS = {
     "python": "Python", "text": "Text", "txt": "Text", "conf": "Config",
     "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile",
     "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI",
+    "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx",
 }
 
 LEVEL_BADGES = {

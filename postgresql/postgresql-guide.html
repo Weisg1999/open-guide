@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PostgreSQL · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#316192; --accent-light:#dbe9f5; --accent-dark:#1a3d5c;
+    --bg:#f5f8fc; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#0a1e33; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#1a3d5c 0%,#316192 58%,#1a3d5c 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">PostgreSQL<span class="ver">16 / 17 / 18</span></div>
+  <div class="sub">MVCC · jsonb · 丰富索引</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#安装与本地起服务">安装与本地起服务</a>
+  <a class="sub-link" href="#最小可运行示例">最小可运行示例</a>
+  <a href="#2-功能特性总览">2. 功能特性总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-进程模型连接很贵">3.1 进程模型：连接很贵</a>
+  <a class="sub-link" href="#32-mvcc元组多版本与-vacuum">3.2 MVCC：元组多版本与 VACUUM</a>
+  <a class="sub-link" href="#33-隔离级别与-mysql-的关键差异">3.3 隔离级别：与 MySQL 的关键差异</a>
+  <a class="sub-link" href="#34-索引选对类型比加索引更重要">3.4 索引：选对类型比加索引更重要</a>
+  <a class="sub-link" href="#35-wal-与逻辑复制">3.5 WAL 与逻辑复制</a>
+  <a class="sub-link" href="#36-执行计划">3.6 执行计划</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-连接池配置">4.1 连接池配置</a>
+  <a class="sub-link" href="#42-查询与扫描">4.2 查询与扫描</a>
+  <a class="sub-link" href="#43-事务错误码与可串行化重试">4.3 事务、错误码与可串行化重试</a>
+  <a class="sub-link" href="#44-批量写入copyfrom">4.4 批量写入：CopyFrom</a>
+  <a class="sub-link" href="#45-jsonb数组与-listennotify">4.5 jsonb、数组与 LISTEN/NOTIFY</a>
+  <a class="sub-link" href="#46-运维速查">4.6 运维速查</a>
+  <a href="#5-版本演进速览">5. 版本演进速览</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>PostgreSQL 技术介绍与使用指南（Go 后端视角）</h1>
+<p>功能最完整的开源关系型数据库：MVCC 与快照隔离、B-tree / GIN / GiST / BRIN 索引、jsonb、CTE 与窗口函数、WAL 逻辑复制，从 Go 应用视角讲清为什么它和 MySQL 的并发假设不一样。</p>
+<p style="opacity:.8;font-size:13.5px">MVCC · jsonb · 丰富索引</p>
+<div class="meta"><span>默认 READ COMMITTED</span><span>元组多版本 + VACUUM</span><span>GIN / GiST / BRIN</span><span>jsonb 可索引</span><span>SSI 序列化</span><span>pgx v5 + pgxpool</span></div>
+</div>
+<blockquote><p>功能最完整的开源关系型数据库：MVCC 与快照隔离、B-tree / GIN / GiST / BRIN 索引、<code>jsonb</code>、CTE 与窗口函数、WAL 逻辑复制——从 Go 应用视角讲清「为什么它和 MySQL 的并发假设不一样」。 上游：<a href="https://github.com/postgres/postgres">https://github.com/postgres/postgres</a>　|　服务端主线：<strong>16 / 17 / 18</strong>（整理于 2026-11）　|　Go 驱动：<a href="https://github.com/jackc/pgx">jackc/pgx</a> v5 协议：PostgreSQL License；具体版本以上游最新 release 为准。</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p><a href="../mysql/mysql-guide.html">MySQL 篇</a> 是行锁 + undo log + 默认 <code>REPEATABLE READ</code>；PostgreSQL 是<strong>元组多版本 + VACUUM + 默认 <code>READ COMMITTED</code></strong>。这个差异不是配置细节，而是并发模型的根本不同——从 MySQL 迁过来的代码，如果依赖「同一事务里两次读结果一致」，在 PG 上会直接出问题。</p>
+<p>PG 的定位是「<strong>能扛复杂查询的关系型数据库</strong>」：标准 SQL 支持最完整、索引类型最丰富、<code>jsonb</code> 让半结构化数据不必另起一个库、扩展机制（PostGIS / pg_trgm / TimescaleDB）覆盖面极广。</p>
+<ul><li><strong>适用场景</strong>：复杂关联与报表查询、需要 <code>jsonb</code> / 数组 / 范围类型、GIS、全文检索、作为 <a href="https://github.com/timescale/timescaledb">TimescaleDB 类时序方案</a> 的底座、强 SQL 标准的系统</li><li><strong>不适合</strong>：极简高频点查且不需要复杂查询（MySQL 运维更轻）、纯 KV（用 <a href="../redis/redis-guide.html">go-redis</a>）、超大规模 OLAP（用 <a href="../clickhouse/clickhouse-guide.html">ClickHouse</a>）、需要成熟分库分表中间件生态的场景</li></ul>
+<blockquote><p>与 <a href="../gorm/gorm-guide.html">GORM 篇</a> 的关系：GORM 通过 <code>gorm.io/driver/postgres</code> 同样能操作 PG，但本文讲<strong>数据库本身</strong>与原生 <code>pgx</code> 驱动，两边不重复。</p></blockquote>
+<h3 id="安装与本地起服务">安装与本地起服务</h3>
+<pre><code class="lang-bash">go get github.com/jackc/pgx/v5/pgxpool
+docker run --rm -d --name pg-dev -p 5432:5432 \
+  -e POSTGRES_PASSWORD=devpass -e POSTGRES_DB=app postgres:17</code></pre>
+<h3 id="最小可运行示例">最小可运行示例</h3>
+<pre><code class="lang-go">package main
+
+import (
+    "context"
+    "fmt"
+
+    "github.com/jackc/pgx/v5/pgxpool"
+)
+
+func main() {
+    ctx := context.Background()
+    pool, err := pgxpool.New(ctx,
+        "postgres://postgres:devpass@localhost:5432/app?pool_max_conns=20")
+    if err != nil { panic(err) }
+    defer pool.Close()
+    if err := pool.Ping(ctx); err != nil { panic(err) }
+
+    // 注意：PG 用 $1 占位符，不是 MySQL 的 ?
+    if _, err := pool.Exec(ctx, `
+        CREATE TABLE IF NOT EXISTS users (
+            id BIGSERIAL PRIMARY KEY,
+            email TEXT NOT NULL UNIQUE,
+            profile JSONB NOT NULL DEFAULT '{}'::jsonb,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )`); err != nil { panic(err) }
+
+    if _, err := pool.Exec(ctx,
+        `INSERT INTO users (email, profile) VALUES ($1, $2)
+         ON CONFLICT (email) DO NOTHING`,
+        "alice@example.com", `{"city":"Shenzhen"}`); err != nil { panic(err) }
+
+    var email string
+    if err := pool.QueryRow(ctx,
+        `SELECT email FROM users WHERE email = $1`, "alice@example.com",
+    ).Scan(&amp;email); err != nil { panic(err) }
+    fmt.Println(email)
+}</code></pre>
+<hr>
+
+</section>
+<section data-anchor="2-功能特性总览">
+<h2 id="2-功能特性总览">2. 功能特性总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>并发控制</td><td><strong>MVCC 元组多版本</strong>（<code>xmin</code> / <code>xmax</code>）、VACUUM 回收、HOT 更新、事务 ID 回卷防护</td></tr><tr><td>隔离级别</td><td>默认 <strong>READ COMMITTED</strong>；REPEATABLE READ 为快照隔离；SERIALIZABLE 用 <strong>SSI</strong>（可能报 <code>40001</code> 需重试）</td></tr><tr><td>索引</td><td>B-tree（默认）、<strong>GIN</strong>（jsonb / 数组 / 全文）、<strong>GiST</strong>（地理 / 范围）、<strong>BRIN</strong>（大表时序）、SP-GiST、Hash；部分/表达式/覆盖索引</td></tr><tr><td>数据类型</td><td><code>jsonb</code>、数组、<code>hstore</code>、<code>range</code> / <code>multirange</code>、<code>uuid</code>、<code>inet</code>、<code>enum</code>、自定义类型、域</td></tr><tr><td>SQL 能力</td><td>CTE（含递归）、窗口函数、<code>MERGE</code>、<code>DISTINCT ON</code>、<code>LATERAL</code>、<code>FILTER</code>、并行查询、表函数</td></tr><tr><td>分区</td><td>声明式 RANGE / LIST / HASH 分区、分区裁剪、默认分区</td></tr><tr><td>复制与恢复</td><td>WAL 预写日志、流复制（物理）、<strong>逻辑复制</strong>（publication / subscription）、PITR 时间点恢复</td></tr><tr><td>扩展</td><td>PostGIS、<code>pg_trgm</code>（模糊匹配）、<code>pg_stat_statements</code>、TimescaleDB、<code>uuid-ossp</code></td></tr><tr><td>全文检索</td><td><code>tsvector</code> / <code>tsquery</code> + GIN，可满足中等规模检索需求</td></tr><tr><td>Go 驱动</td><td><code>pgx/v5</code> 原生接口、<code>pgxpool</code> 连接池、<code>CopyFrom</code> 批量写、<code>pgtype</code> 类型系统、<code>LISTEN/NOTIFY</code></td></tr></tbody></table></div>
+<hr>
+
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-进程模型连接很贵">3.1 进程模型：连接很贵</h3>
+<pre><code class="lang-text">postmaster（主进程）
+   ├─ backend process 1  ← 每个客户端连接一个独立 OS 进程
+   ├─ backend process 2     （MySQL 是线程模型，连接便宜得多）
+   └─ 后台进程：checkpointer / walwriter / autovacuum / bgwriter</code></pre>
+<p><strong>一个连接 = 一个进程 ≈ 数 MB 内存</strong>。所以 PG 不能像 MySQL 那样开几百个空闲连接，必须用连接池：<code>pgxpool</code>（应用内）或 <strong>PgBouncer</strong>（独立代理，transaction pooling 模式）。这是 PG 部署与 MySQL 最大的运维差异。</p>
+<h3 id="32-mvcc元组多版本与-vacuum">3.2 MVCC：元组多版本与 VACUUM</h3>
+<pre><code class="lang-text">UPDATE users SET email='new' WHERE id=1;
+
+旧元组: (xmin=100, xmax=200, email='old')   ← 对事务 200 之后不可见，但物理还在
+新元组: (xmin=200, xmax=0,   email='new')</code></pre>
+<ul><li><strong>每次 UPDATE 都插入新版本</strong>，旧版本靠 <code>xmax</code> 标记，不进 undo log（与 MySQL 相反）</li><li>旧元组由 <strong>VACUUM</strong> 回收；<code>autovacuum</code> 自动触发，但<strong>长事务会阻止它清理</strong>，导致表膨胀</li><li>只改非索引列且页内有空间时可走 <strong>HOT update</strong>，避免更新所有索引</li><li>事务 ID 是 32 位，需要 <strong>freeze</strong> 防止回卷（wraparound）；autovacuum 卡住是严重的运维故障</li></ul>
+<blockquote><p>工程含义：PG 里「频繁更新同一行」比 MySQL 更容易产生膨胀，需要关注 <code>pg_stat_user_tables.n_dead_tup</code> 与 autovacuum 是否跟得上。</p></blockquote>
+<h3 id="33-隔离级别与-mysql-的关键差异">3.3 隔离级别：与 MySQL 的关键差异</h3>
+<div class="table-wrap"><table><thead><tr><th></th><th>PostgreSQL（默认 <strong>RC</strong>）</th><th>MySQL InnoDB（默认 <strong>RR</strong>）</th></tr></thead><tbody><tr><td>读一致性</td><td>每条语句新快照</td><td>事务内第一次读建立 ReadView</td></tr><tr><td>不可重复读</td><td><strong>会发生</strong></td><td>不会发生</td></tr><tr><td>幻读 / 间隙锁</td><td>RR 用快照隔离，无间隙锁</td><td>RR 用临键锁抑制幻读</td></tr><tr><td>可串行化</td><td><strong>SSI</strong>，冲突时抛 <code>40001 serialization_failure</code></td><td>SERIALIZABLE 退化成加锁读</td></tr></tbody></table></div>
+<pre><code class="lang-go">// 需要事务内一致读时，显式指定 RepeatableRead
+tx, err := pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead})</code></pre>
+<blockquote><p><strong>迁移第一检查项</strong>：把 MySQL 的 RR 假设直接带到 PG 的 RC，会出现「同一事务两次读不一致」。要么显式提升隔离级别，要么把读合并成一条语句 / 用 <code>SELECT ... FOR UPDATE</code>。</p></blockquote>
+<p>用 <code>SERIALIZABLE</code> 时必须能重试整个事务（<code>40001</code> 是<strong>预期内</strong>的错误，不是故障）。</p>
+<h3 id="34-索引选对类型比加索引更重要">3.4 索引：选对类型比加索引更重要</h3>
+<div class="table-wrap"><table><thead><tr><th>索引</th><th>适用</th><th>例子</th></tr></thead><tbody><tr><td>B-tree</td><td>等值、范围、排序、最左前缀</td><td>默认，<code>CREATE INDEX ON orders (tenant_id, created_at DESC)</code></td></tr><tr><td><strong>GIN</strong></td><td>包含性查询：jsonb、数组、全文</td><td><code>CREATE INDEX ON users USING GIN (profile jsonb_path_ops)</code></td></tr><tr><td><strong>GiST</strong></td><td>几何、范围、最近邻、模糊匹配</td><td>PostGIS 地理位置、<code>pg_trgm</code></td></tr><tr><td><strong>BRIN</strong></td><td>超大表且物理顺序与查询列相关（时序）</td><td>按时间追加的日志表，索引极小</td></tr><tr><td>部分索引</td><td>只索引关心的子集</td><td><code>WHERE status = 'active'</code></td></tr><tr><td>表达式索引</td><td>函数条件</td><td><code>LOWER(email)</code></td></tr><tr><td>覆盖索引</td><td>避免回表</td><td><code>INCLUDE (name, email)</code></td></tr></tbody></table></div>
+<p><code>jsonb</code> 有两种 GIN 操作符类：默认 <code>jsonb_ops</code> 支持 <code>?</code> / <code>?|</code> / <code>@&gt;</code> 全算子但索引大；<code>jsonb_path_ops</code> 只支持 <code>@&gt;</code> 但更小更快。按查询形态选。</p>
+<h3 id="35-wal-与逻辑复制">3.5 WAL 与逻辑复制</h3>
+<pre><code class="lang-text">写请求 ──► 先写 WAL（顺序追加，保证 crash-safe）──► 再改 shared_buffers 中的页
+                 │
+                 ├─► 流复制：把 WAL 字节流发给备库（整库物理复制）
+                 └─► 逻辑复制：解析 WAL 为行级变更，按 publication 发给订阅端（可跨版本 / 选表）</code></pre>
+<p>逻辑复制是做 <strong>CDC / 异构同步 / 零停机大版本升级</strong> 的基础，但需要建 <strong>replication slot</strong>；订阅端停了槽不消费，<strong>WAL 会一直堆积直到打满磁盘</strong>——这是生产常见事故。</p>
+<h3 id="36-执行计划">3.6 执行计划</h3>
+<pre><code class="lang-sql">EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT)
+SELECT * FROM orders WHERE tenant_id = 42 AND created_at &gt; now() - interval '7 days';</code></pre>
+<p>重点看：<code>Seq Scan</code> vs <code>Index Scan</code> vs <code>Bitmap Heap Scan</code>、预估行数 <code>rows</code> 与实际行数是否量级一致（不一致 → 统计信息过期，跑 <code>ANALYZE</code>）、<code>Buffers: shared hit/read</code>（缓存命中）、Join 策略（Nested Loop / Hash / Merge）。PG 的类型检查比 MySQL 严格，隐式转换少，因此统计信息更准，但也更容易因参数类型不匹配而报错。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-连接池配置">4.1 连接池配置</h3>
+<pre><code class="lang-go">cfg, err := pgxpool.ParseConfig(dsn)
+if err != nil { return err }
+cfg.MaxConns = 20                        // 必须按 (总连接预算 / 副本数) 反推
+cfg.MinConns = 5
+cfg.MaxConnLifetime = 30 * time.Minute
+cfg.MaxConnIdleTime = 5 * time.Minute
+cfg.HealthCheckPeriod = 30 * time.Second
+cfg.ConnConfig.RuntimeParams["statement_timeout"] = "5000" // 5s，防慢查询拖死池
+cfg.ConnConfig.RuntimeParams["application_name"] = "checkout-api"
+
+pool, err := pgxpool.NewWithConfig(ctx, cfg)</code></pre>
+<blockquote><p>所有查询传带超时的 <code>ctx</code>；<code>statement_timeout</code> 是第二道保险。<code>pgxpool.Pool</code> 并发安全，全局复用。</p></blockquote>
+<h3 id="42-查询与扫描">4.2 查询与扫描</h3>
+<pre><code class="lang-go">type User struct {
+    ID        int64
+    Email     string
+    City      string
+    CreatedAt time.Time
+}
+
+rows, err := pool.Query(ctx,
+    `SELECT id, email, profile-&gt;&gt;'city', created_at
+     FROM users WHERE created_at &gt; $1 ORDER BY id LIMIT $2`, since, 100)
+if err != nil { return err }
+defer rows.Close()
+
+users, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (User, error) {
+    var u User
+    err := row.Scan(&amp;u.ID, &amp;u.Email, &amp;u.City, &amp;u.CreatedAt)
+    return u, err
+})
+if err != nil { return err }</code></pre>
+<blockquote><p><code>pgx.CollectRows</code> 会自动处理 <code>rows.Close()</code> 与 <code>rows.Err()</code>；手写循环时<strong>必须检查 <code>rows.Err()</code></strong>，否则迭代中的错误被吞掉。<code>profile-&gt;&gt;'city'</code> 返回 text，若为 NULL 会 Scan 失败——用 <code>COALESCE(profile-&gt;&gt;'city','')</code> 或 <code>pgtype.Text</code>。</p></blockquote>
+<h3 id="43-事务错误码与可串行化重试">4.3 事务、错误码与可串行化重试</h3>
+<pre><code class="lang-go">func Transfer(ctx context.Context, pool *pgxpool.Pool, from, to int64, amount int64) error {
+    return withRetry(ctx, 3, func() error {
+        tx, err := pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.Serializable})
+        if err != nil { return err }
+        defer tx.Rollback(ctx) // Commit 后返回 ErrTxClosed，可忽略
+
+        var balance int64
+        if err := tx.QueryRow(ctx,
+            `SELECT balance FROM accounts WHERE id = $1 FOR UPDATE`, from,
+        ).Scan(&amp;balance); err != nil { return err }
+        if balance &lt; amount { return errors.New("insufficient balance") }
+
+        if _, err := tx.Exec(ctx,
+            `UPDATE accounts SET balance = balance - $1 WHERE id = $2`, amount, from,
+        ); err != nil { return err }
+        if _, err := tx.Exec(ctx,
+            `UPDATE accounts SET balance = balance + $1 WHERE id = $2`, amount, to,
+        ); err != nil { return err }
+        return tx.Commit(ctx)
+    })
+}
+
+func isRetryable(err error) bool {
+    var pgErr *pgconn.PgError
+    return errors.As(err, &amp;pgErr) &amp;&amp;
+        (pgErr.Code == "40001" || pgErr.Code == "40P01") // 序列化失败 / 死锁
+}
+
+func withRetry(ctx context.Context, max int, fn func() error) error {
+    var err error
+    for i := 0; i &lt; max; i++ {
+        err = fn()
+        if err == nil || !isRetryable(err) { return err }
+        select {
+        case &lt;-ctx.Done(): return ctx.Err()
+        case &lt;-time.After(time.Duration(i+1) * 20 * time.Millisecond):
+        }
+    }
+    return err
+}</code></pre>
+<p>常见 SQLSTATE：<code>23505</code> 唯一键冲突、<code>23503</code> 外键冲突、<code>40001</code> serialization_failure、<code>40P01</code> deadlock_detected、<code>57014</code> 取消语句（超时）。</p>
+<h3 id="44-批量写入copyfrom">4.4 批量写入：CopyFrom</h3>
+<pre><code class="lang-go">_, err := pool.CopyFrom(ctx,
+    pgx.Identifier{"events"},
+    []string{"ts", "user_id", "event"},
+    pgx.CopyFromSlice(len(events), func(i int) ([]any, error) {
+        return []any{events[i].Ts, events[i].UserID, events[i].Event}, nil
+    }),
+)</code></pre>
+<blockquote><p><code>CopyFrom</code> 走 PostgreSQL 的 <code>COPY</code> 协议，比循环 INSERT 快一个数量级，是批量导入的正确姿势。与 <a href="../clickhouse/clickhouse-guide.html">ClickHouse 篇</a> 的 <code>PrepareBatch</code> 异曲同工。</p></blockquote>
+<h3 id="45-jsonb数组与-listennotify">4.5 jsonb、数组与 LISTEN/NOTIFY</h3>
+<pre><code class="lang-go">// jsonb 包含查询（需 GIN 索引）
+var ids []int64
+rows, _ := pool.Query(ctx,
+    `SELECT id FROM users WHERE profile @&gt; $1::jsonb`, `{"city":"Shenzhen"}`)
+
+// 数组参数：pgx 会自动把 Go slice 编码为 PG array
+rows, _ = pool.Query(ctx, `SELECT id FROM users WHERE id = ANY($1)`, []int64{1, 2, 3})
+
+// LISTEN/NOTIFY：轻量变更通知（不保证可靠投递，关键链路要用逻辑复制或 outbox）
+conn, err := pool.Acquire(ctx)
+if err != nil { return err }
+defer conn.Release()
+if _, err := conn.Exec(ctx, "LISTEN order_events"); err != nil { return err }
+notif, err := conn.Conn().WaitForNotification(ctx)</code></pre>
+<h3 id="46-运维速查">4.6 运维速查</h3>
+<pre><code class="lang-sql">SELECT * FROM pg_stat_activity WHERE state &lt;&gt; 'idle';       -- 长事务 / 阻塞
+SELECT relname, n_dead_tup, last_autovacuum FROM pg_stat_user_tables
+  ORDER BY n_dead_tup DESC LIMIT 10;                       -- 膨胀与 VACUUM
+SELECT * FROM pg_stat_statements ORDER BY total_exec_time DESC LIMIT 10;  -- 慢 SQL
+SELECT slot_name, pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(), restart_lsn))
+  FROM pg_replication_slots;                              -- 复制槽 WAL 堆积</code></pre>
+<pre><code class="lang-bash">pg_dump -Fc app &gt; app.dump        # 逻辑备份
+pg_restore -d app app.dump</code></pre>
+<hr>
+
+</section>
+<section data-anchor="5-版本演进速览">
+<h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>关键变化与迁移注意点</th></tr></thead><tbody><tr><td>9.4 / 9.6</td><td><code>jsonb</code> 落地、并行查询起步</td></tr><tr><td><strong>10</strong></td><td><strong>声明式分区</strong>、逻辑复制（publication/subscription）、身份列 <code>GENERATED ... AS IDENTITY</code></td></tr><tr><td>11 / 12</td><td>分区增强（默认分区、外键）、JIT 编译、CTE 内联优化、生成列</td></tr><tr><td>13 / 14</td><td>并行 VACUUM、增量排序、<code>jsonb</code> 下标语法、逻辑复制支持大事务</td></tr><tr><td>15</td><td><code>MERGE</code>、逻辑复制行过滤/列过滤、<code>security_invoker</code> 视图</td></tr><tr><td>16</td><td>逻辑复制可从备库、并行 FULL/RIGHT JOIN、<code>pg_stat_io</code></td></tr><tr><td>17</td><td>VACUUM 内存管理改进、增量备份、逻辑复制故障转移槽</td></tr><tr><td>18</td><td>异步 I/O、跳过扫描（skip scan）等性能优化</td></tr></tbody></table></div>
+<p><strong>迁移注意</strong>：</p>
+<ul><li>大版本升级用 <code>pg_upgrade</code>（或逻辑复制做近零停机），<strong>不能跨多版本直接跳</strong>，先读目标版本的 release notes</li><li><code>pgx</code> <strong>v4 → v5</strong> 是破坏性升级：<code>pgxpool</code>、<code>pgtype</code> 与 <code>QueryRow</code> 的错误处理有变化，<code>database/sql</code> 兼容接口路径也不同</li><li><code>jackc/pgx</code> 与 <code>lib/pq</code> 不同：后者已归档，新项目一律 pgx</li><li>服务端与驱动版本不必严格一致，但新类型/新语法需要较新的驱动</li></ul>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>把 MySQL 的隔离级别假设带过来</strong>：PG 默认 RC，同一事务两次读可能不一致。显式指定 <code>RepeatableRead</code>，或让单条 SQL 完成读-改-写。</li><li><strong>连接数开太大</strong>：每连接一个进程，<code>max_connections</code> 打满直接拒绝服务。用 <code>pgxpool</code> 限流 + PgBouncer，按 <code>总预算 / 副本数</code> 反推 <code>MaxConns</code>。</li><li><strong>长事务阻塞 VACUUM</strong>：事务开着不提交（或忘了 <code>COMMIT</code>），死元组无法回收 → 表膨胀、XID 回卷风险。监控 <code>pg_stat_activity</code> 与 <code>n_dead_tup</code>。</li><li><strong>用 <code>?</code> 占位符</strong>：PG 是 <code>$1</code>、<code>$2</code>。这是从 MySQL 迁来时最先撞到的语法错误。</li><li><strong><code>SERIALIZABLE</code> 不重试 <code>40001</code></strong>：SSI 冲突是预期行为，必须整体重试事务。</li><li><strong>标识符大小写</strong>：未加引号的标识符会被折叠成小写；<code>CREATE TABLE "User"</code> 之后 <code>SELECT * FROM user</code> 查不到。一律用小写 snake_case，不加引号。</li><li><strong>隐式类型转换</strong>：PG 比 MySQL 严格，<code>WHERE varchar_col = 123</code> 会报错；传参类型要明确（<code>$1::jsonb</code>、<code>$1::int</code>）。</li><li><strong>SELECT \* + 按位置 Scan</strong>：表加列或改列顺序会静默错位。明确列清单，或用 <code>pgx.RowToStructByName</code> 按名映射。</li><li><strong>NULL 扫描失败</strong>：<code>profile-&gt;&gt;'city'</code> 为 NULL 时扫进 <code>string</code> 会报错。用 <code>COALESCE</code> 或 <code>pgtype.Text</code> / <code>*string</code>。</li><li><strong>索引失效 / 统计信息过期</strong>：数据大幅变更后不 <code>ANALYZE</code>，优化器选错计划。看 <code>EXPLAIN (ANALYZE, BUFFERS)</code> 的预估 vs 实际行数。</li><li><strong><code>jsonb</code> 索引选错</strong>：默认 <code>jsonb_ops</code> 索引大；只做 <code>@&gt;</code> 包含查询时用 <code>jsonb_path_ops</code>。</li><li><strong>深分页 <code>OFFSET</code></strong>：与 MySQL 同理，改 keyset 分页（<code>WHERE id &gt; $1 ORDER BY id LIMIT n</code>）。</li><li><strong>时间类型混用</strong>：<code>TIMESTAMPTZ</code>（带时区，推荐）vs <code>TIMESTAMP</code>（不带）。Go 的 <code>time.Time</code> 与 <code>timestamptz</code> 搭配最省心，统一 UTC 存储。</li><li><strong>复制槽不消费</strong>：逻辑复制订阅端停机，WAL 无限堆积打满磁盘。监控 <code>pg_replication_slots</code> 的 lag，必要时删除失效槽。</li><li><strong>序列不回滚</strong>：<code>BIGSERIAL</code> / <code>IDENTITY</code> 的值在事务回滚后不会归还，ID 有空洞属正常，不要依赖连续性。</li><li><strong>不设超时</strong>：慢查询占满连接池。用带 deadline 的 <code>ctx</code> + <code>statement_timeout</code> 双保险。</li><li><strong>在库代码里建连接池</strong>：<code>pgxpool</code> 由应用入口装配并注入，库函数接收接口，便于测试与替换。</li></ol>
+<hr>
+
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>PostgreSQL</th><th>MySQL 8.x</th><th>SQLite</th><th>CockroachDB / YugabyteDB</th><th>TimescaleDB</th><th>ClickHouse</th></tr></thead><tbody><tr><td>定位</td><td>通用 + 扩展型 OLTP</td><td>通用 OLTP</td><td>嵌入式</td><td>分布式 SQL</td><td>PG 上的时序扩展</td><td>列存 OLAP</td></tr><tr><td>默认隔离</td><td><strong>READ COMMITTED</strong></td><td>REPEATABLE READ</td><td>SERIALIZABLE</td><td>SERIALIZABLE</td><td>同 PG</td><td>无事务</td></tr><tr><td>JSON</td><td><strong>jsonb + GIN 强项</strong></td><td>可用但较弱</td><td>有限</td><td>有</td><td>同 PG</td><td>有限</td></tr><tr><td>索引类型</td><td><strong>最丰富</strong></td><td>B+ 树为主</td><td>B-tree</td><td>分布式索引</td><td>同 PG + 时序</td><td>稀疏/跳数</td></tr><tr><td>复杂查询</td><td><strong>CTE / 窗口 / LATERAL 最全</strong></td><td>8.0 起补全</td><td>有限</td><td>完整 SQL</td><td>完整 SQL</td><td>完整 SQL</td></tr><tr><td>水平扩展</td><td>需分区 / Citus</td><td>需分库分表</td><td>不适用</td><td><strong>原生</strong></td><td>依赖 PG</td><td>原生</td></tr><tr><td>运维成本</td><td>中</td><td><strong>低</strong></td><td>极低</td><td>高</td><td>中</td><td>中高</td></tr><tr><td>典型场景</td><td>复杂业务、GIS、混合数据</td><td>常规业务主数据</td><td>本地工具 / 测试</td><td>全球多活</td><td>监控 / IoT 时序</td><td>分析报表</td></tr></tbody></table></div>
+<p>一句话决策：</p>
+<ul><li><strong>默认推荐 PostgreSQL</strong>：SQL 标准、<code>jsonb</code>、索引类型与扩展性最全面，很多「本来要上第二个数据库」的需求（半结构化、GIS、全文、时序）用 PG 扩展就能收进一个库。</li><li><strong>团队对 MySQL 更熟、以简单 OLTP 为主、追求运维最省</strong> → <a href="../mysql/mysql-guide.html">MySQL</a>，生态与资料最丰富。</li><li><strong>单机工具、CLI、单元测试</strong> → SQLite，零运维。</li><li><strong>需要多region 强一致与原生水平扩展</strong> → CockroachDB / YugabyteDB，但要接受分布式事务的延迟成本。</li><li><strong>监控与 IoT 时序、且团队已在 PG 栈</strong> → TimescaleDB（补上<a href="https://github.com/timescale/timescaledb">时序缺口</a>）；<strong>分析型大宽表</strong> → <a href="../clickhouse/clickhouse-guide.html">ClickHouse</a>。</li></ul>
+<blockquote><p>从 MySQL 迁到 PG 时，按这个顺序排查：占位符 → 隔离级别 → 标识符大小写 → 隐式类型转换 → NULL 扫描 → 自增序列语义。<strong>前两条会造成静默的数据正确性问题，后四条只会报错。</strong></p></blockquote>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

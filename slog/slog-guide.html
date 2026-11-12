@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>log/slog · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#0e7490; --accent-light:#cffafe; --accent-dark:#155e75;
+    --bg:#f4fafb; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#04222b; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#155e75 0%,#0e7490 58%,#155e75 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">log/slog<span class="ver">Go 1.21+</span></div>
+  <div class="sub">标准库结构化日志实践</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#最小可运行示例">最小可运行示例</a>
+  <a href="#2-功能特性总览">2. 功能特性总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-handler-接口四个方法都要实现">3.1 Handler 接口：四个方法都要实现</a>
+  <a class="sub-link" href="#32-attr-与-value避免反射">3.2 Attr 与 Value：避免反射</a>
+  <a class="sub-link" href="#33-slog-不原生支持-context">3.3 slog 不原生支持 Context</a>
+  <a class="sub-link" href="#34-levelvar运行时调级">3.4 LevelVar：运行时调级</a>
+  <a class="sub-link" href="#35-与-prometheus-otel-的职责边界">3.5 与 Prometheus / OTel 的职责边界</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-生产配置">4.1 生产配置</a>
+  <a class="sub-link" href="#42-contexthandler自动注入-trace_id">4.2 ContextHandler：自动注入 trace_id</a>
+  <a class="sub-link" href="#43-脱敏replaceattr">4.3 脱敏：ReplaceAttr</a>
+  <a class="sub-link" href="#44-多目的地-fanout-handler">4.4 多目的地 Fanout Handler</a>
+  <a class="sub-link" href="#45-gin-中间件请求日志">4.5 Gin 中间件：请求日志</a>
+  <a class="sub-link" href="#46-与-zap-互操作">4.6 与 Zap 互操作</a>
+  <a class="sub-link" href="#47-单测断言">4.7 单测断言</a>
+  <a class="sub-link" href="#48-静态检查">4.8 静态检查</a>
+  <a href="#5-版本演进速览">5. 版本演进速览</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>log/slog 实践指南（Go 标准库结构化日志）</h1>
+<p>Go 1.21 起官方的结构化日志包：Logger / Handler / Record / Attr 四层抽象，零第三方依赖，把怎么统一字段、怎么透传 trace_id、怎么接 Zap 与 OTel 讲清楚。</p>
+<p style="opacity:.8;font-size:13.5px">标准库结构化日志实践</p>
+<div class="meta"><span>零第三方依赖</span><span>Handler 可插拔</span><span>LevelVar 动态调级</span><span>ContextHandler 注入 trace_id</span><span>ReplaceAttr 脱敏</span><span>sloglint 静态检查</span></div>
+</div>
+<blockquote><p>Go 1.21 起官方的结构化日志包：Logger / Handler / Record / Attr 四层抽象，零第三方依赖——把「怎么统一字段、怎么透传 trace_id、怎么接 Zap 与 OTel」讲清楚。 上游：<a href="https://pkg.go.dev/log/slog">https://pkg.go.dev/log/slog</a>（Go 标准库）　|　适用版本：<strong>Go 1.21+</strong>（整理于 2026-11）　|　协议：Go BSD-3-Clause</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p><a href="../zap/zap-guide.html">Zap 篇</a> 解决「极致性能 + 成熟生态」，本文解决「<strong>不引第三方依赖时，怎么把日志做对</strong>」。<code>log/slog</code> 是 Go 官方在 1.21 引入的结构化日志 API，设计上与 Zap 的 <code>zapcore</code> 分层很像，但抽象更克制：</p>
+<pre><code class="lang-text">Logger ──► 构造 Record（时间/级别/消息/调用点 + attrs）
+              │
+              ▼
+         Handler ──► 编码（JSON / Text / 自定义）──► io.Writer</code></pre>
+<p><strong>Handler 是可插拔核心</strong>：换输出格式、加脱敏、注入 <code>trace_id</code>、多目的地分流、采样，全部通过包装 Handler 完成，业务代码一行不改。</p>
+<ul><li><strong>适用场景</strong>：新项目不想引第三方日志库、库/框架需要可注入的日志接口、CLI 与工具、需要与标准库 <code>log</code> 平滑共存、团队想统一 <code>log/slog</code> 作为公共抽象再桥接到 Zap</li><li><strong>不适合</strong>：日志量极大且已压测证明 slog 是瓶颈（用 Zap）、需要成熟的采样 / Tee / Hook 生态（Zap 篇更全）、复杂多目的地分流（可自己写，但要评估成本）</li></ul>
+<blockquote><p>slog 与 Zap 不是二选一：常见做法是把 <code>slog</code> 作为<strong>公共 API</strong>（库代码接受 <code>*slog.Logger</code>），应用入口用 <code>zapslog</code> 桥接到 Zap 后端，兼顾标准化与性能。</p></blockquote>
+<h3 id="最小可运行示例">最小可运行示例</h3>
+<pre><code class="lang-go">package main
+
+import (
+    "log/slog"
+    "os"
+    "time"
+)
+
+func main() {
+    h := slog.NewJSONHandler(os.Stdout, &amp;slog.HandlerOptions{
+        Level:     slog.LevelDebug,
+        AddSource: true,
+    })
+    logger := slog.New(h)
+    slog.SetDefault(logger) // 让标准库 log.Printf 也走这里
+
+    logger.Info("user login",
+        slog.String("user", "alice"),
+        slog.Int("attempt", 3),
+        slog.Duration("latency", 42*time.Millisecond),
+    )
+    // {"time":"...","level":"INFO","source":{"function":"main.main","file":"...","line":17},
+    //  "msg":"user login","user":"alice","attempt":3,"latency":0.042}
+}</code></pre>
+<hr>
+
+</section>
+<section data-anchor="2-功能特性总览">
+<h2 id="2-功能特性总览">2. 功能特性总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>四层抽象</td><td><code>Logger</code> → <code>Record</code> → <code>Handler</code> → <code>io.Writer</code>；<code>Handler</code> 接口四个方法可自定义</td></tr><tr><td>级别</td><td><code>Debug</code> / <code>Info</code> / <code>Warn</code> / <code>Error</code>；<code>LevelVar</code> 支持运行时动态调整</td></tr><tr><td>内置 Handler</td><td><code>JSONHandler</code>（生产）/ <code>TextHandler</code>（开发，key=value）</td></tr><tr><td>结构化字段</td><td><code>slog.String</code> / <code>Int</code> / <code>Bool</code> / <code>Duration</code> / <code>Time</code> / <code>Group</code> / <code>Any</code>；强类型 <code>Attr</code></td></tr><tr><td>上下文</td><td><code>Logger.With(...)</code> 绑定公共字段、<code>WithGroup</code> 命名空间、<code>SetDefault</code> 全局默认</td></tr><tr><td>改写</td><td><code>HandlerOptions.ReplaceAttr</code> 统一改名、脱敏、格式转换</td></tr><tr><td>桥接</td><td><code>slog.SetDefault</code> + <code>log.SetOutput</code> 接管标准库 <code>log</code>；<code>NewLogLogger</code> 反向桥接</td></tr><tr><td>生态</td><td><code>sloglint</code> 静态检查、<code>tint</code> / <code>charmbracelet/log</code> 彩色 Handler、<code>zapslog</code> 接 Zap</td></tr><tr><td>性能</td><td>内置 Handler 无反射；<code>slog.Any</code> 走反射，热路径应避免</td></tr></tbody></table></div>
+<hr>
+
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-handler-接口四个方法都要实现">3.1 Handler 接口：四个方法都要实现</h3>
+<pre><code class="lang-go">type Handler interface {
+    Enabled(context.Context, slog.Level) bool
+    Handle(context.Context, slog.Record) error
+    WithAttrs(attrs []slog.Attr) Handler
+    WithGroup(name string) Handler
+}</code></pre>
+<ul><li><code>Enabled</code> 在<strong>构造字段之前</strong>被调用，是级别过滤的快速路径；自定义 Handler 必须实现它，否则被禁用的日志仍会做完整编码</li><li><code>Handle</code> 负责输出；<code>Record</code> 是可读的（可 <code>r.AddAttrs(...)</code> 追加字段），但<strong>不要在多个 goroutine 间共享 Record</strong></li><li><code>WithAttrs</code> / <code>WithGroup</code> 派生新 Handler——<strong>这是自定义 Handler 最容易漏的两个方法</strong>：漏实现会导致 <code>logger.With(...)</code> 的字段丢失</li></ul>
+<h3 id="32-attr-与-value避免反射">3.2 Attr 与 Value：避免反射</h3>
+<pre><code class="lang-go">slog.String("k", "v")   // 静态类型 → 编码时无需反射
+slog.Int("n", 3)
+slog.Duration("d", d)   // 输出为秒（float64），与 Prometheus 的 _seconds 单位一致
+slog.Any("obj", bigStruct) // 走反射 + JSON 编码，大对象代价高</code></pre>
+<p><code>Record.Attrs(func(a slog.Attr) bool)</code> 遍历字段；<code>Attr.Value.Resolve()</code> 处理 <code>LogValuer</code>（延迟求值的字段值，可用于避免昂贵计算）。</p>
+<h3 id="33-slog-不原生支持-context">3.3 slog 不原生支持 Context</h3>
+<p>这是与 Zap 最大的心智差异：<code>slog.Info(...)</code> <strong>没有 ctx 参数</strong>（<code>slog.InfoContext(ctx, ...)</code> 才是带 ctx 的版本，且 <code>Handler.Handle</code> 能拿到它）。因此要自动带 <code>trace_id</code>，必须：</p>
+<ol><li>业务侧统一调 <code>slog.InfoContext(ctx, ...)</code> 而不是 <code>slog.Info(...)</code> — 可用 <code>sloglint</code> 强制</li><li>写一个自定义 Handler，在 <code>Handle</code> 里从 <code>ctx</code> 取值并 <code>r.AddAttrs(...)</code></li></ol>
+<pre><code class="lang-go">// 推荐：用 sloglint 的 ctx-only 规则，强制所有日志调用走 *Context 变体
+// slog.Info("...")  → 编译/lint 报错
+// slog.InfoContext(ctx, "...") → 自动带 trace_id</code></pre>
+<h3 id="34-levelvar运行时调级">3.4 LevelVar：运行时调级</h3>
+<pre><code class="lang-go">var level slog.LevelVar          // 零值 = Info
+level.Set(slog.LevelDebug)        // 排障时临时开 Debug，无需重启
+h := slog.NewJSONHandler(os.Stdout, &amp;slog.HandlerOptions{Level: &amp;level})</code></pre>
+<p><code>LevelVar</code> 是并发安全的，可挂到受控的 admin 接口或配置中心。注意 <strong>Handler 每次都要读 <code>LevelVar</code></strong>，所以调级立即生效；用固定 <code>slog.LevelInfo</code> 常量则不行。</p>
+<h3 id="35-与-prometheus-otel-的职责边界">3.5 与 Prometheus / OTel 的职责边界</h3>
+<p>与 <a href="../zap/zap-guide.html">Zap 篇</a> 一致：日志是「单条事件」，<a href="../prometheus/prometheus-guide.html">指标</a> 是「一段时间趋势」，<a href="../opentelemetry/opentelemetry-guide.html">链路</a> 是「跨服务调用路径」。三者的<strong>唯一交汇点是 <code>trace_id</code> 与统一的 <code>service.name</code></strong>：日志里写 <code>trace_id</code>，指标上挂 exemplar，链路里用同一个 <code>service.name</code>。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-生产配置">4.1 生产配置</h3>
+<pre><code class="lang-go">package logging
+
+import (
+    "log/slog"
+    "os"
+    "strings"
+)
+
+var Level slog.LevelVar
+
+func New(service, env string) *slog.Logger {
+    Level.Set(slog.LevelInfo)
+    h := slog.NewJSONHandler(os.Stdout, &amp;slog.HandlerOptions{
+        Level:     &amp;Level,
+        AddSource: true,
+        ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+            switch a.Key {
+            case slog.MessageKey:
+                a.Key = "msg"
+            case slog.LevelKey:
+                a.Key = "level"
+                a.Value = slog.StringValue(strings.ToLower(a.Value.String()))
+            }
+            return a
+        },
+    })
+    return slog.New(NewContextHandler(h)).With(
+        slog.String("service.name", service),
+        slog.String("env", env),
+    )
+}</code></pre>
+<blockquote><p>容器里只写 <strong>stdout</strong>（见 <a href="../docker-k8s/docker-k8s-guide.html">Docker/K8s 篇</a>），落盘与轮转交给采集器；<code>ReplaceAttr</code> 是统一字段名与大小写的最佳位置。</p></blockquote>
+<h3 id="42-contexthandler自动注入-trace_id">4.2 ContextHandler：自动注入 trace_id</h3>
+<pre><code class="lang-go">package logging
+
+import (
+    "context"
+    "log/slog"
+
+    "go.opentelemetry.io/otel/trace"
+)
+
+type ContextHandler struct{ slog.Handler }
+
+func NewContextHandler(h slog.Handler) ContextHandler { return ContextHandler{h} }
+
+func (h ContextHandler) Enabled(ctx context.Context, l slog.Level) bool {
+    return h.Handler.Enabled(ctx, l)
+}
+
+func (h ContextHandler) Handle(ctx context.Context, r slog.Record) error {
+    sc := trace.SpanFromContext(ctx).SpanContext()
+    if sc.IsValid() {
+        r.AddAttrs(
+            slog.String("trace_id", sc.TraceID().String()),
+            slog.String("span_id", sc.SpanID().String()),
+        )
+    }
+    if tid, ok := ctx.Value(requestIDKey{}).(string); ok {
+        r.AddAttrs(slog.String("request_id", tid))
+    }
+    return h.Handler.Handle(ctx, r)
+}
+
+// 关键：包装 Handler 必须转发 WithAttrs / WithGroup，否则 logger.With 的字段会丢
+func (h ContextHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+    return ContextHandler{h.Handler.WithAttrs(attrs)}
+}
+func (h ContextHandler) WithGroup(name string) slog.Handler {
+    return ContextHandler{h.Handler.WithGroup(name)}
+}
+
+type requestIDKey struct{}
+// 请求入口写入：ctx = context.WithValue(ctx, requestIDKey{}, rid)</code></pre>
+<blockquote><p>这段是 slog 工程化最有价值的一块：业务代码只要 <code>slog.InfoContext(ctx, "order created")</code>，日志就自动带上 <code>trace_id</code>，可直接跳到 <a href="../opentelemetry/opentelemetry-guide.html">OpenTelemetry</a> 链路或 <a href="../loki/loki-guide.html">Loki</a> 检索。</p></blockquote>
+<h3 id="43-脱敏replaceattr">4.3 脱敏：ReplaceAttr</h3>
+<pre><code class="lang-go">var sensitive = map[string]bool{
+    "password": true, "token": true, "authorization": true,
+    "card_no": true, "id_card": true,
+}
+
+opts := &amp;slog.HandlerOptions{
+    ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+        if sensitive[strings.ToLower(a.Key)] {
+            return slog.String(a.Key, "[REDACTED]")
+        }
+        return a
+    },
+}</code></pre>
+<blockquote><p><code>groups</code> 参数可用于区分 <code>WithGroup("http")</code> 下的同名字段。脱敏放在 Handler 层比靠 code review 可靠，但<strong>无法覆盖把敏感信息拼进 <code>msg</code> 本身</strong>的情况——那要靠规范与 lint。</p></blockquote>
+<h3 id="44-多目的地-fanout-handler">4.4 多目的地 Fanout Handler</h3>
+<pre><code class="lang-go">type fanout []slog.Handler
+
+func (f fanout) Enabled(ctx context.Context, l slog.Level) bool {
+    for _, h := range f {
+        if h.Enabled(ctx, l) { return true }
+    }
+    return false
+}
+func (f fanout) Handle(ctx context.Context, r slog.Record) error {
+    for _, h := range f {
+        if !h.Enabled(ctx, r.Level) { continue }
+        // Record.Clone 需 Go 1.23+；低版本可构造新 Record 或让各 Handler 只读
+        if err := h.Handle(ctx, r.Clone()); err != nil { return err }
+    }
+    return nil
+}
+func (f fanout) WithAttrs(attrs []slog.Attr) slog.Handler {
+    out := make(fanout, len(f))
+    for i, h := range f { out[i] = h.WithAttrs(attrs) }
+    return out
+}
+func (f fanout) WithGroup(name string) slog.Handler {
+    out := make(fanout, len(f))
+    for i, h := range f { out[i] = h.WithGroup(name) }
+    return out
+}</code></pre>
+<pre><code class="lang-go">// 全量 → stdout；Error 以上 → 单独文件（便于告警系统只 tail 该文件）
+all := slog.NewJSONHandler(os.Stdout, &amp;slog.HandlerOptions{Level: slog.LevelDebug})
+errFile, _ := os.OpenFile("/var/log/app/error.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+errs := slog.NewJSONHandler(errFile, &amp;slog.HandlerOptions{Level: slog.LevelError})
+logger := slog.New(fanout{all, errs})</code></pre>
+<blockquote><p><code>Record</code> 被多个 Handler 消费时用 <code>r.Clone()</code>，避免互相干扰；<code>os.File</code> 本身是并发安全的，但自定义 writer 要自行加锁（同 <a href="../zap/zap-guide.html">Zap 篇</a> 的 <code>zapcore.Lock</code>）。</p></blockquote>
+<h3 id="45-gin-中间件请求日志">4.5 Gin 中间件：请求日志</h3>
+<pre><code class="lang-go">func Logging(base *slog.Logger) gin.HandlerFunc {
+    return func(c *gin.Context) {
+        start := time.Now()
+        c.Next()
+        level := slog.LevelInfo
+        if c.Writer.Status() &gt;= 500 { level = slog.LevelError }
+        log := base.With(
+            slog.String("http.method", c.Request.Method),
+            slog.String("http.route", c.FullPath()),   // 模板，不是原始 URL
+            slog.Int("http.status_code", c.Writer.Status()),
+        )
+        log.LogAttrs(c.Request.Context(), level, "http request",
+            slog.Duration("duration", time.Since(start)),
+            slog.String("remote_ip", c.ClientIP()),
+        )
+    }
+}</code></pre>
+<blockquote><p>用 <code>c.FullPath()</code> 而非 <code>c.Request.URL.Path</code>：否则 <code>/users/123</code> 每个 ID 都是不同值，既不利于检索也容易撞上 <a href="../prometheus/prometheus-guide.html">Prometheus 篇</a> 的高基数问题。所有调用走 <code>*Context</code> 变体，<code>trace_id</code> 才会自动带上。</p></blockquote>
+<h3 id="46-与-zap-互操作">4.6 与 Zap 互操作</h3>
+<pre><code class="lang-go">import (
+    "go.uber.org/zap"
+    "go.uber.org/zap/exp/zapslog"
+)
+
+// 把 Zap Core 包装成 slog.Handler，库代码用 slog，底层仍是 Zap 的性能
+zl, err := zap.NewProduction()
+if err != nil { return err }
+logger := slog.New(zapslog.NewHandler(zl.Core()))</code></pre>
+<blockquote><p><code>zapslog</code> 位于 <code>exp/</code>（实验包），API 可能随版本变化，升级前核对所用 Zap 版本。反向桥接（slog → 标准 log）用 <code>slog.NewLogLogger(h, slog.LevelInfo)</code>。</p></blockquote>
+<h3 id="47-单测断言">4.7 单测断言</h3>
+<pre><code class="lang-go">func TestOrderLog(t *testing.T) {
+    var buf bytes.Buffer
+    logger := slog.New(slog.NewJSONHandler(&amp;buf, nil))
+    emitOrderCreated(logger, "A1001") // 待测的业务函数，接收 *slog.Logger
+
+    var got map[string]any
+    if err := json.Unmarshal(buf.Bytes(), &amp;got); err != nil { t.Fatal(err) }
+    if got["msg"] != "order created" { t.Fatalf("msg = %v", got["msg"]) }
+    if got["order_id"] != "A1001" { t.Fatalf("order_id = %v", got["order_id"]) }
+}</code></pre>
+<h3 id="48-静态检查">4.8 静态检查</h3>
+<pre><code class="lang-bash">go install github.com/vearutop/sloglint/cmd/sloglint@latest
+sloglint ./...</code></pre>
+<p>在配置里打开三类检查（<strong>具体 flag 名以所用 sloglint 版本的 README 为准</strong>）：强制只用 <code>InfoContext</code> 等带 ctx 的调用、禁止把裸 key-value 与 <code>slog.Attr</code> 混用、要求键名遵循统一命名规范。这三条能把「字段名不统一 / 忘传 ctx / 用 <code>slog.Any</code> 打大对象」拦在 CI 阶段。</p>
+<hr>
+
+</section>
+<section data-anchor="5-版本演进速览">
+<h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>阶段</th><th>关键变化与迁移注意点</th></tr></thead><tbody><tr><td>Go 1.21</td><td><strong><code>log/slog</code> 引入</strong>：Logger / Handler / Record / Attr、<code>JSONHandler</code> / <code>TextHandler</code>、<code>LevelVar</code>、<code>SetDefault</code></td></tr><tr><td>Go 1.22</td><td><code>slog.SetLogLoggerLevel</code> 便于接管标准库 <code>log</code>；细节行为与性能优化</td></tr><tr><td>Go 1.23+</td><td>生态完善（<code>sloglint</code>、<code>zapslog</code>、彩色 Handler）、<code>Record.Clone</code> 等便利 API、性能优化持续</td></tr></tbody></table></div>
+<p><strong>注意</strong>：</p>
+<ul><li>slog 是<strong>标准库</strong>，版本跟随 Go 工具链；升级 Go 时留意 <code>slog</code> 的行为变更（尤其 <code>SetDefault</code> 与 <code>log</code> 包联动）</li><li><strong>设置 <code>slog.SetDefault</code> 会影响进程内所有用 <code>log.Printf</code> 的代码</strong>（包括第三方库），这是优点也是副作用：格式突变可能让依赖文本日志的采集器失配</li><li>库代码<strong>不要调用 <code>SetDefault</code></strong>，应由应用入口装配；库函数接受 <code>*slog.Logger</code> 或 <code>slog.Handler</code> 注入</li><li><code>zapslog</code> 等桥接包在 <code>exp/</code> 下，不承诺稳定；生产锁定版本</li></ul>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>用 <code>fmt.Sprintf</code> 拼消息</strong>：<code>slog.Info(fmt.Sprintf("user %s login", u))</code> 把结构化字段压回字符串，既慢又不可检索。改成 <code>slog.String("user", u)</code>。</li><li><strong>热路径滥用 <code>slog.Any</code></strong>：大对象走反射与 JSON 编码，可能成为 CPU 与 GC 热点。用具体类型 Field，或只挑关键字段。</li><li><strong>自定义 Handler 漏实现 <code>WithAttrs</code> / <code>WithGroup</code></strong>：<code>logger.With("service", ...)</code> 的字段静默丢失，是最难查的一类 bug。包装 Handler 时必须转发这两个方法（并同样转发 <code>Enabled</code>）。</li><li><strong>只用 <code>slog.Info</code> 不传 ctx</strong>：自定义 ContextHandler 拿不到 ctx，<code>trace_id</code> 永远为空。用 <code>InfoContext</code> + <code>sloglint -ctx-only</code> 强制。</li><li><strong>库代码里调 <code>SetDefault</code></strong>：污染宿主应用的日志配置。库应接收 <code>*slog.Logger</code> 注入，或使用 <code>slog.Default()</code> 但由宿主决定。</li><li><strong>忘记 <code>SetDefault</code></strong>：标准库 <code>log.Printf</code> 与部分第三方库仍走旧格式，日志两套并存。应用入口统一设置。</li><li><strong>字段名不统一</strong>：<code>userID</code> / <code>user_id</code> / <code>UserID</code> 混用，下游聚合要写三套查询。制定字段词典并用 <code>sloglint -enforce-keys</code> 约束。</li><li><strong><code>Error</code> 级别滥用</strong>：用户输入不合法打成 Error 会让告警全是噪音。约定 Error = 需人介入的系统故障，Warn = 可自愈，Info = 关键业务事件。</li><li><strong>敏感信息进 attrs</strong>：密码、token、身份证。用 <code>ReplaceAttr</code> 集中脱敏；同时禁止把敏感值拼进 <code>msg</code>。</li><li><strong>每请求新建 Logger / Handler</strong>：<code>slog.New</code> 与 <code>NewJSONHandler</code> 有构造成本。全局建一次，用 <code>logger.With(...)</code> 派生轻量子 Logger。</li><li><strong>不设 <code>AddSource</code> 或 caller 层级错</strong>：封装一层后 <code>source</code> 指向封装文件。自己封装时用 <code>runtime.Callers</code> 调整，或干脆在字段里显式写 <code>component</code>。</li><li><strong>同步写文件不加锁</strong>：多 goroutine 写同一个 <code>io.Writer</code> 会行交错、JSON 被撕坏。用 <code>os.File</code>（并发安全）或 <code>sync.Mutex</code> 包装；容器优先 stdout。</li><li><strong>把日志当指标或链路</strong>：<code>duration</code> 字段可以辅助排障，但 SLO 交给 <a href="../prometheus/prometheus-guide.html">Prometheus</a>，跨服务调用链交给 <a href="../opentelemetry/opentelemetry-guide.html">OpenTelemetry</a>。</li><li><strong>不设采样</strong>：下游故障时循环重试能瞬间写满磁盘。slog 没有内建采样，需自己写 <code>SamplingHandler</code>（按消息+级别在窗口内限流）或依赖采集端限流。</li><li><strong>时间格式 / 单位不一致</strong>：<code>slog.Duration</code> 输出秒（float64），与 Prometheus 的 <code>_seconds</code> 一致；别再自定义一个 <code>duration_ms</code> 混用。</li><li><strong>Handler 里做慢操作</strong>：<code>Handle</code> 在调用方 goroutine 同步执行，慢 writer（网络、无缓冲文件）会直接拖慢业务。需要异步落盘时自己加有界队列并处理丢弃策略。</li><li><strong>忽略 <code>Enabled</code> 快速路径</strong>：自定义 Handler 不做级别判断，被禁用的 Debug 日志仍会完整编码，零成本过滤失效。</li></ol>
+<hr>
+
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>log/slog（标准库）</th><th>Zap</th><th>zerolog</th><th>logrus</th><th>彩色 Handler（tint 等）</th></tr></thead><tbody><tr><td>依赖</td><td><strong>零</strong></td><td>第三方</td><td>第三方</td><td>第三方（维护模式）</td><td>第三方</td></tr><tr><td>性能</td><td>中～高</td><td><strong>极高</strong>（零分配热路径）</td><td>极高</td><td>低</td><td>中</td></tr><tr><td>API 风格</td><td><code>slog.Attr</code> + Handler</td><td>强类型 <code>Field</code></td><td>链式</td><td><code>WithFields</code></td><td>slog Handler 兼容</td></tr><tr><td>Context 透传</td><td>需自定义 Handler</td><td>需自己封装</td><td>需自己封装</td><td>弱</td><td>同 slog</td></tr><tr><td>采样 / 多目的地</td><td>需自己写</td><td><strong>内建</strong></td><td>需自实现</td><td>无</td><td>同 slog</td></tr><tr><td>动态级别</td><td><code>LevelVar</code></td><td><code>AtomicLevel</code></td><td>全局 Level</td><td>SetLevel</td><td>同 slog</td></tr><tr><td>生态成熟度</td><td>官方，快速成长</td><td><strong>最成熟</strong></td><td>活跃</td><td>存量项目多</td><td>小众</td></tr><tr><td>典型场景</td><td>新项目 / 库 / CLI</td><td>高性能在线服务</td><td>追求极简链式</td><td>存量 logrus</td><td>本地开发终端</td></tr></tbody></table></div>
+<p>一句话决策：</p>
+<ul><li><strong>新项目、想少一个依赖、日志不是瓶颈</strong> → <strong>log/slog</strong>，配一个 <code>ContextHandler</code> + <code>sloglint</code> 就能覆盖绝大多数需求。</li><li><strong>高性能在线服务、需要采样与 Tee 分流、已有可观测体系</strong> → <a href="../zap/zap-guide.html">Zap</a>；两者可用 <code>zapslog</code> 桥接，把 slog 作为公共 API、Zap 作为后端。</li><li><strong>追求极简链式写法与最小分配</strong> → zerolog；生态与分流能力不如 Zap。</li><li><strong>存量 logrus 项目</strong> → 不必强迁；可通过 <code>slog.Handler</code> 做渐进替换。</li><li><strong>CLI / 本地开发想看彩色输出</strong> → <code>tint</code> 等 slog Handler，不引入完整日志框架。</li></ul>
+<blockquote><p>和 <a href="../zap/zap-guide.html">Zap 篇</a> 的结论一样：真正决定可观测性的是<strong>字段规范、trace_id 全链路透传、级别语义约定、以及日志/指标/链路三者的职责边界</strong>。选标准库还是 Zap 只影响「写得快不快」，规范才决定「查得到查不到」。</p></blockquote>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

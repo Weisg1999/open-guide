@@ -871,5 +871,141 @@
       "bg": "#fdf7fd",
       "code-bg": "#250a28"
     }
+  },
+  "postgresql": {
+    "title": "PostgreSQL",
+    "ver": "16 / 17 / 18",
+    "subtitle": "MVCC · jsonb · 丰富索引",
+    "intro": "功能最完整的开源关系型数据库：MVCC 与快照隔离、B-tree / GIN / GiST / BRIN 索引、jsonb、CTE 与窗口函数、WAL 逻辑复制，从 Go 应用视角讲清为什么它和 MySQL 的并发假设不一样。",
+    "tags": [
+      "默认 READ COMMITTED",
+      "元组多版本 + VACUUM",
+      "GIN / GiST / BRIN",
+      "jsonb 可索引",
+      "SSI 序列化",
+      "pgx v5 + pgxpool"
+    ],
+    "colors": {
+      "card": "#ffffff",
+      "border": "#e3e9f2",
+      "text": "#1e293b",
+      "muted": "#64748b",
+      "ok": "#059669",
+      "warn": "#d97706",
+      "danger": "#dc2626",
+      "kw": "#93c5fd",
+      "str": "#86efac",
+      "cmt": "#64748b",
+      "num": "#fbbf24",
+      "fn": "#f472b6",
+      "typ": "#67e8f9",
+      "accent": "#316192",
+      "accent-light": "#dbe9f5",
+      "accent-dark": "#1a3d5c",
+      "bg": "#f5f8fc",
+      "code-bg": "#0a1e33"
+    }
+  },
+  "loki": {
+    "title": "Grafana Loki",
+    "ver": "3.x",
+    "subtitle": "只索引标签 · LogQL · 低成本日志",
+    "intro": "只索引标签、不索引正文的日志系统：用对象存储与轻量标签索引把日志成本压到 ES 的零头，靠 LogQL 与 Zap / OpenTelemetry 打通排障链路。",
+    "tags": [
+      "只索引标签",
+      "chunk + TSDB 索引",
+      "LogQL 两段式",
+      "高基数是头号事故",
+      "Grafana Alloy 采集",
+      "compactor + retention"
+    ],
+    "colors": {
+      "card": "#ffffff",
+      "border": "#e3e9f2",
+      "text": "#1e293b",
+      "muted": "#64748b",
+      "ok": "#059669",
+      "warn": "#d97706",
+      "danger": "#dc2626",
+      "kw": "#93c5fd",
+      "str": "#86efac",
+      "cmt": "#64748b",
+      "num": "#fbbf24",
+      "fn": "#f472b6",
+      "typ": "#67e8f9",
+      "accent": "#db2777",
+      "accent-light": "#fce7f3",
+      "accent-dark": "#9d174d",
+      "bg": "#fdf6fa",
+      "code-bg": "#2a0a1e"
+    }
+  },
+  "temporal": {
+    "title": "Temporal",
+    "ver": "1.2x",
+    "subtitle": "Durable Execution · 工作流编排",
+    "intro": "把长事务、重试、超时、补偿从业务代码里抽出来：用代码定义工作流，服务端持久化执行历史，进程崩溃后自动重放恢复。",
+    "tags": [
+      "事件历史与重放",
+      "确定性约束",
+      "持久计时器",
+      "Signal / Query / Update",
+      "Saga 补偿",
+      "GetVersion / Continue-As-New"
+    ],
+    "colors": {
+      "card": "#ffffff",
+      "border": "#e3e9f2",
+      "text": "#1e293b",
+      "muted": "#64748b",
+      "ok": "#059669",
+      "warn": "#d97706",
+      "danger": "#dc2626",
+      "kw": "#93c5fd",
+      "str": "#86efac",
+      "cmt": "#64748b",
+      "num": "#fbbf24",
+      "fn": "#f472b6",
+      "typ": "#67e8f9",
+      "accent": "#334155",
+      "accent-light": "#e2e8f0",
+      "accent-dark": "#1e293b",
+      "bg": "#f6f8fb",
+      "code-bg": "#111827"
+    }
+  },
+  "slog": {
+    "title": "log/slog",
+    "ver": "Go 1.21+",
+    "subtitle": "标准库结构化日志实践",
+    "intro": "Go 1.21 起官方的结构化日志包：Logger / Handler / Record / Attr 四层抽象，零第三方依赖，把怎么统一字段、怎么透传 trace_id、怎么接 Zap 与 OTel 讲清楚。",
+    "tags": [
+      "零第三方依赖",
+      "Handler 可插拔",
+      "LevelVar 动态调级",
+      "ContextHandler 注入 trace_id",
+      "ReplaceAttr 脱敏",
+      "sloglint 静态检查"
+    ],
+    "colors": {
+      "card": "#ffffff",
+      "border": "#e3e9f2",
+      "text": "#1e293b",
+      "muted": "#64748b",
+      "ok": "#059669",
+      "warn": "#d97706",
+      "danger": "#dc2626",
+      "kw": "#93c5fd",
+      "str": "#86efac",
+      "cmt": "#64748b",
+      "num": "#fbbf24",
+      "fn": "#f472b6",
+      "typ": "#67e8f9",
+      "accent": "#0e7490",
+      "accent-light": "#cffafe",
+      "accent-dark": "#155e75",
+      "bg": "#f4fafb",
+      "code-bg": "#04222b"
+    }
   }
 }

@@ -1,6 +1,6 @@
 # open-guide
 
-[![Docs](https://img.shields.io/badge/docs-26%20guides-16a34a)](./README_EN.md)
+[![Docs](https://img.shields.io/badge/docs-30%20guides-16a34a)](./README_EN.md)
 [![Language](https://img.shields.io/badge/topic-Go%20ecosystem-00ADD8?logo=go)](https://go.dev)
 [![Format](https://img.shields.io/badge/format-Markdown%20%2B%20HTML-orange)](./README_EN.md)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
@@ -9,121 +9,143 @@
 > **A collection of in-depth, hands-on guides for the Go backend ecosystem.**
 > Not another Hello World — these are manuals you can actually read, search, and copy working code from.
 >
-> 26 long-form guides · ~10,200 lines of Markdown · each one ships as **Markdown** *and* a **single-file HTML** page (sidebar TOC + syntax highlighting, just open it in a browser).
+> 30 long-form guides · ~11,800 lines of Markdown · each one ships as **Markdown** *and* a **single-file HTML** page (sidebar TOC + syntax highlighting, just open it in a browser).
 
-[中文说明](./README.md) · [中文 README](#中文-readme)
+<div align="center">
+
+[中文说明](./README.md) · [Guide Index](#2-guide-index) · [Reading Paths](#3-suggested-reading-paths) · [How to Read](#4-two-ways-to-read) · [Writing Rules](#5-required-elements-of-every-guide) · [Contributing](#7-contributing)
+
+</div>
 
 > 📌 Note: the guides themselves are written in Chinese. This English README exists so non-Chinese readers can navigate the repo, understand its structure, and find the right guide (machine translation works well on these pages).
 
 ---
 
+<div align="center">
+
+| 📚 Guides | 📝 Text | 📄 Offline manuals | 🖼️ Diagrams | ✅ Writing rules | ⚖️ License |
+| :---: | :---: | :---: | :---: | :---: | :---: |
+| **30** | **≈ 11,800 lines** | **30 pages** | **72 SVG** | **7 required elements** | **MIT** |
+
+</div>
+
+---
+
 ## 1. What this is
 
-`open-guide` is a **documentation-only repository** covering the open-source libraries and language features that Go backend engineers reach for most — and get bitten by most.
+`open-guide` is a **documentation-only repository** covering the open-source libraries and language features that Go backend engineers reach for most — and get bitten by most. Each guide is *not* a translation of a project's README; it is a rewrite following one consistent structure:
 
-Each guide is *not* a translation of a project's README. It is a rewrite following one consistent structure:
+<div align="center">
 
-**Overview → Feature Matrix → Core Concepts & Internals → Hands-on Go Code → Version History → Pitfalls & Best Practices → Comparison with Alternatives**
+`Overview` → `Feature Matrix` → `Internals` → `Hands-on` → `Versions` → `Pitfalls` → `Comparison`
 
-It exists to solve three real problems:
+</div>
 
-| Problem | How this repo addresses it |
+| 🎯 Problem | ✅ How this repo addresses it |
 | --- | --- |
 | Official docs are scattered, dated, or just an API list | Reorganized as *internals → code → pitfalls → trade-offs*, so one sitting is enough to get productive |
 | Blog posts are version-blind and their conclusions feel risky | Every guide states the **exact upstream version and release date** it was written against |
-| You learn the API but never the "why" | Every feature comes with the mechanism behind it (etcd's Raft/MVCC, asynq's Redis data structures, generics' GC Shape stenciling, …) |
+| You learn the API but never the "why" | Every feature comes with the mechanism behind it (etcd's Raft/MVCC, asynq's Redis data structures, generics' GC Shape, ClickHouse's MergeTree) |
 
-This repo contains **no third-party source code** — only curated explanation. All copyright belongs to the respective upstream projects (see [License & Disclaimer](#8-license--disclaimer)).
+> This repo contains **no third-party source code** — only curated explanation. All copyright belongs to the respective upstream projects. See [LICENSE](./LICENSE) and Section 8 below.
 
 ---
 
 ## 2. Guide Index
 
-### 🔤 Go Language Core
+<div align="center">
+
+| 🔤 Language | 🌐 Frameworks | 🗄️ Data & Search | 📨 Messaging | 🔭 Observability | 🐳 Deployment |
+| :---: | :---: | :---: | :---: | :---: | :---: |
+| **3** | **4** | **11** | **6** | **5** | **1** |
+
+</div>
+
+Every guide ships as `MD` (searchable, copyable, PR-friendly) and `HTML` (a dependency-free, single-file offline manual).
+
+### 🔤 Go Language Core <sub>3 guides</sub>
 
 | Topic | What's covered | Files |
 | --- | --- | --- |
-| **Go Generics** | Type parameters, constraints, generic types & methods, how GC Shape Stenciling actually works, the limits and footguns of generics, hands-on: a type-safe generic cache | [Markdown](./go-generics/go-generics-tutorial.md) · [HTML](./go-generics/go-generics-tutorial.html) |
-| **Go Reflection** | The three laws of reflection, `reflect.Type` / `reflect.Value`, dynamic invocation & mutation, struct tags in depth (how `encoding/json` and ORMs work), performance cost, reflection vs. generics | [Markdown](./go-reflection/go-reflection-tutorial.md) · [HTML](./go-reflection/go-reflection-tutorial.html) |
-| **samber/lo** | The Lodash-style generics toolkit: the full slice / map / channel / string / function helper catalog, and how it relates to the stdlib `slices` / `maps` packages | [Markdown](./samber-lo/samber-lo-guide.md) · [HTML](./samber-lo/samber-lo-guide.html) |
+| **Go Generics** | Type parameters, constraints, generic types & methods, how GC Shape Stenciling actually works, the limits and footguns of generics, hands-on: a type-safe generic cache | [MD](./go-generics/go-generics-tutorial.md) · [HTML](./go-generics/go-generics-tutorial.html) |
+| **Go Reflection** | The three laws of reflection, `reflect.Type` / `reflect.Value`, dynamic invocation & mutation, struct tags in depth (how `encoding/json` and ORMs work), performance cost, reflection vs. generics | [MD](./go-reflection/go-reflection-tutorial.md) · [HTML](./go-reflection/go-reflection-tutorial.html) |
+| **samber/lo** | The Lodash-style generics toolkit: the full slice / map / channel / string / function helper catalog, and how it relates to the stdlib `slices` / `maps` packages | [MD](./samber-lo/samber-lo-guide.md) · [HTML](./samber-lo/samber-lo-guide.html) |
 
-### 🌐 Web & Microservice Frameworks
-
-| Topic | What's covered | Files |
-| --- | --- | --- |
-| **Gin** | Radix-tree routing, middleware chain, binding & validation, response rendering, graceful shutdown, v1.10 → v1.12 evolution | [Markdown](./gin/gin-guide.md) · [HTML](./gin/gin-guide.html) |
-| **Kratos** (Bilibili) | API-first / Protobuf-driven development, unified HTTP + gRPC transport, pluggable components (registry / config / log / middleware), v3.0 highlights and the v2 migration path | [Markdown](./kratos/kratos-guide.md) · [HTML](./kratos/kratos-guide.html) |
-| **go-zero** (TAL) | `.api` DSL + `goctl` code generation, built-in adaptive circuit breaking / rate limiting / load shedding, web and RPC in one framework | [Markdown](./go-zero/go-zero-guide.md) · [HTML](./go-zero/go-zero-guide.html) |
-| **gRPC-Go** | HTTP/2 multiplexing and Protobuf encoding, `.proto` contracts and codegen, four streaming modes, interceptor chains, deadline propagation, resolver/balancer | [Markdown](./grpc/grpc-guide.md) · [HTML](./grpc/grpc-guide.html) |
-
-### 🗄️ Data Stores & Search
+### 🌐 Web & Microservice Frameworks <sub>4 guides</sub>
 
 | Topic | What's covered | Files |
 | --- | --- | --- |
-| **MySQL** | B+ tree clustered indexes and table lookups, leftmost-prefix and covering indexes, MVCC / ReadView and isolation levels, next-key locks and deadlocks, `EXPLAIN` for slow queries, replication lag, `database/sql` connection pooling | [Markdown](./mysql/mysql-guide.md) · [HTML](./mysql/mysql-guide.html) |
-| **GORM** | Chained API, associations & preloading, transactions and savepoints, hooks, migrator, soft delete, read/write-splitting plugin, generics-based interfaces | [Markdown](./gorm/gorm-guide.md) · [HTML](./gorm/gorm-guide.html) |
-| **go-redis** | Connection pool & `Cmdable`, Pipeline vs TxPipeline, `redis.Nil` semantics, Lua and distributed locks, Stream consumer groups, Cluster slots and hash tags, cache-stampede defences | [Markdown](./redis/redis-guide.md) · [HTML](./redis/redis-guide.html) |
-| **etcd** | Raft consensus, MVCC, the bbolt B+ tree, leases / watches / distributed locks, clientv3 in practice, what's new in v3.6 | [Markdown](./etcd/etcd-guide.md) · [HTML](./etcd/etcd-guide.html) |
-| **InfluxDB 2.x** | Bucket / token model, the TSM storage engine, Flux queries, tasks & alerting, writing and querying from Go | [Markdown](./influxdb-v2/influxdb-v2-guide.md) · [HTML](./influxdb-v2/influxdb-v2-guide.html) |
-| **InfluxDB 3** | The Rust rewrite: FDAP stack (Flight + DataFusion + Arrow + Parquet), SQL queries, object-storage-first design, infinite cardinality, Core vs. Enterprise | [Markdown](./influxdb-v3/influxdb-v3-guide.md) · [HTML](./influxdb-v3/influxdb-v3-guide.html) |
-| **MinIO** | S3-compatible object storage, erasure coding, bucket / object model, multipart upload, presigned URLs, the 2025 product-line changes | [Markdown](./minio/minio-guide.md) · [HTML](./minio/minio-guide.html) |
-| **Elasticsearch** | Inverted index and `text`/`keyword` fields, analyzers and IK for Chinese, NRT refresh and segment merge, shard routing and BM25, Bool Query DSL and aggregations, `search_after` + PIT, Alias/Rollover/ILM for time-series indices | [Markdown](./elasticsearch/elasticsearch-guide.md) · [HTML](./elasticsearch/elasticsearch-guide.html) |
-| **MongoDB** | BSON document model and `bson.D` ordering, WiredTiger document-level concurrency, replica sets and oplog, shard-key rules and routing, aggregation pipelines and ESR indexes, transactions and Change Streams | [Markdown](./mongodb/mongodb-guide.md) · [HTML](./mongodb/mongodb-guide.html) |
-| **ClickHouse** | MergeTree parts and background merges, sparse primary index and data-skipping indexes, `ORDER BY` design, vectorized execution, materialized views, `PrepareBatch` bulk writes, `ReplacingMergeTree` eventual dedup, and the FDAP comparison with InfluxDB 3 | [Markdown](./clickhouse/clickhouse-guide.md) · [HTML](./clickhouse/clickhouse-guide.html) |
+| **Gin** | Radix-tree routing, middleware chain, binding & validation, response rendering, graceful shutdown, v1.10 → v1.12 evolution | [MD](./gin/gin-guide.md) · [HTML](./gin/gin-guide.html) |
+| **Kratos** (Bilibili) | API-first / Protobuf-driven development, unified HTTP + gRPC transport, pluggable components (registry / config / log / middleware), v3.0 highlights and the v2 migration path | [MD](./kratos/kratos-guide.md) · [HTML](./kratos/kratos-guide.html) |
+| **go-zero** (TAL) | `.api` DSL + `goctl` code generation, built-in adaptive circuit breaking / rate limiting / load shedding, web and RPC in one framework | [MD](./go-zero/go-zero-guide.md) · [HTML](./go-zero/go-zero-guide.html) |
+| **gRPC-Go** | HTTP/2 multiplexing and Protobuf encoding, `.proto` contracts and codegen, four streaming modes, interceptor chains, deadline propagation, resolver/balancer | [MD](./grpc/grpc-guide.md) · [HTML](./grpc/grpc-guide.html) |
+
+### 🗄️ Data Stores & Search <sub>11 guides</sub>
+
+| Topic | What's covered | Files |
+| --- | --- | --- |
+| **MySQL** | B+ tree clustered indexes and table lookups, leftmost-prefix and covering indexes, MVCC / ReadView and isolation levels, next-key locks and deadlocks, `EXPLAIN` for slow queries, replication lag, `database/sql` connection pooling | [MD](./mysql/mysql-guide.md) · [HTML](./mysql/mysql-guide.html) |
+| **PostgreSQL** | Tuple-based MVCC and VACUUM, default READ COMMITTED and SSI, B-tree / GIN / GiST / BRIN indexes, `jsonb` with GIN, WAL logical replication, pgx v5 pooling and `CopyFrom`, SQLSTATE-based retries | [MD](./postgresql/postgresql-guide.md) · [HTML](./postgresql/postgresql-guide.html) |
+| **GORM** | Chained API, associations & preloading, transactions and savepoints, hooks, migrator, soft delete, read/write-splitting plugin, generics-based interfaces | [MD](./gorm/gorm-guide.md) · [HTML](./gorm/gorm-guide.html) |
+| **go-redis** | Connection pool & `Cmdable`, Pipeline vs TxPipeline, `redis.Nil` semantics, Lua and distributed locks, Stream consumer groups, Cluster slots and hash tags, cache-stampede defences | [MD](./redis/redis-guide.md) · [HTML](./redis/redis-guide.html) |
+| **etcd** | Raft consensus, MVCC, the bbolt B+ tree, leases / watches / distributed locks, clientv3 in practice, what's new in v3.6 | [MD](./etcd/etcd-guide.md) · [HTML](./etcd/etcd-guide.html) |
+| **InfluxDB 2.x** | Bucket / token model, the TSM storage engine, Flux queries, tasks & alerting, writing and querying from Go | [MD](./influxdb-v2/influxdb-v2-guide.md) · [HTML](./influxdb-v2/influxdb-v2-guide.html) |
+| **InfluxDB 3** | The Rust rewrite: FDAP stack (Flight + DataFusion + Arrow + Parquet), SQL queries, object-storage-first design, infinite cardinality, Core vs. Enterprise | [MD](./influxdb-v3/influxdb-v3-guide.md) · [HTML](./influxdb-v3/influxdb-v3-guide.html) |
+| **MinIO** | S3-compatible object storage, erasure coding, bucket / object model, multipart upload, presigned URLs, the 2025 product-line changes | [MD](./minio/minio-guide.md) · [HTML](./minio/minio-guide.html) |
+| **Elasticsearch** | Inverted index and `text`/`keyword` fields, analyzers and IK for Chinese, NRT refresh and segment merge, shard routing and BM25, Bool Query DSL and aggregations, `search_after` + PIT, Alias/Rollover/ILM for time-series indices | [MD](./elasticsearch/elasticsearch-guide.md) · [HTML](./elasticsearch/elasticsearch-guide.html) |
+| **MongoDB** | BSON document model and `bson.D` ordering, WiredTiger document-level concurrency, replica sets and oplog, shard-key rules and routing, aggregation pipelines and ESR indexes, transactions and Change Streams | [MD](./mongodb/mongodb-guide.md) · [HTML](./mongodb/mongodb-guide.html) |
+| **ClickHouse** | MergeTree parts and background merges, sparse primary index and data-skipping indexes, `ORDER BY` design, vectorized execution, materialized views, `PrepareBatch` bulk writes, `ReplacingMergeTree` eventual dedup, and the FDAP comparison with InfluxDB 3 | [MD](./clickhouse/clickhouse-guide.md) · [HTML](./clickhouse/clickhouse-guide.html) |
 
 > 💡 Elasticsearch wears two hats: business full-text search and log search. For logs, pair the `trace_id` from the [Zap guide](./zap/zap-guide.md) with [OpenTelemetry](./opentelemetry/opentelemetry-guide.md) traces.
 
-### 📨 Messaging, Tasks & Scheduling
+### 📨 Messaging, Tasks & Scheduling <sub>6 guides</sub>
 
 | Topic | What's covered | Files |
 | --- | --- | --- |
-| **asynq** ⭐ | The flagship guide (1,300+ lines). Redis-backed distributed task queue: task lifecycle, delayed jobs, retries & dead letters, weighted / strict priority queues, deduplication, task aggregation, timeouts and deadlines, Prometheus metrics, deploying the Asynqmon web UI | [Markdown](./asynq/asynq技术文档与使用手册.md) · [HTML](./asynq/asynq技术文档与使用手册.html) |
-| **Apache Kafka** | Partitions and replicas, consumer groups and offsets, ISR and ack semantics, hands-on with `segmentio/kafka-go`, Kafka 4.x dropping ZooKeeper | [Markdown](./kafka/kafka-guide.md) · [HTML](./kafka/kafka-guide.html) |
-| **NATS / JetStream** | Subject-based addressing, pub/sub and request-reply, queue groups, JetStream streams and consumers, `nats.go` in practice | [Markdown](./nats/nats-guide.md) · [HTML](./nats/nats-guide.html) |
-| **robfig/cron** | 5-field and 6-field cron expressions, parser extensions (`@every`, `@daily`, …), job wrappers (`SkipIfStillRunning`, …), time zones and concurrency, custom jobs | [Markdown](./robfig-cron/robfig-cron-guide.md) · [HTML](./robfig-cron/robfig-cron-guide.html) |
-| **RabbitMQ / RocketMQ** | Exchange/Queue routing, publisher confirms and manual ACKs, Quorum Queues and DLX, CommitLog sequential writes, ordered / transactional / scheduled messages, at-least-once idempotency, and the boundaries with Kafka / NATS / asynq | [Markdown](./rabbitmq/rabbitmq-guide.md) · [HTML](./rabbitmq/rabbitmq-guide.html) |
+| **asynq** ⭐ | The flagship guide (1,300+ lines). Redis-backed distributed task queue: task lifecycle, delayed jobs, retries & dead letters, weighted / strict priority queues, deduplication, task aggregation, timeouts and deadlines, Prometheus metrics, deploying the Asynqmon web UI | [MD](./asynq/asynq技术文档与使用手册.md) · [HTML](./asynq/asynq技术文档与使用手册.html) |
+| **Apache Kafka** | Partitions and replicas, consumer groups and offsets, ISR and ack semantics, hands-on with `segmentio/kafka-go`, Kafka 4.x dropping ZooKeeper | [MD](./kafka/kafka-guide.md) · [HTML](./kafka/kafka-guide.html) |
+| **NATS / JetStream** | Subject-based addressing, pub/sub and request-reply, queue groups, JetStream streams and consumers, `nats.go` in practice | [MD](./nats/nats-guide.md) · [HTML](./nats/nats-guide.html) |
+| **robfig/cron** | 5-field and 6-field cron expressions, parser extensions (`@every`, `@daily`, …), job wrappers (`SkipIfStillRunning`, …), time zones and concurrency, custom jobs | [MD](./robfig-cron/robfig-cron-guide.md) · [HTML](./robfig-cron/robfig-cron-guide.html) |
+| **RabbitMQ / RocketMQ** | Exchange/Queue routing, publisher confirms and manual ACKs, Quorum Queues and DLX, CommitLog sequential writes, ordered / transactional / scheduled messages, at-least-once idempotency, and the boundaries with Kafka / NATS / asynq | [MD](./rabbitmq/rabbitmq-guide.md) · [HTML](./rabbitmq/rabbitmq-guide.html) |
+| **Temporal** | Durable execution and event-history replay, determinism constraints, durable timers, Activity idempotency and layered retries, Signal / Query / Update, Saga compensation, `GetVersion` and `Continue-As-New`, WorkflowReplayer tests | [MD](./temporal/temporal-guide.md) · [HTML](./temporal/temporal-guide.html) |
 
-> 💡 The four messaging guides (Kafka / NATS / asynq / RabbitMQ·RocketMQ) each end with a **head-to-head comparison table** — start there if you're making a technology decision.
+> 💡 The five messaging / task guides (Kafka / NATS / asynq / RabbitMQ·RocketMQ / Temporal) each end with a **head-to-head comparison table** — start there if you're making a technology decision.
 
-### 🔭 Observability
-
-| Topic | What's covered | Files |
-| --- | --- | --- |
-| **Zap** | Zero-allocation hot path and typed Fields, `Logger` vs `SugaredLogger`, the four-layer `zapcore` pipeline (Encoder / WriteSyncer / LevelEnabler), Tee fan-out, sampling and `AtomicLevel`, and how it relates to stdlib `log/slog` | [Markdown](./zap/zap-guide.md) · [HTML](./zap/zap-guide.html) |
-| **Prometheus** | Pull model and labelled time series, the four metric types and `rate()`, TSDB inverted index, PromQL / recording rules / Alertmanager, the high-cardinality trap, boundaries with InfluxDB and OTel Metrics | [Markdown](./prometheus/prometheus-guide.md) · [HTML](./prometheus/prometheus-guide.html) |
-| **OpenTelemetry** | Trace/Span model and W3C `traceparent` propagation, Sampler / BatchSpanProcessor / OTLP, Resource and semantic conventions, Gin/gRPC/asynq instrumentation, writing `trace_id` into Zap logs | [Markdown](./opentelemetry/opentelemetry-guide.md) · [HTML](./opentelemetry/opentelemetry-guide.html) |
-
-> 💡 The three observability guides (Zap / Prometheus / OpenTelemetry) form the logs / metrics / traces pillars, linked by a shared `service.name` and `trace_id`.
-
-### 🐳 Deployment & Orchestration
+### 🔭 Observability <sub>5 guides</sub>
 
 | Topic | What's covered | Files |
 | --- | --- | --- |
-| **Docker / Kubernetes** | Image layers and multi-stage builds, namespaces/cgroups, the declarative reconcile loop, Pod/Deployment/Service, three probes and QoS classes, rolling updates and graceful shutdown, client-go and RBAC | [Markdown](./docker-k8s/docker-k8s-guide.md) · [HTML](./docker-k8s/docker-k8s-guide.html) |
+| **Zap** | Zero-allocation hot path and typed Fields, `Logger` vs `SugaredLogger`, the four-layer `zapcore` pipeline (Encoder / WriteSyncer / LevelEnabler), Tee fan-out, sampling and `AtomicLevel`, and how it relates to stdlib `log/slog` | [MD](./zap/zap-guide.md) · [HTML](./zap/zap-guide.html) |
+| **log/slog** | Standard-library structured logging in practice: the Logger / Handler / Record / Attr layers, `LevelVar`, a custom ContextHandler injecting `trace_id`, `ReplaceAttr` redaction, fan-out handlers, and bridges to Zap / OTel | [MD](./slog/slog-guide.md) · [HTML](./slog/slog-guide.html) |
+| **Prometheus** | Pull model and labelled time series, the four metric types and `rate()`, TSDB inverted index, PromQL / recording rules / Alertmanager, the high-cardinality trap, boundaries with InfluxDB and OTel Metrics | [MD](./prometheus/prometheus-guide.md) · [HTML](./prometheus/prometheus-guide.html) |
+| **OpenTelemetry** | Trace/Span model and W3C `traceparent` propagation, Sampler / BatchSpanProcessor / OTLP, Resource and semantic conventions, Gin/gRPC/asynq instrumentation, writing `trace_id` into Zap logs | [MD](./opentelemetry/opentelemetry-guide.md) · [HTML](./opentelemetry/opentelemetry-guide.html) |
+| **Grafana Loki** | Label-only indexing cost model, chunks + TSDB index on object storage, Distributor/Ingester/Querier paths, two-stage LogQL and parsers, the high-cardinality trap, compactor and retention, Alloy collection | [MD](./loki/loki-guide.md) · [HTML](./loki/loki-guide.html) |
 
+> 💡 `Zap` / `slog` produce logs, `Loki` retrieves them, `Prometheus` handles metrics and `OpenTelemetry` traces — all linked by a shared `service.name` and `trace_id`.
+
+### 🐳 Deployment & Orchestration <sub>1 guide</sub>
+
+| Topic | What's covered | Files |
+| --- | --- | --- |
+| **Docker / Kubernetes** | Image layers and multi-stage builds, namespaces/cgroups, the declarative reconcile loop, Pod/Deployment/Service, three probes and QoS classes, rolling updates and graceful shutdown, client-go and RBAC | [MD](./docker-k8s/docker-k8s-guide.md) · [HTML](./docker-k8s/docker-k8s-guide.html) |
 
 ---
 
 ## 3. Suggested Reading Paths
 
-```
-                    ┌────────────────────────────────┐
-                    │  Generics → Reflection → lo     │   Language core
-                    └───────────────┬────────────────┘
-                                    │
-        ┌───────────────────────────┼───────────────────────────┐
-        ▼                           ▼                           ▼
-┌────────────────┐        ┌──────────────────┐        ┌──────────────────┐
-│ Gin            │        │ GORM             │        │ robfig/cron      │
-│   ↓            │        │   ↓              │        │   ↓              │
-│ Kratos/go-zero │        │ InfluxDB 2 → 3   │        │ asynq            │
-│   ↓            │        │   ↓              │        │   ↓              │
-│ etcd           │        │ MinIO            │        │ Kafka / NATS     │
-└────────────────┘        └──────────────────┘        └──────────────────┘
-   Services track            Data / IoT track          Async & scheduling
-```
+<div align="center">
 
-> 🔭 **Cross-cutting**: `gRPC-Go` belongs to the services track; `MySQL` / `go-redis` / `ClickHouse` to the data track (OLTP → KV → OLAP); `Elasticsearch` / `MongoDB` are the search and document branches; `RabbitMQ / RocketMQ` to async and scheduling; `Zap` / `Prometheus` / `OpenTelemetry` are the shared observability foundation; and `Docker / K8s` is the deployment layer every guide eventually lands on.
+| 🧱 Services track | 💾 Data / IoT track | ⚡ Async & scheduling |
+| :---: | :---: | :---: |
+| `Gin` → `gRPC` | `MySQL` / `PostgreSQL` | `robfig/cron` |
+| `Kratos` · `go-zero` → `etcd` | `GORM` → `go-redis` | `asynq` |
+| `ES` · `MongoDB` (search / docs) | `InfluxDB` → `MinIO` → `ClickHouse` | `Kafka` · `NATS` · `RabbitMQ` → `Temporal` |
+
+**Shared foundation**　`Go Generics` → `Reflection` → `samber/lo`　·　`Zap` / `slog` · `Prometheus` · `OpenTelemetry` · `Loki`　·　`Docker / K8s`
+
+</div>
+
+> 🔭 **Cross-cutting**: `gRPC-Go` belongs to the services track; `MySQL` / `PostgreSQL` / `go-redis` / `ClickHouse` to the data track (OLTP → KV → OLAP), with `Elasticsearch` / `MongoDB` as the search and document branches; `RabbitMQ / RocketMQ` / `Temporal` to async and scheduling; `Zap` / `slog` / `Prometheus` / `OpenTelemetry` / `Loki` as the shared observability foundation; and `Docker / K8s` as the deployment layer every guide eventually lands on.
 
 | Your goal | Suggested order |
 | --- | --- |
@@ -139,32 +161,41 @@ This repo contains **no third-party source code** — only curated explanation. 
 | Build OLAP analytics / log detail | **ClickHouse** → ingest with the Kafka table engine |
 | Decouple services / ordered and transactional messages | **RabbitMQ / RocketMQ** → split work with asynq (job execution) |
 | Ship and release a service | **Docker / K8s** → with Zap stdout logs, Prometheus probes and graceful shutdown |
+| Use PostgreSQL as the primary store | **PostgreSQL** → compare isolation levels with the MySQL guide, then GORM's PG dialect |
+| Build low-cost log retrieval | **slog / Zap** (output) → **Loki** (retrieval) → jump to OpenTelemetry traces via `trace_id` |
+| Orchestrate long-running business flows | **Temporal** → draw the line with asynq (single async jobs) |
 | Make a technology decision | Jump straight to the "Comparison" section at the end of each guide, especially Kafka vs. NATS vs. asynq |
 
 ---
 
 ## 4. Two Ways to Read
 
-### 1. Markdown (best for searching, copying code, and sending PRs)
+| | 📝 Markdown | 📄 Single-file HTML |
+| --- | --- | --- |
+| **Best for** | Searching, copying code, sending PRs | Reading cover-to-cover, offline manual |
+| **Highlights** | Native GitHub rendering, language-tagged code | Sidebar TOC + Hero + syntax highlighting, **zero dependencies, no network, no build step** |
+| **Open** | Click any `MD` link in the index | Double-click `*-guide.html`, or serve the folder locally |
 
-Open any `.md` file on GitHub. Every code block is language-tagged and copy-ready.
-
-### 2. HTML (best for reading cover-to-cover, or as an offline manual)
-
-Each directory contains a **dependency-free single-file HTML** page with a sidebar TOC, a hero header, language-labeled code blocks and syntax highlighting. No build step, no network required.
+<details>
+<summary><b>Local preview & maintainer commands</b></summary>
 
 ```bash
-# Option 1: just double-click any *-guide.html file
-
-# Option 2: serve the folder locally (recommended — better navigation)
+# Serve the folder locally (recommended for navigation)
 cd open-guide
 python -m http.server 8000
 # then open http://localhost:8000
+
+# Rebuild every HTML page
+python tools/build_html.py
+python tools/build_html.py --topic gin     # rebuild one guide
+python tools/build_html.py --check         # fail if HTML is stale (used by CI)
+python tools/build_html.py --audit         # check the 7 required elements
+python tools/build_html.py --stats         # structure stats + internal-anchor check
 ```
 
-> HTML is a **build artifact**, generated from the matching Markdown by `tools/build_html.py`. Do not edit HTML by hand. If they ever disagree, **the Markdown file is authoritative**.
+</details>
 
-### 3. Rebuilding HTML (maintainers)
+> ⚠️ HTML is a **build artifact**, generated from the matching Markdown by `tools/build_html.py`. **Do not edit HTML by hand.** If they ever disagree, **the Markdown file is authoritative**.
 
 The builder uses only the Python 3 standard library — no third-party packages. **All body text comes from Markdown**; the three files below carry presentation data only, and are version-controlled so every HTML page is fully reproducible:
 
@@ -174,20 +205,13 @@ The builder uses only the Python 3 standard library — no third-party packages.
 | [`tools/fragments.json`](./tools/fragments.json) | SVG architecture diagrams, feature cards and callouts that have no Markdown equivalent, injected by chapter anchor (274 blocks / 72 diagrams) |
 | [`tools/anchor_map.json`](./tools/anchor_map.json) | Legacy semantic anchors -> heading slugs, so links inside those blocks keep working |
 
-```bash
-python tools/build_html.py                 # rebuild every guide
-python tools/build_html.py --topic gin     # rebuild one guide
-python tools/build_html.py --check         # fail if HTML is stale (used by CI)
-python tools/build_html.py --stats         # structure stats + internal-anchor check
-```
-
-A new topic needs no build configuration: the script auto-discovers `*/ *.md` and assigns a stable palette from the directory name. CI ([`.github/workflows/check-html.yml`](./.github/workflows/check-html.yml)) runs `--check` on every push / PR, which mechanically prevents MD/HTML drift.
+A new topic needs no build configuration: the script auto-discovers `*/ *.md` and assigns a stable palette from the directory name. CI ([`.github/workflows/check-html.yml`](./.github/workflows/check-html.yml)) runs `--check --audit` on every push / PR, which mechanically prevents MD/HTML drift.
 
 ---
 
 ## 5. Required Elements of Every Guide
 
-The original convention was a strict "7-section" layout. In practice, a deep manual like asynq reads better as nine chapters (what / architecture / concepts / feature deep-dive / full example / deployment / pitfalls / history / comparison), while language tutorials naturally progress by difficulty. Forcing a fixed section count hurt the content. The convention is therefore a **checklist of 7 required elements**: numbering and headings are free, the elements are not.
+The original convention was a strict "7-section" layout. In practice, a deep manual like asynq reads better as nine chapters, while language tutorials naturally progress by difficulty. Forcing a fixed section count hurt the content. The convention is therefore a **checklist of 7 required elements**: numbering and headings are free, the elements are not.
 
 | # | Element | Acceptance criteria | Common equivalent headings |
 |---|---|---|---|
@@ -211,6 +235,9 @@ The original convention was a strict "7-section" layout. In practice, a deep man
 ---
 
 ## 6. Upstream Projects & Versions
+
+<details>
+<summary><b>Expand the full version table (30 entries)</b></summary>
 
 | Guide | Upstream repo | Version documented |
 | --- | --- | --- |
@@ -237,7 +264,13 @@ The original convention was a strict "7-section" layout. In practice, a deep man
 | ClickHouse | [ClickHouse/ClickHouse](https://github.com/ClickHouse/ClickHouse) | 25.x · clickhouse-go v2 |
 | Docker / Kubernetes | [kubernetes/kubernetes](https://github.com/kubernetes/kubernetes) | Engine 27+ / K8s 1.3x · client-go v0.3x |
 | RabbitMQ / RocketMQ | [rabbitmq/rabbitmq-server](https://github.com/rabbitmq/rabbitmq-server) | 4.x / 5.x · amqp091-go / rocketmq-client-go v2 |
+| PostgreSQL | [postgres/postgres](https://github.com/postgres/postgres) | 16 / 17 / 18 · pgx v5 |
+| Loki | [grafana/loki](https://github.com/grafana/loki) | 3.x · Grafana Alloy |
+| Temporal | [temporalio/temporal](https://github.com/temporalio/temporal) | Server 1.2x · sdk-go v1.x |
+| log/slog | [pkg.go.dev/log/slog](https://pkg.go.dev/log/slog) | Go 1.21+ (stdlib) |
 | Go Generics / Reflection | [Official Go proposal & blog](https://go.dev/blog/laws-of-reflection) | Go 1.18+ |
+
+</details>
 
 > ⏱ **On freshness:** these projects move fast. Always cross-check against the latest upstream release. If you spot an outdated version or a stale conclusion, an Issue or PR is very welcome.
 
@@ -247,20 +280,27 @@ The original convention was a strict "7-section" layout. In practice, a deep man
 
 Contributions are very welcome, especially:
 
-- **New topics** (Viper, PostgreSQL, OpenSearch, Loki, Temporal, slog in practice, …; Redis / gRPC / Zap / MySQL / Prometheus / OpenTelemetry / Elasticsearch / MongoDB / ClickHouse / Docker·K8s / RabbitMQ·RocketMQ are now covered)
-- **Version bumps** — sync a guide after an upstream release
-- **Corrections** — wrong internals, broken code, outdated conclusions
-- **Build script** — improve parsing/rendering in `tools/build_html.py` (never hand-edit HTML)
+| Type | Details |
+| --- | --- |
+| 🆕 New topics | Viper, OpenSearch, VictoriaMetrics / Thanos (long-term metrics storage), TimescaleDB, Casbin, circuit breaking & rate limiting, Cobra / sqlc, … |
+| 🔄 Version bumps | Sync a guide after an upstream release |
+| 🐛 Corrections | Wrong internals, broken code, outdated conclusions |
+| 🛠 Build script | Improve parsing/rendering in `tools/build_html.py` (never hand-edit HTML) |
+
+<details>
+<summary><b>Contribution steps</b></summary>
 
 ```bash
 git clone https://github.com/Weisg1999/open-guide.git
 cd open-guide
 git checkout -b feat/your-topic
-# add your-topic/your-topic-guide.md (cover the 7 required elements in Section 5)
+# add your-topic/your-topic-guide.md (cover the 7 required elements)
 python tools/build_html.py --topic your-topic
 git commit -m "docs: add xxx guide"
 git push origin feat/your-topic
 ```
+
+</details>
 
 **Writing conventions** (consistency is what makes the collection readable):
 
@@ -268,15 +308,13 @@ git push origin feat/your-topic
 2. Cover the 7 required elements in [Section 5](#5-required-elements-of-every-guide) (numbering/headings are flexible, the elements are not).
 3. Tag every code block with its language (``` ```go ```, ``` ```bash ```) and make it runnable.
 4. End with two standalone chapters: "Pitfalls & Best Practices" and "Comparison" (the latter needs a head-to-head table and a one-line decision rule).
-5. HTML is built with `python tools/build_html.py` from the Markdown — **never hand-edit HTML**. Keep the naming convention `<topic>/<topic>-guide.{md,html}`; unconfigured topics get an automatic palette.
+5. HTML is built with `python tools/build_html.py` from the Markdown — **never hand-edit HTML**. Keep the naming convention `<topic>/<topic>-guide.{md,html}`.
 
 ---
 
 ## 8. License & Disclaimer
 
-### This repository
-
-The **documentation content** of this repository — the original explanations, structure and diagrams in the Markdown and HTML files — is released under the **MIT License**. See [LICENSE](./LICENSE).
+**This repository**: the documentation content — the original explanations, structure and diagrams in the Markdown and HTML files — is released under the **MIT License**. See [LICENSE](./LICENSE).
 
 ```
 MIT License
@@ -286,7 +324,7 @@ Copyright (c) 2026 Weisg1999
 
 You are free to use, copy, modify, merge, publish and distribute these documents (including for commercial purposes), provided the copyright notice and this permission notice are retained.
 
-### Regarding upstream projects
+**Regarding upstream projects**
 
 - This repository contains **no source code from the upstream projects** — only educational notes and explanations.
 - Copyright for each upstream project belongs to its respective authors; their licenses (mostly MIT / Apache-2.0, MinIO Community Edition is AGPLv3) are authoritative in their own repositories. **The MIT license covers only the original compilation in this repo, not the upstream projects themselves.**
@@ -298,5 +336,7 @@ You are free to use, copy, modify, merge, publish and distribute these documents
 <div align="center">
 
 If these guides helped you, a ⭐ would mean a lot — and feel free to share the repo with a teammate who writes Go.
+
+<sub>Markdown is the single source of truth · HTML is a build artifact · © 2026 Weisg1999</sub>
 
 </div>

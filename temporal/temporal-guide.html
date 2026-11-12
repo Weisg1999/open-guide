@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Temporal · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#334155; --accent-light:#e2e8f0; --accent-dark:#1e293b;
+    --bg:#f6f8fb; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#111827; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#1e293b 0%,#334155 58%,#1e293b 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">Temporal<span class="ver">1.2x</span></div>
+  <div class="sub">Durable Execution · 工作流编排</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#安装与本地起服务">安装与本地起服务</a>
+  <a class="sub-link" href="#最小可运行示例">最小可运行示例</a>
+  <a href="#2-功能特性总览">2. 功能特性总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-durable-execution重放不是重跑">3.1 durable execution：重放不是「重跑」</a>
+  <a class="sub-link" href="#32-确定性约束最容易踩的坑">3.2 确定性约束（最容易踩的坑）</a>
+  <a class="sub-link" href="#33-task-queue-与-worker">3.3 Task Queue 与 Worker</a>
+  <a class="sub-link" href="#34-activity-是-at-least-once">3.4 Activity 是 at-least-once</a>
+  <a class="sub-link" href="#35-超时分层">3.5 超时分层</a>
+  <a class="sub-link" href="#36-signal-query-update">3.6 Signal / Query / Update</a>
+  <a class="sub-link" href="#37-版本化与-continue-as-new">3.7 版本化与 Continue-As-New</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-带等待与信号的订单工作流">4.1 带等待与信号的订单工作流</a>
+  <a class="sub-link" href="#42-query暴露进度给外部">4.2 Query：暴露进度给外部</a>
+  <a class="sub-link" href="#43-发送-signal">4.3 发送 Signal</a>
+  <a class="sub-link" href="#44-版本化改动在途工作流代码">4.4 版本化（改动在途工作流代码）</a>
+  <a class="sub-link" href="#45-长-activity-心跳与取消">4.5 长 Activity 心跳与取消</a>
+  <a class="sub-link" href="#46-单测与重放检测">4.6 单测与重放检测</a>
+  <a class="sub-link" href="#47-搜索属性与运维">4.7 搜索属性与运维</a>
+  <a href="#5-版本演进速览">5. 版本演进速览</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>Temporal 技术介绍与使用指南（Go 工作流编排）</h1>
+<p>把长事务、重试、超时、补偿从业务代码里抽出来：用代码定义工作流，服务端持久化执行历史，进程崩溃后自动重放恢复。</p>
+<p style="opacity:.8;font-size:13.5px">Durable Execution · 工作流编排</p>
+<div class="meta"><span>事件历史与重放</span><span>确定性约束</span><span>持久计时器</span><span>Signal / Query / Update</span><span>Saga 补偿</span><span>GetVersion / Continue-As-New</span></div>
+</div>
+<blockquote><p>把「长事务、重试、超时、补偿」从业务代码里抽出来：用代码定义工作流，服务端持久化执行历史，进程崩溃后自动重放恢复。 上游：<a href="https://github.com/temporalio/temporal">https://github.com/temporalio/temporal</a>　|　主线：Server <strong>1.2x</strong> / Go SDK <a href="https://github.com/temporalio/sdk-go">temporalio/sdk-go</a> v1.x（整理于 2026-11） 协议：MIT（Server 早期为 MPL-2.0，以官方 LICENSE 为准）；具体版本以上游最新 release 为准。</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p><a href="../asynq/asynq技术文档与使用手册.html">asynq 篇</a> 解决「可靠地执行一个异步作业」，<a href="../kafka/kafka-guide.html">Kafka 篇</a> 解决「可靠地传递一条事件」，Temporal 解决的是第三层问题：<strong>一个要跑几小时到几个月、跨多个服务、中间会失败且必须能续跑的业务流程</strong>（订单履约、退款审批、数据迁移、订阅计费）。</p>
+<p>传统做法是自己维护状态机表 + 定时扫描 + 幂等 + 补偿，代码里一半是「状态怎么存、失败怎么续」。Temporal 的核心主张是 <strong>durable execution</strong>：你写一段看起来像同步顺序执行的代码，服务端把执行过程记成<strong>事件历史</strong>，worker 挂了就从历史重放到断点继续。</p>
+<ul><li><strong>适用场景</strong>：长周期业务流程、需要人工介入/等待信号的流程、跨服务 Saga 与补偿、必须可观测可重放的关键流程、定时循环且需状态累积的任务</li><li><strong>不适合</strong>：简单的一次性异步作业（用 asynq 更轻）、纯事件广播（用 Kafka / <a href="../rabbitmq/rabbitmq-guide.html">RabbitMQ</a>）、毫秒级高吞吐无状态处理、数据量极大的批处理（事件历史会膨胀）</li></ul>
+<h3 id="安装与本地起服务">安装与本地起服务</h3>
+<pre><code class="lang-bash">go get go.temporal.io/sdk
+# 开发服务器（内存持久化，仅本地用）
+temporal server start-dev --port 7233 --ui-port 8233
+# Web UI: http://localhost:8233</code></pre>
+<h3 id="最小可运行示例">最小可运行示例</h3>
+<pre><code class="lang-go">package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+    "time"
+
+    "go.temporal.io/sdk/client"
+    "go.temporal.io/sdk/temporal"
+    "go.temporal.io/sdk/worker"
+    "go.temporal.io/sdk/workflow"
+)
+
+// Activity：所有外部 IO 都放这里（必须幂等）
+func Charge(ctx context.Context, orderID string, amount int64) (string, error) {
+    // 真实场景：调用支付网关，用 orderID 做幂等键
+    return "txn-" + orderID, nil
+}
+
+// Workflow：只做编排，不做 IO；代码必须确定性
+func OrderWorkflow(ctx workflow.Context, orderID string, amount int64) (string, error) {
+    ctx = workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
+        StartToCloseTimeout: 30 * time.Second,
+        RetryPolicy: &amp;temporal.RetryPolicy{MaximumAttempts: 3},
+    })
+    var txnID string
+    if err := workflow.ExecuteActivity(ctx, Charge, orderID, amount).Get(ctx, &amp;txnID); err != nil {
+        return "", err
+    }
+    return txnID, nil
+}
+
+func main() {
+    c, err := client.Dial(client.Options{HostPort: "localhost:7233"})
+    if err != nil { log.Fatal(err) }
+    defer c.Close()
+
+    w := worker.New(c, "order-tq", worker.Options{})
+    w.RegisterWorkflow(OrderWorkflow)
+    w.RegisterActivity(Charge)
+    go func() { _ = w.Run(worker.InterruptCh()) }()
+
+    run, err := c.ExecuteWorkflow(context.Background(), client.StartWorkflowOptions{
+        ID:        "order-A1001",       // 业务唯一 ID → 天然幂等，重复启动返回已存在
+        TaskQueue: "order-tq",
+    }, OrderWorkflow, "A1001", 12800)
+    if err != nil { log.Fatal(err) }
+
+    var result string
+    if err := run.Get(context.Background(), &amp;result); err != nil { log.Fatal(err) }
+    fmt.Println("workflow done:", result)
+}</code></pre>
+<hr>
+
+</section>
+<section data-anchor="2-功能特性总览">
+<h2 id="2-功能特性总览">2. 功能特性总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>核心对象</td><td>Workflow（编排逻辑）/ Activity（外部 IO）/ Worker（执行器）/ Task Queue（任务队列）</td></tr><tr><td>持久化执行</td><td>服务端记录<strong>事件历史</strong>，worker 崩溃后从历史重放恢复，无需业务存状态机</td></tr><tr><td>持久计时器</td><td><code>workflow.Sleep</code> / <code>workflow.Await</code> 可等待数小时到数月，计时由服务端持久化</td></tr><tr><td>重试</td><td>Activity 级 <code>RetryPolicy</code>（次数、退避、不可重试错误类型）、超时分层</td></tr><tr><td>交互</td><td><strong>Signal</strong>（异步投递事件）、<strong>Query</strong>（只读查状态）、<strong>Update</strong>（有返回、可等待）</td></tr><tr><td>组合</td><td>Child Workflow、<code>Continue-As-New</code>（重置历史）、Side Effect / Mutable Side Effect</td></tr><tr><td>版本化</td><td><code>workflow.GetVersion</code> / Worker Versioning，保证在途实例能按旧逻辑重放</td></tr><tr><td>调度</td><td>Schedule（cron 式周期启动工作流，带重叠策略与暂停）</td></tr><tr><td>可观测</td><td>Web UI 看事件历史、搜索属性（Search Attributes）按业务 ID 检索、Replay 检测非确定性</td></tr><tr><td>测试</td><td><code>testsuite.TestWorkflowEnvironment</code> 本地跑工作流、时间跳跃、mock Activity、历史重放</td></tr><tr><td>服务端</td><td>Frontend / History / Matching / Worker Service + 持久化（Cassandra / MySQL / PostgreSQL）+ Visibility（ES 或 SQL）</td></tr></tbody></table></div>
+<hr>
+
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-durable-execution重放不是重跑">3.1 durable execution：重放不是「重跑」</h3>
+<pre><code class="lang-text">Workflow 代码（看似同步顺序执行）
+   │ worker 执行到 await 点 → 产生 Command（ScheduleActivity / StartTimer / ...）
+   ▼
+Temporal Server 把 Command 追加为 Event History（持久化）
+   │ 分发 Activity Task 给 worker → Activity 执行 → 结果作为新 Event 追加
+   ▼
+worker 崩溃 / 部署重启 / 换机器
+   │ 从 Event History 重放 Workflow 代码：遇到已完成的 Activity，直接取历史里的结果
+   ▼  不再真正执行副作用
+继续从断点往下走</code></pre>
+<p><strong>关键</strong>：重放时 Workflow 代码会被再次执行，但<strong>已经完成 Activity 的结果直接从历史返回，不会重复调用外部系统</strong>。这就是为什么 Workflow 代码必须<strong>确定性</strong>——同样的历史必须推导出同样的 Command 序列，否则服务端会判定 <code>NonDeterminismError</code> 并卡住工作流。</p>
+<h3 id="32-确定性约束最容易踩的坑">3.2 确定性约束（最容易踩的坑）</h3>
+<div class="table-wrap"><table><thead><tr><th>禁止在 Workflow 里</th><th>替代方案</th></tr></thead><tbody><tr><td><code>time.Now()</code> / <code>time.Sleep()</code></td><td><code>workflow.Now(ctx)</code> / <code>workflow.Sleep(ctx, d)</code></td></tr><tr><td><code>rand</code>、UUID、随机数</td><td><code>workflow.SideEffect</code> 保存结果，或在 Activity 里生成</td></tr><tr><td>HTTP / DB / 文件 IO</td><td>全部放进 <strong>Activity</strong></td></tr><tr><td>直接起 goroutine / channel</td><td><code>workflow.Go</code> / <code>workflow.Channel</code> / <code>workflow.Await</code></td></tr><tr><td>读环境变量 / 全局可变配置</td><td>作为 Workflow 入参传入，或 <code>SideEffect</code></td></tr><tr><td>迭代 <code>map</code>（顺序不确定）</td><td>排序后遍历</td></tr></tbody></table></div>
+<p>Activity <strong>不受确定性约束</strong>，因为它只执行一次（或重试），结果会被记进历史。</p>
+<h3 id="33-task-queue-与-worker">3.3 Task Queue 与 Worker</h3>
+<pre><code class="lang-text">Starter ──StartWorkflow──► Server (History Service)
+                              │ 产生 WorkflowTask → 放入 Task Queue "order-tq"
+                              ▼
+Worker 长轮询 Task Queue ──领取──► 重放 Workflow → 返回 Commands
+                              │ 若 Command 是 ScheduleActivity
+                              ▼
+                       ActivityTask 入队 → Worker 执行 Activity → 回报结果</code></pre>
+<p>Task Queue 是<strong>逻辑队列</strong>，不是 Kafka；Worker 通过长轮询拉取，按 <code>WorkerOptions</code> 控制并发槽位。不同业务/版本用不同 Task Queue 名是常见的隔离手段。</p>
+<h3 id="34-activity-是-at-least-once">3.4 Activity 是 at-least-once</h3>
+<p>Activity 可能因为超时、worker 崩溃、网络抖动被重试，<strong>结果也可能已经成功但回报丢失</strong>。因此：</p>
+<ul><li>Activity <strong>必须幂等</strong>（用业务 ID 做幂等键，或 <code>ON CONFLICT DO NOTHING</code>，见 <a href="../postgresql/postgresql-guide.html">PostgreSQL 篇</a>）</li><li>用 <code>RetryPolicy.NonRetryableErrorTypes</code> 明确区分「参数非法」（不重试）与「下游超时」（重试）</li><li>用 <code>temporal.NewApplicationError(err.Error(), "TYPE", false)</code> 把业务错误标记为不可重试；<code>workflow</code> 侧可用 <code>temporal.IsApplicationError</code> 判断</li></ul>
+<h3 id="35-超时分层">3.5 超时分层</h3>
+<div class="table-wrap"><table><thead><tr><th>超时</th><th>含义</th></tr></thead><tbody><tr><td><code>WorkflowExecutionTimeout</code></td><td>整个工作流最长时长（含重试与等待）</td></tr><tr><td><code>WorkflowRunTimeout</code></td><td>单次 run 的时限（<code>Continue-As-New</code> 会开启新 run）</td></tr><tr><td><code>WorkflowTaskTimeout</code></td><td>单次 workflow task（重放决策）的时限，默认 10s</td></tr><tr><td><code>ScheduleToStartTimeout</code></td><td>Activity 排队等待被 worker 领取的时间</td></tr><tr><td><code>StartToCloseTimeout</code></td><td><strong>单个 Activity 执行</strong>的时限（最常配）</td></tr><tr><td><code>ScheduleToCloseTimeout</code></td><td>Activity 从调度到完成的总时限（含重试）</td></tr><tr><td><code>HeartbeatTimeout</code></td><td>长 Activity 需 <code>activity.RecordHeartbeat</code>，超时判定 worker 死亡</td></tr></tbody></table></div>
+<h3 id="36-signal-query-update">3.6 Signal / Query / Update</h3>
+<div class="table-wrap"><table><thead><tr><th></th><th>是否改状态</th><th>是否有返回</th><th>典型用途</th></tr></thead><tbody><tr><td><strong>Signal</strong></td><td>是（异步）</td><td>否</td><td>人工审批通过、取消订单、外部回调</td></tr><tr><td><strong>Query</strong></td><td>否（只读）</td><td>是</td><td>查询当前进度（<strong>不能阻塞、不能改状态</strong>）</td></tr><tr><td><strong>Update</strong></td><td>是</td><td>是（可等待）</td><td>需要确认「已处理」的状态变更</td></tr></tbody></table></div>
+<p>混淆三者是常见设计错误：Query 里做 IO 或改变量会破坏确定性；Signal 处理函数里阻塞会卡住工作流。</p>
+<h3 id="37-版本化与-continue-as-new">3.7 版本化与 Continue-As-New</h3>
+<ul><li>改 Workflow 代码（增删 Activity、调整顺序）会让<strong>在途实例</strong>重放时 Command 序列对不上 → 用 <code>workflow.GetVersion</code> 给新旧分支打标，或启用 Worker Versioning 让旧实例固定跑旧版本 worker</li><li>长时间循环的工作流事件历史会无限增长（每次循环都记 Event），导致重放变慢、超出历史大小限制 → 用 <strong><code>Continue-As-New</code></strong> 开启新 run 并重置历史，把必要状态作为参数传下去</li></ul>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-带等待与信号的订单工作流">4.1 带等待与信号的订单工作流</h3>
+<pre><code class="lang-go">func OrderWorkflow(ctx workflow.Context, orderID string, amount int64) (string, error) {
+    ao := workflow.ActivityOptions{
+        StartToCloseTimeout: 30 * time.Second,
+        RetryPolicy: &amp;temporal.RetryPolicy{
+            InitialInterval:    time.Second,
+            BackoffCoefficient: 2.0,
+            MaximumInterval:    time.Minute,
+            MaximumAttempts:    3,
+            NonRetryableErrorTypes: []string{"InvalidArgument"},
+        },
+    }
+    ctx = workflow.WithActivityOptions(ctx, ao)
+
+    // 1. 保留库存（幂等 Activity）
+    if err := workflow.ExecuteActivity(ctx, ReserveStock, orderID).Get(ctx, nil); err != nil {
+        return "", err
+    }
+
+    // 2. 等待支付：最长 15 分钟，支持 Signal 提前完成
+    paid := workflow.GetSignalChannel(ctx, "payment-confirmed")
+    var paymentID string
+    timer := workflow.NewTimer(ctx, 15*time.Minute)
+    selector := workflow.NewSelector(ctx)
+    selector.AddReceive(paid, func(c workflow.ReceiveChannel, more bool) {
+        c.Receive(ctx, &amp;paymentID)
+    })
+    selector.AddFuture(timer, func(f workflow.Future) {
+        paymentID = "" // 超时
+    })
+    selector.Select(ctx)
+    if paymentID == "" {
+        _ = workflow.ExecuteActivity(ctx, ReleaseStock, orderID).Get(ctx, nil) // 补偿
+        return "", fmt.Errorf("payment timeout")
+    }
+
+    // 3. 支付扣款
+    var txnID string
+    if err := workflow.ExecuteActivity(ctx, Charge, orderID, amount).Get(ctx, &amp;txnID); err != nil {
+        _ = workflow.ExecuteActivity(ctx, ReleaseStock, orderID).Get(ctx, nil)
+        return "", err
+    }
+    return txnID, nil
+}</code></pre>
+<blockquote><p>补偿（Saga）用 <code>defer</code> 风格的显式补偿 Activity，而不是依赖数据库回滚——跨服务没有分布式事务。若补偿本身失败，靠它自己的 <code>RetryPolicy</code> 兜底。</p></blockquote>
+<h3 id="42-query暴露进度给外部">4.2 Query：暴露进度给外部</h3>
+<pre><code class="lang-go">func OrderWorkflow(ctx workflow.Context, orderID string, amount int64) (string, error) {
+    state := struct{ Stage string; Paid bool }{Stage: "created"}
+    if err := workflow.SetQueryHandler(ctx, "state", func() (any, error) {
+        return state, nil // 只读，不做 IO、不阻塞
+    }); err != nil { return "", err }
+    // ... 推进流程时更新 state.Stage / state.Paid
+    return "", nil
+}</code></pre>
+<pre><code class="lang-go">// 外部查询
+resp, err := c.QueryWorkflow(ctx, "order-A1001", "", "state")
+_ = resp.QueryValue(&amp;state)</code></pre>
+<h3 id="43-发送-signal">4.3 发送 Signal</h3>
+<pre><code class="lang-go">err := c.SignalWorkflow(context.Background(), "order-A1001", "",
+    "payment-confirmed", "pay-7788")</code></pre>
+<h3 id="44-版本化改动在途工作流代码">4.4 版本化（改动在途工作流代码）</h3>
+<pre><code class="lang-go">v := workflow.GetVersion(ctx, "use-new-charge", workflow.DefaultVersion, 1)
+if v == workflow.DefaultVersion {
+    err := workflow.ExecuteActivity(ctx, ChargeV1, orderID).Get(ctx, nil)
+    return "", err
+}
+err := workflow.ExecuteActivity(ctx, ChargeV2, orderID, amount).Get(ctx, nil)
+return "", err</code></pre>
+<blockquote><p>标记要<strong>长期保留</strong>（直到所有旧版本实例结束），删掉会让在途实例重放失败。新项目可直接用 Worker Versioning（<code>worker.BuildID</code> + 服务端 deployment 配置）避免手工打标。</p></blockquote>
+<h3 id="45-长-activity-心跳与取消">4.5 长 Activity 心跳与取消</h3>
+<pre><code class="lang-go">func MigrateBatch(ctx context.Context, batchID string) error {
+    for i := 0; i &lt; total; i++ {
+        select {
+        case &lt;-ctx.Done():
+            return ctx.Err() // 响应取消，保存现场
+        default:
+        }
+        if err := processOne(i); err != nil { return err }
+        activity.RecordHeartbeat(ctx, i) // 每 N 条上报进度
+    }
+    return nil
+}</code></pre>
+<p><code>activity.GetHeartbeatDetails(ctx, &amp;last)</code> 可在重试后从上次心跳位置续跑。</p>
+<h3 id="46-单测与重放检测">4.6 单测与重放检测</h3>
+<pre><code class="lang-go">func TestOrderWorkflow(t *testing.T) {
+    env := testsuite.NewTestWorkflowEnvironment()
+    env.RegisterActivity(ReserveStock)
+    env.RegisterActivity(Charge)
+    env.RegisterActivity(ReleaseStock)
+    env.RegisterDelayedCallback(func() {
+        _ = env.SignalWorkflow("payment-confirmed", "pay-7788")
+    }, time.Minute) // 测试环境可瞬间跳过虚拟时间
+
+    env.ExecuteWorkflow(OrderWorkflow, "A1001", 12800)
+    require.True(t, env.IsWorkflowCompleted())
+    require.NoError(t, env.GetWorkflowError())
+}</code></pre>
+<pre><code class="lang-go">// 用生产事件历史重放，检测代码改动是否引入非确定性
+replayer := worker.NewWorkflowReplayer()
+replayer.RegisterWorkflow(OrderWorkflow)
+_ = replayer.ReplayWorkflowHistoryFromJSONFile(nil, "history.json")</code></pre>
+<h3 id="47-搜索属性与运维">4.7 搜索属性与运维</h3>
+<pre><code class="lang-bash">temporal operator search-attribute create --name OrderId --type Text
+temporal workflow list --query 'OrderId = "A1001"'
+temporal workflow show --workflow-id order-A1001   # 查看完整事件历史
+temporal workflow signal --workflow-id order-A1001 --name payment-confirmed</code></pre>
+<p>在 <code>StartWorkflowOptions.TypedSearchAttributes</code> 里写入业务 ID，才能在 Web UI 里按订单号检索——否则只能靠 workflow ID 猜。</p>
+<hr>
+
+</section>
+<section data-anchor="5-版本演进速览">
+<h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>阶段</th><th>关键变化与迁移注意点</th></tr></thead><tbody><tr><td>起源</td><td>源自 Uber <strong>Cadence</strong>；Temporal 由原团队创建，SDK/API 与 Cadence 相似但不兼容</td></tr><tr><td>Server 1.x</td><td>架构定型（Frontend / History / Matching / Worker）；Visibility 长期依赖 Elasticsearch</td></tr><tr><td>近年</td><td><strong>标准可见性（SQL-based Visibility）</strong> 让小集群不必再部署 ES；<strong>Worker Versioning / Deployment</strong> 简化在途实例升级；<strong>Nexus</strong> 跨 namespace 调用；<strong>Update</strong> API 稳定；Schedule 与 Eager Activity 优化</td></tr><tr><td>Go SDK v1</td><td>API 稳定；<code>workflow.GetVersion</code> → Worker Versioning、<code>TypedSearchAttributes</code> 等新 API 逐步引入</td></tr></tbody></table></div>
+<p><strong>迁移注意</strong>：</p>
+<ul><li>Server 与 SDK 版本建议同代，跨太多版本可能出现 gRPC 接口与 Command 类型不兼容</li><li>Cadence → Temporal 不是改 import：<code>go.uber.org/cadence</code> 与 <code>go.temporal.io/sdk</code> 的客户端、worker、context 类型全部不同，需要重写胶水层</li><li>从 ES Visibility 迁到 SQL Visibility 需按官方步骤做双写与回填，历史数据不可直接复用</li><li>启用 Worker Versioning 前，先确认在途实例的 Build ID 策略与回滚路径</li></ul>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>Workflow 里做 IO / 用 <code>time.Now</code> / <code>rand</code></strong>：非确定性，重放时 <code>NonDeterminismError</code>，工作流直接卡住。所有副作用进 Activity，时间用 <code>workflow.Now</code>，随机用 <code>SideEffect</code>。</li><li><strong>直接改 Workflow 代码不做版本化</strong>：在途实例用新代码重放旧历史，Command 序列对不上。用 <code>GetVersion</code> 或 Worker Versioning，并长期保留标记。</li><li><strong>Activity 不幂等</strong>：at-least-once + 超时重试 + 结果回报丢失 = 重复扣款。用业务 ID 做幂等键，配合 <a href="../postgresql/postgresql-guide.html">PostgreSQL 篇</a> 的唯一约束或 <a href="../redis/redis-guide.html">go-redis 篇</a> 的 <code>SET NX</code>。</li><li><strong>大 payload 进参数 / 结果</strong>：事件历史会永久保存输入与输出（默认有大小限制，约 2MB）。大对象放外部存储，只传 ID/引用。</li><li><strong>事件历史无限增长</strong>：无限循环里反复 ExecuteActivity 会让历史越滚越大、重放越来越慢。用 <code>Continue-As-New</code> 重置，或把循环体移到单个带心跳的 Activity。</li><li><strong>超时只配一半</strong>：只设 <code>WorkflowExecutionTimeout</code> 不设 <code>StartToCloseTimeout</code>，Activity 挂住会一直占着工作流。分层配置齐全。</li><li><strong>混淆 Signal / Query / Update</strong>：Query 里做 IO 或改状态会破坏确定性；Signal handler 里阻塞会卡死事件循环。</li><li><strong>重试策略无上限 / 不区分错误类型</strong>：参数非法这类永久错误被无限重试。设 <code>MaximumAttempts</code> 与 <code>NonRetryableErrorTypes</code>。</li><li><strong>长 Activity 不报心跳</strong>：worker 被杀后服务端要等满 <code>StartToCloseTimeout</code> 才判定失败，恢复极慢。<code>RecordHeartbeat</code> + <code>HeartbeatTimeout</code> + 续跑。</li><li><strong>忽略取消</strong>：Activity 不检查 <code>ctx.Done()</code>，工作流取消后仍在跑副作用。长循环必须响应取消并保存现场。</li><li><strong>Task Queue 名混乱 / 多版本 worker 混跑</strong>：旧代码 worker 领到新工作流会重放失败。用版本化部署或分队列灰度。</li><li><strong>把 Temporal 当消息队列 / 任务队列</strong>：为每条消息起一个工作流的成本高、延迟也高。简单作业用 <a href="../asynq/asynq技术文档与使用手册.html">asynq</a>，事件广播用 <a href="../kafka/kafka-guide.html">Kafka</a>。</li><li><strong>dev server 上生产</strong>：<code>temporal server start-dev</code> 是内存存储、单进程、无 HA。生产需外部持久化（MySQL/PostgreSQL/Cassandra）、多副本与备份。</li><li><strong>不跑重放检测</strong>：代码改动上线前用 <code>WorkflowReplayer</code> 对生产历史做一次重放，能提前发现非确定性，比线上卡住再修便宜得多。</li><li><strong>不建搜索属性 / Workflow ID 设计随意</strong>：出事时按业务单号查不到工作流。ID 用稳定业务键（天然幂等），并写 <code>TypedSearchAttributes</code>。</li><li><strong>补偿没做幂等 / 没重试策略</strong>：Saga 的反向操作同样会失败，需要与正向操作同等级的重试和幂等设计。</li><li><strong>Workflow 里用 map 迭代或依赖外部可变配置</strong>：迭代顺序不确定、配置变更导致重放分歧。排序遍历，配置在启动时作为入参固化。</li></ol>
+<hr>
+
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>Temporal</th><th>asynq</th><th>Airflow / Argo Workflows</th><th>AWS Step Functions</th><th>自研状态机 + 定时扫描</th></tr></thead><tbody><tr><td>编排形态</td><td><strong>代码定义工作流</strong></td><td>单个异步作业</td><td>DAG / YAML</td><td>JSON 状态机</td><td>DB 表 + 轮询</td></tr><tr><td>状态持久化</td><td>服务端事件历史（自动）</td><td>Redis 任务状态</td><td>元数据 DB</td><td>托管</td><td>自己建表维护</td></tr><tr><td>长时等待</td><td><strong>原生持久计时器</strong>（月级）</td><td>延时任务（有限）</td><td>调度触发</td><td>原生 Wait</td><td>定时扫描</td></tr><tr><td>崩溃恢复</td><td><strong>自动重放</strong></td><td>重试 / 崩溃回收</td><td>任务重跑</td><td>托管</td><td>自己实现</td></tr><tr><td>补偿 / Saga</td><td>代码里显式，易写</td><td>需自己拼</td><td>DAG 分支</td><td>内置 Catch</td><td>自己实现</td></tr><tr><td>运维成本</td><td>中～高（多服务 + DB）</td><td><strong>极低</strong>（只要 Redis）</td><td>中高</td><td>极低（托管）</td><td>低（但代码成本高）</td></tr><tr><td>语言生态</td><td>Go / Java / TS / Python / .NET</td><td>Go</td><td>Python / YAML</td><td>各语言 SDK</td><td>—</td></tr><tr><td>典型场景</td><td>订单履约、退款审批、订阅计费</td><td>发邮件、转码、对账</td><td>数据管道 / 批处理</td><td>云上 Serverless 编排</td><td>简单两三步流程</td></tr></tbody></table></div>
+<p>一句话决策：</p>
+<ul><li><strong>流程跨多个服务、要跑很久、失败必须续跑且要可观测</strong> → <strong>Temporal</strong>，它能省掉一整套自研状态机代码。</li><li><strong>只是「把一件活扔到后台可靠执行」</strong> → <a href="../asynq/asynq技术文档与使用手册.html">asynq</a>，引入成本低一个数量级。</li><li><strong>定时数据管道 / ETL DAG</strong> → Airflow / Argo Workflows，它们面向「批任务依赖」而非「长事务实体」。</li><li><strong>已在云上且接受厂商锁定</strong> → Step Functions，运维成本最低。</li><li><strong>流程只有两三步、团队小</strong> → 状态机表 + 幂等 + 定时扫描完全够用，<strong>别为了一个短流程引入 Temporal 集群</strong>。</li></ul>
+<blockquote><p>判断标准很简单：如果流程需要「等一个可能几天后才来的外部事件，期间进程可以随便重启」，Temporal 才真正值回票价；否则它带来的运维与心智成本会超过收益。</p></blockquote>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>
