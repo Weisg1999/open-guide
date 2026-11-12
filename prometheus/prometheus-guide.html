@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prometheus · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#e6522c; --accent-light:#ffe4d6; --accent-dark:#9a3412;
+    --bg:#fdf7f4; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#2a1008; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#9a3412 0%,#e6522c 58%,#9a3412 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">Prometheus<span class="ver">3.x</span></div>
+  <div class="sub">指标监控 · PromQL · 告警</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#安装与本地起服务">安装与本地起服务</a>
+  <a class="sub-link" href="#最小可运行示例">最小可运行示例</a>
+  <a href="#2-功能特性总览">2. 功能特性总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-一条时间序列是怎么标识的">3.1 一条时间序列是怎么标识的</a>
+  <a class="sub-link" href="#32-为什么是拉取pull不是推送push">3.2 为什么是拉取（pull），不是推送（push）</a>
+  <a class="sub-link" href="#33-四种指标类型与-rate">3.3 四种指标类型与 rate()</a>
+  <a class="sub-link" href="#34-tsdb-内部为什么标签查询这么快">3.4 TSDB 内部：为什么标签查询这么快</a>
+  <a class="sub-link" href="#35-staleness-与采样间隔">3.5 staleness 与采样间隔</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-自定义-registry推荐做法">4.1 自定义 Registry（推荐做法）</a>
+  <a class="sub-link" href="#42-埋点中间件接-gin-篇gingin-guidemd">4.2 埋点中间件（接 [Gin 篇](../gin/gin-guide.md)）</a>
+  <a class="sub-link" href="#43-自定义-collector从业务状态实时取值">4.3 自定义 Collector（从业务状态实时取值）</a>
+  <a class="sub-link" href="#44-常用-promql-速查">4.4 常用 PromQL 速查</a>
+  <a class="sub-link" href="#45-告警规则与-alertmanager">4.5 告警规则与 Alertmanager</a>
+  <a class="sub-link" href="#46-单测断言">4.6 单测断言</a>
+  <a href="#5-版本演进速览">5. 版本演进速览</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>Prometheus 技术介绍与使用指南（Go 可观测性）</h1>
+<p>云原生指标监控的事实标准：拉取模型 + 多维标签时序 + PromQL + Alertmanager，把发生了什么变成可查询、可聚合、可告警的数字。</p>
+<p style="opacity:.8;font-size:13.5px">指标监控 · PromQL · 告警</p>
+<div class="meta"><span>拉取模型 + 服务发现</span><span>Counter / Gauge / Histogram</span><span>PromQL + 记录规则</span><span>Alertmanager 告警</span><span>高基数是头号事故</span><span>client_golang v1.x</span></div>
+</div>
+<blockquote><p>云原生指标监控的事实标准：拉取模型 + 多维标签时序 + PromQL + Alertmanager，把「发生了什么」变成可查询、可聚合、可告警的数字。 上游：<a href="https://github.com/prometheus/prometheus">https://github.com/prometheus/prometheus</a>　|　服务端主线：<strong>3.x</strong>（整理于 2026-11）　|　Go 客户端：<a href="https://github.com/prometheus/client_golang">prometheus/client_golang</a> v1.x 协议：Apache-2.0；具体版本以上游最新 release 为准。</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p><a href="../zap/zap-guide.html">Zap 篇</a>解决「单条事件的细节」，<a href="../opentelemetry/opentelemetry-guide.html">OpenTelemetry 篇</a>解决「一次请求跨了哪些服务」，<strong>Prometheus 解决「系统在一段时间内的整体趋势与是否该告警」</strong>。三者是可观测性的三条支柱，不能互相替代——把「QPS 涨了三倍」写进日志再靠正则去数，是最常见的反模式。</p>
+<p>Prometheus 的核心模型：<strong>服务端主动按间隔拉取（pull）应用暴露的 <code>/metrics</code> 文本端点，把带标签的时间序列存进本地 TSDB，用 PromQL 查询，用 Alertmanager 发告警</strong>。</p>
+<ul><li><strong>适用场景</strong>：服务健康度与 SLO、延迟/错误率/饱和度（RED / USE 方法）、容量趋势、基于阈值的告警、K8s 原生监控</li><li><strong>不适合</strong>：单条请求的详细上下文（用日志）、跨服务调用链（用链路追踪）、高基数明细（用户 ID、订单号、trace_id 不能做标签）、长期低成本归档（用 remote write 接 Thanos / Mimir / VictoriaMetrics）、事件型精确计费（拉取模型有采样间隔）</li></ul>
+<h3 id="安装与本地起服务">安装与本地起服务</h3>
+<pre><code class="lang-bash">go get github.com/prometheus/client_golang/prometheus
+go get github.com/prometheus/client_golang/prometheus/promhttp
+go get github.com/prometheus/client_golang/prometheus/collectors</code></pre>
+<pre><code class="lang-yaml"># prometheus.yml
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+scrape_configs:
+  - job_name: "app"
+    static_configs:
+      - targets: ["host.docker.internal:8080"]</code></pre>
+<pre><code class="lang-bash">docker run --rm -p 9090:9090 \
+  -v "$(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml" \
+  prom/prometheus
+# 浏览器打开 http://localhost:9090 → Status → Targets 看是否 UP</code></pre>
+<h3 id="最小可运行示例">最小可运行示例</h3>
+<pre><code class="lang-go">package main
+
+import (
+    "net/http"
+
+    "github.com/prometheus/client_golang/prometheus/promhttp"
+)
+
+func main() {
+    http.Handle("/metrics", promhttp.Handler()) // 默认注册表的 Go/进程指标
+    http.ListenAndServe(":8080", nil)
+}</code></pre>
+<hr>
+
+</section>
+<section data-anchor="2-功能特性总览">
+<h2 id="2-功能特性总览">2. 功能特性总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>数据模型</td><td><code>metric_name{label="value", ...} value timestamp</code>，标签是多维度的核心</td></tr><tr><td>四种指标类型</td><td>Counter（单调累计）/ Gauge（可增可减）/ Histogram（服务端分桶）/ Summary（客户端分位数）</td></tr><tr><td>采集方式</td><td>拉取为主；短生命周期任务用 Pushgateway；服务发现支持 K8s / Consul / DNS / 文件</td></tr><tr><td>查询</td><td>PromQL：即时向量、区间向量、<code>rate</code> / <code>irate</code> / <code>increase</code>、聚合 <code>sum by</code> / <code>topk</code>、<code>histogram_quantile</code></td></tr><tr><td>规则</td><td>Recording rules（预计算）、Alerting rules（条件 + <code>for</code> 持续时长）</td></tr><tr><td>告警</td><td>Alertmanager 负责去重、分组、静默、抑制、路由到邮件/企业微信/PagerDuty</td></tr><tr><td>存储</td><td>本地 TSDB：WAL → Head block → 2h block → 压缩合并；倒排索引按标签定位 series</td></tr><tr><td>扩展</td><td>Remote write / read 接长期存储；联邦；Thanos / Mimir / VictoriaMetrics 做全局视图与 HA</td></tr><tr><td>关联</td><td>Exemplar 把 <code>trace_id</code> 挂到指标样本上，打通到链路追踪</td></tr><tr><td>Go SDK</td><td><code>Registry</code> / <code>Collector</code> / <code>Gatherer</code>、<code>promhttp</code> Handler、中间件生态、<code>testutil</code> 单测断言</td></tr></tbody></table></div>
+<hr>
+
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-一条时间序列是怎么标识的">3.1 一条时间序列是怎么标识的</h3>
+<pre><code class="lang-text">http_requests_total{method="GET", route="/api/users", code="200"}  1024  @1730000000
+└──── 指标名 ────┘ └──────────── 标签集（series 的身份）───────────┘ └值┘ └时间戳┘</code></pre>
+<p><strong>指标名 + 标签集的每一种组合 = 一条独立 series</strong>。这是理解 Prometheus 的第一原则，也是头号事故的来源：</p>
+<pre><code class="lang-text">用户 ID 做标签 → 100 万用户 × 10 条指标 = 1000 万 series → 内存与索引爆炸</code></pre>
+<p>series 数量 = 各标签基数的<strong>笛卡尔积</strong>。标签必须是<strong>有界、低基数</strong>的枚举值（method、route 模板、status code、实例名），不能是 <code>user_id</code>、原始 URL、<code>trace_id</code>、时间戳。</p>
+<h3 id="32-为什么是拉取pull不是推送push">3.2 为什么是拉取（pull），不是推送（push）</h3>
+<div class="table-wrap"><table><thead><tr><th></th><th>拉取（Prometheus）</th><th>推送（StatsD 等）</th></tr></thead><tbody><tr><td>应用</td><td>只需暴露一个 HTTP 端点，不感知监控后端地址</td><td>需配置后端地址、处理失败与背压</td></tr><tr><td>健康探测</td><td><code>up{job=...}</code> 天然是「目标是否活着」</td><td>需额外心跳</td></tr><tr><td>流量控制</td><td>服务端集中控制采集频率、可随时调</td><td>客户端决定，故障时易形成风暴</td></tr><tr><td>短板</td><td>短生命周期任务、NAT/防火墙后的目标</td><td>—</td></tr></tbody></table></div>
+<p>短任务（cron job、批处理）用 <strong>Pushgateway</strong> 补，但它不是「代理」：Pushgateway 会一直保留最后一次推送的值，任务结束<strong>必须显式删除对应分组</strong>，否则会永远上报一个僵死的指标。</p>
+<h3 id="33-四种指标类型与-rate">3.3 四种指标类型与 <code>rate()</code></h3>
+<div class="table-wrap"><table><thead><tr><th>类型</th><th>语义</th><th>典型用途</th><th>注意</th></tr></thead><tbody><tr><td>Counter</td><td>只增不减（重启归零）</td><td>请求总数、错误总数、处理字节数</td><td><strong>永远不要直接画原始值</strong>，用 <code>rate()</code>；Prometheus 能识别重启归零并补偿</td></tr><tr><td>Gauge</td><td>可增可减</td><td>在途请求数、队列深度、内存占用、温度</td><td>采集间隔内的突变会被漏掉</td></tr><tr><td>Histogram</td><td>按预设桶累计计数 + <code>_sum</code> + <code>_count</code></td><td>延迟分布、P99、SLO</td><td>精度由桶边界决定；<strong>可跨实例聚合</strong></td></tr><tr><td>Summary</td><td>客户端直接算分位数</td><td>单实例精确分位数</td><td><strong>分位数不可跨实例聚合</strong>，多副本场景基本不用</td></tr></tbody></table></div>
+<pre><code class="lang-promql"># Counter 的正确用法：算每秒速率，再按维度聚合
+sum by (route) (rate(http_requests_total[5m]))
+
+# Histogram 估算 P99（桶边界决定误差，必须保留 le 标签）
+histogram_quantile(0.99,
+  sum by (le, route) (rate(http_request_duration_seconds_bucket[5m]))
+)</code></pre>
+<blockquote><p><code>[5m]</code> 是<strong>区间向量</strong>，窗口至少要覆盖 4 个采集间隔（15s 间隔时 5m 很合适）。窗口太短会因样本不足导致 <code>rate</code> 抖动甚至无数据。</p></blockquote>
+<h3 id="34-tsdb-内部为什么标签查询这么快">3.4 TSDB 内部：为什么标签查询这么快</h3>
+<pre><code class="lang-text">写入 ──► WAL（防崩溃丢失）──► Head（内存 chunk，约 2h）
+                                  │ 每 2h 落盘为一个 block
+                                  ▼
+                     block: chunks + 倒排索引(label→series) + tombstones
+                                  │ 后台 compaction 合并小 block
+                                  ▼
+                        更大的 block（可配置保留期）</code></pre>
+<ul><li>样本值用 XOR + 变长编码压缩，时间戳用 delta-of-delta；单样本约 1~2 字节</li><li><strong>倒排索引</strong>把 <code>label="value"</code> 映射到 series ID 集合，所以 <code>sum(rate(...{code="500"}))</code> 不用扫全量数据</li><li>代价是：series 越多，倒排索引与内存 Head 越大 → 高基数直接拖垮 TSDB</li></ul>
+<h3 id="35-staleness-与采样间隔">3.5 staleness 与采样间隔</h3>
+<p>目标抓取失败或实例下线后，Prometheus 会在 5 分钟（staleness marker）后认为该 series 停止，图线中断而不是沿用旧值。这解释了「Pod 重启后曲线出现断口」和「<code>rate()</code> 在刚启动时样本不足返回空」两个常见现象。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-自定义-registry推荐做法">4.1 自定义 Registry（推荐做法）</h3>
+<pre><code class="lang-go">package metrics
+
+import (
+    "net/http"
+
+    "github.com/prometheus/client_golang/prometheus"
+    "github.com/prometheus/client_golang/prometheus/collectors"
+    "github.com/prometheus/client_golang/prometheus/promhttp"
+)
+
+type Metrics struct {
+    Requests *prometheus.CounterVec
+    Duration *prometheus.HistogramVec
+    InFlight prometheus.Gauge
+}
+
+func New(reg *prometheus.Registry) *Metrics {
+    m := &amp;Metrics{
+        Requests: prometheus.NewCounterVec(prometheus.CounterOpts{
+            Name: "http_requests_total",
+            Help: "Total number of HTTP requests.",
+        }, []string{"method", "route", "code"}),
+        Duration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+            Name:    "http_request_duration_seconds",
+            Help:    "HTTP request latency in seconds.",
+            Buckets: []float64{.005, .01, .025, .05, .1, .25, .5, 1, 2.5, 5},
+        }, []string{"method", "route"}),
+        InFlight: prometheus.NewGauge(prometheus.GaugeOpts{
+            Name: "http_requests_in_flight",
+            Help: "Current number of in-flight HTTP requests.",
+        }),
+    }
+    reg.MustRegister(
+        m.Requests, m.Duration, m.InFlight,
+        collectors.NewGoCollector(),                       // GC / goroutine / 内存
+        collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
+    )
+    return m
+}
+
+func Handler(reg *prometheus.Registry) http.Handler {
+    return promhttp.HandlerFor(reg, promhttp.HandlerOpts{
+        EnableOpenMetrics: true, // 支持 exemplar
+    })
+}</code></pre>
+<blockquote><p>用独立 <code>Registry</code> 而不是 <code>prometheus.DefaultRegisterer</code>：避免第三方库重复注册导致 <code>MustRegister</code> panic，也便于单测隔离。</p></blockquote>
+<h3 id="42-埋点中间件接-gin-篇gingin-guidemd">4.2 埋点中间件（接 <a href="../gin/gin-guide.html">Gin 篇</a>）</h3>
+<pre><code class="lang-go">import "github.com/gin-gonic/gin"
+
+func Instrument(m *Metrics) gin.HandlerFunc {
+    return func(c *gin.Context) {
+        start := time.Now()
+        m.InFlight.Inc()
+        defer m.InFlight.Dec()
+
+        c.Next()
+
+        // 关键：用路由模板而不是 Request.URL.Path，
+        // 否则 /users/123 每个用户 ID 都会生成一条 series
+        route := c.FullPath() // "/users/:id"
+        if route == "" { route = "unmatched" }
+        code := strconv.Itoa(c.Writer.Status())
+        m.Requests.WithLabelValues(c.Request.Method, route, code).Inc()
+        m.Duration.WithLabelValues(c.Request.Method, route).
+            Observe(time.Since(start).Seconds())
+    }
+}</code></pre>
+<h3 id="43-自定义-collector从业务状态实时取值">4.3 自定义 Collector（从业务状态实时取值）</h3>
+<pre><code class="lang-go">type QueueCollector struct {
+    depth *prometheus.Desc
+    q     *Queue
+}
+
+func NewQueueCollector(q *Queue) *QueueCollector {
+    return &amp;QueueCollector{
+        depth: prometheus.NewDesc("app_queue_depth", "Pending jobs.",
+            []string{"queue"}, prometheus.Labels{"service": "worker"}),
+        q: q,
+    }
+}
+func (c *QueueCollector) Describe(ch chan&lt;- *prometheus.Desc) {
+    ch &lt;- c.depth
+}
+func (c *QueueCollector) Collect(ch chan&lt;- prometheus.Metric) {
+    for name, n := range c.q.Depths() {
+        ch &lt;- prometheus.MustNewConstMetric(c.depth, prometheus.GaugeValue,
+            float64(n), name)
+    }
+}</code></pre>
+<blockquote><p><code>Collect</code> 在每次抓取时同步调用，<strong>不能做慢查询</strong>；耗时超过 <code>scrape_timeout</code> 会导致整个 target 抓取失败。</p></blockquote>
+<h3 id="44-常用-promql-速查">4.4 常用 PromQL 速查</h3>
+<pre><code class="lang-promql"># QPS（按路由）
+sum by (route) (rate(http_requests_total[5m]))
+
+# 5xx 错误率
+sum(rate(http_requests_total{code=~"5.."}[5m]))
+  / sum(rate(http_requests_total[5m]))
+
+# P99 延迟
+histogram_quantile(0.99, sum by (le) (rate(http_request_duration_seconds_bucket[5m])))
+
+# 错误最多的 5 个路由
+topk(5, sum by (route) (rate(http_requests_total{code=~"5.."}[5m])))
+
+# 实例是否存活
+up{job="app"} == 0</code></pre>
+<h3 id="45-告警规则与-alertmanager">4.5 告警规则与 Alertmanager</h3>
+<pre><code class="lang-yaml"># rules.yml
+groups:
+  - name: app
+    rules:
+      - record: job:http_requests:rate5m   # Recording rule：预计算降本
+        expr: sum by (job) (rate(http_requests_total[5m]))
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_requests_total{code=~"5.."}[5m]))
+            / sum(rate(http_requests_total[5m])) &gt; 0.05
+        for: 10m                            # 持续 10 分钟才触发，避免抖动误报
+        labels: {severity: warning}
+        annotations:
+          summary: "5xx ratio above 5% for 10 minutes"</code></pre>
+<pre><code class="lang-yaml"># prometheus.yml 追加
+rule_files: ["rules.yml"]
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["localhost:9093"]</code></pre>
+<h3 id="46-单测断言">4.6 单测断言</h3>
+<pre><code class="lang-go">func TestCounter(t *testing.T) {
+    reg := prometheus.NewRegistry()
+    m := New(reg)
+    m.Requests.WithLabelValues("GET", "/ping", "200").Inc()
+
+    err := testutil.GatherAndCompare(reg, strings.NewReader(`
+# HELP http_requests_total Total number of HTTP requests.
+# TYPE http_requests_total counter
+http_requests_total{code="200",method="GET",route="/ping"} 1
+`), "http_requests_total")
+    if err != nil {
+        t.Fatalf("metric mismatch: %v", err)
+    }
+}</code></pre>
+<hr>
+
+</section>
+<section data-anchor="5-版本演进速览">
+<h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>阶段</th><th>关键变化与迁移注意点</th></tr></thead><tbody><tr><td>1.x</td><td>早期版本，存储为自研 v1 TSDB，大规模下内存与性能吃紧</td></tr><tr><td><strong>2.x</strong></td><td><strong>TSDB v2 重写</strong>（WAL + block + 倒排索引），性能与压缩比数量级提升；新增 Recording rules 优化、<code>subquery</code>、远程读写接口。2.x 是长期主流</td></tr><tr><td><strong>3.x</strong></td><td>支持 <strong>UTF-8 指标名/标签名</strong>（旧版强制 <code>[a-zA-Z_:][a-zA-Z0-9_:]*</code>）；OTLP 接收与 remote write 2.0 增强；部分 flag、API 与默认行为调整</td></tr></tbody></table></div>
+<p><strong>升级注意</strong>：</p>
+<ul><li>2.x → 3.x 前<strong>务必读官方迁移指南</strong>，逐个核对已废弃的命令行参数与 API；UTF-8 名称放宽是「允许」而非「推荐」，命名仍应遵守语义约定</li><li><code>client_golang</code> v1.x API 长期稳定，但 <code>collectors</code> 子包、<code>promhttp</code> 的 <code>HandlerOpts</code> 字段随小版本演进；升级时一起升</li><li><strong>服务端版本与 Go 客户端版本要分别标注</strong>：指标语义由客户端决定，查询与告警行为由服务端决定</li></ul>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>高基数标签</strong>：把 <code>user_id</code> / <code>trace_id</code> / 原始 URL / 订单号 / 时间戳当标签，是 Prometheus 头号事故。标签只放有界枚举；明细进日志与链路。</li><li><strong>Counter 直接画原始值</strong>：它是累计值，重启归零会形成断崖。一律 <code>rate()</code> / <code>increase()</code>；聚合顺序是<strong>先 rate 再 sum</strong>。</li><li><strong>Histogram 桶边界拍脑袋</strong>：默认桶（最大 10s）对毫秒级 RPC 太粗，P99 会失真。按实际 P99 量级设计桶，且桶数别超过 ~20。</li><li><strong>用 Summary 做多副本聚合</strong>：Summary 的分位数在客户端算好，<strong>无法跨实例求 P99</strong>。多副本一律用 Histogram。</li><li><strong>单位与命名不规范</strong>：时长用 <code>_seconds</code>、字节用 <code>_bytes</code>、累计量加 <code>_total</code>；不要 <code>latency_ms</code> 和 <code>duration_seconds</code> 混用。遵循官方命名与 <a href="https://opentelemetry.io/docs/specs/semconv/">semantic conventions</a>。</li><li><strong>路由未模板化</strong>：<code>/users/123</code> 每条 URL 一条 series。用 <code>chi.RoutePattern()</code> / Gin 的 <code>FullPath()</code> 取 <code>/users/:id</code>。</li><li><strong><code>MustRegister</code> 重复注册 panic</strong>：库代码别直接注册到全局默认 Registry；用自定义 Registry 或 <code>Register</code> + 处理 <code>AlreadyRegisteredError</code>。</li><li><strong><code>Collect</code> 里做慢查询</strong>：抓取是同步的，慢 Collector 会拖垮整个 <code>/metrics</code> 乃至 target 超时。异步刷新缓存，Collect 只读内存。</li><li><strong><code>/metrics</code> 暴露到公网</strong>：泄露内部路径、实例信息与业务量。放在内网端口或加认证/网络策略。</li><li><strong>告警不带 <code>for</code></strong>：瞬时抖动狂轰滥炸。配 <code>for</code> + 用 <code>rate</code> 窗口，并在 Alertmanager 配置分组、静默与抑制。</li><li><strong><code>scrape_interval</code> 与突发流量不匹配</strong>：15s 间隔会漏掉秒级尖刺；关键 SLO 可缩到 5s，但要评估 TSDB 写入压力。</li><li><strong>拿 Prometheus 存日志/长期明细</strong>：本地 TSDB 是为近期监控设计的。长期归档走 remote write 到 Thanos / Mimir / VictoriaMetrics；日志走 <a href="../zap/zap-guide.html">Zap</a> + Loki/ES。</li><li><strong>Pushgateway 当代理用</strong>：短任务结束后不 <code>Delete</code> 分组，指标会永久停留在最后值，产生假告警。</li><li><strong>指标与日志/链路各自为政</strong>：<code>service.name</code> 不统一、<code>trace_id</code> 不写进日志、指标上不挂 exemplar，排障时三套系统对不上。用 <a href="../opentelemetry/opentelemetry-guide.html">OpenTelemetry</a> 统一 Resource，并用 exemplar 把指标样本连到 trace。</li></ol>
+<hr>
+
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>Prometheus</th><th>InfluxDB / VictoriaMetrics</th><th>StatsD / Graphite</th><th>OpenTelemetry Metrics</th><th>云监控（云厂商）</th></tr></thead><tbody><tr><td>采集模型</td><td><strong>拉取 + 服务发现</strong></td><td>推送为主</td><td>推送（UDP）</td><td>生成并导出（SDK）</td><td>Agent 推送</td></tr><tr><td>数据模型</td><td>多维标签时序</td><td>标签时序</td><td>点分隔的层级名</td><td>OTLP 时序</td><td>各异</td></tr><tr><td>查询</td><td><strong>PromQL（强）</strong></td><td>Flux / InfluxQL / MetricsQL</td><td>弱</td><td>无（交给后端）</td><td>厂商控制台</td></tr><tr><td>告警</td><td>规则 + Alertmanager</td><td>内建 / 外接</td><td>需外接</td><td>不负责</td><td>内建</td></tr><tr><td>长期存储</td><td>本地有限，靠 remote write</td><td><strong>强项</strong>（尤其 VM）</td><td>弱</td><td>不存储</td><td>托管</td></tr><tr><td>K8s 生态</td><td><strong>事实标准</strong></td><td>良好</td><td>一般</td><td>CNCF 标准</td><td>良好</td></tr><tr><td>定位</td><td>监控告警</td><td>时序/长期存储</td><td>简单计数</td><td><strong>遥测数据标准</strong></td><td>托管运维</td></tr></tbody></table></div>
+<p>一句话决策：</p>
+<ul><li><strong>云原生服务监控告警默认 Prometheus</strong>，PromQL + Alertmanager + Grafana 是事实标准组合；单集群单 Prometheus 足够，多集群/长期再叠 Thanos / Mimir。</li><li><strong>要存几年、要存业务时序数据</strong>（非纯监控指标）→ <a href="../influxdb-v2/influxdb-v2-guide.html">InfluxDB</a> 或 ClickHouse；<strong>觉得 Prometheus 太吃资源</strong> → VictoriaMetrics 兼容 PromQL 且更省。</li><li><strong>埋点标准与跨语言统一</strong> → OpenTelemetry SDK 生成数据，再导出到 Prometheus / OTLP 后端。<strong>OTel 与 Prometheus 是上下游关系，不是二选一</strong>：OTel 负责「怎么产生、怎么传播」，Prometheus 负责「怎么拉、怎么存、怎么查、怎么告」。</li><li><strong>已经在云上且不想运维监控系统</strong> → 云监控，但要接受查询能力与厂商锁定。</li><li><strong>日志内容、单条请求上下文</strong> → <a href="../zap/zap-guide.html">Zap</a> + 日志系统；<strong>跨服务调用链</strong> → <a href="../opentelemetry/opentelemetry-guide.html">OpenTelemetry</a>。</li></ul>
+<blockquote><p>落地顺序建议：先定 <code>service.name</code> 与标签规范 → 暴露 <code>/metrics</code> → 写 3~5 条核心 SLO 的 Recording/Alerting rules → 最后才扩指标数量。<strong>指标不是越多越好，每加一个标签都要先问基数是多少。</strong></p></blockquote>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

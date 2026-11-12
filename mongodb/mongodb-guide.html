@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MongoDB · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#047857; --accent-light:#d1fae5; --accent-dark:#064e3b;
+    --bg:#f3faf7; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#022c22; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#064e3b 0%,#047857 58%,#064e3b 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">MongoDB<span class="ver">7.0 / 8.0</span></div>
+  <div class="sub">BSON 文档 · 副本集与分片</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#安装与本地起服务">安装与本地起服务</a>
+  <a class="sub-link" href="#最小可运行示例">最小可运行示例</a>
+  <a href="#2-功能特性总览">2. 功能特性总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-bson-与文档模型">3.1 BSON 与文档模型</a>
+  <a class="sub-link" href="#32-wiredtiger-存储引擎">3.2 WiredTiger 存储引擎</a>
+  <a class="sub-link" href="#33-副本集选举与-oplog">3.3 副本集、选举与 oplog</a>
+  <a class="sub-link" href="#34-分片片键决定上限">3.4 分片：片键决定上限</a>
+  <a class="sub-link" href="#35-索引与-esr-规则">3.5 索引与 ESR 规则</a>
+  <a class="sub-link" href="#36-聚合管道与事务边界">3.6 聚合管道与事务边界</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-生产级客户端初始化">4.1 生产级客户端初始化</a>
+  <a class="sub-link" href="#42-结构体bsonm-与-bsond">4.2 结构体、bson.M 与 bson.D</a>
+  <a class="sub-link" href="#43-crud-与常见运算符">4.3 CRUD 与常见运算符</a>
+  <a class="sub-link" href="#44-错误处理">4.4 错误处理</a>
+  <a class="sub-link" href="#45-聚合管道">4.5 聚合管道</a>
+  <a class="sub-link" href="#46-事务含重试">4.6 事务（含重试）</a>
+  <a class="sub-link" href="#47-分页与-change-streams">4.7 分页与 Change Streams</a>
+  <a href="#5-版本演进速览">5. 版本演进速览</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>MongoDB 技术介绍与使用指南（Go 后端视角）</h1>
+<p>面向文档的分布式数据库：BSON 灵活 schema、WiredTiger 文档级并发、副本集与分片、聚合管道与多文档事务，讲清什么时候该用文档模型以及片键选错的代价。</p>
+<p style="opacity:.8;font-size:13.5px">BSON 文档 · 副本集与分片</p>
+<div class="meta"><span>BSON 文档模型</span><span>WiredTiger 文档级锁</span><span>副本集 + oplog</span><span>片键三要素</span><span>writeConcern / readConcern</span><span>Change Streams</span><span>mongo-go-driver v1.x</span></div>
+</div>
+<blockquote><p>面向文档的分布式数据库：BSON 灵活 schema、WiredTiger 文档级并发、副本集与分片、聚合管道与多文档事务——讲清「什么时候该用文档模型，以及片键选错的代价」。 上游：<a href="https://github.com/mongodb/mongo">https://github.com/mongodb/mongo</a>　|　服务端主线：<strong>7.0 / 8.0</strong>（整理于 2026-11）　|　Go 驱动：<a href="https://github.com/mongodb/mongo-go-driver">mongodb/mongo-go-driver</a> v1.x 协议：服务端 <strong>SSPL</strong>（4.0 起）/ Go 驱动 Apache-2.0；具体版本以上游最新 release 为准。</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p><a href="../mysql/mysql-guide.html">MySQL 篇</a>存「行 + 表 + 外键」，<a href="../redis/redis-guide.html">go-redis 篇</a>存「键 + 值」，MongoDB 存的是<strong>自描述的 BSON 文档</strong>：一个用户连同他的地址数组、偏好对象、标签列表，全在一条文档里，读取时一次 I/O 拿全。这是它最大的优势，也是最容易滥用的地方。</p>
+<ul><li><strong>适用场景</strong>：schema 频繁演进的半结构化数据、嵌套/数组天然的业务对象（商品属性、内容、事件）、需要水平扩展的大容量写入、原型快速迭代、地理与时序工作负载</li><li><strong>不适合</strong>：大量多表 JOIN 与复杂关联分析、强一致的跨行金融事务（<a href="../mysql/mysql-guide.html">MySQL</a> 更直接）、全文检索与相关性排序（用 <a href="../elasticsearch/elasticsearch-guide.html">Elasticsearch</a>）、纯 KV 高频缓存（用 <a href="../redis/redis-guide.html">go-redis</a>）、固定 schema 的报表分析（用列存 OLAP）</li></ul>
+<blockquote><p>与 ES 的分工：MongoDB 是<strong>主数据的存储</strong>，ES 是<strong>为检索而建的副本</strong>。常见组合是 MongoDB 存文档、ES 存检索字段；别把 ES 当主库，也别用 MongoDB 的 <code>$text</code> 去做严肃的全文搜索。</p></blockquote>
+<h3 id="安装与本地起服务">安装与本地起服务</h3>
+<pre><code class="lang-bash">go get go.mongodb.org/mongo-driver/mongo
+docker run --rm -d --name mongo-dev -p 27017:27017 mongo:7.0
+# 事务与 Change Stream 需要副本集，本地可起单节点副本集：
+# docker run --rm -d -p 27017:27017 mongo:7.0 --replSet rs0
+# docker exec mongo-dev mongosh --eval 'rs.initiate()'</code></pre>
+<h3 id="最小可运行示例">最小可运行示例</h3>
+<pre><code class="lang-go">package main
+
+import (
+    "context"
+    "fmt"
+    "time"
+
+    "go.mongodb.org/mongo-driver/bson"
+    "go.mongodb.org/mongo-driver/mongo"
+    "go.mongodb.org/mongo-driver/mongo/options"
+)
+
+func main() {
+    ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+    defer cancel()
+
+    client, err := mongo.Connect(ctx,
+        options.Client().ApplyURI("mongodb://localhost:27017"))
+    if err != nil { panic(err) }
+    defer client.Disconnect(ctx)
+    if err := client.Ping(ctx, nil); err != nil { panic(err) } // Connect 不建连
+
+    coll := client.Database("app").Collection("users")
+    res, err := coll.InsertOne(ctx, bson.M{"name": "alice", "tags": bson.A{"go", "db"}})
+    if err != nil { panic(err) }
+    fmt.Println("inserted:", res.InsertedID)
+
+    var doc bson.M
+    if err := coll.FindOne(ctx, bson.M{"name": "alice"}).Decode(&amp;doc); err != nil {
+        panic(err)
+    }
+    fmt.Println(doc)
+}</code></pre>
+<blockquote><p>和 <code>database/sql</code> 一样，<strong><code>mongo.Connect</code> 不做真实建连</strong>，<code>Ping</code> 才是探活。<code>Client</code> 是连接池，全局复用、退出时 <code>Disconnect</code>。</p></blockquote>
+<hr>
+
+</section>
+<section data-anchor="2-功能特性总览">
+<h2 id="2-功能特性总览">2. 功能特性总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>数据模型</td><td>BSON 文档（最大 16MB）、嵌套文档与数组、<code>_id</code> 与 ObjectId、Schema Validation</td></tr><tr><td>CRUD</td><td><code>InsertOne/Many</code>、<code>Find</code>、<code>UpdateOne/Many</code> + 更新运算符（<code>$set</code> / <code>$inc</code> / <code>$push</code> / <code>$addToSet</code>）、Upsert、<code>FindOneAndUpdate</code></td></tr><tr><td>查询</td><td>丰富的查询运算符（<code>$eq</code> / <code>$in</code> / <code>$elemMatch</code> / <code>$expr</code>）、投影、排序、<code>explain()</code></td></tr><tr><td>聚合管道</td><td><code>$match</code> → <code>$project</code> → <code>$group</code> → <code>$sort</code> → <code>$lookup</code> → <code>$facet</code>、<code>$merge</code>、窗口函数</td></tr><tr><td>索引</td><td>单键/复合/多键/唯一/稀疏/部分/TTL/文本/地理/哈希/通配符；ESR 规则</td></tr><tr><td>高可用</td><td>副本集（Primary/Secondary/Arbiter）、oplog、自动选举与故障转移</td></tr><tr><td>水平扩展</td><td>分片集群（mongos / config server / shard）、片键、chunk 分裂与均衡</td></tr><tr><td>一致性</td><td><code>writeConcern</code>（w / j）、<code>readConcern</code>（local / majority / snapshot / linearizable）、<code>readPreference</code></td></tr><tr><td>事务</td><td>多文档 ACID 事务（副本集 4.0+ / 分片 4.2+），快照隔离</td></tr><tr><td>变更流</td><td>Change Streams（基于 oplog，可续传 resume token）</td></tr><tr><td>其他</td><td>GridFS 大文件、时序集合、Atlas Search / Vector Search、可查询加密</td></tr><tr><td>Go 驱动</td><td><code>bson.M</code> / <code>bson.D</code> / 结构体 tag、连接池配置、Session、重试写、<code>CommandError</code></td></tr></tbody></table></div>
+<hr>
+
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-bson-与文档模型">3.1 BSON 与文档模型</h3>
+<pre><code class="lang-text">{
+  _id: ObjectId("..."),          // 主键，12 字节：时间戳 + 随机值 + 计数器
+  name: "alice",
+  address: { city: "Shenzhen" }, // 嵌套文档
+  tags: ["go", "db"],            // 数组 → 多键索引
+  created_at: ISODate("...")
+}</code></pre>
+<ul><li>BSON 是 JSON 的二进制扩展，多了 <code>ObjectId</code> / <code>Date</code> / <code>Decimal128</code> / <code>Binary</code> 等类型</li><li><strong>单文档最大 16MB</strong>：无界数组（把日志、评论无限 <code>$push</code>）是最常见的建模事故</li><li>文档模型的核心取舍：<strong>用冗余换读取性能</strong>。一次查询取全对象，但同一份数据在多处冗余时更新要自己保证一致</li></ul>
+<p><code>bson.M</code>（map，<strong>无序</strong>）与 <code>bson.D</code>（有序切片）的差异在 Go 里非常关键：<strong>命令、索引键、排序条件、聚合管道阶段必须用 <code>bson.D</code></strong>，因为字段顺序有语义；用 <code>bson.M</code> 可能导致索引前缀不生效或命令解析异常。</p>
+<h3 id="32-wiredtiger-存储引擎">3.2 WiredTiger 存储引擎</h3>
+<pre><code class="lang-text">写入 ──► WiredTiger Cache（B+ 树，文档级并发控制）
+      ──► Journal（预写日志，默认每 100ms / 提交时刷盘）
+      ──► Checkpoint（每 60s 把一致性快照落盘）</code></pre>
+<ul><li><strong>文档级锁</strong>：不同文档可并发写，粒度比 MySQL 的行锁相近但实现不同；同一文档的两个 <code>$inc</code> 是原子的</li><li>默认 <strong>snappy 压缩</strong>（可换 zstd），索引前缀压缩</li><li>MVCC：读操作看到某个快照，不被写阻塞</li><li>Cache 默认约 <code>(RAM - 1GB) / 2</code>，容器里务必设内存限制，否则容易被 OOM</li></ul>
+<h3 id="33-副本集选举与-oplog">3.3 副本集、选举与 oplog</h3>
+<pre><code class="lang-text">            ┌──────────► Primary（所有写）
+            │                 │ oplog（capped collection，幂等的操作日志）
+   App ─────┤                 ▼
+            └──────────  Secondary（异步复制，可承担读）</code></pre>
+<ul><li>写先落 Primary 的 oplog，Secondary 拉取并重放；<strong>默认异步复制</strong>，所以读 Secondary 可能读到旧数据</li><li>选举基于 Raft 变体，多数派可用才能选出 Primary；<strong>节点数用奇数</strong>，Arbiter 不存数据只投票</li><li><code>w: majority</code> 表示写被多数节点确认才返回，是「主从切换不丢数据」的最低要求</li></ul>
+<p>三个旋钮必须分清：</p>
+<div class="table-wrap"><table><thead><tr><th>旋钮</th><th>回答的问题</th><th>常用值</th></tr></thead><tbody><tr><td><code>writeConcern</code></td><td>写要被多少节点确认才成功</td><td><code>w: majority, j: true</code></td></tr><tr><td><code>readConcern</code></td><td>读到的数据要多「稳」</td><td><code>local</code> / <code>majority</code> / <code>snapshot</code></td></tr><tr><td><code>readPreference</code></td><td>从哪个节点读</td><td><code>primary</code>（默认）/ <code>secondaryPreferred</code></td></tr></tbody></table></div>
+<h3 id="34-分片片键决定上限">3.4 分片：片键决定上限</h3>
+<pre><code class="lang-text">App ──► mongos（路由）──► config server（chunk → shard 映射）──► shard 1..N</code></pre>
+<ul><li><strong>目标查询</strong>（带完整片键）只打一个分片；<strong>scatter-gather</strong>（不带片键）广播到所有分片再汇聚，成本随分片数线性增长</li><li>片键三要素：<strong>高基数</strong>（可分的 chunk 多）、<strong>低频率</strong>（单值不占太大比例）、<strong>非单调</strong>（避免所有新写入集中在最后一个 chunk 形成热点）</li><li>单调递增的 <code>_id</code>（ObjectId 含时间戳）做片键 → 写入热点；低基数字段（如 <code>status</code>）做片键 → jumbo chunk 无法拆分</li><li>常用方案：哈希片键（写入均匀，范围查询变差）或复合片键 <code>{tenant_id: 1, created_at: 1}</code>（同租户局部、可范围查）</li><li><strong>片键创建后不可改</strong>（4.4+ 可用 <code>refineCollectionShardKey</code> 加后缀，但不能换字段）</li></ul>
+<h3 id="35-索引与-esr-规则">3.5 索引与 ESR 规则</h3>
+<p>复合索引字段顺序遵循 <strong>E → S → R</strong>：</p>
+<ol><li><strong>E</strong>quality：等值匹配字段放最前（<code>status: "active"</code>）</li><li><strong>S</strong>ort：排序字段次之（<code>created_at: -1</code>），可避免内存排序</li><li><strong>R</strong>ange：范围条件最后（<code>age: {$gte: 18}</code>）</li></ol>
+<pre><code class="lang-javascript">db.orders.createIndex({ tenant_id: 1, created_at: -1, amount: 1 })
+// 适合：tenant_id 等值 + created_at 排序 + amount 范围</code></pre>
+<p>多键索引（数组字段）会让一个文档产生多个索引项；复合索引里<strong>最多一个数组字段</strong>。无索引排序受 100MB 内存限制，超限需 <code>allowDiskUse: true</code>（但那是救急，不是方案）。</p>
+<h3 id="36-聚合管道与事务边界">3.6 聚合管道与事务边界</h3>
+<p>管道逐阶段流式处理，<code>$match</code> 和 <code>$project</code> <strong>越靠前越省</strong>，最好能让 <code>$match</code> 命中索引。单阶段内存上限 100MB。</p>
+<p>多文档事务提供快照隔离，但：<strong>默认事务最长 60 秒</strong>、跨分片事务代价高、写冲突会 abort（错误含 <code>WriteConflict</code>），应用必须能<strong>整体重试事务</strong>。事务不是用来替代文档内嵌建模的——能用单文档原子更新解决，就不要开事务。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-生产级客户端初始化">4.1 生产级客户端初始化</h3>
+<pre><code class="lang-go">package db
+
+import (
+    "context"
+    "time"
+
+    "go.mongodb.org/mongo-driver/mongo"
+    "go.mongodb.org/mongo-driver/mongo/options"
+    "go.mongodb.org/mongo-driver/mongo/readpref"
+)
+
+func Open(uri string) (*mongo.Client, error) {
+    ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+    defer cancel()
+
+    opts := options.Client().ApplyURI(uri).
+        SetMaxPoolSize(100).
+        SetMinPoolSize(10).
+        SetMaxConnIdleTime(5 * time.Minute).
+        SetServerSelectionTimeout(5 * time.Second).
+        SetRetryWrites(true).
+        SetReadPreference(readpref.Primary())
+
+    client, err := mongo.Connect(ctx, opts)
+    if err != nil { return nil, err }
+    if err := client.Ping(ctx, readpref.Primary()); err != nil {
+        _ = client.Disconnect(ctx)
+        return nil, err
+    }
+    return client, nil
+}</code></pre>
+<blockquote><p><code>MaxPoolSize × 服务副本数</code> 必须小于服务端连接上限。所有操作传带超时的 <code>ctx</code>，否则一次网络抖动会挂住整个连接池。</p></blockquote>
+<h3 id="42-结构体bsonm-与-bsond">4.2 结构体、bson.M 与 bson.D</h3>
+<pre><code class="lang-go">type User struct {
+    ID        primitive.ObjectID `bson:"_id,omitempty"`
+    Name      string             `bson:"name"`
+    Email     string             `bson:"email"`
+    Tags      []string           `bson:"tags,omitempty"`
+    CreatedAt time.Time          `bson:"created_at"`
+}
+
+// 简单条件：bson.M 够用
+filter := bson.M{"email": email}
+
+// 命令/索引/排序/管道：必须用有序 bson.D
+sort := bson.D{{Key: "created_at", Value: -1}}
+idx := mongo.IndexModel{
+    Keys:    bson.D{{Key: "tenant_id", Value: 1}, {Key: "created_at", Value: -1}},
+    Options: options.Index().SetName("tenant_created"),
+}
+_, err := coll.Indexes().CreateOne(ctx, idx)</code></pre>
+<h3 id="43-crud-与常见运算符">4.3 CRUD 与常见运算符</h3>
+<pre><code class="lang-go">// 插入（批量优先）
+_, err := coll.InsertMany(ctx, []any{u1, u2},
+    options.InsertMany().SetOrdered(false)) // 无序：单条失败不影响其余
+
+// 查询 + 投影 + 排序 + 分页
+cur, err := coll.Find(ctx,
+    bson.M{"status": "active", "created_at": bson.M{"$gte": since}},
+    options.Find().
+        SetProjection(bson.D{{Key: "name", Value: 1}, {Key: "email", Value: 1}}).
+        SetSort(bson.D{{Key: "created_at", Value: -1}}).
+        SetLimit(20))
+if err != nil { return err }
+defer cur.Close(ctx)
+for cur.Next(ctx) {
+    var u User
+    if err := cur.Decode(&amp;u); err != nil { return err }
+    handle(u)
+}
+if err := cur.Err(); err != nil { return err } // 别忘了检查游标错误
+
+// 更新（区分 $set 与「替换整文档」）
+_, err = coll.UpdateOne(ctx,
+    bson.M{"_id": id},
+    bson.M{"$set": bson.M{"name": "bob"}, "$inc": bson.M{"login_count": 1}},
+    options.Update().SetUpsert(true))
+
+// 数组
+_, _ = coll.UpdateOne(ctx, bson.M{"_id": id},
+    bson.M{"$addToSet": bson.M{"tags": "vip"}})</code></pre>
+<h3 id="44-错误处理">4.4 错误处理</h3>
+<pre><code class="lang-go">var u User
+err := coll.FindOne(ctx, bson.M{"email": email}).Decode(&amp;u)
+switch {
+case errors.Is(err, mongo.ErrNoDocuments):
+    return nil // 未找到是业务分支，不是故障
+case err != nil:
+    return err
+}
+
+_, err = coll.InsertOne(ctx, doc)
+if mongo.IsDuplicateKeyError(err) {
+    return ErrAlreadyExists // 唯一索引冲突，转成业务错误
+}
+var ce mongo.CommandError
+if errors.As(err, &amp;ce) &amp;&amp; ce.HasErrorLabel("TransientTransactionError") {
+    // 事务整体重试
+}</code></pre>
+<h3 id="45-聚合管道">4.5 聚合管道</h3>
+<pre><code class="lang-go">pipeline := mongo.Pipeline{
+    bson.D{{Key: "$match", Value: bson.D{
+        {Key: "status", Value: "paid"},
+        {Key: "created_at", Value: bson.D{{Key: "$gte", Value: since}}},
+    }}},
+    bson.D{{Key: "$group", Value: bson.D{
+        {Key: "_id", Value: "$city"},
+        {Key: "total", Value: bson.D{{Key: "$sum", Value: "$amount"}}},
+        {Key: "orders", Value: bson.D{{Key: "$sum", Value: 1}}},
+    }}},
+    bson.D{{Key: "$sort", Value: bson.D{{Key: "total", Value: -1}}}},
+    bson.D{{Key: "$limit", Value: 10}},
+}
+cur, err := coll.Aggregate(ctx, pipeline,
+    options.Aggregate().SetAllowDiskUse(true))</code></pre>
+<blockquote><p><code>$match</code> 放最前且要能命中索引；<code>$lookup</code> 是多文档 JOIN，在分片集群上代价很高，别把它当关系型 JOIN 滥用。</p></blockquote>
+<h3 id="46-事务含重试">4.6 事务（含重试）</h3>
+<pre><code class="lang-go">func Transfer(ctx context.Context, client *mongo.Client, from, to int64, amount int64) error {
+    sess, err := client.StartSession()
+    if err != nil { return err }
+    defer sess.EndSession(ctx)
+
+    // WithTransaction 会自动处理 TransientTransactionError 与 commit 重试
+    _, err = sess.WithTransaction(ctx, func(sc mongo.SessionContext) (any, error) {
+        accounts := client.Database("app").Collection("accounts")
+        r := accounts.FindOneAndUpdate(sc,
+            bson.M{"_id": from, "balance": bson.M{"$gte": amount}},
+            bson.M{"$inc": bson.M{"balance": -amount}})
+        if r.Err() != nil { return nil, r.Err() }
+        if _, e := accounts.UpdateOne(sc, bson.M{"_id": to},
+            bson.M{"$inc": bson.M{"balance": amount}}); e != nil { return nil, e }
+        return nil, nil
+    })
+    return err
+}</code></pre>
+<blockquote><p>需要副本集（或分片集群）；事务默认 60s 超时；闭包里<strong>必须用 <code>sc</code>（SessionContext）而不是外层 <code>ctx</code></strong>，否则操作不在事务内。</p></blockquote>
+<h3 id="47-分页与-change-streams">4.7 分页与 Change Streams</h3>
+<pre><code class="lang-go">// 深分页不要用 skip（越深越慢，和 MySQL 的 OFFSET 同理）
+filter := bson.M{"status": "active"}
+if lastID != "" { // 游标式：用上一页最后一个 _id
+    oid, _ := primitive.ObjectIDFromHex(lastID)
+    filter["_id"] = bson.M{"$lt": oid}
+}
+cur, _ := coll.Find(ctx, filter,
+    options.Find().SetSort(bson.D{{Key: "_id", Value: -1}}).SetLimit(20))
+
+// 变更流：需要副本集，保存 resume token 以便断点续传
+cs, err := coll.Watch(ctx, mongo.Pipeline{
+    bson.D{{Key: "$match", Value: bson.D{
+        {Key: "operationType", Value: bson.D{{Key: "$in", Value: bson.A{"insert", "update"}}}},
+    }}},
+}, options.ChangeStream().SetFullDocument(options.UpdateLookup))
+defer cs.Close(ctx)
+for cs.Next(ctx) {
+    var ev bson.M
+    if err := cs.Decode(&amp;ev); err != nil { return err }
+    token := cs.ResumeToken() // 持久化，重启后 SetResumeAfter(token)
+    _ = token
+    handleChange(ev)
+}</code></pre>
+<hr>
+
+</section>
+<section data-anchor="5-版本演进速览">
+<h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>关键变化与迁移注意点</th></tr></thead><tbody><tr><td>3.6 / 4.0</td><td>WiredTiger 成为默认；<strong>4.0 引入副本集多文档事务</strong>；许可从 AGPL 改为 <strong>SSPL</strong></td></tr><tr><td>4.2</td><td><strong>分片集群多文档事务</strong>、按需物化视图、<code>$merge</code>；分布式事务代价仍高</td></tr><tr><td>4.4</td><td><code>refineCollectionShardKey</code> 可给片键加后缀、可隐藏索引、聚合 <code>$unionWith</code></td></tr><tr><td>5.0</td><td><strong>时序集合</strong>（time-series collections）、<code>$setWindowFields</code> 窗口函数、Stable API（版本化 API，降低升级破坏风险）</td></tr><tr><td>6.0 / 7.0</td><td>查询与分片性能改进、可查询加密（Queryable Encryption）、change stream 增强、复合片键与均衡优化</td></tr><tr><td>8.0</td><td>批量写入与 <code>$lookup</code> 性能大幅提升、查询与复制优化、默认配置调整</td></tr></tbody></table></div>
+<p><strong>升级注意</strong>：</p>
+<ul><li>升级前用 <strong>Stable API</strong>（<code>serverApi</code> + <code>SetServerAPIOptions</code>）锁定 API 版本，可显著降低跨大版本的兼容性风险</li><li>驱动 v1.x → <strong>v2</strong> 已发布：模块路径变为 <code>go.mongodb.org/mongo-driver/v2/...</code>，<code>bson</code> / <code>options</code> 包路径与部分构造 API 有变化，<strong>不是简单改 import 就能升</strong>；本文示例基于 v1.x</li><li>特性版本（feature compatibility version, FCV）需按官方路径逐级升级，不能跨大版本直接跳</li><li><strong>SSPL 许可</strong>：自建内部使用通常没问题，但把 MongoDB 作为服务对外提供需核对条款；这也是很多团队选 PostgreSQL <code>jsonb</code> 或兼容方案的原因之一</li></ul>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong><code>bson.M</code> 用于有序场景</strong>：命令、索引键、排序、聚合管道必须用 <code>bson.D</code>。用 map 会导致字段顺序随机，索引前缀失效甚至命令语义错误。</li><li><strong>无界数组 / 文档超 16MB</strong>：把评论、日志、事件无限 <code>$push</code> 进一个文档。拆成独立集合，用引用 + 分页。</li><li><strong>片键选错且不可改</strong>：单调递增字段 → 写入热点；低基数字段 → jumbo chunk；不带片键的查询 → 广播所有分片。上线前用真实数据分布压测。</li><li><strong>读 Secondary 读到旧数据</strong>：默认异步复制；报表类可接受，写后读自己必须 <code>readPreference=primary</code>。</li><li><strong><code>writeConcern</code> 用 <code>w:1</code></strong>：主从切换时可能丢已确认的写。关键数据用 <code>w:majority, j:true</code>，代价是延迟略升。</li><li><strong>事务当万能药</strong>：事务默认 60s、跨分片代价高、写冲突要重试。优先用单文档原子更新（<code>$inc</code> / <code>$set</code>）与内嵌建模。</li><li><strong>事务闭包里用错 ctx</strong>：必须用 <code>SessionContext sc</code>，否则操作不在事务里，看似成功实则裸写。</li><li><strong>深分页用 <code>skip</code></strong>：与 MySQL <code>LIMIT offset</code> 同理，越深越慢。用 <code>_id</code> 或稳定排序字段做游标。</li><li><strong>无索引排序 / 大聚合不打 <code>$match</code></strong>：触发 100MB 内存上限。<code>allowDiskUse</code> 只是兜底，正解是加符合 ESR 的复合索引并把 <code>$match</code> 前置。</li><li><strong><code>$where</code> / <code>$expr</code> / 前缀正则</strong>：无法用索引，全集合扫描。用具体运算符与预计算字段。</li><li><strong><code>$lookup</code> 滥用</strong>：把它当关系型 JOIN 写多层管道，分片集群上会很慢。文档模型应该靠内嵌减少关联。</li><li><strong>唯一索引与 <code>null</code> / 稀疏字段</strong>：稀疏或部分索引的行为与 MySQL 不同，唯一性在缺字段时可能不符预期，用 <code>partialFilterExpression</code> 明确定义。</li><li><strong>时间类型与时区</strong>：Go 的 <code>time.Time</code> 以 UTC 存入 BSON Date；不要把时间存成字符串再比较，也不要在应用层混用本地时区。</li><li><strong>不设 Context 超时 / 不检查游标 <code>Err()</code></strong>：网络抖动挂住连接池；<code>for cur.Next()</code> 循环结束必须检查 <code>cur.Err()</code>，否则迭代中的错误被静默吞掉。</li><li><strong>连接池与容器内存</strong>：<code>MaxPoolSize × 副本数</code> 超服务端上限；WiredTiger cache 默认吃一半内存，容器里不设 limit 容易 OOM。</li><li><strong>Change Stream 没存 resume token</strong>：进程重启后从「现在」开始监听，中间变更永久丢失。</li><li><strong>把 MongoDB 当搜索或缓存</strong>：<code>$text</code> 能力有限（用 <a href="../elasticsearch/elasticsearch-guide.html">Elasticsearch</a>）；高频 KV 用 <a href="../redis/redis-guide.html">go-redis</a>。</li></ol>
+<hr>
+
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>MongoDB</th><th>MySQL / PostgreSQL</th><th>Elasticsearch</th><th>DynamoDB / Cassandra</th><th>Couchbase</th></tr></thead><tbody><tr><td>模型</td><td><strong>BSON 文档</strong></td><td>关系行（PG 有 <code>jsonb</code>）</td><td>倒排索引文档</td><td>KV / 宽列</td><td>文档 + KV</td></tr><tr><td>schema</td><td>灵活，应用侧约束</td><td>强 schema</td><td>mapping（可 strict）</td><td>键设计即 schema</td><td>灵活</td></tr><tr><td>事务</td><td>多文档 ACID（有代价）</td><td><strong>强，成熟</strong></td><td>无</td><td>有限</td><td>有限</td></tr><tr><td>关联查询</td><td><code>$lookup</code>（弱）</td><td><strong>JOIN 强</strong></td><td>不支持</td><td>不支持</td><td>有限</td></tr><tr><td>全文检索</td><td>弱</td><td>弱（PG 尚可）</td><td><strong>强</strong></td><td>无</td><td>一般</td></tr><tr><td>水平扩展</td><td><strong>分片原生</strong></td><td>需分库分表</td><td>分片原生</td><td>原生</td><td>原生</td></tr><tr><td>运维成本</td><td>中（副本集/分片）</td><td>低～中</td><td>高（JVM）</td><td>托管低 / 自建高</td><td>中</td></tr><tr><td>许可</td><td><strong>SSPL</strong></td><td>GPL / PostgreSQL License</td><td>ELv2 / AGPLv3</td><td>专有 / Apache-2.0</td><td>专有 / Apache</td></tr></tbody></table></div>
+<p>一句话决策：</p>
+<ul><li><strong>数据本身就是嵌套/数组、schema 还在快速演进、或需要原生水平扩展</strong> → MongoDB，同时接受「用内嵌换 JOIN」的建模约束。</li><li><strong>主数据强一致、多表关联、金融类事务</strong> → <a href="../mysql/mysql-guide.html">MySQL</a>；<strong>既要关系又要半结构化</strong> → PostgreSQL 的 <code>jsonb</code> 往往比引入一个新数据库更省事。</li><li><strong>搜索、相关性排序、日志检索</strong> → <a href="../elasticsearch/elasticsearch-guide.html">Elasticsearch</a> 或 Loki，<strong>不要</strong>用 <code>$text</code> 硬撑。</li><li><strong>超大规模 KV、云上托管、写入线性扩展</strong> → DynamoDB / Cassandra，但查询能力受键设计约束，前期建模要一次做对。</li><li><strong>高频缓存、锁、计数</strong> → <a href="../redis/redis-guide.html">go-redis</a>；<strong>指标与告警</strong> → <a href="../prometheus/prometheus-guide.html">Prometheus</a>。</li><li><strong>把 MongoDB 作为对外服务提供</strong> → 先核对 SSPL 合规边界，必要时选 Apache-2.0 生态的替代方案。</li></ul>
+<blockquote><p>一条经验：MongoDB 出问题的地方，八成不是数据库不行，而是<strong>片键没想清楚</strong>、<strong>文档无界增长</strong>、<strong>把 <code>$lookup</code> 当 JOIN 用</strong>。建模阶段花的每一小时，都会省下后面分片迁移的一周。</p></blockquote>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

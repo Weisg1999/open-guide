@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenTelemetry · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#7e22ce; --accent-light:#f3e8ff; --accent-dark:#581c87;
+    --bg:#faf7fd; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#1e1030; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#581c87 0%,#7e22ce 58%,#581c87 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">OpenTelemetry<span class="ver">v1.x</span></div>
+  <div class="sub">W3C TraceContext · 跨服务链路</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#安装">安装</a>
+  <a class="sub-link" href="#最小可运行示例本地打印无需后端">最小可运行示例（本地打印，无需后端）</a>
+  <a href="#2-功能特性总览">2. 功能特性总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-trace-是一棵-span-树">3.1 Trace 是一棵 Span 树</a>
+  <a class="sub-link" href="#32-跨进程传播traceparent">3.2 跨进程传播：traceparent</a>
+  <a class="sub-link" href="#33-sdk-管线">3.3 SDK 管线</a>
+  <a class="sub-link" href="#34-采样头部-vs-尾部">3.4 采样：头部 vs 尾部</a>
+  <a class="sub-link" href="#35-resource-与三支柱关联">3.5 Resource 与三支柱关联</a>
+  <a class="sub-link" href="#36-与-prometheus-的职责边界">3.6 与 Prometheus 的职责边界</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-生产级初始化">4.1 生产级初始化</a>
+  <a class="sub-link" href="#42-手动埋点">4.2 手动埋点</a>
+  <a class="sub-link" href="#43-http-自动埋点与跨服务传播">4.3 HTTP 自动埋点与跨服务传播</a>
+  <a class="sub-link" href="#44-grpc-拦截器接-grpc-篇grpcgrpc-guidemd">4.4 gRPC 拦截器（接 [gRPC 篇](../grpc/grpc-guide.md)）</a>
+  <a class="sub-link" href="#45-把-trace_id-写进日志接-zap-篇zapzap-guidemd">4.5 把 trace_id 写进日志（接 [Zap 篇](../zap/zap-guide.md)）</a>
+  <a class="sub-link" href="#46-异步任务传播接-asynq-篇asynqasynq技术文档与使用手册md">4.6 异步任务传播（接 [asynq 篇](../asynq/asynq技术文档与使用手册.md)）</a>
+  <a class="sub-link" href="#47-baggage跨服务透传业务上下文">4.7 Baggage（跨服务透传业务上下文）</a>
+  <a class="sub-link" href="#48-collector-配置与本地起服务">4.8 Collector 配置与本地起服务</a>
+  <a class="sub-link" href="#49-单测">4.9 单测</a>
+  <a href="#5-版本演进速览">5. 版本演进速览</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>OpenTelemetry 技术介绍与使用指南（Go 分布式追踪）</h1>
+<p>云原生可观测性的统一标准：一套 API/SDK 产出 Trace / Metrics / Logs，用 W3C TraceContext 把跨服务、跨消息队列的调用串成一条链。</p>
+<p style="opacity:.8;font-size:13.5px">W3C TraceContext · 跨服务链路</p>
+<div class="meta"><span>Trace / Metrics / Logs</span><span>W3C traceparent 传播</span><span>ParentBased 采样</span><span>BatchSpanProcessor</span><span>OTLP + Collector</span><span>Gin / gRPC / Zap / asynq 串联</span></div>
+</div>
+<blockquote><p>云原生可观测性的统一标准：一套 API/SDK 产出 Trace / Metrics / Logs，用 W3C TraceContext 把跨服务、跨消息队列的调用串成一条链。 上游：<a href="https://github.com/open-telemetry/opentelemetry-go">https://github.com/open-telemetry/opentelemetry-go</a>　|　Go SDK 主线：<strong>v1.x（API 稳定）</strong>（整理于 2026-11）　|　传输协议：<a href="https://opentelemetry.io/docs/specs/otlp/">OTLP</a> 协议：Apache-2.0；Collector 与后端另有各自版本，具体以上游最新 release 为准。</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p>先厘清一个常见误解：<strong>OpenTelemetry 不是监控系统，也不是数据库</strong>。它是「<strong>怎么产生、怎么描述、怎么传播、怎么导出遥测数据</strong>」的标准与 SDK；存储、查询与可视化由 Jaeger / Tempo / Prometheus / Loki 或商业 APM 负责。</p>
+<p>它解决的核心问题：一次用户请求穿过网关 → HTTP 服务 → gRPC 服务 → 异步任务 → 数据库，出问题时日志散落在五个地方，靠时间戳人肉拼接。OpenTelemetry 给每个请求分配一个全局 <code>trace_id</code>，让每一段工作都成为挂在同一个 Trace 下的 Span。</p>
+<ul><li><strong>适用场景</strong>：微服务排障、跨服务延迟归因、异步链路（MQ / 定时任务）追踪、统一多语言埋点、指标与链路关联（exemplar）</li><li><strong>不适合</strong>：存明细日志内容（用 <a href="../zap/zap-guide.html">Zap + 日志系统</a>）、长期指标存储与告警（用 <a href="../prometheus/prometheus-guide.html">Prometheus</a>）、替代业务审计日志（链路会被采样）</li></ul>
+<p>本仓库里它是「黏合剂」：<a href="../gin/gin-guide.html">Gin</a> 中间件、<a href="../grpc/grpc-guide.html">gRPC</a> 拦截器、<a href="../asynq/asynq技术文档与使用手册.html">asynq</a> Handler 都能挂同一个 TracerProvider，Zap 日志里写 <code>trace_id</code> 后可直接从日志跳到链路。</p>
+<h3 id="安装">安装</h3>
+<pre><code class="lang-bash">go get go.opentelemetry.io/otel \
+       go.opentelemetry.io/otel/sdk \
+       go.opentelemetry.io/otel/sdk/trace \
+       go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp \
+       go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp</code></pre>
+<blockquote><p><code>semconv</code> 包路径带版本（如 <code>go.opentelemetry.io/otel/semconv/v1.26.0</code>），<strong>按所用 SDK 版本选择对应目录</strong>；<code>otelhttp</code> / <code>otelgrpc</code> 自动埋点在独立的 <code>contrib</code> 模块里，不在主 SDK。</p></blockquote>
+<h3 id="最小可运行示例本地打印无需后端">最小可运行示例（本地打印，无需后端）</h3>
+<pre><code class="lang-go">package main
+
+import (
+    "context"
+
+    "go.opentelemetry.io/otel"
+    "go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
+    sdktrace "go.opentelemetry.io/otel/sdk/trace"
+)
+
+func main() {
+    exp, _ := stdouttrace.New(stdouttrace.WithPrettyPrint())
+    tp := sdktrace.NewTracerProvider(sdktrace.WithSyncer(exp))
+    defer tp.Shutdown(context.Background())
+    otel.SetTracerProvider(tp)
+
+    ctx, span := otel.Tracer("demo").Start(context.Background(), "hello")
+    defer span.End()
+    _ = ctx
+}</code></pre>
+<hr>
+
+</section>
+<section data-anchor="2-功能特性总览">
+<h2 id="2-功能特性总览">2. 功能特性总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>三类信号</td><td>Trace（稳定）/ Metrics（稳定）/ Logs（逐步稳定），共用 Resource 与 Context</td></tr><tr><td>核心对象</td><td><code>TracerProvider</code>、<code>Tracer</code>、<code>Span</code>、<code>SpanContext</code>、<code>MeterProvider</code>、<code>LoggerProvider</code></td></tr><tr><td>Span 语义</td><td>名称、Kind、Attributes、Events、Links、Status、Exception、起止时间</td></tr><tr><td>上下文传播</td><td>进程内 <code>context.Context</code>；跨进程 W3C <code>traceparent</code> / <code>tracestate</code> / <code>baggage</code></td></tr><tr><td>采样</td><td><code>AlwaysSample</code> / <code>NeverSample</code> / <code>TraceIDRatioBased</code> / <code>ParentBased</code>，Collector 可做尾部采样</td></tr><tr><td>处理管线</td><td><code>SpanProcessor</code>：<code>SimpleSpanProcessor</code>（同步）/ <code>BatchSpanProcessor</code>（生产默认）</td></tr><tr><td>导出</td><td>OTLP over gRPC(4317) / HTTP(4318)、stdout、Jaeger / Zipkin 兼容端点</td></tr><tr><td>Resource</td><td><code>service.name</code> / <code>service.version</code> / <code>deployment.environment</code> —— 三支柱关联的统一身份</td></tr><tr><td>语义约定</td><td>Semantic Conventions：<code>http.route</code>、<code>db.system</code>、<code>rpc.method</code> 等统一字段命名</td></tr><tr><td>自动埋点</td><td><code>otelhttp</code>、<code>otelgrpc</code>、数据库与主流框架 instrumentation（contrib 仓库）</td></tr><tr><td>Collector</td><td>receiver → processor（batch / tail_sampling / attributes）→ exporter，与语言无关</td></tr></tbody></table></div>
+<hr>
+
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-trace-是一棵-span-树">3.1 Trace 是一棵 Span 树</h3>
+<pre><code class="lang-text">Trace (trace_id = 16 字节，全局唯一)
+└── Span A  [HTTP GET /orders]  span_id=8字节, parent=无
+    ├── Span B  [gRPC GetUser]        parent=A
+    │   └── Span C  [DB SELECT]       parent=B
+    └── Span D  [asynq send_email]    parent=A  ← 通过消息队列传播</code></pre>
+<p>每个 Span 的 <code>SpanContext</code> 包含 <code>trace_id</code>、<code>span_id</code>、trace flags（采样位）与 tracestate。<strong>父子关系不靠推断，靠显式把父 Span 放进 <code>context.Context</code></strong>——这是 Go 埋点最容易出错的地方。</p>
+<h3 id="32-跨进程传播traceparent">3.2 跨进程传播：traceparent</h3>
+<pre><code class="lang-text">traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01
+             │  └──────── trace_id ────────┘ └─ parent span_id ─┘ └flags
+             └─ 版本                                              01 = sampled</code></pre>
+<p>流程是 <strong>inject / extract</strong>：客户端把当前 SpanContext 注入 carrier（HTTP Header、gRPC Metadata、Kafka Header、asynq Task payload），服务端从 carrier 提取并作为新 Span 的父。中间件只负责搬运，<strong>不会自动创建 Trace</strong>——如果入口没配置 propagator，链路会在第一个网络边界断掉。</p>
+<pre><code class="lang-text">进程内:  ctx = context.WithValue(ctx, span)   ← otel.Tracer(...).Start(ctx, ...)
+跨进程:  Inject(ctx, HeaderCarrier)  ──网络──►  Extract(ctx, HeaderCarrier)</code></pre>
+<h3 id="33-sdk-管线">3.3 SDK 管线</h3>
+<pre><code class="lang-text">Instrumentation (手动 Start / otelhttp 自动)
+   │
+   ▼
+TracerProvider ──► Sampler（决定是否记录、是否采样）
+   │
+   ▼ (仅被采样的 Span)
+SpanProcessor ──► Batch：队列 + 定时/定量批 ──► Exporter ──► Collector
+                                                                │
+                                              receiver → processor → exporter
+                                                                ▼
+                                                    Jaeger / Tempo / 商业 APM</code></pre>
+<ul><li><code>SimpleSpanProcessor</code> 每个 Span 结束就同步导出，只适合本地调试</li><li><code>BatchSpanProcessor</code> 异步批量，生产必用；队列满时<strong>丢弃并计数</strong>，需要监控 <code>otelcol_exporter_dropped_spans</code> 一类指标</li><li><strong>Collector 不是必需的</strong>（应用可直连后端），但生产强烈建议：解耦后端、统一采样与脱敏、多语言汇聚</li></ul>
+<h3 id="34-采样头部-vs-尾部">3.4 采样：头部 vs 尾部</h3>
+<div class="table-wrap"><table><thead><tr><th></th><th>头部采样（SDK）</th><th>尾部采样（Collector）</th></tr></thead><tbody><tr><td>决策时机</td><td>请求入口，基于 trace_id 比例</td><td>整条 Trace 收齐后</td></tr><tr><td>优点</td><td>省资源、下游零开销</td><td>可「只保留出错 / 慢的链路」</td></tr><tr><td>缺点</td><td>会漏掉低概率错误</td><td>所有 Span 都要先传到 Collector</td></tr></tbody></table></div>
+<p>生产常见组合：SDK 用 <code>ParentBased(TraceIDRatioBased(0.1))</code> 保底（<strong>ParentBased 保证同一条 Trace 内决策一致，否则链路会残缺</strong>），Collector 再对 <code>status=ERROR</code> 或高延迟链路做尾部补采。</p>
+<h3 id="35-resource-与三支柱关联">3.5 Resource 与三支柱关联</h3>
+<p><code>service.name</code> 是<strong>最关键的一个属性</strong>：Zap 日志、Prometheus 指标、OTel Trace 都用同一个值，排障时才能三套系统对得上。关联方式：</p>
+<ul><li>日志 → 链路：日志里写 <code>trace_id</code> / <code>span_id</code></li><li>指标 → 链路：Prometheus <strong>exemplar</strong> 把某个样本的 <code>trace_id</code> 挂到 Histogram 桶上</li><li>链路 → 指标：Span 属性与指标标签共用 <code>http.route</code> 等语义约定</li></ul>
+<h3 id="36-与-prometheus-的职责边界">3.6 与 Prometheus 的职责边界</h3>
+<p>OTel 的 <code>MeterProvider</code> 负责<strong>在进程内生成指标</strong>，Prometheus 负责<strong>拉取、存储、查询、告警</strong>。两者可通过 <code>otel/exporters/prometheus</code> 打通（OTel 指标以 Prometheus 格式暴露），但<strong>不要指望 OTel 替代 TSDB 与 PromQL</strong>。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-生产级初始化">4.1 生产级初始化</h3>
+<pre><code class="lang-go">package telemetry
+
+import (
+    "context"
+    "time"
+
+    "go.opentelemetry.io/otel"
+    "go.opentelemetry.io/otel/attribute"
+    "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+    "go.opentelemetry.io/otel/propagation"
+    "go.opentelemetry.io/otel/sdk/resource"
+    sdktrace "go.opentelemetry.io/otel/sdk/trace"
+    semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
+)
+
+func Setup(ctx context.Context, service, version, env string) (func(context.Context) error, error) {
+    res, err := resource.Merge(resource.Default(),
+        resource.NewWithAttributes(semconv.SchemaURL,
+            semconv.ServiceName(service),
+            attribute.String("service.version", version),
+            attribute.String("deployment.environment.name", env),
+        ))
+    if err != nil { return nil, err }
+
+    exp, err := otlptracehttp.New(ctx,
+        otlptracehttp.WithEndpoint("localhost:4318"),
+        otlptracehttp.WithInsecure(), // 生产走 TLS，去掉此项并配证书
+    )
+    if err != nil { return nil, err }
+
+    tp := sdktrace.NewTracerProvider(
+        sdktrace.WithResource(res),
+        sdktrace.WithBatcher(exp,
+            sdktrace.WithMaxQueueSize(2048),
+            sdktrace.WithBatchTimeout(5*time.Second),
+            sdktrace.WithExportTimeout(10*time.Second),
+        ),
+        sdktrace.WithSampler(
+            sdktrace.ParentBased(sdktrace.TraceIDRatioBased(0.1))),
+    )
+    otel.SetTracerProvider(tp)
+    // 漏掉这一行 = 跨服务链路必断
+    otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
+        propagation.TraceContext{}, propagation.Baggage{},
+    ))
+    return tp.Shutdown, nil
+}</code></pre>
+<pre><code class="lang-go">// main.go
+shutdown, err := telemetry.Setup(ctx, "checkout-api", "1.2.0", "prod")
+if err != nil { log.Fatal(err) }
+defer func() {
+    c, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+    _ = shutdown(c) // 不 Shutdown 会丢最后一批 Span
+}()</code></pre>
+<h3 id="42-手动埋点">4.2 手动埋点</h3>
+<pre><code class="lang-go">func CreateOrder(ctx context.Context, id string) error {
+    ctx, span := otel.Tracer("checkout").Start(ctx, "CreateOrder",
+        trace.WithSpanKind(trace.SpanKindInternal),
+        trace.WithAttributes(attribute.String("order.id", id)),
+    )
+    defer span.End()
+
+    if err := reserveStock(ctx, id); err != nil {
+        span.RecordError(err)
+        span.SetStatus(codes.Error, err.Error())
+        return err
+    }
+    span.AddEvent("stock.reserved",
+        trace.WithAttributes(attribute.Int("items", 3)))
+    span.SetStatus(codes.Ok, "")
+    return nil
+}</code></pre>
+<blockquote><p>三条铁律：<strong><code>Start</code> 传入上游 <code>ctx</code>（不是 <code>context.Background()</code>）</strong>；<strong><code>defer span.End()</code></strong>；<strong>子函数接收 <code>ctx</code> 并继续 <code>Start</code></strong>，否则 Span 树会断成一片平铺的孤岛。</p></blockquote>
+<h3 id="43-http-自动埋点与跨服务传播">4.3 HTTP 自动埋点与跨服务传播</h3>
+<pre><code class="lang-go">// 服务端：otelhttp 自动 Extract + 建 SERVER Span
+handler := otelhttp.NewHandler(mux, "checkout-api")
+
+// 客户端：自动 Inject + 建 CLIENT Span，必须把 ctx 传下去
+req, _ := http.NewRequestWithContext(ctx, "GET", url, nil)
+resp, err := otelhttp.Get(ctx, url) // 或自定义 client.Transport = otelhttp.NewTransport(...)</code></pre>
+<p>手动传播（自己写 Gin 中间件时）：</p>
+<pre><code class="lang-go">func Tracing() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        ctx := otel.GetTextMapPropagator().Extract(
+            c.Request.Context(), propagation.HeaderCarrier(c.Request.Header))
+        ctx, span := otel.Tracer("http").Start(ctx, c.FullPath(),
+            trace.WithSpanKind(trace.SpanKindServer))
+        defer span.End()
+        c.Request = c.Request.WithContext(ctx) // 关键：让后续 handler 拿到同一个 ctx
+        c.Next()
+        if len(c.Errors) &gt; 0 {
+            span.SetStatus(codes.Error, c.Errors.String())
+        }
+    }
+}</code></pre>
+<h3 id="44-grpc-拦截器接-grpc-篇grpcgrpc-guidemd">4.4 gRPC 拦截器（接 <a href="../grpc/grpc-guide.html">gRPC 篇</a>）</h3>
+<pre><code class="lang-go">import "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+
+s := grpc.NewServer(
+    grpc.ChainUnaryInterceptor(otelgrpc.UnaryServerInterceptor(), LoggingUnary()),
+)
+conn, _ := grpc.NewClient(addr,
+    grpc.WithTransportCredentials(insecure.NewCredentials()),
+    grpc.WithChainUnaryInterceptor(otelgrpc.UnaryClientInterceptor()),
+)</code></pre>
+<blockquote><p>客户端拦截器负责把 <code>traceparent</code> 写进 gRPC Metadata，服务端拦截器负责 Extract。两边都要配，缺一侧链路就断。</p></blockquote>
+<h3 id="45-把-trace_id-写进日志接-zap-篇zapzap-guidemd">4.5 把 trace_id 写进日志（接 <a href="../zap/zap-guide.html">Zap 篇</a>）</h3>
+<pre><code class="lang-go">func LoggerFromContext(ctx context.Context, base *zap.Logger) *zap.Logger {
+    sc := trace.SpanFromContext(ctx).SpanContext()
+    if !sc.IsValid() { return base }
+    return base.With(
+        zap.String("trace_id", sc.TraceID().String()),
+        zap.String("span_id", sc.SpanID().String()),
+    )
+}</code></pre>
+<p>配好之后，日志检索里拿到 <code>trace_id</code> 就能直接跳到 Jaeger/Tempo 看完整调用链——这是可观测性三支柱真正闭环的一步。</p>
+<h3 id="46-异步任务传播接-asynq-篇asynqasynq技术文档与使用手册md">4.6 异步任务传播（接 <a href="../asynq/asynq技术文档与使用手册.html">asynq 篇</a>）</h3>
+<p>消息队列不会自动带 HTTP Header，需要手动 inject/extract：</p>
+<pre><code class="lang-go">// 入队：把当前 SpanContext 写进 payload
+carrier := propagation.MapCarrier{}
+otel.GetTextMapPropagator().Inject(ctx, carrier)
+payload := map[string]any{"order_id": id, "traceparent": carrier.Get("traceparent")}
+
+// Handler：取出并作为父 Span
+func HandleEmail(ctx context.Context, t *asynq.Task) error {
+    var p struct {
+        OrderID     string `json:"order_id"`
+        TraceParent string `json:"traceparent"`
+    }
+    _ = json.Unmarshal(t.Payload(), &amp;p)
+    ctx = otel.GetTextMapPropagator().Extract(ctx,
+        propagation.MapCarrier{"traceparent": p.TraceParent})
+    ctx, span := otel.Tracer("worker").Start(ctx, "send_email")
+    defer span.End()
+    return send(ctx, p.OrderID)
+}</code></pre>
+<h3 id="47-baggage跨服务透传业务上下文">4.7 Baggage（跨服务透传业务上下文）</h3>
+<pre><code class="lang-go">m, _ := baggage.NewMember("tenant", "acme")
+bag, _ := baggage.New(m)
+ctx = baggage.ContextWithBaggage(ctx, bag)
+// 下游：bag := baggage.FromContext(ctx); member := bag.Member("tenant")</code></pre>
+<blockquote><p>Baggage 会随<strong>每个</strong>下游请求传播并可能写进日志，只放租户/灰度标这类小体积、非敏感信息；不要放 PII，也不要当 Span Attribute 用。</p></blockquote>
+<h3 id="48-collector-配置与本地起服务">4.8 Collector 配置与本地起服务</h3>
+<pre><code class="lang-yaml"># otel-collector-config.yaml
+receivers:
+  otlp:
+    protocols:
+      grpc: {endpoint: 0.0.0.0:4317}
+      http: {endpoint: 0.0.0.0:4318}
+processors:
+  batch: {timeout: 5s, send_batch_size: 512}
+exporters:
+  debug: {verbosity: detailed}
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug]</code></pre>
+<pre><code class="lang-bash">docker run --rm -p 4317:4317 -p 4318:4318 \
+  -v "$(pwd)/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml" \
+  otel/opentelemetry-collector-contrib:latest</code></pre>
+<p>把 <code>debug</code> 换成 <code>otlp/jaeger</code> 或 <code>otlphttp/tempo</code> 即可接可视化后端。</p>
+<h3 id="49-单测">4.9 单测</h3>
+<pre><code class="lang-go">sr := tracetest.NewSpanRecorder()
+tp := sdktrace.NewTracerProvider(sdktrace.WithSpanProcessor(sr))
+otel.SetTracerProvider(tp)
+
+CreateOrder(context.Background(), "A1001")
+
+spans := sr.Ended()
+require.Len(t, spans, 1)
+require.Equal(t, "CreateOrder", spans[0].Name())</code></pre>
+<hr>
+
+</section>
+<section data-anchor="5-版本演进速览">
+<h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>阶段</th><th>关键变化与迁移注意点</th></tr></thead><tbody><tr><td>2019</td><td>OpenTracing 与 OpenCensus 合并为 OpenTelemetry，统一 API / SDK / OTLP 协议</td></tr><tr><td>2021</td><td><strong>Go Tracing API 达到 1.0 稳定</strong>，官方承诺长期向后兼容；Metrics 随后稳定</td></tr><tr><td>近年 v1.x</td><td>Logs 逐步稳定；Semantic Conventions 持续演进（<code>http.*</code> → <code>http.request.*</code> 等迁移）；OTLP 成为默认导出协议</td></tr><tr><td>生态</td><td>Jaeger 的 Thrift 协议退役，Go 侧旧的 Jaeger exporter 移除，<strong>统一走 OTLP</strong>；<code>otelhttp</code> / <code>otelgrpc</code> 迁至 <code>contrib</code> 独立模块</td></tr></tbody></table></div>
+<p><strong>迁移注意</strong>：</p>
+<ul><li><code>semconv</code> 按版本切分包路径（<code>v1.24.0</code> / <code>v1.26.0</code> …），升 SDK 时要么同步换 import，要么显式锁定旧版语义约定</li><li>属性命名会随 Semantic Conventions 演进，看板与告警若依赖属性名，升级前先核对</li><li>旧的 <code>otelhttp</code> 在 <code>go.opentelemetry.io/otel/instrumentation/...</code>，现位于 <code>go.opentelemetry.io/contrib/instrumentation/...</code></li><li><strong>SDK 版本、Collector 版本、后端版本三者要分别标注</strong>：协议由 OTLP 保证兼容，但语义与 UI 行为各自演进</li></ul>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>忘记 <code>SetTextMapPropagator</code></strong>：进程内 Span 正常，一跨服务就断链。这是排查「链路只有一段」的第一检查项。</li><li><strong>忘记 <code>Shutdown</code></strong>：<code>BatchSpanProcessor</code> 有缓冲，进程退出丢最后一批 Span，恰好常是出错的那批。</li><li><strong>用 <code>context.Background()</code> 起 Span</strong>：父子关系全断，看板上是一堆孤立 Span。所有函数签名都要传 <code>ctx</code>。</li><li><strong>不 <code>defer span.End()</code> 或提前 End</strong>：Span 时长错误，甚至在 goroutine 里使用已结束的 Span。异步任务要显式管理生命周期。</li><li><strong>每请求创建 <code>TracerProvider</code></strong>：初始化极重且会泄漏 exporter。<code>TracerProvider</code> 全局单例，<code>Tracer</code> 可按模块获取。</li><li><strong>库代码直接调 <code>otel.Tracer()</code> 全局</strong>：应接收 <code>trace.Tracer</code> 作为依赖注入，便于单测与替换；只有应用入口装配全局 Provider。</li><li><strong>高基数 Attribute</strong>：<code>user_id</code>、原始 URL、SQL 全文、大 payload。Span 属性同样有成本，且后端按属性建索引。用 <code>http.route</code> 模板而非具体路径。</li><li><strong>Span 里记敏感信息</strong>：密码、token、身份证、完整请求体。OTLP 是明文或 TLS，但后端长期留存，脱敏要在 SDK 或 Collector <code>attributes</code> processor 做。</li><li><strong>采样率不用 <code>ParentBased</code></strong>：各服务各自按 10% 采样，一条 Trace 大概率只剩残缺片段。</li><li><strong><code>SimpleSpanProcessor</code> 上生产</strong>：每个 Span 同步网络导出，直接把延迟打到业务路径上。生产一律 <code>BatchSpanProcessor</code>。</li><li><strong>Batch 队列打满静默丢 Span</strong>：按 QPS 调 <code>MaxQueueSize</code> / <code>BatchTimeout</code>，并监控 Collector 的 dropped 指标。</li><li><strong>Resource 不设 <code>service.name</code></strong>：后端显示 <code>unknown_service</code>，多服务混在一起无法区分。</li><li><strong>属性命名各自为政</strong>：<code>userID</code> / <code>user_id</code> / <code>User.Id</code> 混用，看板聚合失效。遵循 Semantic Conventions。</li><li><strong>异步链路不传播</strong>：Kafka / asynq / 定时任务默认断链，必须手动 Inject/Extract 到消息头或 payload。</li><li><strong>把 Trace 当日志/指标用</strong>：在 Span 里塞长文本、拿 Span 数量算 QPS。明细用<a href="../zap/zap-guide.html">日志</a>，趋势用<a href="../prometheus/prometheus-guide.html">指标</a>。</li><li><strong>上来就全量采样</strong>：链路数据量大、后端成本高。从 1%~10% + 错误/慢请求尾部采样起步。</li></ol>
+<hr>
+
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>OpenTelemetry</th><th>Jaeger / Zipkin（老一代）</th><th>SkyWalking</th><th>Prometheus</th><th>商业 APM</th></tr></thead><tbody><tr><td>定位</td><td><strong>标准 + SDK + 协议</strong>（不存储）</td><td>追踪后端（含 SDK）</td><td>一体化 APM（Agent）</td><td>指标监控</td><td>托管全栈</td></tr><tr><td>信号</td><td>Trace + Metrics + Logs</td><td>仅 Trace</td><td>Trace + Metrics + 日志</td><td>仅 Metrics</td><td>全部</td></tr><tr><td>语言 / 生态</td><td><strong>CNCF 标准，多语言最全</strong></td><td>逐渐转为 OTLP 接收端</td><td>Java 生态最强</td><td>多语言 client</td><td>多语言 Agent</td></tr><tr><td>侵入性</td><td>需埋点或引入 instrumentation</td><td>需 SDK</td><td>低（字节码增强）</td><td>暴露端点</td><td>低</td></tr><tr><td>存储 / 查询</td><td>交给后端</td><td>自带</td><td>自带</td><td>自带 TSDB + PromQL</td><td>托管</td></tr><tr><td>长期趋势</td><td><strong>主流，vendor 中立</strong></td><td>作为后端继续存在，SDK 被 OTel 取代</td><td>特定生态</td><td>指标事实标准</td><td>成本与锁定</td></tr></tbody></table></div>
+<p>一句话决策：</p>
+<ul><li><strong>新项目一律用 OpenTelemetry 做埋点与传播标准</strong>：vendor 中立，换后端不用改业务代码；Collector 把「采集」与「存储」解耦。</li><li><strong>后端怎么选</strong>：轻量自建用 Jaeger（走 OTLP 接收）、已上 Grafana 栈用 Tempo、要日志指标链路一体化看板用 Grafana Cloud / 商业 APM。</li><li><strong>Jaeger / Zipkin 客户端 SDK 不要再新引入</strong>：它们本身已转向接收 OTLP，先用原生 SDK 等于给自己留一次迁移。</li><li><strong>Java 为主且希望零侵入</strong> → SkyWalking 仍有优势；<strong>混合多语言</strong> → OTel 更合适。</li><li><strong>指标与告警</strong> → <a href="../prometheus/prometheus-guide.html">Prometheus</a>，OTel Metrics 可通过 exporter 接入；<strong>日志</strong> → <a href="../zap/zap-guide.html">Zap</a> + Loki/ES。</li></ul>
+<blockquote><p>落地顺序建议：先统一 <code>service.name</code> 与语义约定 → 接入 HTTP/gRPC 自动埋点 → 把 <code>trace_id</code> 写进 Zap 日志 → 配 Collector 与采样 → 最后补异步链路与 exemplar。<strong>不要一上来就追求 100% 覆盖，先把最关键的几条请求链路打通。</strong></p></blockquote>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

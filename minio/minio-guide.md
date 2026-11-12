@@ -1,7 +1,7 @@
 # MinIO 技术介绍与使用指南
 
 > 高性能 S3 兼容对象存储：单二进制、纠删码数据保护、云原生与 AI 数据湖首选的自托管对象存储。
-> 仓库：<https://github.com/minio/minio>　|　社区版许可证：AGPLv3（2025 起双产品线，见 §6）
+> 仓库：<https://github.com/minio/minio>　|　主线：社区版（`RELEASE.YYYY-MM-DD` 时间戳版本，持续发布；整理于 2026-11）　|　许可证：AGPLv3（2025 起双产品线，见 §6）
 
 ---
 

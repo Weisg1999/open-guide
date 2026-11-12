@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MySQL · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#0369a1; --accent-light:#e0f2fe; --accent-dark:#075985;
+    --bg:#f4f9fd; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#062033; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#075985 0%,#0369a1 58%,#075985 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">MySQL<span class="ver">8.4 LTS</span></div>
+  <div class="sub">Go 后端视角 · 索引 / 事务 / 锁</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#安装与连接">安装与连接</a>
+  <a class="sub-link" href="#最小可运行示例">最小可运行示例</a>
+  <a href="#2-功能特性总览">2. 功能特性总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-innodb-的物理结构">3.1 InnoDB 的物理结构</a>
+  <a class="sub-link" href="#32-b-树索引聚簇与回表">3.2 B+ 树索引：聚簇与回表</a>
+  <a class="sub-link" href="#33-mvcc读不加锁是怎么做到的">3.3 MVCC：读不加锁是怎么做到的</a>
+  <a class="sub-link" href="#34-锁为什么-rr-更容易死锁">3.4 锁：为什么 RR 更容易死锁</a>
+  <a class="sub-link" href="#35-redo-undo-binlog-与两阶段提交">3.5 redo / undo / binlog 与两阶段提交</a>
+  <a class="sub-link" href="#36-主从复制与延迟">3.6 主从复制与延迟</a>
+  <a class="sub-link" href="#37-go-侧连接池">3.7 Go 侧连接池</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-生产级初始化">4.1 生产级初始化</a>
+  <a class="sub-link" href="#42-参数化查询唯一的防注入写法">4.2 参数化查询（唯一的防注入写法）</a>
+  <a class="sub-link" href="#43-事务模板与常见错误">4.3 事务：模板与常见错误</a>
+  <a class="sub-link" href="#44-死锁-可重试错误的处理">4.4 死锁 / 可重试错误的处理</a>
+  <a class="sub-link" href="#45-用-explain-定位慢查询">4.5 用 EXPLAIN 定位慢查询</a>
+  <a class="sub-link" href="#46-批量写入与迁移">4.6 批量写入与迁移</a>
+  <a href="#5-版本演进速览">5. 版本演进速览</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>MySQL 技术介绍与使用指南（Go 后端视角）</h1>
+<p>后端最核心的关系型数据库：B+ 树索引、MVCC 与事务隔离、锁机制、执行计划与主从复制，从 Go 应用视角讲清为什么慢、为什么死锁、为什么读到旧数据。</p>
+<p style="opacity:.8;font-size:13.5px">Go 后端视角 · 索引 / 事务 / 锁</p>
+<div class="meta"><span>8.0 / 8.4 LTS</span><span>InnoDB 聚簇索引</span><span>MVCC + ReadView</span><span>临键锁与死锁</span><span>EXPLAIN 慢查询</span><span>go-sql-driver/mysql v1.x</span></div>
+</div>
+<blockquote><p>后端最核心的关系型数据库：B+ 树索引、MVCC 与事务隔离、锁机制、执行计划与主从复制——从 Go 应用视角讲清「为什么慢、为什么死锁、为什么读到了旧数据」。 上游：<a href="https://github.com/mysql/mysql-server">https://github.com/mysql/mysql-server</a>　|　服务端主线：<strong>8.0 / 8.4 LTS</strong>（整理于 2026-11）　|　Go 驱动：<a href="https://github.com/go-sql-driver/mysql">go-sql-driver/mysql</a> v1.x 协议：服务端 GPLv2（含 FOSS 例外）/ 驱动 MPL-2.0；具体版本以上游最新 release 为准。</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p><a href="../gorm/gorm-guide.html">GORM 篇</a>讲的是<strong>怎么用 ORM 写 DAO</strong>，本文讲的是<strong>数据库本身</strong>：一条 SQL 进去之后索引怎么走、事务之间谁看得见谁、锁加在哪、为什么同一个查询昨天 5ms 今天 5s。这两件事的边界要分清——慢查询绝大多数不是 ORM 的问题，是索引、执行计划或事务没设计好。</p>
+<p>MySQL 的核心定位：<strong>支持事务的关系型数据库，默认 InnoDB 引擎</strong>，靠 B+ 树索引做点查与范围扫描、靠 MVCC 做读写并发、靠 binlog 做复制与恢复。</p>
+<ul><li><strong>适用场景</strong>：有明确 schema 的业务主数据、需要 ACID 事务与复杂关联查询、订单/账户/库存这类一致性优先的数据</li><li><strong>不适合</strong>：高并发日志与时序数据（用 <a href="../influxdb-v2/influxdb-v2-guide.html">InfluxDB</a> 或 Prometheus）、全文检索与模糊搜索（用 Elasticsearch）、超大宽表 OLAP（用 ClickHouse）、纯 KV 高频读写（用 <a href="../redis/redis-guide.html">go-redis</a>）、schema 频繁变化的半结构化数据（用 MongoDB）</li></ul>
+<h3 id="安装与连接">安装与连接</h3>
+<pre><code class="lang-bash">go get github.com/go-sql-driver/mysql
+docker run --rm -d --name mysql-dev -p 3306:3306 \
+  -e MYSQL_ROOT_PASSWORD=devpass -e MYSQL_DATABASE=app mysql:8.4</code></pre>
+<h3 id="最小可运行示例">最小可运行示例</h3>
+<pre><code class="lang-go">package main
+
+import (
+    "context"
+    "database/sql"
+    "fmt"
+    "time"
+
+    _ "github.com/go-sql-driver/mysql"
+)
+
+func main() {
+    dsn := "root:devpass@tcp(127.0.0.1:3306)/app" +
+        "?charset=utf8mb4&amp;parseTime=True&amp;loc=Local&amp;timeout=5s"
+    db, err := sql.Open("mysql", dsn)
+    if err != nil { panic(err) }
+    defer db.Close()
+
+    ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+    defer cancel()
+    if err := db.PingContext(ctx); err != nil { panic(err) } // sql.Open 不建连，Ping 才真连
+
+    var version string
+    if err := db.QueryRowContext(ctx, "SELECT VERSION()").Scan(&amp;version); err != nil {
+        panic(err)
+    }
+    fmt.Println(version)
+}</code></pre>
+<blockquote><p><code>sql.Open</code> <strong>只校验 DSN 格式、不建立连接</strong>；真正建连发生在第一次 <code>Ping</code> / <code>Query</code>。所以「服务启动成功但一请求就报 connection refused」是没做启动探活。</p></blockquote>
+<hr>
+
+</section>
+<section data-anchor="2-功能特性总览">
+<h2 id="2-功能特性总览">2. 功能特性总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>存储引擎</td><td>InnoDB（默认，事务/行锁/MVCC）；另有 Memory、Archive 等特殊用途引擎</td></tr><tr><td>事务</td><td>ACID，四种隔离级别（默认 <strong>REPEATABLE READ</strong>），Savepoint，XA</td></tr><tr><td>索引</td><td>B+ 树聚簇索引 + 二级索引、联合索引、唯一索引、前缀索引、全文索引、降序索引、不可见索引</td></tr><tr><td>并发控制</td><td>MVCC（undo log + ReadView）、共享/排他锁、意向锁、记录/间隙/临键锁、死锁自动检测</td></tr><tr><td>持久与恢复</td><td>redo log（WAL）、undo log、binlog、两阶段提交、崩溃恢复</td></tr><tr><td>复制</td><td>基于 binlog 的异步 / 半同步复制、GTID、组复制（Group Replication）、读写分离</td></tr><tr><td>SQL 能力</td><td>JOIN、子查询、窗口函数、CTE、JSON 类型与函数、生成列、分区表</td></tr><tr><td>运维</td><td>在线 DDL、<code>EXPLAIN</code> / <code>EXPLAIN ANALYZE</code>、<code>performance_schema</code>、<code>sys</code> schema、慢查询日志</td></tr><tr><td>Go 侧</td><td><code>database/sql</code> 连接池、Context 超时传播、预编译语句、驱动错误码（<code>*mysql.MySQLError</code>）</td></tr></tbody></table></div>
+<hr>
+
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-innodb-的物理结构">3.1 InnoDB 的物理结构</h3>
+<pre><code class="lang-text">表空间 (.ibd)
+  └─ 段 (segment：叶子段 / 非叶子段 / 回滚段)
+      └─ 区 (extent，1MB = 64 个连续页)
+          └─ 页 (page，默认 16KB)  ← 磁盘与内存交换的最小单位
+              └─ 行 (record)</code></pre>
+<p>页是 I/O 基本单位，这解释了两条工程经验：<strong>主键尽量短且单调递增</strong>（二级索引叶子节点存的是主键值，长主键会让所有二级索引膨胀）；<strong>随机主键（UUID）会导致页分裂与碎片</strong>，写放大明显。</p>
+<h3 id="32-b-树索引聚簇与回表">3.2 B+ 树索引：聚簇与回表</h3>
+<pre><code class="lang-text">聚簇索引（主键）              二级索引 idx_name
+      [P1|P2|P3]                  [P1|P2|P3]
+       /   |   \                   /  |  \
+  叶子页(整行数据)            叶子页(name, 主键ID)
+                                    │
+                                    └──► 拿主键回聚簇索引取其余列 = 回表</code></pre>
+<ul><li><strong>聚簇索引的叶子节点就是整行数据</strong>，所以主键查询最快；</li><li>二级索引叶子只存「索引列 + 主键」，查非索引列必须<strong>回表</strong>，回表是随机 I/O，代价可能比扫描还高；</li><li>若查询所需列都在索引里 → <strong>覆盖索引</strong>，直接返回，<code>EXPLAIN</code> 显示 <code>Using index</code>；</li><li><strong>最左前缀原则</strong>：联合索引 <code>(a, b, c)</code> 能用于 <code>a</code>、<code>a,b</code>、<code>a,b,c</code>，不能跳过 <code>a</code> 直接用 <code>b,c</code>；范围查询之后的列不再用于定位；</li><li><strong>索引下推（ICP）</strong>：5.6 起把部分 <code>WHERE</code> 条件下推到存储引擎层过滤，减少回表次数（<code>Using index condition</code>）。</li></ul>
+<h3 id="33-mvcc读不加锁是怎么做到的">3.3 MVCC：读不加锁是怎么做到的</h3>
+<p>每行有隐藏列 <code>trx_id</code>（最后修改的事务 ID）与 <code>roll_pointer</code>（指向 undo log）。修改时<strong>把旧版本写进 undo log 并串成版本链</strong>；读事务启动时生成 <strong>ReadView</strong>（记录当前活跃事务集合），沿版本链找到第一个对自己可见的版本。</p>
+<div class="table-wrap"><table><thead><tr><th>隔离级别</th><th>ReadView 生成时机</th><th>现象</th></tr></thead><tbody><tr><td>READ UNCOMMITTED</td><td>不生成，直接读最新</td><td>脏读</td></tr><tr><td>READ COMMITTED</td><td><strong>每条 SELECT 重新生成</strong></td><td>不可重复读</td></tr><tr><td><strong>REPEATABLE READ</strong>（默认）</td><td><strong>事务内第一次 SELECT 生成一次</strong></td><td>同一事务多次读一致；靠间隙锁抑制幻读</td></tr><tr><td>SERIALIZABLE</td><td>读也加锁</td><td>无并发</td></tr></tbody></table></div>
+<blockquote><p>关键差异：RC 每次语句新建 ReadView，RR 整个事务共用一个。这就是「同一个事务里两次读，RC 能看到别人刚提交的修改，RR 看不到」的根因。</p></blockquote>
+<h3 id="34-锁为什么-rr-更容易死锁">3.4 锁：为什么 RR 更容易死锁</h3>
+<ul><li><strong>记录锁（Record Lock）</strong>：锁单行索引记录</li><li><strong>间隙锁（Gap Lock）</strong>：锁索引记录之间的「空隙」，防止插入 → 抑制幻读</li><li><strong>临键锁（Next-Key Lock）</strong>：记录锁 + 间隙锁，<strong>RR 下的默认行锁</strong></li></ul>
+<pre><code class="lang-sql">-- RR 下，若 age 无索引，这条 UPDATE 会退化成锁全表所有记录与间隙
+UPDATE users SET status = 1 WHERE age &gt; 20;</code></pre>
+<p>间隙锁之间<strong>不互斥</strong>，但「间隙锁 + 插入意向锁」冲突，因此两个事务交叉更新时极易死锁。InnoDB 会自动检测并回滚代价较小的事务（错误码 <code>1213</code>），应用侧必须能重试。</p>
+<h3 id="35-redo-undo-binlog-与两阶段提交">3.5 redo / undo / binlog 与两阶段提交</h3>
+<div class="table-wrap"><table><thead><tr><th>日志</th><th>归属</th><th>作用</th></tr></thead><tbody><tr><td>redo log</td><td>InnoDB</td><td>物理日志，WAL，保证崩溃后已提交事务不丢（<strong>crash-safe</strong>）</td></tr><tr><td>undo log</td><td>InnoDB</td><td>逻辑日志，版本链（MVCC）与事务回滚</td></tr><tr><td>binlog</td><td>Server 层</td><td>逻辑日志，主从复制与按时间点恢复</td></tr></tbody></table></div>
+<p>一次 <code>COMMIT</code> 走<strong>两阶段提交</strong>：redo prepare → 写 binlog → redo commit。任何一步崩溃都能靠「redo 已 prepare 且 binlog 完整则提交，否则回滚」保证主库与从库数据一致。</p>
+<h3 id="36-主从复制与延迟">3.6 主从复制与延迟</h3>
+<pre><code class="lang-text">主库: 写 binlog ──► dump thread ──► 从库 IO thread ──► relay log ──► SQL thread 重放</code></pre>
+<p>默认<strong>异步复制</strong>：主库提交不等从库，因此从库可能落后几十毫秒到数秒。「写主库立刻读从库读到旧数据」是经典事故。解法按代价排序：关键读走主库 → 会话级「写后一段时间内读主」 → 半同步复制 → 等 GTID（<code>WAIT_FOR_EXECUTED_GTID_SET</code>）。</p>
+<h3 id="37-go-侧连接池">3.7 Go 侧连接池</h3>
+<p><code>database/sql</code> 的 <code>DB</code> 是<strong>连接池</strong>，不是单连接，并发安全、应全局复用。四个参数与 MySQL 的 <code>max_connections</code>、<code>wait_timeout</code> 必须配套：</p>
+<div class="table-wrap"><table><thead><tr><th>Go 参数</th><th>含义</th><th>常见坑</th></tr></thead><tbody><tr><td><code>SetMaxOpenConns</code></td><td>最大打开连接数</td><td>超过 MySQL <code>max_connections</code> 会报 <code>Too many connections</code>；多实例时要按总副本数分摊</td></tr><tr><td><code>SetMaxIdleConns</code></td><td>空闲连接数</td><td>设太小会频繁建连，设太大浪费服务端资源</td></tr><tr><td><code>SetConnMaxLifetime</code></td><td>连接最长存活</td><td>应<strong>小于</strong> MySQL <code>wait_timeout</code> 或代理（如 ProxySQL）的空闲超时，否则拿到已断的连接</td></tr><tr><td><code>SetConnMaxIdleTime</code></td><td>空闲多久回收</td><td>防止长空闲连接被中间件静默断开</td></tr></tbody></table></div>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-生产级初始化">4.1 生产级初始化</h3>
+<pre><code class="lang-go">package db
+
+import (
+    "database/sql"
+    "time"
+
+    _ "github.com/go-sql-driver/mysql"
+)
+
+func Open(dsn string) (*sql.DB, error) {
+    db, err := sql.Open("mysql", dsn)
+    if err != nil { return nil, err }
+    db.SetMaxOpenConns(50)
+    db.SetMaxIdleConns(20)
+    db.SetConnMaxLifetime(30 * time.Minute)
+    db.SetConnMaxIdleTime(5 * time.Minute)
+    return db, db.Ping()
+}</code></pre>
+<p>DSN 关键参数：</p>
+<pre><code class="lang-text">user:pass@tcp(host:3306)/db
+  ?charset=utf8mb4          # 一定要 utf8mb4，否则 emoji / 4 字节字符写不进
+  &amp;parseTime=True           # 否则 DATETIME/TIMESTAMP 只能 Scan 成 []byte
+  &amp;loc=Local                # 必须和 Go 进程时区一致，否则时间差 8 小时
+  &amp;timeout=5s               # 建连超时
+  &amp;readTimeout=5s           # 读超时
+  &amp;writeTimeout=5s          # 写超时
+  &amp;interpolateParams=true   # 客户端预拼参数，省一次 prepare 往返（注意仍会转义）</code></pre>
+<h3 id="42-参数化查询唯一的防注入写法">4.2 参数化查询（唯一的防注入写法）</h3>
+<pre><code class="lang-go">// 正确：占位符
+row := db.QueryRowContext(ctx,
+    "SELECT id, name, created_at FROM users WHERE email = ?", email)
+
+// 错误：字符串拼接 —— 注入入口
+// row := db.QueryRowContext(ctx, "SELECT ... WHERE email = '"+email+"'")</code></pre>
+<blockquote><p>表名、列名、排序方向<strong>不能</strong>用占位符，只能白名单校验后拼接。动态条件用 <code>sqlx.In</code> 或自己拼 <code>?</code> 个数。</p></blockquote>
+<h3 id="43-事务模板与常见错误">4.3 事务：模板与常见错误</h3>
+<pre><code class="lang-go">func Transfer(ctx context.Context, db *sql.DB, from, to int64, amount int64) error {
+    tx, err := db.BeginTx(ctx, &amp;sql.TxOptions{Isolation: sql.LevelReadCommitted})
+    if err != nil { return err }
+    defer tx.Rollback() // Commit 之后 Rollback 返回 ErrTxDone，可安全忽略
+
+    var balance int64
+    if err := tx.QueryRowContext(ctx,
+        "SELECT balance FROM accounts WHERE id = ? FOR UPDATE", from,
+    ).Scan(&amp;balance); err != nil { return err }
+    if balance &lt; amount { return errors.New("insufficient balance") }
+
+    if _, err := tx.ExecContext(ctx,
+        "UPDATE accounts SET balance = balance - ? WHERE id = ?", amount, from,
+    ); err != nil { return err }
+    if _, err := tx.ExecContext(ctx,
+        "UPDATE accounts SET balance = balance + ? WHERE id = ?", amount, to,
+    ); err != nil { return err }
+
+    return tx.Commit()
+}</code></pre>
+<p>三条铁律：<strong>所有操作都用 <code>tx.</code> 而不是 <code>db.</code></strong>（混用会从池里另取连接，既不在事务内又容易与 <code>FOR UPDATE</code> 死锁）；<strong>事务里不放 RPC / 文件 IO</strong>（长事务撑大 undo、拉长锁持有时间）；<strong><code>defer Rollback()</code> 紧跟 <code>BeginTx</code></strong>。</p>
+<h3 id="44-死锁-可重试错误的处理">4.4 死锁 / 可重试错误的处理</h3>
+<pre><code class="lang-go">func WithRetry(ctx context.Context, max int, fn func() error) error {
+    var err error
+    for i := 0; i &lt; max; i++ {
+        err = fn()
+        if err == nil { return nil }
+        var me *mysql.MySQLError
+        if !(errors.As(err, &amp;me) &amp;&amp; (me.Number == 1213 || me.Number == 1205)) {
+            return err // 1213 死锁 / 1205 锁等待超时，其余不重试
+        }
+        time.Sleep(time.Duration(i+1) * 20 * time.Millisecond) // 加抖动
+    }
+    return err
+}</code></pre>
+<blockquote><p>重试的前提是<strong>业务幂等</strong>（或整个事务可安全重放）。扣款、发券这类副作用操作必须带业务流水号 + 唯一索引兜底。</p></blockquote>
+<h3 id="45-用-explain-定位慢查询">4.5 用 EXPLAIN 定位慢查询</h3>
+<pre><code class="lang-sql">EXPLAIN SELECT id, name FROM users WHERE email = 'a@b.com';</code></pre>
+<p>重点看四列：</p>
+<div class="table-wrap"><table><thead><tr><th>列</th><th>好</th><th>坏</th></tr></thead><tbody><tr><td><code>type</code></td><td><code>const</code> / <code>eq_ref</code> / <code>ref</code> / <code>range</code></td><td><code>index</code>（全索引扫）→ <code>ALL</code>（全表扫）</td></tr><tr><td><code>key</code></td><td>命中预期索引</td><td><code>NULL</code></td></tr><tr><td><code>rows</code></td><td>接近实际返回行数</td><td>远大于返回行数</td></tr><tr><td><code>Extra</code></td><td><code>Using index</code>（覆盖）</td><td><code>Using filesort</code> / <code>Using temporary</code> / <code>Using where; Using join buffer</code></td></tr></tbody></table></div>
+<pre><code class="lang-sql">-- 深分页优化：先查主键再回表，避免 OFFSET 扫描前 100000 行
+SELECT u.* FROM users u
+JOIN (SELECT id FROM users WHERE status = 1 ORDER BY id LIMIT 100000, 20) t
+  ON u.id = t.id;
+
+-- 更推荐游标式（记住上一页最大 id）
+SELECT * FROM users WHERE status = 1 AND id &gt; ? ORDER BY id LIMIT 20;</code></pre>
+<h3 id="46-批量写入与迁移">4.6 批量写入与迁移</h3>
+<pre><code class="lang-go">func BulkInsert(ctx context.Context, db *sql.DB, rows []User) error {
+    const batch = 500
+    for start := 0; start &lt; len(rows); start += batch {
+        end := min(start+batch, len(rows))
+        q := "INSERT INTO users (name, email) VALUES "
+        args := make([]any, 0, (end-start)*2)
+        for i := start; i &lt; end; i++ {
+            if i &gt; start { q += "," }
+            q += "(?,?)"
+            args = append(args, rows[i].Name, rows[i].Email)
+        }
+        if _, err := db.ExecContext(ctx, q, args...); err != nil { return err }
+    }
+    return nil
+}</code></pre>
+<blockquote><p>单条 INSERT 循环是最常见的性能反模式。批量大小控制在 500~1000，避免超过 <code>max_allowed_packet</code> 与单事务过大。表结构变更用 <code>golang-migrate</code> / <code>goose</code> 管理版本化迁移；大表加字段用 <code>gh-ost</code> / <code>pt-online-schema-change</code> 在线变更，不要直接 <code>ALTER TABLE</code> 锁表。</p></blockquote>
+<hr>
+
+</section>
+<section data-anchor="5-版本演进速览">
+<h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>关键变化与迁移注意点</th></tr></thead><tbody><tr><td>5.7</td><td>广泛使用的旧主线；默认 <code>utf8</code>（实为 utf8mb3）、查询缓存仍存在；<strong>已停止官方支持</strong></td></tr><tr><td><strong>8.0</strong></td><td>默认字符集改 <code>utf8mb4</code>；默认认证插件改 <code>caching_sha2_password</code>（<strong>老驱动连不上</strong>）；<strong>移除查询缓存</strong>；引入窗口函数、CTE、降序索引、不可见索引、原子 DDL、JSON 增强、角色管理</td></tr><tr><td><strong>8.4 LTS</strong></td><td>长期支持版本，收紧废弃参数、调整 InnoDB 默认值与复制相关术语；适合新项目与 5.7 迁移终点</td></tr><tr><td>9.x（创新版）</td><td>快速迭代分支，新特性先行，<strong>不建议生产长期跟踪</strong>；生产选 LTS</td></tr></tbody></table></div>
+<p><strong>Go 驱动侧</strong>：v1.x 长期稳定；8.0 之后必须确认驱动版本支持 <code>caching_sha2_password</code>（较新的 v1.x 均已支持），否则报 <code>Authentication plugin 'caching_sha2_password' cannot be loaded</code>。<code>allowNativePasswords=false</code> 与 TLS 配置在多版本间行为有差异，升级前读 CHANGELOG。</p>
+<blockquote><p>服务端版本比 Go 库更容易漂移：文首固定「服务端 + 驱动」两个版本，压测与结论才有意义。</p></blockquote>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong><code>sql.Open</code> 不当建连</strong>：不做 <code>Ping</code> 探活，服务启动「成功」但首个请求全失败。</li><li><strong>索引失效</strong>：对索引列用函数/运算（<code>WHERE DATE(created_at)=?</code>）、隐式类型转换（字符串列传数字）、前导模糊 <code>LIKE '%x'</code>、<code>OR</code> 混用未索引列、联合索引不满足最左前缀。一律用 <code>EXPLAIN</code> 验证，不要凭感觉。</li><li><strong><code>SELECT *</code></strong>：无法走覆盖索引、多回表、网络传输放大，且表加字段后业务代码可能意外依赖新列。明确列清单。</li><li><strong>深分页 <code>LIMIT 100000, 20</code></strong>：MySQL 要先扫描并丢弃前 10 万行。改游标分页或延迟关联。</li><li><strong>长事务</strong>：事务里做 HTTP 调用、等用户输入、大批量循环不提交 → undo log 膨胀、锁长期不释放、主从延迟。把事务缩到纯 DB 操作。</li><li><strong>RR 下间隙锁引发死锁</strong>：<code>WHERE</code> 条件没走索引会锁大量间隙；并发更新多行时<strong>按固定主键顺序</strong>更新；捕获 1213 并重试。</li><li><strong>混用 <code>db.</code> 与 <code>tx.</code></strong>：代码看似在事务里，实际部分操作另取连接，破坏原子性甚至自锁。</li><li><strong>DSN 漏 <code>parseTime</code> / <code>loc</code></strong>：时间字段 Scan 成 <code>[]byte</code> 报错，或时间整体偏移 8 小时。</li><li><strong>连接池参数与服务端不匹配</strong>：<code>MaxOpenConns × 副本数 &gt; max_connections</code>；<code>ConnMaxLifetime &gt; wait_timeout</code> 导致偶发 <code>invalid connection</code>。</li><li><strong>所有查询不带超时</strong>：慢 SQL 打满连接池 → 整个服务雪崩。所有 DB 调用走 <code>Context</code> 并设置合理 deadline。</li><li><strong>主从延迟下读从库</strong>：写后立刻读拿到旧值。关键读走主库，或用 <a href="../gorm/gorm-guide.html">GORM 篇</a> 的 <code>dbresolver</code> 按会话强制主库。</li><li><strong>动态拼 SQL</strong>：字符串拼接是注入入口；占位符只覆盖「值」，表名/列名/排序方向走白名单。</li><li><strong>唯一索引与 NULL</strong>：MySQL 唯一索引允许多个 NULL，「唯一约束」因此可能失效；用 <code>NOT NULL DEFAULT ''</code> 或生成列兜底。</li><li><strong>大表直接 DDL / 无备份改数据</strong>：<code>ALTER TABLE</code>、无 <code>WHERE</code> 的 <code>UPDATE</code> 是生产事故高发区。先备份、先在从库演练、用在线变更工具。</li><li><strong>把 MySQL 当队列 / 缓存 / 搜索引擎</strong>：轮询 <code>SELECT ... WHERE status=0</code> 做任务队列会锁竞争（用 <a href="../asynq/asynq技术文档与使用手册.html">asynq</a>）；高频 KV 用 <a href="../redis/redis-guide.html">go-redis</a>；模糊搜索用 Elasticsearch。</li></ol>
+<hr>
+
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>MySQL 8.x</th><th>PostgreSQL</th><th>SQLite</th><th>TiDB / OceanBase</th><th>ClickHouse</th><th>MongoDB</th></tr></thead><tbody><tr><td>定位</td><td>通用 OLTP</td><td>通用 + 扩展型 OLTP</td><td>嵌入式单机</td><td>分布式 NewSQL</td><td>列存 OLAP</td><td>文档型</td></tr><tr><td>事务</td><td>ACID（RR 默认）</td><td>ACID（RC 默认）</td><td>ACID（单写）</td><td>分布式事务</td><td>弱（无多行事务）</td><td>多文档事务</td></tr><tr><td>索引</td><td>B+ 树聚簇</td><td>B-tree / GIN / GiST / BRIN</td><td>B-tree</td><td>分布式 KV + 索引</td><td>稀疏主键 + 跳数</td><td>B-tree / 文本 / 地理</td></tr><tr><td>JSON</td><td>有，能用但非强项</td><td><strong>jsonb 强项</strong></td><td>有限</td><td>有</td><td>弱</td><td><strong>原生</strong></td></tr><tr><td>水平扩展</td><td>需分库分表 / 中间件</td><td>需分区 / Citus</td><td>不适用</td><td><strong>原生</strong></td><td>原生分布式</td><td>原生分片</td></tr><tr><td>运维成本</td><td>低（生态最成熟）</td><td>中</td><td>极低</td><td>高</td><td>中高</td><td>中</td></tr><tr><td>典型场景</td><td>业务主数据、订单账户</td><td>复杂查询、GIS、分析混合</td><td>本地工具、测试</td><td>超大规模 OLTP</td><td>日志/行为分析</td><td>半结构化、快速迭代</td></tr></tbody></table></div>
+<p>一句话决策：</p>
+<ul><li><strong>默认选 MySQL</strong>：事务型业务主数据、团队熟悉度最高、云厂商与中间件生态最全；新项目直接上 8.4 LTS。</li><li><strong>复杂查询 / JSON 重度 / GIS / 需要丰富索引类型</strong> → PostgreSQL；注意它的默认隔离级别是 RC，从 MySQL 迁移时要复核并发假设。</li><li><strong>单机工具、CLI、单元测试</strong> → SQLite，零运维。</li><li><strong>单表数据量到了分库分表维护不动的程度</strong> → 先评估是否只是索引和历史归档没做好；确需分布式再上 TiDB / OceanBase，别过早引入。</li><li><strong>分析型大宽表、日志聚合</strong> → ClickHouse；<strong>schema 频繁变化、文档嵌套</strong> → MongoDB；<strong>高频 KV 缓存</strong> → <a href="../redis/redis-guide.html">go-redis</a>。</li></ul>
+<blockquote><p>最后一条经验：多数「MySQL 撑不住」的案例，根因是缺失索引、长事务或把分析查询跑在主库上，而不是该换数据库。先 <code>EXPLAIN</code>、先看慢查询日志，再谈选型。</p></blockquote>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

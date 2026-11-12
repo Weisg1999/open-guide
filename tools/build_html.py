@@ -63,6 +63,7 @@ LANG_LABELS = {
     "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf",
     "python": "Python", "text": "Text", "txt": "Text", "conf": "Config",
     "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile",
+    "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI",
 }
 
 LEVEL_BADGES = {

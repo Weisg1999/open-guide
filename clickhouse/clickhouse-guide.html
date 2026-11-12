@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClickHouse · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#b45309; --accent-light:#fef3c7; --accent-dark:#78350f;
+    --bg:#fdfaf3; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#241a05; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#78350f 0%,#b45309 58%,#78350f 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">ClickHouse<span class="ver">25.x</span></div>
+  <div class="sub">列式 OLAP · MergeTree 与向量化执行</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#安装与本地起服务">安装与本地起服务</a>
+  <a class="sub-link" href="#最小可运行示例">最小可运行示例</a>
+  <a href="#2-功能特性总览">2. 功能特性总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-列存为什么适合分析">3.1 列存为什么适合分析</a>
+  <a class="sub-link" href="#32-mergetreepartgranule-与合并">3.2 MergeTree：part、granule 与合并</a>
+  <a class="sub-link" href="#33-数据跳过索引">3.3 数据跳过索引</a>
+  <a class="sub-link" href="#34-replacingmergetree-的最终一致去重">3.4 ReplacingMergeTree 的「最终一致去重」</a>
+  <a class="sub-link" href="#35-分布式查询模型">3.5 分布式查询模型</a>
+  <a class="sub-link" href="#36-与-influxdb-3-prometheus-的边界">3.6 与 InfluxDB 3 / Prometheus 的边界</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-客户端初始化生产配置">4.1 客户端初始化（生产配置）</a>
+  <a class="sub-link" href="#42-批量写入唯一正确的写入姿势">4.2 批量写入（唯一正确的写入姿势）</a>
+  <a class="sub-link" href="#43-参数化查询与聚合">4.3 参数化查询与聚合</a>
+  <a class="sub-link" href="#44-物化视图把聚合前移到写入时">4.4 物化视图：把聚合前移到写入时</a>
+  <a class="sub-link" href="#45-排查慢查询">4.5 排查慢查询</a>
+  <a class="sub-link" href="#46-从-kafka-摄取接-kafka-篇kafkakafka-guidemd">4.6 从 Kafka 摄取（接 [Kafka 篇](../kafka/kafka-guide.md)）</a>
+  <a href="#5-版本演进速览">5. 版本演进速览</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>ClickHouse 技术介绍与使用指南（Go OLAP 视角）</h1>
+<p>列式 OLAP 数据库：MergeTree 存储引擎、向量化执行、稀疏主键索引与数据跳过索引，把亿级明细秒级聚合变成常规操作。</p>
+<p style="opacity:.8;font-size:13.5px">列式 OLAP · MergeTree 与向量化执行</p>
+<div class="meta"><span>MergeTree part 合并</span><span>稀疏主键索引</span><span>ORDER BY 决定一切</span><span>批量 PrepareBatch</span><span>物化视图预聚合</span><span>ReplacingMergeTree 最终一致</span></div>
+</div>
+<blockquote><p>列式 OLAP 数据库：MergeTree 存储引擎、向量化执行、稀疏主键索引与数据跳过索引，把「亿级明细秒级聚合」变成常规操作。 上游：<a href="https://github.com/ClickHouse/ClickHouse">https://github.com/ClickHouse/ClickHouse</a>　|　服务端主线：<strong>25.x</strong>（按年/月编号，月度发布；整理于 2026-11）　|　Go 客户端：<a href="https://github.com/ClickHouse/clickhouse-go">ClickHouse/clickhouse-go</a> v2 协议：Apache-2.0；具体版本以上游最新 release 为准。</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p><a href="../mysql/mysql-guide.html">MySQL 篇</a> 面向「一行一行地改」，<a href="../elasticsearch/elasticsearch-guide.html">Elasticsearch 篇</a> 面向「一段文本怎么找到」，ClickHouse 面向的是第三种问题：<strong>几亿行明细，按若干维度聚合出一张报表，还要够快</strong>。它是 OLAP（分析型）数据库，不是 OLTP。</p>
+<p>它快的三个根本原因：<strong>列式存储</strong>（只读取查询涉及的列，同类型数据压缩比极高）、<strong>MergeTree 追加写 + 后台合并</strong>（不做随机更新）、<strong>向量化执行</strong>（按列批量喂给 SIMD，而不是逐行解释）。</p>
+<ul><li><strong>适用场景</strong>：用户行为/埋点分析、日志与监控明细、BI 报表与即席查询、实时数仓、Trace 明细离线分析、大宽表聚合</li><li><strong>不适合</strong>：按主键频繁点查与更新（无事务、无行锁、UPDATE 是异步重写）、高并发小事务（用 <a href="../mysql/mysql-guide.html">MySQL</a>）、全文相关性检索（用 <a href="../elasticsearch/elasticsearch-guide.html">ES</a>）、纯指标监控告警（用 <a href="../prometheus/prometheus-guide.html">Prometheus</a>）、高频 KV（用 <a href="../redis/redis-guide.html">go-redis</a>）</li></ul>
+<blockquote><p>与 <a href="../influxdb-v3/influxdb-v3-guide.html">InfluxDB 3 篇</a> 对照读很有意思：两者都走「列存 + 对象存储 + 向量化」，只是 InfluxDB 3 选了 FDAP（Parquet + DataFusion + Arrow），ClickHouse 自研 MergeTree 原生格式。</p></blockquote>
+<h3 id="安装与本地起服务">安装与本地起服务</h3>
+<pre><code class="lang-bash">go get github.com/ClickHouse/clickhouse-go/v2
+docker run --rm -d --name ch-dev \
+  -p 9000:9000 -p 8123:8123 \
+  --ulimit nofile=262144:262144 \
+  clickhouse/clickhouse-server:25
+curl 'http://localhost:8123/?query=SELECT%20version()'</code></pre>
+<blockquote><p>9000 是原生 TCP 协议（Go 客户端用），8123 是 HTTP 接口。镜像标签 <code>25</code> 为大版本通配，生产请钉死具体版本。</p></blockquote>
+<h3 id="最小可运行示例">最小可运行示例</h3>
+<pre><code class="lang-go">package main
+
+import (
+    "context"
+    "fmt"
+
+    "github.com/ClickHouse/clickhouse-go/v2"
+)
+
+func main() {
+    conn, err := clickhouse.Open(&amp;clickhouse.Options{
+        Addr: []string{"localhost:9000"},
+        Auth: clickhouse.Auth{Database: "default", Username: "default"},
+    })
+    if err != nil { panic(err) }
+    ctx := context.Background()
+    if err := conn.Ping(ctx); err != nil { panic(err) }
+
+    if err := conn.Exec(ctx, `
+        CREATE TABLE IF NOT EXISTS events (
+            ts      DateTime64(3),
+            user_id UInt64,
+            event   LowCardinality(String),
+            value   Float64
+        ) ENGINE = MergeTree
+        PARTITION BY toYYYYMM(ts)
+        ORDER BY (event, user_id, ts)
+    `); err != nil { panic(err) }
+
+    batch, err := conn.PrepareBatch(ctx, "INSERT INTO events")
+    if err != nil { panic(err) }
+    for i := 0; i &lt; 1000; i++ {
+        if err := batch.Append(time.Now(), uint64(i%100), "view", 1.0); err != nil { panic(err) }
+    }
+    if err := batch.Send(); err != nil { panic(err) }
+
+    var cnt uint64
+    if err := conn.QueryRow(ctx, "SELECT count() FROM events").Scan(&amp;cnt); err != nil {
+        panic(err)
+    }
+    fmt.Println("rows:", cnt)
+}</code></pre>
+<hr>
+
+</section>
+<section data-anchor="2-功能特性总览">
+<h2 id="2-功能特性总览">2. 功能特性总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>存储引擎</td><td><code>MergeTree</code> 家族：<code>ReplacingMergeTree</code>（去重）/ <code>SummingMergeTree</code>（预聚合）/ <code>AggregatingMergeTree</code> / <code>CollapsingMergeTree</code> / <code>Replicated*</code> 副本</td></tr><tr><td>列式存储</td><td>每列独立文件 + 压缩（LZ4 / ZSTD）、只读涉及列、向量化执行与 SIMD</td></tr><tr><td>索引</td><td><strong>稀疏主键索引</strong>（granule + mark）、数据跳过索引（minmax / set / bloom_filter / tokenbf_v1）、Projection</td></tr><tr><td>分区与生命周期</td><td><code>PARTITION BY</code>（通常按月）、TTL 自动过期、分区级 DROP / MOVE 到冷热存储</td></tr><tr><td>预计算</td><td>物化视图（写入时增量聚合）、Projection、<code>AggregatingMergeTree</code></td></tr><tr><td>分布式</td><td><code>Distributed</code> 表引擎 + 本地表、分片键、副本与 ClickHouse Keeper（替代 ZooKeeper）</td></tr><tr><td>数据摄入</td><td>原生批量 INSERT、<code>async_insert</code>、Kafka / S3 / HDFS 表引擎、Parquet/CSV/JSON 文件导入</td></tr><tr><td>查询</td><td>类 SQL 方言、<code>PREWHERE</code>、<code>SAMPLE</code> 近似查询、数组/Map/JSON 类型、窗口函数、CTE</td></tr><tr><td>Go SDK</td><td><code>clickhouse-go/v2</code>：<code>PrepareBatch</code> 批量写、<code>database/sql</code> 兼容接口、结构体反射扫描、异步插入</td></tr><tr><td>可运维</td><td><code>system.parts</code> / <code>system.query_log</code> / <code>system.merges</code>、<code>EXPLAIN</code>、查询配额与资源组</td></tr></tbody></table></div>
+<hr>
+
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-列存为什么适合分析">3.1 列存为什么适合分析</h3>
+<pre><code class="lang-text">行存 (MySQL):  [id|name|age|city] [id|name|age|city] ...
+               → 查询 SELECT avg(age) 必须把整行读进内存
+
+列存 (CH):     [id|id|id...] [name|name|...] [age|age|age...] [city|...]
+               → 只读 age 这一段连续数据；同类型值压缩比可达 10~20 倍
+               → 连续数组可直接喂 SIMD，一次处理数百个值</code></pre>
+<p>代价也很直接：<strong>按主键取一整行很慢</strong>（要拼多个列文件），<strong>更新一行几乎不可能</strong>（要重写整个 part）。所以 ClickHouse 的设计前提就是「追加写、批量读」。</p>
+<h3 id="32-mergetreepartgranule-与合并">3.2 MergeTree：part、granule 与合并</h3>
+<pre><code class="lang-text">INSERT 批次
+   │ 按 PARTITION BY 分区，按 ORDER BY 排序
+   ▼
+生成一个不可变的 part（每个 part 内每列一个 .bin + .mrk 标记文件）
+   │
+   ├─► 稀疏主键索引：每 8192 行（granule）记一个排序键的值 + mark
+   │      → 索引极小，可常驻内存；定位到 granule 后再顺序扫描 8192 行
+   ▼
+后台 merge：把多个小 part 合并成大 part（同时执行 Replacing 去重、TTL 清理）</code></pre>
+<p>关键推论：</p>
+<ul><li><strong>ORDER BY 是最重要的设计决策</strong>：它决定数据物理排序、稀疏索引能否生效、以及 <code>ReplacingMergeTree</code> 按什么键去重</li><li>排序键应把<strong>高频过滤条件放前面、低基数字段优先</strong>（<code>ORDER BY (event, user_id, ts)</code> 而不是反过来），<code>ts</code> 这类高基数时间字段通常放最后</li><li><strong>part 是不可变的</strong>，所以 <code>UPDATE</code> / <code>DELETE</code>（mutation）是异步重写整个 part，代价高、不保证立即可见</li></ul>
+<h3 id="33-数据跳过索引">3.3 数据跳过索引</h3>
+<p>稀疏主键索引只对排序键前缀有效。对其他列可用跳过索引在读取前跳过整个 granule：</p>
+<div class="table-wrap"><table><thead><tr><th>类型</th><th>适用</th></tr></thead><tbody><tr><td><code>minmax</code></td><td>数值/时间范围（最常用）</td></tr><tr><td><code>set(n)</code></td><td>低基数枚举</td></tr><tr><td><code>bloom_filter</code></td><td>高基数等值判断、字符串包含</td></tr><tr><td><code>tokenbf_v1</code></td><td>文本 token 检索</td></tr></tbody></table></div>
+<pre><code class="lang-sql">ALTER TABLE events ADD INDEX idx_uid user_id TYPE bloom_filter(0.01) GRANULARITY 4;
+ALTER TABLE events MATERIALIZE INDEX idx_uid;  -- 只对新 part 生效，历史需 MATERIALIZE</code></pre>
+<h3 id="34-replacingmergetree-的最终一致去重">3.4 ReplacingMergeTree 的「最终一致去重」</h3>
+<pre><code class="lang-sql">CREATE TABLE users (...) ENGINE = ReplacingMergeTree(ver) ORDER BY user_id;</code></pre>
+<p>去重<strong>只在后台 merge 时发生</strong>，且只保证同一 part 内、同一分片内。因此刚写入后 <code>SELECT count()</code> 可能看到重复行。三种解法：查询时加 <code>FINAL</code>（简单但会读放大）、用 <code>argMax(col, ver) GROUP BY key</code>（推荐）、或接受近似去重。</p>
+<blockquote><p>这是把 ClickHouse 当「有主键的表」用时最常踩的坑：它<strong>没有唯一约束</strong>。</p></blockquote>
+<h3 id="35-分布式查询模型">3.5 分布式查询模型</h3>
+<pre><code class="lang-text">Distributed 表（逻辑表，不存数据）
+   │ 查询发到各分片的本地表 → 各分片并行聚合中间态 → 发起节点汇总
+   ▼
+本地表 (*_local, ReplicatedMergeTree)</code></pre>
+<ul><li><code>Distributed</code> 表负责分发与二次聚合；<strong>写入 Distributed 表会先落本地缓冲再异步转发</strong>，批量写入建议直写本地表并自己控制分片键</li><li><code>GLOBAL JOIN / GLOBAL IN</code> 用于右表需要广播的场景，否则每个分片各自执行子查询</li><li>副本一致性由 <code>Replicated*MergeTree</code> + Keeper 保证，DDL 用 <code>ON CLUSTER</code> 广播</li></ul>
+<h3 id="36-与-influxdb-3-prometheus-的边界">3.6 与 InfluxDB 3 / Prometheus 的边界</h3>
+<div class="table-wrap"><table><thead><tr><th></th><th>ClickHouse</th><th>InfluxDB 3</th><th>Prometheus</th></tr></thead><tbody><tr><td>存什么</td><td>任意明细事件</td><td>时序指标 + 事件</td><td>近期监控指标</td></tr><tr><td>查询</td><td>完整 SQL</td><td>SQL + InfluxQL</td><td>PromQL</td></tr><tr><td>保留</td><td>月/年级，TTL</td><td>对象存储长期</td><td>默认短期，remote write 归档</td></tr><tr><td>典型</td><td>行为分析、BI、日志明细</td><td>设备时序</td><td>SLO 与告警</td></tr></tbody></table></div>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-客户端初始化生产配置">4.1 客户端初始化（生产配置）</h3>
+<pre><code class="lang-go">func Open() (driver.Conn, error) {
+    return clickhouse.Open(&amp;clickhouse.Options{
+        Addr: []string{"ch-1:9000", "ch-2:9000"}, // 多节点自动负载均衡
+        Auth: clickhouse.Auth{
+            Database: "analytics", Username: "app", Password: os.Getenv("CH_PASS"),
+        },
+        DialTimeout:      5 * time.Second,
+        MaxOpenConns:     10,
+        MaxIdleConns:     5,
+        ConnMaxLifetime:  time.Hour,
+        Compression:      &amp;clickhouse.Compression{Method: clickhouse.CompressionLZ4},
+        Settings: clickhouse.Settings{
+            "max_execution_time":        60,
+            "max_memory_usage":          4_000_000_000,
+            "max_bytes_before_external_group_by": 2_000_000_000, // 聚合溢写磁盘
+        },
+    })
+}</code></pre>
+<blockquote><p>也提供 <code>clickhouse.OpenDB(...)</code> 返回 <code>*sql.DB</code> 以复用 <code>database/sql</code> 生态，但<strong>批量写入必须用原生 <code>PrepareBatch</code></strong>。</p></blockquote>
+<h3 id="42-批量写入唯一正确的写入姿势">4.2 批量写入（唯一正确的写入姿势）</h3>
+<pre><code class="lang-go">type Event struct {
+    Ts     time.Time
+    UserID uint64
+    Event  string
+    Value  float64
+}
+
+func InsertBatch(ctx context.Context, conn driver.Conn, events []Event) error {
+    batch, err := conn.PrepareBatch(ctx, "INSERT INTO events")
+    if err != nil { return err }
+    for _, e := range events {
+        if err := batch.Append(e.Ts, e.UserID, e.Event, e.Value); err != nil {
+            _ = batch.Abort()
+            return err
+        }
+    }
+    return batch.Send() // 一次 RPC 提交整批
+}</code></pre>
+<blockquote><p><strong>绝对不要循环 <code>INSERT INTO ... VALUES (?)</code></strong>：每次 INSERT 都会生成一个 part，后台合并跟不上会触发 <code>Too many parts</code> 报错。单批建议 1 万～10 万行或 10~100MB，攒批间隔 1~10s。低频小批量可用 <code>async_insert=1</code> 让服务端攒批。</p></blockquote>
+<h3 id="43-参数化查询与聚合">4.3 参数化查询与聚合</h3>
+<pre><code class="lang-go">rows, err := conn.Query(ctx, `
+    SELECT event, count() AS cnt, round(avg(value), 2) AS avg_val
+    FROM events
+    WHERE ts &gt;= ? AND ts &lt; ? AND user_id IN ?
+    GROUP BY event
+    ORDER BY cnt DESC
+    LIMIT 20`, from, to, userIDs)
+if err != nil { return err }
+defer rows.Close()
+
+for rows.Next() {
+    var ev string
+    var cnt uint64
+    var avg float64
+    if err := rows.Scan(&amp;ev, &amp;cnt, &amp;avg); err != nil { return err }
+    fmt.Printf("%s: %d / %.2f\n", ev, cnt, avg)
+}
+return rows.Err()</code></pre>
+<blockquote><p><code>IN ?</code> 可直接传切片，驱动会展开；字符串用参数化而非拼接。<code>PREWHERE</code> 可让过滤在读取其他列之前发生，对宽表收益明显。</p></blockquote>
+<h3 id="44-物化视图把聚合前移到写入时">4.4 物化视图：把聚合前移到写入时</h3>
+<pre><code class="lang-sql">CREATE MATERIALIZED VIEW events_daily_mv
+TO events_daily AS
+SELECT
+    toDate(ts)      AS day,
+    event,
+    count()         AS cnt,
+    sum(value)      AS total
+FROM events
+GROUP BY day, event;
+
+-- 目标表用 SummingMergeTree 承接增量
+CREATE TABLE events_daily (
+    day Date, event LowCardinality(String), cnt UInt64, total Float64
+) ENGINE = SummingMergeTree ORDER BY (day, event);</code></pre>
+<blockquote><p>物化视图<strong>只对创建之后写入的数据生效</strong>；历史数据要 <code>INSERT INTO events_daily SELECT ... FROM events WHERE ...</code> 回填。查询时仍建议 <code>sum(cnt)</code> 而非直接读 <code>cnt</code>（合并尚未完成时是分片累加值）。</p></blockquote>
+<h3 id="45-排查慢查询">4.5 排查慢查询</h3>
+<pre><code class="lang-sql">EXPLAIN indexes = 1 SELECT ...;              -- 看跳过了多少 granule
+SELECT query, read_rows, read_bytes, query_duration_ms, memory_usage
+FROM system.query_log WHERE type = 'QueryFinish' ORDER BY query_duration_ms DESC LIMIT 10;
+SELECT partition, name, rows, bytes_on_disk
+FROM system.parts WHERE table = 'events' AND active ORDER BY bytes_on_disk DESC;
+SELECT * FROM system.merges WHERE table = 'events';</code></pre>
+<pre><code class="lang-bash"># 文件导入 / 导出
+clickhouse-client --query "INSERT INTO events FORMAT CSV" &lt; events.csv
+clickhouse-client --query "SELECT * FROM events FORMAT Parquet" &gt; events.parquet</code></pre>
+<h3 id="46-从-kafka-摄取接-kafka-篇kafkakafka-guidemd">4.6 从 Kafka 摄取（接 <a href="../kafka/kafka-guide.html">Kafka 篇</a>）</h3>
+<pre><code class="lang-sql">CREATE TABLE events_queue (ts DateTime64(3), user_id UInt64, event String, value Float64)
+ENGINE = Kafka
+SETTINGS kafka_broker_list = 'kafka:9092',
+         kafka_topic_list = 'events',
+         kafka_group_name = 'ch_events',
+         kafka_format = 'JSONEachRow';
+
+CREATE MATERIALIZED VIEW events_consumer TO events AS
+SELECT * FROM events_queue;</code></pre>
+<blockquote class="warn"><p>Kafka 引擎表是「消费者」，读一次就消费掉；数据落在 <code>TO</code> 指定的目标表。生产要监控消费 lag，且注意 <strong>Kafka 表引擎本身不可直接 SELECT 排查</strong>（会消费数据）。</p></blockquote>
+<hr>
+
+</section>
+<section data-anchor="5-版本演进速览">
+<h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>阶段</th><th>关键变化与迁移注意点</th></tr></thead><tbody><tr><td>早期（20.x 前）</td><td>MergeTree 成熟，ZooKeeper 承担副本协调；版本号改为「年.月」式月度发布</td></tr><tr><td>21~23.x</td><td>投影（Projection）、窗口函数、轻量 <code>DELETE</code>、异步插入、ClickHouse Keeper 逐步替代 ZooKeeper</td></tr><tr><td>24.x</td><td>JSON 类型与动态子列、Parquet/数据湖集成增强、倒排/全文索引实验、查询并行度优化</td></tr><tr><td>25.x</td><td>继续强化 JOIN / 聚合性能、对象存储与存算分离、可观测性系统表、共享 MergeTree 等能力</td></tr></tbody></table></div>
+<p><strong>迁移注意</strong>：</p>
+<ul><li>ClickHouse 是<strong>月度发布</strong>，小版本迭代快、废弃项多。生产钉死具体版本，升级前逐条读 CHANGELOG 的 Breaking Changes</li><li><strong>Keeper 替代 ZooKeeper</strong>：新集群直接用 ClickHouse Keeper，老集群迁移需按官方步骤</li><li><code>clickhouse-go</code> <strong>v1 → v2</strong> 是破坏性升级：包路径改 <code>/v2</code>、原生 <code>driver.Conn</code> API 与 <code>database/sql</code> 接口分离、<code>PrepareBatch</code> 用法变化</li><li>服务端与客户端大版本不必严格一致，但新语法（如参数化数组、JSON 类型）需要较新的客户端</li></ul>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>逐条 INSERT</strong>：每次生成一个 part → <code>Too many parts (300)</code> 报错、合并线程打满。批量 1 万行起，客户端攒批。</li><li><strong>ORDER BY 选错</strong>：把高基数 <code>ts</code> 放首位、或把查询几乎不用的字段放首位，稀疏索引形同虚设。按「高频过滤、低基数优先」设计，并与实际查询一起压测。</li><li><strong>把 <code>ReplacingMergeTree</code> 当唯一约束</strong>：去重发生在后台合并、且只在分片内。用 <code>argMax</code> / <code>GROUP BY</code> 或查询加 <code>FINAL</code>（评估读放大）。</li><li><strong>滥用 <code>FINAL</code></strong>：它会在查询时合并所有 part，大表上可能慢一个数量级。优先改查询写法。</li><li><strong>用 UPDATE/DELETE 做业务更新</strong>：mutation 是异步重写整个 part，无法回滚、不即时可见。ClickHouse 是追加写系统，要改数据就重新导入分区。</li><li><strong>分区粒度过细</strong>：<code>PARTITION BY toYYYYMMDDhh(ts)</code> 按小时分区会产生海量分区，元数据与合并成本爆炸。通常按月（数据量极大才按天）。</li><li><strong><code>Nullable</code> 滥用</strong>：每列多一个 null mask 文件、有额外开销。能用默认值（<code>''</code> / <code>0</code>）表达就不要用 Nullable。</li><li><strong>低基数字段用 String</strong>：<code>event</code>、<code>status</code> 这类用 <code>LowCardinality(String)</code> 或 <code>Enum</code>，压缩与过滤收益明显。</li><li><strong>高基数 GROUP BY OOM</strong>：设 <code>max_bytes_before_external_group_by</code> 允许溢写磁盘，或用物化视图预聚合。</li><li><strong>JOIN 右表过大</strong>：ClickHouse 默认把右表载入内存构建 hash。用维度表 <code>dictionary</code>、预聚合或 <code>join_algorithm</code> 调优。</li><li><strong><code>SELECT *</code></strong>：列存下虽然会跳过无关列文件，但宽表上仍会读回大量无用数据。明确列清单。</li><li><strong>无查询配额</strong>：一个即席查询吃光内存拖垮集群。按用户/角色设 <code>max_memory_usage</code>、<code>max_execution_time</code>、并发限制。</li><li><strong>物化视图不回填历史</strong>：只对创建后的写入生效，且 <code>SummingMergeTree</code> 查询仍需 <code>sum()</code>。</li><li><strong>副本与 DDL 不同步</strong>：单机 <code>CREATE TABLE</code> 只在一个节点生效；集群环境用 <code>ON CLUSTER</code>，并确认 Keeper 健康。</li><li><strong>时区与精度</strong>：<code>DateTime</code> 秒级、<code>DateTime64(3)</code> 毫秒级；Go <code>time.Time</code> 与服务端时区不一致会让分区落错月份。统一 UTC 并在写入侧显式转换。</li><li><strong>拿它当 OLTP / 缓存 / 搜索引擎</strong>：无事务、无点查优势、无相关性排序。分别用 <a href="../mysql/mysql-guide.html">MySQL</a> / <a href="../redis/redis-guide.html">go-redis</a> / <a href="../elasticsearch/elasticsearch-guide.html">ES</a>。</li><li><strong>不监控 parts 与 merges</strong>：<code>system.parts</code> 的 part 数、<code>system.merges</code> 的积压是写入健康的第一指标，比 CPU 更早报警。</li></ol>
+<hr>
+
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>ClickHouse</th><th>Elasticsearch</th><th>Apache Druid / Pinot</th><th>Snowflake / BigQuery</th><th>DuckDB</th><th>InfluxDB 3</th></tr></thead><tbody><tr><td>定位</td><td>通用 OLAP 明细分析</td><td>检索 + 日志</td><td>实时 OLAP 多维</td><td>云数仓</td><td>嵌入式/单机分析</td><td>时序数据</td></tr><tr><td>存储</td><td>自研 MergeTree 列存</td><td>倒排 + doc_values</td><td>列存 + 预聚合</td><td>对象存储列存</td><td>本地列存</td><td>Parquet + DataFusion</td></tr><tr><td>查询</td><td><strong>完整 SQL</strong></td><td>Query DSL / ES SQL</td><td>SQL（有限）</td><td>完整 SQL</td><td>完整 SQL</td><td>SQL + InfluxQL</td></tr><tr><td>JOIN</td><td>支持（需调优）</td><td>不支持</td><td>弱</td><td><strong>强</strong></td><td>强</td><td>有限</td></tr><tr><td>全文检索</td><td>弱（倒排索引实验性）</td><td><strong>强</strong></td><td>弱</td><td>弱</td><td>弱</td><td>弱</td></tr><tr><td>写入</td><td><strong>批量极高</strong></td><td>高</td><td>极高（实时摄取）</td><td>批式为主</td><td>单进程</td><td>高</td></tr><tr><td>运维</td><td>中（自建）/ 低（Cloud）</td><td>高（JVM）</td><td>高（多元件）</td><td><strong>极低（托管）</strong></td><td>极低</td><td>中</td></tr><tr><td>典型</td><td>行为分析、日志明细、BI</td><td>搜索、日志检索</td><td>实时看板</td><td>企业数仓</td><td>本地分析 / ETL</td><td>监控与 IoT 时序</td></tr></tbody></table></div>
+<p>一句话决策：</p>
+<ul><li><strong>自建、要完整 SQL、亿级明细秒级聚合、成本敏感</strong> → <strong>ClickHouse</strong>，当前性能和生态综合最均衡。</li><li><strong>主要需求是全文检索与相关性排序</strong> → <a href="../elasticsearch/elasticsearch-guide.html">Elasticsearch</a>；日志只做标签过滤与查看 → Loki 更省。</li><li><strong>超大规模实时多维看板、预聚合模型固定</strong> → Druid / Pinot，但组件更多、运维更重。</li><li><strong>不想运维、预算充足、已有云数仓</strong> → Snowflake / BigQuery，用钱换人力。</li><li><strong>本地/单进程分析、ETL 中间步骤、单元测试</strong> → DuckDB，零运维，SQL 兼容性极好。</li><li><strong>纯时序指标与监控</strong> → <a href="../influxdb-v3/influxdb-v3-guide.html">InfluxDB 3</a> 或 <a href="../prometheus/prometheus-guide.html">Prometheus</a>；<strong>主数据事务</strong> → <a href="../mysql/mysql-guide.html">MySQL</a>。</li></ul>
+<blockquote><p>最后一句经验：ClickHouse 的性能几乎完全由「<strong>排序键 + 分区 + 批量写入</strong>」这三件事决定，而这三件事都在建表那一刻就定死了。上线前用真实量级的数据跑一遍 <code>EXPLAIN indexes = 1</code> 与 <code>system.query_log</code>，比事后加机器有效得多。</p></blockquote>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

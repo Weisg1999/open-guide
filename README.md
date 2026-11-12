@@ -1,6 +1,6 @@
 # open-guide
 
-[![Docs](https://img.shields.io/badge/docs-18%20篇-16a34a)](./README.md)
+[![Docs](https://img.shields.io/badge/docs-26%20篇-16a34a)](./README.md)
 [![Language](https://img.shields.io/badge/topic-Go%20%E7%94%9F%E6%80%81-00ADD8?logo=go)](https://go.dev)
 [![Format](https://img.shields.io/badge/format-Markdown%20%2B%20HTML-orange)](./README.md)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
@@ -8,7 +8,7 @@
 
 > **Go 后端技术栈中文深度指南合集** —— 一份能读、能查、能直接抄代码的「技术手册」，而不是又一份 Hello World。
 >
-> 18 篇长文 · 约 6900 行 Markdown · 每篇同时提供 **Markdown** 与**单文件 HTML**（侧边栏导航 + 代码高亮，浏览器直接打开）。
+> 26 篇长文 · 约 10200 行 Markdown · 每篇同时提供 **Markdown** 与**单文件 HTML**（侧边栏导航 + 代码高亮，浏览器直接打开）。
 
 [English README](./README_EN.md) | [English 说明](#english-readme)
 
@@ -51,16 +51,22 @@
 | **go-zero**（好未来） | `.api` DSL + `goctl` 代码生成、自适应熔断 / 限流 / 负载卸载、web 与 rpc 一体 | [Markdown](./go-zero/go-zero-guide.md) · [HTML](./go-zero/go-zero-guide.html) |
 | **gRPC-Go** | HTTP/2 多路复用与 Protobuf 编码、`.proto` 契约与代码生成、四种流模式、拦截器链、deadline 跨进程传播、resolver/balancer | [Markdown](./grpc/grpc-guide.md) · [HTML](./grpc/grpc-guide.html) |
 
-### 🗄️ 数据存储
+### 🗄️ 数据存储与检索
 
 | 主题 | 覆盖要点 | 文档 |
 | --- | --- | --- |
+| **MySQL** | B+ 树聚簇索引与回表、最左前缀与覆盖索引、MVCC / ReadView 与隔离级别、临键锁与死锁、`EXPLAIN` 慢查询、主从复制与延迟、`database/sql` 连接池 | [Markdown](./mysql/mysql-guide.md) · [HTML](./mysql/mysql-guide.html) |
 | **GORM** | 链式 API、关联与预加载、事务与 SavePoint、Hook、迁移器、软删除、读写分离插件、泛型接口 | [Markdown](./gorm/gorm-guide.md) · [HTML](./gorm/gorm-guide.html) |
 | **go-redis** | 连接池与 `Cmdable`、Pipeline vs TxPipeline、`redis.Nil` 语义、Lua 与分布式锁、Stream 消费组、Cluster slot 与 hash tag、缓存三件套 | [Markdown](./redis/redis-guide.md) · [HTML](./redis/redis-guide.html) |
 | **etcd** | Raft 共识、MVCC 多版本、bbolt B+ 树、Lease / Watch / 分布式锁、clientv3 实战、v3.6 要点 | [Markdown](./etcd/etcd-guide.md) · [HTML](./etcd/etcd-guide.html) |
 | **InfluxDB 2.x** | Bucket / Token 模型、TSM 存储引擎、Flux 查询、任务与告警、Go 客户端写入查询 | [Markdown](./influxdb-v2/influxdb-v2-guide.md) · [HTML](./influxdb-v2/influxdb-v2-guide.html) |
 | **InfluxDB 3** | Rust 重写的 FDAP 栈（Flight + DataFusion + Arrow + Parquet）、SQL 查询、对象存储优先、无限基数、Core vs Enterprise 选型 | [Markdown](./influxdb-v3/influxdb-v3-guide.md) · [HTML](./influxdb-v3/influxdb-v3-guide.html) |
 | **MinIO** | S3 兼容对象存储、纠删码、Bucket / Object 模型、分片上传、预签名 URL、2025 起产品线变化 | [Markdown](./minio/minio-guide.md) · [HTML](./minio/minio-guide.html) |
+| **Elasticsearch** | 倒排索引与 `text`/`keyword`、分析器与 IK 中文分词、NRT refresh 与 segment merge、分片路由与 BM25、Bool Query DSL 与聚合、`search_after` + PIT、Alias/Rollover/ILM 时序索引 | [Markdown](./elasticsearch/elasticsearch-guide.md) · [HTML](./elasticsearch/elasticsearch-guide.html) |
+| **MongoDB** | BSON 文档模型与 `bson.D` 顺序、WiredTiger 文档级并发、副本集与 oplog、片键三要素与分片路由、聚合管道与 ESR 索引、事务与 Change Streams | [Markdown](./mongodb/mongodb-guide.md) · [HTML](./mongodb/mongodb-guide.html) |
+| **ClickHouse** | MergeTree part 与后台合并、稀疏主键索引与数据跳过索引、ORDER BY 设计、向量化执行、物化视图预聚合、`PrepareBatch` 批量写、ReplacingMergeTree 最终一致去重、与 InfluxDB 3 的 FDAP 对照 | [Markdown](./clickhouse/clickhouse-guide.md) · [HTML](./clickhouse/clickhouse-guide.html) |
+
+> 💡 ES 有双重身份：业务全文检索与日志检索。日志场景可与 [Zap 篇](./zap/zap-guide.md) 的 `trace_id` 配合，直接跳到 [OpenTelemetry](./opentelemetry/opentelemetry-guide.md) 链路。
 
 ### 📨 消息、任务与调度
 
@@ -70,14 +76,26 @@
 | **Apache Kafka** | 分区与副本、消费者组与 offset、ISR 与 ACK 语义、Go 客户端（segmentio/kafka-go）实战、Kafka 4.x 移除 ZooKeeper | [Markdown](./kafka/kafka-guide.md) · [HTML](./kafka/kafka-guide.html) |
 | **NATS / JetStream** | Subject 寻址、发布订阅与请求响应、队列组、JetStream 持久化流与消费者、nats.go 实战 | [Markdown](./nats/nats-guide.md) · [HTML](./nats/nats-guide.html) |
 | **robfig/cron** | 标准 5 字段 / 6 字段 cron 表达式、标准解析器扩展（`@every` / `@daily`）、Job 包装器（`SkipIfStillRunning` 等）、时区与并发、自定义 Job | [Markdown](./robfig-cron/robfig-cron-guide.md) · [HTML](./robfig-cron/robfig-cron-guide.html) |
+| **RabbitMQ / RocketMQ** | Exchange/Queue 路由模型、Publisher Confirm 与手动 ACK、Quorum Queue 与 DLX、CommitLog 顺序写、顺序/事务/定时消息、at-least-once 幂等消费、与 Kafka / NATS / asynq 的边界 | [Markdown](./rabbitmq/rabbitmq-guide.md) · [HTML](./rabbitmq/rabbitmq-guide.html) |
 
-> 💡 三篇消息/队列文档（Kafka / NATS / asynq）末尾都有**横向选型对比表**，可直接用来做技术选型。
+> 💡 四篇消息/队列文档（Kafka / NATS / asynq / RabbitMQ·RocketMQ）末尾都有**横向选型对比表**，可直接用来做技术选型。
 
 ### 🔭 可观测性
 
 | 主题 | 覆盖要点 | 文档 |
 | --- | --- | --- |
 | **Zap** | 零分配热路径与强类型 Field、`Logger` vs `SugaredLogger`、`zapcore` 四层管线（Encoder / WriteSyncer / LevelEnabler）、Tee 多目的地分流、采样与 `AtomicLevel`、与标准库 `log/slog` 的关系 | [Markdown](./zap/zap-guide.md) · [HTML](./zap/zap-guide.html) |
+| **Prometheus** | 拉取模型与多维标签时序、四种指标类型与 `rate()`、TSDB 倒排索引、PromQL / 记录规则 / Alertmanager、高基数陷阱、与 InfluxDB 和 OTel Metrics 的边界 | [Markdown](./prometheus/prometheus-guide.md) · [HTML](./prometheus/prometheus-guide.html) |
+| **OpenTelemetry** | Trace/Span 模型与 W3C `traceparent` 传播、Sampler / BatchSpanProcessor / OTLP、Resource 与语义约定、Gin/gRPC/asynq 埋点、把 `trace_id` 写进 Zap 日志 | [Markdown](./opentelemetry/opentelemetry-guide.md) · [HTML](./opentelemetry/opentelemetry-guide.html) |
+
+> 💡 三篇可观测性文档（Zap / Prometheus / OpenTelemetry）构成日志 / 指标 / 链路三支柱，靠统一的 `service.name` 与 `trace_id` 串联。
+
+### 🐳 部署与编排
+
+| 主题 | 覆盖要点 | 文档 |
+| --- | --- | --- |
+| **Docker / Kubernetes** | 镜像分层与多阶段构建、namespace/cgroups、声明式 Reconcile Loop、Pod/Deployment/Service、三类探针与 QoS、滚动发布与优雅下线、client-go 与 RBAC | [Markdown](./docker-k8s/docker-k8s-guide.md) · [HTML](./docker-k8s/docker-k8s-guide.html) |
+
 
 ---
 
@@ -100,16 +118,22 @@
    服务开发方向              数据 / IoT 方向             异步与调度方向
 ```
 
-> 🔭 **横切全路径**：`gRPC` 属「服务开发方向」的通信层（Gin 之后读），`go-redis` 属「数据 / IoT 方向」的缓存层（GORM 之后读），`Zap` 是三条路径都该在写第一个服务时同步接入的日志基座。
+> 🔭 **横切全路径**：`gRPC` 属「服务开发方向」的通信层，`MySQL` / `go-redis` / `ClickHouse` 属数据方向（OLTP → KV → OLAP），`Elasticsearch` / `MongoDB` 是检索与文档支线，`RabbitMQ / RocketMQ` 属异步与调度方向，`Zap` / `Prometheus` / `OpenTelemetry` 是三条路径共用的可观测性基座，`Docker / K8s` 是所有篇目最后都要落到的部署层。
 
 | 你的目标 | 建议顺序 |
 | --- | --- |
 | 打牢 Go 基本功 | 泛型 → 反射 → samber/lo |
-| 快速写出第一个 API 服务 | Gin → GORM → robfig/cron → **Zap**（把日志规范先立起来） |
+| 快速写出第一个 API 服务 | Gin → **MySQL** → GORM → robfig/cron → **Zap**（把日志规范先立起来） |
 | 做微服务 / 中台 | Gin → **gRPC-Go** → Kratos 与 go-zero（对比读）→ etcd → asynq |
+| 打牢数据层基本功 | **MySQL**（索引 / 事务 / 锁）→ GORM → **go-redis** |
 | 加缓存 / 分布式锁 | **go-redis** → 再读 asynq / etcd，理解「缓存、任务队列、强一致协调」的边界 |
+| 做搜索 / 日志检索 | **Elasticsearch** → 配合 Zap 的 `trace_id` 与 OpenTelemetry 链路 |
+| 存半结构化 / 快速迭代的数据 | **MongoDB** → 与 MySQL（主数据）、ES（检索副本）配合使用 |
 | 做 IoT / 监控 / 时序数据 | InfluxDB 2.x → InfluxDB 3（看演进）→ MinIO → Kafka / NATS |
-| 建立可观测性 | **Zap** → 配合 Prometheus 指标与 OpenTelemetry 链路（日志/指标/链路三者不互相替代） |
+| 建立可观测性 | **Zap** → **Prometheus** → **OpenTelemetry**（日志 / 指标 / 链路三支柱，用 `trace_id` 串联） |
+| 做 OLAP 分析 / 日志明细 | **ClickHouse** → 配合 Kafka 表引擎摄取数据 |
+| 服务解耦 / 顺序与事务消息 | **RabbitMQ / RocketMQ** → 与 asynq（作业执行）分工 |
+| 上线部署与发布 | **Docker / K8s** → 配合 Zap stdout 日志、Prometheus 探针与优雅关闭 |
 | 正在做技术选型 | 直接跳到每篇末尾的「选型对比」章节，以及 Kafka / NATS / asynq 三篇横向对照 |
 
 ---
@@ -201,6 +225,14 @@ python tools/build_html.py --stats         # 各篇章节/代码块/表格统计
 | go-redis | [redis/go-redis](https://github.com/redis/go-redis) | v9（模块路径 `/v9`） |
 | gRPC-Go | [grpc/grpc-go](https://github.com/grpc/grpc-go) | v1.x（API 稳定，持续迭代） |
 | Zap | [uber-go/zap](https://github.com/uber-go/zap) | v1.27.x |
+| MySQL | [mysql/mysql-server](https://github.com/mysql/mysql-server) | 8.0 / 8.4 LTS · go-sql-driver/mysql v1.x |
+| Prometheus | [prometheus/prometheus](https://github.com/prometheus/prometheus) | 3.x · client_golang v1.x |
+| OpenTelemetry | [open-telemetry/opentelemetry-go](https://github.com/open-telemetry/opentelemetry-go) | Go SDK v1.x · OTLP |
+| Elasticsearch | [elastic/elasticsearch](https://github.com/elastic/elasticsearch) | 8.x / 9.x · go-elasticsearch v8 |
+| MongoDB | [mongodb/mongo](https://github.com/mongodb/mongo) | 7.0 / 8.0 · mongo-go-driver v1.x |
+| ClickHouse | [ClickHouse/ClickHouse](https://github.com/ClickHouse/ClickHouse) | 25.x · clickhouse-go v2 |
+| Docker / Kubernetes | [kubernetes/kubernetes](https://github.com/kubernetes/kubernetes) | Engine 27+ / K8s 1.3x · client-go v0.3x |
+| RabbitMQ / RocketMQ | [rabbitmq/rabbitmq-server](https://github.com/rabbitmq/rabbitmq-server) | 4.x / 5.x · amqp091-go / rocketmq-client-go v2 |
 | Go 泛型 / 反射 | [Go 官方提案与博客](https://go.dev/blog/laws-of-reflection) | Go 1.18+ |
 
 > ⏱ **关于时效性**：开源项目迭代很快，阅读时请以上游最新 release 为准。若发现版本落后或结论过期，欢迎提 Issue / PR 修正。
@@ -211,7 +243,7 @@ python tools/build_html.py --stats         # 各篇章节/代码块/表格统计
 
 非常欢迎补充与纠错，尤其是这几类：
 
-- **新增主题**（Viper、Prometheus、ClickHouse、MongoDB、Docker/K8s、OpenTelemetry、slog 实践……；Redis / gRPC / Zap 已补齐）
+- **新增主题**（Viper、PostgreSQL、OpenSearch、Loki、Temporal、slog 实践……；Redis / gRPC / Zap / MySQL / Prometheus / OpenTelemetry / Elasticsearch / MongoDB / ClickHouse / Docker·K8s / RabbitMQ·RocketMQ 已补齐）
 - **版本更新**：上游发布新版本后同步文档
 - **纠错**：原理描述、代码错误、过期结论
 - **构建脚本**：改进 `tools/build_html.py` 的解析与渲染（请勿直接手改 HTML）

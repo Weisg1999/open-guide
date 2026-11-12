@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elasticsearch · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#0f766e; --accent-light:#ccfbf1; --accent-dark:#115e59;
+    --bg:#f4faf9; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#03211d; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#115e59 0%,#0f766e 58%,#115e59 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">Elasticsearch<span class="ver">8.x / 9.x</span></div>
+  <div class="sub">倒排索引 · 全文检索与日志分析</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#安装与本地起服务">安装与本地起服务</a>
+  <a class="sub-link" href="#最小可运行示例">最小可运行示例</a>
+  <a href="#2-功能特性总览">2. 功能特性总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-倒排索引为什么全文检索快">3.1 倒排索引：为什么全文检索快</a>
+  <a class="sub-link" href="#32-分析器与-text-keyword">3.2 分析器与 text / keyword</a>
+  <a class="sub-link" href="#33-近实时nrt与写入链路">3.3 近实时（NRT）与写入链路</a>
+  <a class="sub-link" href="#34-分片副本与路由">3.4 分片、副本与路由</a>
+  <a class="sub-link" href="#35-bm25-与相关性评分">3.5 BM25 与相关性评分</a>
+  <a class="sub-link" href="#36-深分页的三种方式">3.6 深分页的三种方式</a>
+  <a class="sub-link" href="#37-聚合的代价">3.7 聚合的代价</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-客户端初始化">4.1 客户端初始化</a>
+  <a class="sub-link" href="#42-建索引与-mapping显式优于动态">4.2 建索引与 Mapping（显式优于动态）</a>
+  <a class="sub-link" href="#43-bulk-批量写入唯一正确的批量姿势">4.3 Bulk 批量写入（唯一正确的批量姿势）</a>
+  <a class="sub-link" href="#44-bool-查询filter-与-must-的正确分工">4.4 Bool 查询：filter 与 must 的正确分工</a>
+  <a class="sub-link" href="#45-深分页search_after-pit">4.5 深分页：search_after + PIT</a>
+  <a class="sub-link" href="#46-时序索引alias-rollover-ilm">4.6 时序索引：Alias + Rollover + ILM</a>
+  <a class="sub-link" href="#47-错误处理清单">4.7 错误处理清单</a>
+  <a href="#5-版本演进速览">5. 版本演进速览</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>Elasticsearch 技术介绍与使用指南（Go 后端视角）</h1>
+<p>基于 Lucene 的分布式搜索与分析引擎：倒排索引、分片与副本、近实时刷新、Query DSL 与聚合，同时承担全文检索与日志检索两副担子。</p>
+<p style="opacity:.8;font-size:13.5px">倒排索引 · 全文检索与日志分析</p>
+<div class="meta"><span>Lucene 倒排索引</span><span>text / keyword 双字段</span><span>NRT refresh 1s</span><span>主分片数不可改</span><span>search_after + PIT</span><span>Alias / Rollover / ILM</span></div>
+</div>
+<blockquote><p>基于 Lucene 的分布式搜索与分析引擎：倒排索引、分片与副本、近实时刷新、Query DSL 与聚合——同时承担全文检索与日志检索（ELK）两副担子。 上游：<a href="https://github.com/elastic/elasticsearch">https://github.com/elastic/elasticsearch</a>　|　服务端主线：<strong>8.x / 9.x</strong>（整理于 2026-11）　|　Go 客户端：<a href="https://github.com/elastic/go-elasticsearch">elastic/go-elasticsearch</a> v8 协议：服务端 Elastic License 2.0（另提供 AGPLv3 选项）/ Go 客户端 Apache-2.0；具体版本以上游最新 release 为准。</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p>Elasticsearch 在后端技术栈里通常有<strong>两个身份</strong>：业务侧的全文检索/商品搜索，以及可观测性侧的日志检索（<a href="../zap/zap-guide.html">Zap 篇</a> 产出的日志经采集器落到这里）。两个场景的建模方式完全不同——前者重相关性与字段设计，后者重写入吞吐、时序索引生命周期与成本控制。</p>
+<p>它的核心是 <strong>Lucene 倒排索引 + 分布式分片</strong>：把文档按字段拆成词条，建立「词 → 文档列表」的映射，再把这个索引切成多个分片分散到节点，查询时并行散射/汇聚。</p>
+<ul><li><strong>适用场景</strong>：全文检索与模糊匹配、多条件过滤 + 排序、日志与 trace 检索、聚合分析（Terms / Date Histogram）、向量检索与混合排序</li><li><strong>不适合</strong>：当主数据库用（无事务、删除是标记、刷新有延迟、跨文档一致性弱）、频繁逐字段更新的场景、复杂多表 JOIN、要求强一致与精确去重计数、纯时序指标的长期监控（用 <a href="../prometheus/prometheus-guide.html">Prometheus</a>）</li></ul>
+<blockquote><p>与 <a href="../mysql/mysql-guide.html">MySQL 篇</a> 的分工：MySQL 负责「写入正确」，ES 负责「查得快、查得模糊」。常见架构是 MySQL 为源，通过 CDC / 双写把检索字段同步到 ES，并接受最终一致。</p></blockquote>
+<h3 id="安装与本地起服务">安装与本地起服务</h3>
+<pre><code class="lang-bash">go get github.com/elastic/go-elasticsearch/v8
+docker run --rm -d --name es-dev -p 9200:9200 \
+  -e "discovery.type=single-node" \
+  -e "xpack.security.enabled=false" \
+  -e "ES_JAVA_OPTS=-Xms1g -Xmx1g" \
+  docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+curl http://localhost:9200   # 确认集群可达</code></pre>
+<blockquote><p>镜像标签仅为示例，请换成当前 8.x/9.x 最新补丁版。<strong>8.x 起默认开启 TLS 与认证</strong>，本地示例才显式关闭；生产不要照抄这两行环境变量。</p></blockquote>
+<h3 id="最小可运行示例">最小可运行示例</h3>
+<pre><code class="lang-go">package main
+
+import (
+    "fmt"
+    "strings"
+
+    "github.com/elastic/go-elasticsearch/v8"
+)
+
+func main() {
+    es, err := elasticsearch.NewClient(elasticsearch.Config{
+        Addresses: []string{"http://localhost:9200"},
+    })
+    if err != nil { panic(err) }
+
+    res, err := es.Info() // 建连探活
+    if err != nil { panic(err) }
+    defer res.Body.Close()
+    fmt.Println("cluster:", res.Status())
+
+    _, _ = es.Index("articles", strings.NewReader(`{"title":"Go 并发编程","tags":["go"]}`),
+        es.Index.WithDocumentID("1"),
+        es.Index.WithRefresh("true")) // 演示用；生产不要逐条 refresh
+}</code></pre>
+<hr>
+
+</section>
+<section data-anchor="2-功能特性总览">
+<h2 id="2-功能特性总览">2. 功能特性总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>倒排索引</td><td>term → posting list，FST 词典加速；<code>doc_values</code> 列式结构服务排序与聚合</td></tr><tr><td>字段类型</td><td><code>text</code>（分词，全文）/ <code>keyword</code>（不分词，精确过滤与聚合）/ 数值 / 日期 / <code>nested</code> / <code>object</code> / <code>geo_point</code> / <code>dense_vector</code></td></tr><tr><td>分析器</td><td>Character Filter → Tokenizer → Token Filter；内置 standard、可装 IK 等中文分词插件</td></tr><tr><td>查询 DSL</td><td><code>match</code> / <code>term</code> / <code>range</code> / <code>bool</code>（must / filter / should / must_not）/ <code>multi_match</code> / <code>nested</code> / <code>script</code></td></tr><tr><td>聚合</td><td>桶聚合（terms / date_histogram / range）、指标聚合（avg / sum / percentiles）、管道聚合</td></tr><tr><td>分页</td><td><code>from + size</code>（上限 1 万）、<code>scroll</code>（快照）、<code>search_after</code> + PIT（实时深翻页）</td></tr><tr><td>写入</td><td>单条 Index / <code>Bulk</code> NDJSON 批量、乐观并发（<code>if_seq_no</code> / <code>if_primary_term</code>）、Ingest Pipeline 预处理</td></tr><tr><td>分布式</td><td>主分片 + 副本、路由 <code>hash(_routing) % 主分片数</code>、scatter/gather 两阶段查询</td></tr><tr><td>近实时</td><td><code>refresh_interval</code> 默认 1s、translog、flush、segment merge</td></tr><tr><td>索引治理</td><td>Alias、Rollover、ILM（hot/warm/cold/delete）、索引模板与 component template</td></tr><tr><td>Go SDK</td><td><code>esapi</code> 底层请求、<code>es.Index/Search/Bulk</code> 便捷方法、TypedClient、<code>elastictransport</code> 可配重试与连接池</td></tr></tbody></table></div>
+<hr>
+
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-倒排索引为什么全文检索快">3.1 倒排索引：为什么全文检索快</h3>
+<pre><code class="lang-text">文档 1: "Go 并发编程"     ──分词──► [go, 并发, 编程]
+文档 2: "Go Web 开发"     ──分词──► [go, web, 开发]
+
+倒排索引:
+  go    → [1, 2]
+  并发  → [1]
+  web   → [2]
+  ...   （词典用 FST 压缩常驻内存；posting list 存 docID + 词频 + 位置）
+
+查询 "go 并发" → 取两个 posting list 求交/求并 → 命中文档 → BM25 打分 → 排序</code></pre>
+<p>三个容易混淆的结构：</p>
+<div class="table-wrap"><table><thead><tr><th>结构</th><th>用途</th><th>特点</th></tr></thead><tbody><tr><td>倒排索引</td><td>从「词」找「文档」</td><td>搜索快，但按文档取字段值很慢</td></tr><tr><td><code>doc_values</code></td><td>从「文档」找「字段值」</td><td><strong>列式</strong>存储，排序、聚合、脚本取值走它，默认对 keyword/数值/日期开启</td></tr><tr><td><code>_source</code></td><td>原始 JSON</td><td>返回命中内容、<code>update</code> / reindex 依赖它；关闭后无法高亮与重建</td></tr></tbody></table></div>
+<p><code>text</code> 字段默认<strong>没有</strong> <code>doc_values</code>，对它做 terms 聚合会报错——需要精确聚合时用 <code>.keyword</code> 多字段（multi-field）。</p>
+<h3 id="32-分析器与-text-keyword">3.2 分析器与 text / keyword</h3>
+<pre><code class="lang-text">"Hello-Go 2026"
+  → Character Filter（如 html_strip）
+  → Tokenizer（standard → ["Hello", "Go", "2026"]）
+  → Token Filter（lowercase → ["hello", "go", "2026"]）</code></pre>
+<ul><li><code>text</code>：走分析器，用于 <code>match</code> 全文检索；<strong>不能用 <code>term</code> 精确匹配</strong>（存的是词条，不是原文）</li><li><code>keyword</code>：不分词，整串入索引，用于 <code>term</code> 精确过滤、排序、聚合</li><li>中文默认 standard 分词器按单字切，检索效果差 → 装 IK（<code>ik_max_word</code> 建索引 / <code>ik_smart</code> 查询）</li></ul>
+<h3 id="33-近实时nrt与写入链路">3.3 近实时（NRT）与写入链路</h3>
+<pre><code class="lang-text">写入请求
+  ├─► 写 translog（追加，保证崩溃可恢复）
+  └─► 写 index buffer（内存，此时还搜不到）
+          │ 每 refresh_interval（默认 1s）生成新的可搜索 Lucene segment
+          ▼
+      可搜索（这就是「近实时」而非实时的原因）
+          │ flush：buffer 落盘、清空 translog
+          ▼
+      后台 segment merge（合并小段、真正清除标记删除的文档）</code></pre>
+<p>关键推论：</p>
+<ul><li>写入后立刻查可能查不到 → 测试可用 <code>refresh=wait_for</code>，<strong>生产不要逐条 refresh</strong>（每次都生成小 segment，写入吞吐暴跌）</li><li>删除是<strong>打标记</strong>，空间要到 merge 才释放</li><li><code>refresh_interval</code> 调到 30s~120s 能显著提升日志写入吞吐，代价是可见性延迟</li></ul>
+<h3 id="34-分片副本与路由">3.4 分片、副本与路由</h3>
+<pre><code class="lang-text">索引 articles (3 主分片, 1 副本)
+   shard 0 [primary@nodeA, replica@nodeB]
+   shard 1 [primary@nodeB, replica@nodeC]
+   shard 2 [primary@nodeC, replica@nodeA]
+
+写入路由: shard = hash(_routing) % 3      （_routing 默认 = _id）</code></pre>
+<ul><li><strong>主分片数创建后不可改</strong>（改要 reindex 或 split），副本数可随时改</li><li>分片不是越小越好：每分片都有文件句柄、内存与线程开销。常见经验值是单分片 20~50GB（日志场景可更大）</li><li>查询是 <strong>scatter/gather</strong>：协调节点把请求发给所有相关分片 → 各分片本地查询取 topN → 汇聚排序 → 再按 ID 去取 <code>_source</code>（query then fetch）。分片越多，扇出成本越高</li></ul>
+<h3 id="35-bm25-与相关性评分">3.5 BM25 与相关性评分</h3>
+<p>默认相似度是 BM25（词频 TF、逆文档频率 IDF、字段长度归一化）。注意 <strong>IDF 按分片本地统计</strong>，分片数多且文档分布不均时评分可能失真；小索引可用 <code>search_type=dfs_query_then_fetch</code> 先全局收集词频，代价是多一次往返。</p>
+<p><code>bool</code> 查询里 <strong><code>filter</code> 不参与评分且结果可缓存</strong>，<code>must</code> 参与评分。把「时间范围、状态、租户」这类纯过滤条件放 <code>filter</code> 是最容易拿到的性能收益。</p>
+<h3 id="36-深分页的三种方式">3.6 深分页的三种方式</h3>
+<div class="table-wrap"><table><thead><tr><th>方式</th><th>原理</th><th>适用</th><th>限制</th></tr></thead><tbody><tr><td><code>from + size</code></td><td>各分片取 <code>from+size</code> 条再汇聚</td><td>前几页</td><td><code>from + size ≤ 10000</code>（<code>max_result_window</code>），越深越慢</td></tr><tr><td><code>scroll</code></td><td>创建搜索上下文快照</td><td>离线全量导出</td><td>占资源、不反映期间的新写入</td></tr><tr><td><strong><code>search_after</code> + PIT</strong></td><td>用上一页排序值作游标，PIT 保证一致性</td><td>实时深翻页</td><td>不能随机跳页；需稳定唯一排序键（常加 <code>_id</code> 或 <code>_shard_doc</code>）</td></tr></tbody></table></div>
+<h3 id="37-聚合的代价">3.7 聚合的代价</h3>
+<p>桶聚合在分片上先算局部 topN 再汇聚，因此 <code>terms</code> 聚合默认<strong>不保证精确</strong>（<code>doc_count_error_upper_bound</code> 会告诉你误差）。高基数字段（用户 ID）做 terms 聚合会吃大量内存，需调 <code>shard_size</code>、限定 <code>size</code>，或改用 <code>composite</code> 聚合分页遍历。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-客户端初始化">4.1 客户端初始化</h3>
+<pre><code class="lang-go">package search
+
+import (
+    "github.com/elastic/go-elasticsearch/v8"
+)
+
+func New(addresses []string, user, pass string) (*elasticsearch.Client, error) {
+    return elasticsearch.NewClient(elasticsearch.Config{
+        Addresses: addresses,
+        Username:  user,
+        Password:  pass,
+        // 生产：配 CACert / Transport TLS；日志场景可调大连接池与重试
+        // RetryOnStatus: []int{429, 502, 503, 504},
+        // MaxRetries:    3,
+    })
+}</code></pre>
+<blockquote><p>复用同一个 <code>Client</code>（内部持有连接池），不要每次查询新建。<code>esapi.Response</code> <strong>必须 <code>defer res.Body.Close()</code></strong>，否则连接不会归还。</p></blockquote>
+<h3 id="42-建索引与-mapping显式优于动态">4.2 建索引与 Mapping（显式优于动态）</h3>
+<pre><code class="lang-go">const mapping = `{
+  "settings": {
+    "number_of_shards": 3,
+    "number_of_replicas": 1,
+    "refresh_interval": "30s",
+    "analysis": {
+      "analyzer": {
+        "ik_index": {"type":"custom","tokenizer":"ik_max_word"},
+        "ik_query": {"type":"custom","tokenizer":"ik_smart"}
+      }
+    }
+  },
+  "mappings": {
+    "dynamic": "strict",
+    "properties": {
+      "title":    {"type":"text","analyzer":"ik_index","search_analyzer":"ik_query",
+                   "fields":{"raw":{"type":"keyword","ignore_above":256}}},
+      "status":   {"type":"keyword"},
+      "tenant_id":{"type":"keyword"},
+      "price":    {"type":"scaled_float","scaling_factor":100},
+      "tags":     {"type":"keyword"},
+      "created_at":{"type":"date","format":"strict_date_optional_time||epoch_millis"}
+    }
+  }
+}`
+
+func CreateIndex(es *elasticsearch.Client, name string) error {
+    res, err := es.Indices.Create(name,
+        es.Indices.Create.WithBody(strings.NewReader(mapping)))
+    if err != nil { return err }
+    defer res.Body.Close()
+    if res.IsError() { return fmt.Errorf("create index: %s", res.String()) }
+    return nil
+}</code></pre>
+<p><code>dynamic: "strict"</code> 让未声明字段直接报错，是防「mapping 爆炸」最有效的一行配置。</p>
+<h3 id="43-bulk-批量写入唯一正确的批量姿势">4.3 Bulk 批量写入（唯一正确的批量姿势）</h3>
+<pre><code class="lang-go">func BulkIndex(es *elasticsearch.Client, index string, docs []Article) error {
+    var buf bytes.Buffer
+    for _, d := range docs {
+        meta := map[string]any{
+            "index": map[string]any{"_index": index, "_id": d.ID},
+        }
+        if err := json.NewEncoder(&amp;buf).Encode(meta); err != nil { return err }
+        if err := json.NewEncoder(&amp;buf).Encode(d); err != nil { return err }
+    }
+    res, err := es.Bulk(bytes.NewReader(buf.Bytes()),
+        es.Bulk.WithIndex(index))
+    if err != nil { return err }
+    defer res.Body.Close()
+    if res.IsError() { return fmt.Errorf("bulk: %s", res.String()) }
+
+    var r struct {
+        Errors bool `json:"errors"`
+        Items  []map[string]struct {
+            Status int `json:"status"`
+            Error  any `json:"error"`
+        } `json:"items"`
+    }
+    if err := json.NewDecoder(res.Body).Decode(&amp;r); err != nil { return err }
+    // HTTP 200 不代表全部成功，必须逐条检查 errors/items
+    if r.Errors { return fmt.Errorf("bulk partial failure: %+v", r.Items) }
+    return nil
+}</code></pre>
+<blockquote><p>Bulk 请求体是 <strong>NDJSON：每个 JSON 占一行</strong>，<code>json.Encoder.Encode</code> 自动补换行。单批控制在 5~15MB；遇到 429（<code>es_rejected_execution_exception</code>）要指数退避重试，而不是加大并发。</p></blockquote>
+<h3 id="44-bool-查询filter-与-must-的正确分工">4.4 Bool 查询：filter 与 must 的正确分工</h3>
+<pre><code class="lang-go">func Search(es *elasticsearch.Client, index, kw, tenant string, minPrice float64) ([]Article, error) {
+    q := map[string]any{
+        "size": 20,
+        "query": map[string]any{
+            "bool": map[string]any{
+                "must": []any{
+                    map[string]any{"multi_match": map[string]any{
+                        "query": kw, "fields": []string{"title^3", "tags"},
+                    }},
+                },
+                // 纯过滤条件放 filter：不评分、可缓存
+                "filter": []any{
+                    map[string]any{"term": map[string]any{"tenant_id": tenant}},
+                    map[string]any{"term": map[string]any{"status": "published"}},
+                    map[string]any{"range": map[string]any{
+                        "price": map[string]any{"gte": minPrice},
+                    }},
+                },
+            },
+        },
+        "sort": []any{
+            map[string]any{"_score": map[string]any{"order": "desc"}},
+            map[string]any{"id": map[string]any{"order": "asc"}}, // 为 search_after 提供稳定 tiebreaker
+        },
+        "aggs": map[string]any{
+            "by_tag": map[string]any{
+                "terms": map[string]any{"field": "tags", "size": 10},
+            },
+        },
+    }
+    var buf bytes.Buffer
+    if err := json.NewEncoder(&amp;buf).Encode(q); err != nil { return nil, err }
+
+    res, err := es.Search(
+        es.Search.WithIndex(index),
+        es.Search.WithBody(&amp;buf),
+        es.Search.WithTrackTotalHits(true),
+    )
+    if err != nil { return nil, err }
+    defer res.Body.Close()
+    if res.IsError() { return nil, fmt.Errorf("search: %s", res.String()) }
+
+    var out struct {
+        Hits struct {
+            Total struct{ Value int `json:"value"` } `json:"total"`
+            Hits  []struct {
+                Source Article `json:"_source"`
+                Sort   []any   `json:"sort"`
+            } `json:"hits"`
+        } `json:"hits"`
+    }
+    if err := json.NewDecoder(res.Body).Decode(&amp;out); err != nil { return nil, err }
+    articles := make([]Article, 0, len(out.Hits.Hits))
+    for _, h := range out.Hits.Hits { articles = append(articles, h.Source) }
+    return articles, nil
+}</code></pre>
+<h3 id="45-深分页search_after-pit">4.5 深分页：search_after + PIT</h3>
+<pre><code class="lang-go">// 1) 打开 PIT，保证翻页期间视图一致
+pitRes, _ := es.OpenPointInTime(
+    es.OpenPointInTime.WithIndex([]string{"articles"}),
+    es.OpenPointInTime.WithKeepAlive("2m"))
+// 解析出 pitRes 中的 id ...
+
+// 2) 每页带上上一页最后一条的 sort 值
+q := map[string]any{
+    "size": 20,
+    "pit":  map[string]any{"id": pitID, "keep_alive": "2m"},
+    "sort": []any{"_shard_doc"}, // 用 PIT 时可用内置稳定游标，无需业务唯一键
+    "search_after": []any{lastSortValue},
+}
+// 3) 结束后 es.ClosePointInTime(...) 释放上下文，别等它自己过期</code></pre>
+<blockquote><p><code>sort</code> 不用 <code>_shard_doc</code> 时，必须拼一个唯一字段（如 <code>created_at</code> + <code>_id</code>）做 tiebreaker，否则相同排序值的文档可能重复或丢失。</p></blockquote>
+<h3 id="46-时序索引alias-rollover-ilm">4.6 时序索引：Alias + Rollover + ILM</h3>
+<p>日志场景不要「一天一个索引名让应用自己切」，用固定写入别名 + 自动滚动：</p>
+<pre><code class="lang-json">PUT _index_template/logs-template
+{
+  "index_patterns": ["app-logs-*"],
+  "template": {
+    "settings": {"number_of_shards": 2, "number_of_replicas": 1,
+                 "index.lifecycle.name": "logs-policy"},
+    "mappings": {"dynamic": "strict", "properties": {
+      "ts": {"type":"date"}, "level": {"type":"keyword"},
+      "trace_id": {"type":"keyword"}, "msg": {"type":"text"}
+    }}
+  }
+}</code></pre>
+<pre><code class="lang-bash"># 首次创建带写别名
+PUT app-logs-000001
+{"aliases":{"app-logs-write":{"is_write_index":true}}}
+
+# ILM：热阶段 50GB / 1 天滚动，30 天后删除</code></pre>
+<p>应用始终写 <code>app-logs-write</code>，查询用 <code>app-logs-*</code>；配合 <a href="../zap/zap-guide.html">Zap 篇</a> 输出的 <code>trace_id</code>，可以一条检索把日志与 <a href="../opentelemetry/opentelemetry-guide.html">OpenTelemetry</a> 链路对上。</p>
+<h3 id="47-错误处理清单">4.7 错误处理清单</h3>
+<pre><code class="lang-go">defer res.Body.Close()
+if res.IsError() {
+    body, _ := io.ReadAll(res.Body)
+    // 429 / 503 → 退避重试；4xx → 修查询或 mapping，不要重试
+    return fmt.Errorf("es %s: %s", res.Status(), body)
+}
+// Bulk 即使 200 也要检查 body.errors（见 4.3）</code></pre>
+<hr>
+
+</section>
+<section data-anchor="5-版本演进速览">
+<h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>关键变化与迁移注意点</th></tr></thead><tbody><tr><td>5.x / 6.x</td><td>一个索引可有多个 mapping type；6.x 起限制单 type，为移除做准备</td></tr><tr><td><strong>7.x</strong></td><td><strong>彻底移除 mapping type</strong>（<code>_type</code>）；主分片默认 1；Zen2 集群协调、ILM 成熟；引入 <code>search_after</code> 改进</td></tr><tr><td><strong>8.x</strong></td><td><strong>默认开启安全（TLS + 内置用户认证）</strong>；Java 17 运行时；API 清理与部分字段重命名；kNN 向量检索 GA；Go 客户端切到 <code>/v8</code> 模块并新增 TypedClient</td></tr><tr><td>9.x</td><td>继续简化配置与查询性能、增强向量/混合检索与 serverless 形态</td></tr></tbody></table></div>
+<p><strong>许可证变化务必留意</strong>：7.10 及之前为 Apache-2.0；7.11 起改为 <strong>Elastic License 2.0</strong>，社区随后 fork 出 <strong>OpenSearch</strong>（Apache-2.0）；Elastic 后来又提供 AGPLv3 作为可选许可。商业集成、二次分发前请自行核对当前许可条款，不要沿用老教程里「ES 是 Apache-2.0」的说法。</p>
+<p><strong>升级注意</strong>：</p>
+<ul><li>6.x → 7.x：拆 type、改客户端（<code>/v7</code>）、检查 <code>include_type_name</code> 相关 API</li><li>7.x → 8.x：<strong>必须配置 TLS/认证或显式关闭</strong>，否则客户端连不上；Go 客户端从 <code>github.com/elastic/go-elasticsearch/v7</code> 换到 <code>/v8</code>，<code>esapi</code> 请求构造方式变化</li><li>服务端与客户端大版本要对齐；跨大版本混用会出现兼容性头校验失败</li></ul>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>动态映射字段爆炸</strong>：任由业务写入任意字段，<code>mapping</code> 字段数暴涨 → 集群状态膨胀、内存吃紧甚至 <code>limit of total fields exceeded</code>。设 <code>dynamic: strict</code> 或 <code>false</code> + <code>index.mapping.total_fields.limit</code>。</li><li><strong><code>text</code> 与 <code>keyword</code> 用反</strong>：对 <code>text</code> 用 <code>term</code> 精确查（查不到）、对 <code>text</code> 做 terms 聚合（报错）。精确过滤/排序/聚合一律用 <code>.keyword</code> 多字段。</li><li><strong>把 ES 当主数据库</strong>：无跨文档事务、删除是标记、刷新有延迟、副本默认异步。<strong>源数据放 <a href="../mysql/mysql-guide.html">MySQL</a></strong>，ES 只作检索副本并设计好重放全量重建的流程。</li><li><strong>写后立刻查不到</strong>：NRT 默认 1s 刷新。测试用 <code>refresh=wait_for</code>；业务的「写后读自己」应回源库读，不要靠强制刷新掩盖一致性问题。</li><li><strong>生产逐条写入 / 逐条 refresh</strong>：两者都是吞吐杀手。用 Bulk（5~15MB）+ 合理的 <code>refresh_interval</code>。</li><li><strong><code>from + size</code> 深翻页</strong>：超过 1 万条直接报错，之前也会线性变慢。用 <code>search_after</code> + PIT，并记得关闭 PIT。</li><li><strong>主分片数拍脑袋</strong>：创建后不能改，只能 reindex。按数据总量与增长预估（单分片 20~50GB），日志类可用 Rollover 自动扩。</li><li><strong>不设 ILM / Rollover</strong>：时序索引无限增长或天天手工建索引。用固定写别名 + ILM 自动滚动与过期删除。</li><li><strong><code>filter</code> 写成 <code>must</code></strong>：纯过滤条件参与评分、无法命中 query cache，白白浪费 CPU。</li><li><strong>前缀通配 <code>*</code>、正则、<code>script</code> 查询</strong>：全词典扫描，容易把集群打挂。用 <code>match_phrase</code> / <code>n-gram</code> / 预计算字段替代。</li><li><strong>高基数聚合</strong>：对 <code>user_id</code> 做 terms、<code>size</code> 设几万、嵌套多层聚合 → 节点 OOM。用 <code>composite</code> 分页、限 <code>shard_size</code>，或把明细交给 <a href="https://clickhouse.com/">ClickHouse 类 OLAP</a>。</li><li><strong><code>_source</code> 过大 / <code>SELECT *</code> 习惯</strong>：只取需要的字段用 <code>_source_includes</code>，聚合/排序用 <code>docvalue_fields</code>，别把大文档全量拉回应用。</li><li><strong>Bulk 只判 HTTP 状态</strong>：200 也可能是部分失败，必须检查响应体 <code>errors</code> 与 <code>items</code>。</li><li><strong>429 硬加重试并发</strong>：写入队列满了应指数退避并降速，加大并发只会更糟。</li><li><strong>中文用默认分词</strong>：standard 按单字切，搜索「并发」会命中包含「并」「发」的无关文档。装 IK 并区分建索引/查询分析器。</li><li><strong>分片数影响相关性</strong>：小索引多分片时 IDF 按分片统计导致评分偏差，必要时 <code>dfs_query_then_fetch</code>。</li><li><strong>裸奔到公网</strong>：8.x 默认开安全是有原因的，历史上大量数据泄露来自无认证的 9200 端口。生产开 TLS + RBAC + 网络隔离。</li></ol>
+<hr>
+
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>Elasticsearch</th><th>OpenSearch</th><th>Solr</th><th>ClickHouse</th><th>Loki</th><th>Meilisearch / Typesense</th></tr></thead><tbody><tr><td>定位</td><td>搜索 + 日志分析</td><td>ES 7.10 的 Apache-2.0 fork</td><td>传统企业搜索</td><td>列存 OLAP</td><td>日志检索（只索引标签）</td><td>轻量即时搜索</td></tr><tr><td>协议</td><td><strong>ELv2 / AGPLv3</strong></td><td><strong>Apache-2.0</strong></td><td>Apache-2.0</td><td>Apache-2.0</td><td>AGPLv3</td><td>MIT / GPL</td></tr><tr><td>相关性 / DSL</td><td><strong>最成熟</strong></td><td>接近（逐步分化）</td><td>强</td><td>弱（无倒排为主）</td><td>无全文相关性</td><td>简单、开箱即用</td></tr><tr><td>聚合分析</td><td>强</td><td>强</td><td>中</td><td><strong>极强（SQL）</strong></td><td>弱（LogQL）</td><td>弱</td></tr><tr><td>资源占用</td><td>高（JVM）</td><td>高</td><td>高</td><td>中</td><td><strong>低</strong></td><td>低</td></tr><tr><td>运维复杂度</td><td>中～高</td><td>中～高</td><td>高</td><td>中</td><td>低</td><td><strong>极低</strong></td></tr><tr><td>典型场景</td><td>检索 + ELK 一体化</td><td>许可敏感 / 自建搜索</td><td>存量 Lucene 栈</td><td>日志/行为分析报表</td><td>K8s 日志（配合 Grafana）</td><td>中小站站内搜索</td></tr></tbody></table></div>
+<p>一句话决策：</p>
+<ul><li><strong>既要业务检索又要日志分析、团队能承担 JVM 运维</strong> → Elasticsearch；生态、文档与云托管最全。</li><li><strong>许可合规要求纯 Apache-2.0、或希望完全社区治理</strong> → OpenSearch，API 大体兼容但新特性已分化，客户端要用对应的 fork 版本。</li><li><strong>只做 Kubernetes 日志检索、成本敏感</strong> → <strong>Loki</strong>：只索引标签、原始日志压缩存对象存储，比 ES 省一个数量级，代价是全文检索能力弱。</li><li><strong>日志/行为数据主要做 SQL 聚合报表</strong> → ClickHouse，写入与压缩比更强；但别指望它做相关性排序。</li><li><strong>只是一个中小站的搜索框</strong> → Meilisearch / Typesense，零 JVM、几分钟上线，没必要上 ES 集群。</li><li><strong>主数据、事务、强一致</strong> → <a href="../mysql/mysql-guide.html">MySQL</a>；<strong>高频 KV 缓存</strong> → <a href="../redis/redis-guide.html">go-redis</a>；<strong>指标趋势与告警</strong> → <a href="../prometheus/prometheus-guide.html">Prometheus</a>。</li></ul>
+<blockquote><p>一个常被忽略的成本项：ES 的「实时性」是用 refresh 频率换来的，「灵活性」是用 mapping 字段数换来的，「聚合精度」是用内存换来的。上线前先明确业务能接受哪三个代价，再定 <code>refresh_interval</code>、<code>dynamic</code> 与分片数。</p></blockquote>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

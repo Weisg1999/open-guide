@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docker / K8s · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#1e40af; --accent-light:#dbeafe; --accent-dark:#1e3a8a;
+    --bg:#f5f8fd; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#0a1a3a; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#1e3a8a 0%,#1e40af 58%,#1e3a8a 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">Docker / K8s<span class="ver">1.3x</span></div>
+  <div class="sub">Go 服务部署 · 容器与编排</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#安装与本地集群">安装与本地集群</a>
+  <a class="sub-link" href="#最小可运行示例">最小可运行示例</a>
+  <a href="#2-功能特性总览">2. 功能特性总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-镜像分层与容器本质">3.1 镜像分层与容器本质</a>
+  <a class="sub-link" href="#32-pod-与声明式协调循环">3.2 Pod 与声明式协调循环</a>
+  <a class="sub-link" href="#33-service-与流量路径">3.3 Service 与流量路径</a>
+  <a class="sub-link" href="#34-资源qos-与-oomkilled">3.4 资源、QoS 与 OOMKilled</a>
+  <a class="sub-link" href="#35-三种探针的区别">3.5 三种探针的区别</a>
+  <a class="sub-link" href="#36-优雅下线的时序">3.6 优雅下线的时序</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-生产级-dockerfile-要点">4.1 生产级 Dockerfile 要点</a>
+  <a class="sub-link" href="#42-健康检查与优雅关闭go-侧">4.2 健康检查与优雅关闭（Go 侧）</a>
+  <a class="sub-link" href="#43-deployment-service-hpa-清单">4.3 Deployment / Service / HPA 清单</a>
+  <a class="sub-link" href="#44-client-go在-go-程序里操作集群">4.4 client-go：在 Go 程序里操作集群</a>
+  <a class="sub-link" href="#45-发布与排障速查">4.5 发布与排障速查</a>
+  <a href="#5-版本演进速览">5. 版本演进速览</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>Docker 与 Kubernetes 技术介绍与使用指南（Go 服务部署视角）</h1>
+<p>容器与编排的事实标准：镜像分层与多阶段构建、Pod / Deployment / Service 抽象、探针与滚动发布、优雅下线，从 Go 服务视角讲清怎么被正确打包、正确调度、正确停止。</p>
+<p style="opacity:.8;font-size:13.5px">Go 服务部署 · 容器与编排</p>
+<div class="meta"><span>多阶段构建 + distroless</span><span>namespace / cgroups</span><span>声明式 Reconcile Loop</span><span>liveness / readiness / startup</span><span>SIGTERM 优雅关闭</span><span>client-go 与 RBAC</span></div>
+</div>
+<blockquote><p>容器与编排的事实标准：镜像分层与多阶段构建、Pod / Deployment / Service 抽象、探针与滚动发布、优雅下线——从 Go 服务视角讲清「怎么被正确打包、正确调度、正确停止」。 上游：<a href="https://github.com/moby/moby">https://github.com/moby/moby</a> · <a href="https://github.com/kubernetes/kubernetes">https://github.com/kubernetes/kubernetes</a>　|　主线：<strong>Docker Engine 27+ / Kubernetes 1.3x</strong>（整理于 2026-11）　|　Go 客户端：<a href="https://github.com/kubernetes/client-go">kubernetes/client-go</a> v0.3x 协议：Apache-2.0；client-go 版本须与集群 minor 版本匹配，具体以上游最新 release 为准。</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p>这篇在仓库里位置特殊：其余篇目讲的是「Go 代码里 import 什么库」，容器与编排讲的是「Go 进程运行在哪里、被谁管理」。它仍是后端工程师的必备知识——线上 80% 的「服务莫名重启」「发布期间 502」「容器被 OOMKilled」都出在这一层，而不是业务代码。</p>
+<ul><li><strong>Docker</strong>：把应用与依赖打包成<strong>镜像</strong>，运行时用 namespace 隔离 + cgroups 限流，得到一致的「进程」</li><li><strong>Kubernetes</strong>：<strong>声明式编排</strong>——你描述期望状态（3 个副本、镜像版本、资源与探针），控制器持续把实际状态收敛过去</li></ul>
+<ul><li><strong>适用场景</strong>：多服务部署、弹性扩缩、滚动发布与回滚、统一资源与配置管理、多环境一致性</li><li><strong>不适合</strong>：单进程小工具/CLI（systemd + 二进制就够）、低流量单体且团队没有运维能力（先用 Compose 或托管容器服务）、有状态数据库盲目上 K8s（需 Operator + 周全的存储方案）</li></ul>
+<blockquote><p>与 <a href="../gin/gin-guide.html">Gin 篇</a> 的 <code>http.Server.Shutdown</code>、<a href="../zap/zap-guide.html">Zap 篇</a> 的 stdout 日志、<a href="../prometheus/prometheus-guide.html">Prometheus 篇</a> 的服务发现、<a href="../grpc/grpc-guide.html">gRPC 篇</a> 的 <code>GracefulStop</code> 都直接相关——本文给出它们在容器里的落地方式。</p></blockquote>
+<h3 id="安装与本地集群">安装与本地集群</h3>
+<pre><code class="lang-bash"># Docker Desktop / Engine + kubectl + kind（本地 K8s）
+go install sigs.k8s.io/kind@latest
+kind create cluster --name dev
+kubectl cluster-info --context kind-dev</code></pre>
+<h3 id="最小可运行示例">最小可运行示例</h3>
+<p>一个能正确响应 SIGTERM 的 Go 服务：</p>
+<pre><code class="lang-go">package main
+
+import (
+    "context"
+    "errors"
+    "net/http"
+    "os"
+    "os/signal"
+    "syscall"
+    "time"
+)
+
+func main() {
+    mux := http.NewServeMux()
+    mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
+        w.WriteHeader(http.StatusOK)
+        _, _ = w.Write([]byte("ok"))
+    })
+    srv := &amp;http.Server{Addr: ":8080", Handler: mux,
+        ReadHeaderTimeout: 5 * time.Second}
+
+    go func() { _ = srv.ListenAndServe() }()
+
+    ctx, stop := signal.NotifyContext(context.Background(),
+        syscall.SIGTERM, syscall.SIGINT)
+    defer stop()
+    &lt;-ctx.Done() // 收到 SIGTERM 才开始收尾
+
+    shutdownCtx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+    defer cancel()
+    if err := srv.Shutdown(shutdownCtx); err != nil &amp;&amp; !errors.Is(err, http.ErrServerClosed) {
+        os.Exit(1)
+    }
+}</code></pre>
+<pre><code class="lang-dockerfile">FROM golang:1.25-alpine AS build
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/app ./cmd/app
+
+FROM gcr.io/distroless/static-debian12:nonroot
+COPY --from=build /out/app /app
+USER nonroot:nonroot
+EXPOSE 8080
+ENTRYPOINT ["/app"]</code></pre>
+<pre><code class="lang-bash">docker build -t app:v1 .
+docker run --rm -p 8080:8080 app:v1
+curl localhost:8080/healthz</code></pre>
+<hr>
+
+</section>
+<section data-anchor="2-功能特性总览">
+<h2 id="2-功能特性总览">2. 功能特性总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>层</th><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>Docker</td><td>分层镜像</td><td>UnionFS + 写时复制；指令顺序决定构建缓存命中率</td></tr><tr><td>Docker</td><td>多阶段构建</td><td>编译环境与运行环境分离，<code>distroless</code> / <code>scratch</code> 可把镜像压到 10~20MB</td></tr><tr><td>Docker</td><td>隔离与限制</td><td>namespace（PID/NET/MNT/USER…）+ cgroups（CPU/内存/IO）</td></tr><tr><td>Docker</td><td>网络与存储</td><td>bridge / host 网络、Volume 与 bind mount、Compose 编排本地多服务</td></tr><tr><td>K8s</td><td>工作负载</td><td>Pod（最小调度单元）、Deployment（无状态）、StatefulSet（有状态）、DaemonSet、Job / CronJob</td></tr><tr><td>K8s</td><td>服务暴露</td><td>Service（ClusterIP / NodePort / LoadBalancer）、Ingress / Gateway API、DNS</td></tr><tr><td>K8s</td><td>配置</td><td>ConfigMap、Secret、Downward API、环境变量与卷挂载</td></tr><tr><td>K8s</td><td>自愈</td><td>liveness / readiness / startup 探针、重启策略、节点驱逐与重调度</td></tr><tr><td>K8s</td><td>发布</td><td>滚动更新（maxSurge / maxUnavailable）、回滚、PDB、HPA / VPA</td></tr><tr><td>K8s</td><td>权限与配额</td><td>RBAC、ServiceAccount、ResourceQuota、LimitRange、NetworkPolicy</td></tr><tr><td>Go 生态</td><td>client-go</td><td>在程序里 List / Watch / 创建资源；Operator / 控制器开发基础</td></tr></tbody></table></div>
+<hr>
+
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-镜像分层与容器本质">3.1 镜像分层与容器本质</h3>
+<pre><code class="lang-text">镜像（只读层）
+  ├─ base 层（distroless / alpine）
+  ├─ COPY go.mod → 依赖层（缓存关键：先 COPY 依赖文件再下载）
+  ├─ COPY 源码 → 编译层
+  └─ 最终二进制层
+容器 = 镜像层 + 一个可写层（Container Layer）+ namespace + cgroups</code></pre>
+<ul><li><strong>容器不是虚拟机</strong>：它和宿主机共享内核，只是一个被隔离、被限流的进程；所以 <code>scratch</code> 镜像里没有 shell、没有时区文件、没有 CA 证书，需要显式拷入</li><li>每条 Dockerfile 指令生成一层，<strong>把变化频繁的指令放最后</strong>才能用好缓存</li><li><code>CGO_ENABLED=0</code> 生成静态二进制，是能跑在 <code>scratch</code> / <code>distroless</code> 里的前提</li></ul>
+<h3 id="32-pod-与声明式协调循环">3.2 Pod 与声明式协调循环</h3>
+<pre><code class="lang-text">用户提交 Deployment (期望: replicas=3, image=v2)
+   │
+   ▼
+kube-apiserver 写入 etcd（集群唯一状态源）
+   │
+   ▼
+Controller Manager 的 Deployment 控制器 ──► 创建/更新 ReplicaSet
+   │                                          │
+   │  持续比对「期望 vs 实际」= Reconcile Loop  ▼
+   │                                      ReplicaSet 控制器创建 Pod
+   ▼
+Scheduler 按资源/亲和性把 Pod 绑到 Node ──► kubelet 调 CRI 起容器</code></pre>
+<p><strong>Pod 是最小调度单元</strong>：同一 Pod 内容器共享网络命名空间（localhost 互通）与 Volume，由 <code>pause</code> 容器持有网络。这也解释了 sidecar（日志采集、服务网格代理）为什么能工作。</p>
+<p>声明式的含义是：你<strong>不直接操作 Pod</strong>，改的是期望状态；控制器负责收敛，包括 Pod 挂了自动重建。</p>
+<h3 id="33-service-与流量路径">3.3 Service 与流量路径</h3>
+<pre><code class="lang-text">Client ──► Service (稳定 ClusterIP + DNS: svc.namespace.svc.cluster.local)
+              │ kube-proxy 维护的转发规则（iptables / IPVS / eBPF）
+              ▼
+        Endpoints / EndpointSlice（就绪 Pod 的 IP 列表）
+              ▼
+             Pod</code></pre>
+<p><strong>readiness 探针失败的 Pod 会从 Endpoints 摘除</strong>——这是发布期间不把流量打到新/旧实例的关键机制。Ingress / Gateway API 则负责集群外 HTTP 路由（域名、路径、TLS 终止）。</p>
+<h3 id="34-资源qos-与-oomkilled">3.4 资源、QoS 与 OOMKilled</h3>
+<pre><code class="lang-yaml">resources:
+  requests: {cpu: "100m", memory: "128Mi"}   # 调度依据：节点必须有这么多可分配量
+  limits:   {memory: "256Mi"}                # 上限：超限触发 OOMKilled（不是 GC）</code></pre>
+<div class="table-wrap"><table><thead><tr><th>QoS</th><th>条件</th><th>节点资源紧张时被驱逐的优先级</th></tr></thead><tbody><tr><td>Guaranteed</td><td>requests == limits（全部设且相等）</td><td>最后</td></tr><tr><td>Burstable</td><td>设了 requests 但不等</td><td>中间</td></tr><tr><td>BestEffort</td><td>都没设</td><td><strong>最先</strong></td></tr></tbody></table></div>
+<blockquote class="warn"><p>Go 服务尤其要注意：容器内存上限由 cgroups 决定，Go runtime 默认按<strong>宿主机</strong>内存判断 GC 目标，容易撞到 limit 被 OOMKilled。用 <code>GOMEMLIMIT</code>（Go 1.19+）设为略低于 memory limit，或设 <code>GOGC</code> 调优。</p></blockquote>
+<h3 id="35-三种探针的区别">3.5 三种探针的区别</h3>
+<div class="table-wrap"><table><thead><tr><th>探针</th><th>失败后果</th><th>该检查什么</th></tr></thead><tbody><tr><td><code>startupProbe</code></td><td>阻止另外两个探针启动</td><td>慢启动服务给足 <code>failureThreshold × periodSeconds</code></td></tr><tr><td><code>readinessProbe</code></td><td><strong>从 Service 摘流量</strong>（不重启）</td><td>本进程是否可服务；可包含必要依赖</td></tr><tr><td><code>livenessProbe</code></td><td><strong>重启容器</strong></td><td>只检查本进程是否卡死，<strong>绝不要检查 DB / 下游</strong></td></tr></tbody></table></div>
+<p>liveness 依赖外部服务是经典事故：数据库一抖，所有 Pod 同时重启，故障被放大成雪崩。</p>
+<h3 id="36-优雅下线的时序">3.6 优雅下线的时序</h3>
+<pre><code class="lang-text">kubectl rollout / 缩容
+  → Pod 标记 Terminating，从 Endpoints 摘除（异步！）
+  → 执行 preStop hook
+  → 发送 SIGTERM 给 PID 1
+  → Go 进程收到信号：readiness 置 false → 停止接受新连接 → 等在途请求完成
+  → terminationGracePeriodSeconds（默认 30s）内未退出 → SIGKILL</code></pre>
+<p><strong>摘流量与 SIGTERM 是异步的</strong>，旧 Pod 可能仍收到新请求。所以 <code>preStop: exec: sleep 5</code> 给 Endpoints 收敛留时间，是生产清单的标配。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-生产级-dockerfile-要点">4.1 生产级 Dockerfile 要点</h3>
+<pre><code class="lang-dockerfile"># syntax=docker/dockerfile:1
+FROM golang:1.25-alpine AS build
+WORKDIR /src
+COPY go.mod go.sum ./          # 先拷依赖文件，源码变动不会让下载缓存失效
+RUN --mount=type=cache,target=/go/pkg/mod go mod download
+COPY . .
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/app ./cmd/app
+
+FROM gcr.io/distroless/static-debian12:nonroot
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/  # 需要 HTTPS 时
+COPY --from=build /out/app /app
+USER nonroot:nonroot
+EXPOSE 8080
+ENTRYPOINT ["/app"]   # exec 形式，保证 app 是 PID 1 能直接收到 SIGTERM</code></pre>
+<pre><code class="lang-gitignore"># .dockerignore —— 不写会把 .git / 构建产物 / 本地密钥打进镜像
+.git
+.workbuddy
+*.log
+bin/
+.env</code></pre>
+<blockquote><p><code>ENTRYPOINT ["/app"]</code>（exec 形式）而不是 <code>ENTRYPOINT /app</code>（shell 形式）：后者 PID 1 是 <code>/bin/sh</code>，<strong>信号不会转发给 Go 进程</strong>，优雅关闭直接失效。</p></blockquote>
+<h3 id="42-健康检查与优雅关闭go-侧">4.2 健康检查与优雅关闭（Go 侧）</h3>
+<pre><code class="lang-go">var ready atomic.Bool
+ready.Store(true)
+
+mux.HandleFunc("/readyz", func(w http.ResponseWriter, _ *http.Request) {
+    if !ready.Load() {
+        http.Error(w, "shutting down", http.StatusServiceUnavailable)
+        return
+    }
+    w.WriteHeader(http.StatusOK)
+})
+
+// SIGTERM 到达后先摘流量，再等一小段时间让 Endpoints 收敛，最后关服务
+&lt;-sigCtx.Done()
+ready.Store(false)
+time.Sleep(5 * time.Second)
+_ = srv.Shutdown(shutdownCtx)</code></pre>
+<p><a href="../grpc/grpc-guide.html">gRPC 服务</a> 同理，把 <code>Shutdown</code> 换成 <code>GracefulStop()</code>，并配超时后降级 <code>Stop()</code>。</p>
+<h3 id="43-deployment-service-hpa-清单">4.3 Deployment / Service / HPA 清单</h3>
+<pre><code class="lang-yaml">apiVersion: apps/v1
+kind: Deployment
+metadata: {name: app}
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: {maxSurge: 1, maxUnavailable: 0}  # 保证发布期容量不降
+  selector:
+    matchLabels: {app: app}
+  template:
+    metadata:
+      labels: {app: app}
+      annotations:
+        checksum/config: "{{ .Values.configHash }}"   # Helm：配置变更触发滚动
+    spec:
+      terminationGracePeriodSeconds: 45
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+      containers:
+        - name: app
+          image: registry.example.com/app:v1.2.3   # 钉版本，别用 latest
+          ports: [{containerPort: 8080}]
+          env:
+            - name: GOMEMLIMIT
+              value: "200MiB"
+          envFrom:
+            - configMapRef: {name: app-config}
+          resources:
+            requests: {cpu: "100m", memory: "128Mi"}
+            limits:   {memory: "256Mi"}
+          startupProbe:
+            httpGet: {path: /healthz, port: 8080}
+            failureThreshold: 30
+            periodSeconds: 2
+          readinessProbe:
+            httpGet: {path: /readyz, port: 8080}
+            periodSeconds: 5
+          livenessProbe:                          # 只看本进程，不查 DB
+            httpGet: {path: /healthz, port: 8080}
+            periodSeconds: 10
+            timeoutSeconds: 2
+          lifecycle:
+            preStop:
+              exec: {command: ["sh", "-c", "sleep 5"]}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+---
+apiVersion: v1
+kind: Service
+metadata: {name: app}
+spec:
+  selector: {app: app}
+  ports: [{port: 80, targetPort: 8080}]
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: {name: app}
+spec:
+  scaleTargetRef: {apiVersion: apps/v1, kind: Deployment, name: app}
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+    - type: Resource
+      resource: {name: cpu, target: {type: Utilization, averageUtilization: 70}}</code></pre>
+<blockquote><p><code>readOnlyRootFilesystem: true</code> 需要应用不写本地文件；<a href="../zap/zap-guide.html">Zap 篇</a> 建议的「容器里只写 stdout」正好满足这一点。若确实要写临时文件，挂 <code>emptyDir</code> 到 <code>/tmp</code>。</p></blockquote>
+<h3 id="44-client-go在-go-程序里操作集群">4.4 client-go：在 Go 程序里操作集群</h3>
+<pre><code class="lang-go">package main
+
+import (
+    "context"
+    "fmt"
+
+    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+    "k8s.io/client-go/kubernetes"
+    "k8s.io/client-go/rest"
+    "k8s.io/client-go/tools/clientcmd"
+)
+
+func NewClient(kubeconfig string) (*kubernetes.Clientset, error) {
+    var cfg *rest.Config
+    var err error
+    if kubeconfig == "" {
+        cfg, err = rest.InClusterConfig() // 集群内：用 ServiceAccount token
+    } else {
+        cfg, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
+    }
+    if err != nil { return nil, err }
+    return kubernetes.NewForConfig(cfg)
+}
+
+func ListPods(ctx context.Context, cs *kubernetes.Clientset, ns string) error {
+    pods, err := cs.CoreV1().Pods(ns).List(ctx, metav1.ListOptions{
+        LabelSelector: "app=app",
+    })
+    if err != nil { return err }
+    for _, p := range pods.Items {
+        fmt.Printf("%s %s\n", p.Name, p.Status.Phase)
+    }
+    return nil
+}</code></pre>
+<p>Watch 资源变化（控制器 / Operator 的基础）：</p>
+<pre><code class="lang-go">w, err := cs.AppsV1().Deployments("default").Watch(ctx, metav1.ListOptions{})
+if err != nil { return err }
+defer w.Stop()
+for ev := range w.ResultChan() {
+    fmt.Printf("%s: %T\n", ev.Type, ev.Object)
+}</code></pre>
+<p>集群内运行时需要 RBAC：</p>
+<pre><code class="lang-yaml">apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata: {name: pod-reader}
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata: {name: app-pod-reader}
+subjects:
+  - {kind: ServiceAccount, name: default, namespace: default}
+roleRef: {kind: Role, name: pod-reader, apiGroup: rbac.authorization.k8s.io}</code></pre>
+<blockquote><p><strong>client-go 模块很多，只导入用到的包</strong>；否则 <code>go mod tidy</code> 会拉入大量间接依赖。集群内用 <code>rest.InClusterConfig()</code>，本地调试才用 <code>BuildConfigFromFlags</code> 读 kubeconfig。</p></blockquote>
+<h3 id="45-发布与排障速查">4.5 发布与排障速查</h3>
+<pre><code class="lang-bash">kubectl apply -f deploy.yaml
+kubectl rollout status deploy/app --timeout=120s
+kubectl rollout history deploy/app
+kubectl rollout undo deploy/app          # 回滚上一版
+
+kubectl get pods -l app=app -o wide
+kubectl describe pod &lt;pod&gt;              # Events 里看调度/探针/OOMKilled
+kubectl logs &lt;pod&gt; --previous           # 重启前的日志
+kubectl top pod
+kubectl exec -it &lt;pod&gt; -- sh            # distroless 没有 shell，改用 kubectl debug
+
+kubectl get endpoints app               # 确认就绪 Pod 是否登记
+kubectl get pdb                         # 是否有 PodDisruptionBudget</code></pre>
+<hr>
+
+</section>
+<section data-anchor="5-版本演进速览">
+<h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>阶段</th><th>关键变化与迁移注意点</th></tr></thead><tbody><tr><td>Docker 早期</td><td>Swarm 编排、经典 builder；<code>docker-compose</code> 独立命令</td></tr><tr><td>Docker 近年</td><td><strong>BuildKit 成为默认构建器</strong>（<code>RUN --mount=type=cache</code> 等语法）、Compose V2 并入 <code>docker compose</code>、containerd 从 Docker 中拆出成为 CRI 运行时、镜像清单支持多架构</td></tr><tr><td>K8s 1.20~1.24</td><td><strong>1.24 移除 dockershim</strong>：节点运行时改为 containerd / CRI-O，Docker 镜像仍可用（镜像格式是 OCI 标准），但 kubelet 不再直接调 Docker</td></tr><tr><td>K8s 1.2x~1.3x</td><td>HPA <code>autoscaling/v2</code> GA、Ingress API 冻结并由 <strong>Gateway API</strong> 接棒、PodDisruptionBudget / StatefulSet 增强、原地调整 Pod 资源（in-place resize）逐步可用、Sidecar 容器原生支持</td></tr></tbody></table></div>
+<p><strong>迁移注意</strong>：</p>
+<ul><li><code>extensions/v1beta1</code>、<code>apps/v1beta1</code> 等旧 API 已移除，老清单必须改 <code>apiVersion</code>（<code>kubectl convert</code> / <code>kubectl api-resources</code> 辅助）</li><li><code>client-go</code> 版本与集群 minor 对齐（如集群 1.3x 用 <code>v0.3x</code>），跨太多版本会有字段不兼容</li><li>Ingress 新项目建议直接上 Gateway API；存量 Ingress 可继续用但不再有新特性</li><li>从 <code>docker-compose</code> 迁 K8s 时，先确认有状态组件（DB、MQ）是否真的适合上 K8s，别为了「全栈 K8s」强行迁</li></ul>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong><code>latest</code> 标签</strong>：镜像内容变了但 K8s 不会重新拉取（配合 <code>imagePullPolicy: Always</code> 才有机会），且无法回滚。钉语义化版本，生产用 digest。</li><li><strong><code>ENTRYPOINT</code> 用 shell 形式</strong>：PID 1 是 shell，SIGTERM 不转发 → 优雅关闭失效、每次发布都有 502。一律用 exec 数组形式。</li><li><strong>不处理 SIGTERM</strong>：Go 进程被直接 SIGKILL，在途请求丢失。用 <code>signal.NotifyContext</code> + <code>Server.Shutdown</code> + <code>readiness</code> 置 false。</li><li><strong>缺 <code>preStop</code> / readiness 收敛时间</strong>：Endpoints 摘除是异步的，旧 Pod 仍会收到请求。加 <code>sleep 5</code> 并把 <code>terminationGracePeriodSeconds</code> 设得比「sleep + 最长请求」更长。</li><li><strong>liveness 探针查下游</strong>：DB 抖动 → 全体 Pod 重启 → 雪崩。liveness 只查本进程存活。</li><li><strong>没配 <code>startupProbe</code></strong>：启动要 30s 的服务被 liveness 反复杀掉，陷入 CrashLoopBackOff。</li><li><strong>不设 resources</strong>：BestEffort QoS 最先被驱逐；或超 limit 被 OOMKilled。Go 服务额外设 <code>GOMEMLIMIT</code> 略低于 memory limit。</li><li><strong>单副本 + <code>maxUnavailable: 1</code></strong>：滚动更新期间容量归零。至少 2 副本并设 <code>maxUnavailable: 0</code>，再配 PDB 防节点驱逐。</li><li><strong>日志写文件</strong>：容器重启日志即丢，采集器也拿不到。<a href="../zap/zap-guide.html">Zap 篇</a> 明确建议容器里只输出 stdout。</li><li><strong>Secret 当加密用</strong>：Secret 只是 base64，需启用 etcd 静态加密、RBAC 最小权限，敏感信息优先接外部密钥管理。</li><li><strong>ConfigMap 改了不生效</strong>：挂载为环境变量的不会热更新；用卷挂载（会同步但有延迟）或 checksum 注解触发滚动。</li><li><strong><code>scratch</code> 镜像缺 CA 证书 / 时区</strong>：HTTPS 调用报 <code>x509: certificate signed by unknown authority</code>。从构建阶段拷 <code>ca-certificates.crt</code> 与 <code>zoneinfo</code>。</li><li><strong>Dockerfile 层顺序拖慢构建</strong>：先 <code>COPY . .</code> 再 <code>go mod download</code>，源码一改就重下依赖。先拷 <code>go.mod</code>/<code>go.sum</code>。</li><li><strong>镜像里带 shell / 包管理器 / 源码</strong>：攻击面与体积都变大。多阶段构建 + distroless + 非 root + <code>readOnlyRootFilesystem</code>。</li><li><strong>容器里跑多进程</strong>：PID 1 不会转发信号、子进程变僵尸。一个容器一个主进程，或引入 <code>tini</code> 作 init。</li><li><strong>用 Deployment 跑有状态服务</strong>：Pod 名与存储不稳定。用 StatefulSet + PVC，或干脆用托管数据库。</li><li><strong>连接串写死 IP</strong>：Pod IP 会变，一律用 Service DNS 名；并注意 <a href="../grpc/grpc-guide.html">gRPC</a> 的客户端负载均衡需要配 headless Service 或 resolver。</li><li><strong>client-go 权限过大</strong>：直接用 <code>cluster-admin</code> 的 ServiceAccount。按 <code>verbs</code> 最小授权，并注意 Watch 需要 <code>watch</code> 权限。</li></ol>
+<hr>
+
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>Docker Compose</th><th>Kubernetes</th><th>Nomad</th><th>托管容器（云厂商 Serverless 容器）</th><th>systemd 裸机</th><th>虚拟机</th></tr></thead><tbody><tr><td>定位</td><td>单机多容器</td><td>集群编排</td><td>轻量调度器</td><td>免运维容器</td><td>进程管理</td><td>强隔离</td></tr><tr><td>学习成本</td><td><strong>极低</strong></td><td>高</td><td>中</td><td>低</td><td>低</td><td>中</td></tr><tr><td>高可用 / 自愈</td><td>无</td><td><strong>强</strong></td><td>中</td><td>由平台提供</td><td>无</td><td>依赖上层</td></tr><tr><td>弹性伸缩</td><td>手动</td><td>HPA / VPA / Cluster Autoscaler</td><td>有</td><td><strong>自动</strong></td><td>无</td><td>慢</td></tr><tr><td>声明式与生态</td><td>弱</td><td><strong>最强</strong>（Operator / Helm / CNCF）</td><td>一般</td><td>厂商锁定</td><td>弱</td><td>弱</td></tr><tr><td>适用规模</td><td>本地开发、单机小服务</td><td>多服务、多环境、中大规模</td><td>混合工作负载</td><td>团队小、想免运维</td><td>单进程工具</td><td>强隔离/遗留系统</td></tr></tbody></table></div>
+<p>一句话决策：</p>
+<ul><li><strong>本地开发、CI、单机部署几个容器</strong> → Docker Compose，别一上来就 K8s。</li><li><strong>多服务、需要自愈/滚动发布/弹性、团队有运维能力</strong> → Kubernetes，生态与可移植性最好。</li><li><strong>团队小、不想管控制面</strong> → 托管容器服务（Cloud Run / 容器实例）或 PaaS，用成本换人力。</li><li><strong>既要调度容器又要调度非容器任务、嫌 K8s 重</strong> → Nomad，组件少但生态小。</li><li><strong>只是一个 CLI / 单进程后台服务</strong> → systemd + 静态二进制，最省事。</li><li><strong>有状态数据库</strong> → 优先托管服务；必须自建时再用 StatefulSet + Operator，<a href="../mysql/mysql-guide.html">MySQL</a> / <a href="../etcd/etcd-guide.html">etcd</a> 篇的运维要点同样适用。</li></ul>
+<blockquote><p>落地顺序建议：先把镜像做小、做安全、把优雅关闭写对 → 再上探针与资源配额 → 然后滚动发布与 PDB → 最后才谈 HPA、Operator 和服务网格。<strong>前面四步没做对，加自动化只会让故障更快发生。</strong></p></blockquote>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>
