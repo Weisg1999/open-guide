@@ -1,6 +1,6 @@
 # open-guide
 
-[![Docs](https://img.shields.io/badge/docs-15%20guides-16a34a)](./README_EN.md)
+[![Docs](https://img.shields.io/badge/docs-18%20guides-16a34a)](./README_EN.md)
 [![Language](https://img.shields.io/badge/topic-Go%20ecosystem-00ADD8?logo=go)](https://go.dev)
 [![Format](https://img.shields.io/badge/format-Markdown%20%2B%20HTML-orange)](./README_EN.md)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
@@ -9,7 +9,7 @@
 > **A collection of in-depth, hands-on guides for the Go backend ecosystem.**
 > Not another Hello World — these are manuals you can actually read, search, and copy working code from.
 >
-> 15 long-form guides · ~5,800 lines of Markdown · each one ships as **Markdown** *and* a **single-file HTML** page (sidebar TOC + syntax highlighting, just open it in a browser).
+> 18 long-form guides · ~6,900 lines of Markdown · each one ships as **Markdown** *and* a **single-file HTML** page (sidebar TOC + syntax highlighting, just open it in a browser).
 
 [中文说明](./README.md) · [中文 README](#中文-readme)
 
@@ -54,12 +54,14 @@ This repo contains **no third-party source code** — only curated explanation. 
 | **Gin** | Radix-tree routing, middleware chain, binding & validation, response rendering, graceful shutdown, v1.10 → v1.12 evolution | [Markdown](./gin/gin-guide.md) · [HTML](./gin/gin-guide.html) |
 | **Kratos** (Bilibili) | API-first / Protobuf-driven development, unified HTTP + gRPC transport, pluggable components (registry / config / log / middleware), v3.0 highlights and the v2 migration path | [Markdown](./kratos/kratos-guide.md) · [HTML](./kratos/kratos-guide.html) |
 | **go-zero** (TAL) | `.api` DSL + `goctl` code generation, built-in adaptive circuit breaking / rate limiting / load shedding, web and RPC in one framework | [Markdown](./go-zero/go-zero-guide.md) · [HTML](./go-zero/go-zero-guide.html) |
+| **gRPC-Go** | HTTP/2 multiplexing and Protobuf encoding, `.proto` contracts and codegen, four streaming modes, interceptor chains, deadline propagation, resolver/balancer | [Markdown](./grpc/grpc-guide.md) · [HTML](./grpc/grpc-guide.html) |
 
 ### 🗄️ Data Stores
 
 | Topic | What's covered | Files |
 | --- | --- | --- |
 | **GORM** | Chained API, associations & preloading, transactions and savepoints, hooks, migrator, soft delete, read/write-splitting plugin, generics-based interfaces | [Markdown](./gorm/gorm-guide.md) · [HTML](./gorm/gorm-guide.html) |
+| **go-redis** | Connection pool & `Cmdable`, Pipeline vs TxPipeline, `redis.Nil` semantics, Lua and distributed locks, Stream consumer groups, Cluster slots and hash tags, cache-stampede defences | [Markdown](./redis/redis-guide.md) · [HTML](./redis/redis-guide.html) |
 | **etcd** | Raft consensus, MVCC, the bbolt B+ tree, leases / watches / distributed locks, clientv3 in practice, what's new in v3.6 | [Markdown](./etcd/etcd-guide.md) · [HTML](./etcd/etcd-guide.html) |
 | **InfluxDB 2.x** | Bucket / token model, the TSM storage engine, Flux queries, tasks & alerting, writing and querying from Go | [Markdown](./influxdb-v2/influxdb-v2-guide.md) · [HTML](./influxdb-v2/influxdb-v2-guide.html) |
 | **InfluxDB 3** | The Rust rewrite: FDAP stack (Flight + DataFusion + Arrow + Parquet), SQL queries, object-storage-first design, infinite cardinality, Core vs. Enterprise | [Markdown](./influxdb-v3/influxdb-v3-guide.md) · [HTML](./influxdb-v3/influxdb-v3-guide.html) |
@@ -75,6 +77,12 @@ This repo contains **no third-party source code** — only curated explanation. 
 | **robfig/cron** | 5-field and 6-field cron expressions, parser extensions (`@every`, `@daily`, …), job wrappers (`SkipIfStillRunning`, …), time zones and concurrency, custom jobs | [Markdown](./robfig-cron/robfig-cron-guide.md) · [HTML](./robfig-cron/robfig-cron-guide.html) |
 
 > 💡 The three messaging guides (Kafka / NATS / asynq) each end with a **head-to-head comparison table** — start there if you're making a technology decision.
+
+### 🔭 Observability
+
+| Topic | What's covered | Files |
+| --- | --- | --- |
+| **Zap** | Zero-allocation hot path and typed Fields, `Logger` vs `SugaredLogger`, the four-layer `zapcore` pipeline (Encoder / WriteSyncer / LevelEnabler), Tee fan-out, sampling and `AtomicLevel`, and how it relates to stdlib `log/slog` | [Markdown](./zap/zap-guide.md) · [HTML](./zap/zap-guide.html) |
 
 ---
 
@@ -97,12 +105,16 @@ This repo contains **no third-party source code** — only curated explanation. 
    Services track            Data / IoT track          Async & scheduling
 ```
 
+> 🔭 **Cross-cutting**: `gRPC-Go` belongs to the services track (read after Gin), `go-redis` to the data track (read after GORM), and `Zap` is the logging foundation you should wire in while writing your first service on any track.
+
 | Your goal | Suggested order |
 | --- | --- |
 | Solidify Go fundamentals | Generics → Reflection → samber/lo |
-| Ship your first API service | Gin → GORM → robfig/cron |
-| Build microservices | Gin → Kratos *and* go-zero (read them side by side) → etcd → asynq |
+| Ship your first API service | Gin → GORM → robfig/cron → **Zap** (establish logging conventions early) |
+| Build microservices | Gin → **gRPC-Go** → Kratos *and* go-zero (read them side by side) → etcd → asynq |
+| Add caching / distributed locks | **go-redis** → then asynq / etcd to understand the boundaries between cache, task queue and strong-consistency coordination |
 | Build IoT / monitoring / time-series | InfluxDB 2.x → InfluxDB 3 (to see the evolution) → MinIO → Kafka / NATS |
+| Set up observability | **Zap** → pair with Prometheus metrics and OpenTelemetry traces (logs, metrics and traces are not substitutes for each other) |
 | Make a technology decision | Jump straight to the "Comparison" section at the end of each guide, especially Kafka vs. NATS vs. asynq |
 
 ---
@@ -126,21 +138,51 @@ python -m http.server 8000
 # then open http://localhost:8000
 ```
 
-> Markdown and HTML are generated from the same source. If they ever disagree, **the Markdown file is authoritative** (HTML is the rendered artifact).
+> HTML is a **build artifact**, generated from the matching Markdown by `tools/build_html.py`. Do not edit HTML by hand. If they ever disagree, **the Markdown file is authoritative**.
+
+### 3. Rebuilding HTML (maintainers)
+
+The builder uses only the Python 3 standard library — no third-party packages. **All body text comes from Markdown**; the three files below carry presentation data only, and are version-controlled so every HTML page is fully reproducible:
+
+| File | Purpose |
+|---|---|
+| [`tools/themes.json`](./tools/themes.json) | Per-guide colours, hero subtitle and tags |
+| [`tools/fragments.json`](./tools/fragments.json) | SVG architecture diagrams, feature cards and callouts that have no Markdown equivalent, injected by chapter anchor (274 blocks / 72 diagrams) |
+| [`tools/anchor_map.json`](./tools/anchor_map.json) | Legacy semantic anchors -> heading slugs, so links inside those blocks keep working |
+
+```bash
+python tools/build_html.py                 # rebuild every guide
+python tools/build_html.py --topic gin     # rebuild one guide
+python tools/build_html.py --check         # fail if HTML is stale (used by CI)
+python tools/build_html.py --stats         # structure stats + internal-anchor check
+```
+
+A new topic needs no build configuration: the script auto-discovers `*/ *.md` and assigns a stable palette from the directory name. CI ([`.github/workflows/check-html.yml`](./.github/workflows/check-html.yml)) runs `--check` on every push / PR, which mechanically prevents MD/HTML drift.
 
 ---
 
-## 5. The Standard Structure of Every Guide
+## 5. Required Elements of Every Guide
 
-```
-1. Overview              — what it is, what problem it solves, key selling points
-2. Feature Matrix        — a table of capabilities
-3. Core Concepts         — internals (architecture / data structures / execution flow)
-4. Hands-on              — runnable Go code and shell commands
-5. Version History       — what changed across recent major releases
-6. Pitfalls & Best       — the things that actually bite you in production
-7. Comparison            — head-to-head table against the alternatives
-```
+The original convention was a strict "7-section" layout. In practice, a deep manual like asynq reads better as nine chapters (what / architecture / concepts / feature deep-dive / full example / deployment / pitfalls / history / comparison), while language tutorials naturally progress by difficulty. Forcing a fixed section count hurt the content. The convention is therefore a **checklist of 7 required elements**: numbering and headings are free, the elements are not.
+
+| # | Element | Acceptance criteria | Common equivalent headings |
+|---|---|---|---|
+| 1 | Positioning | What it is, the problem it solves, key selling points, when *not* to use it | Overview / What is X / Why generics |
+| 2 | Capability matrix | A scannable table of capabilities | Feature matrix / Feature catalog / Data model |
+| 3 | Internals | Mechanisms — architecture, data structures, execution flow — not an API list | Core concepts / Architecture / Implementation |
+| 4 | Runnable hands-on | Language-tagged Go code + commands, copy-paste ready | Hands-on / Full example / Deployment |
+| 5 | Versions & evolution | Documented upstream version, recent major changes, migration notes | Version history / Release highlights / Product-line changes |
+| 6 | Pitfalls & best practices | Things that actually bite in production, with mitigations | Pitfalls / Common traps / Caveats |
+| 7 | Comparison | Head-to-head table against alternatives + a one-line decision rule | Comparison / How to choose / Relation to X |
+
+**Form rules**
+
+- Chapter numbering (`1.`, `一、`, or none) and exact wording are free. One element may span several chapters (asynq splits #4 into feature deep-dive / full example / deployment), or merge with a neighbour.
+- **#6 and #7 must be standalone chapters at the end** — they are the most-jumped-to sections and what separates this repo from an API translation.
+- Language-feature tutorials (Go Generics, Go Reflection) have no upstream release; #5 may be satisfied by "applicable Go version + language evolution notes". All other elements still apply.
+- The opening `>` blockquote (one-line positioning + upstream repo + documented version + license) is the minimum bar for #5.
+
+**Self-check**: `python tools/build_html.py --audit` prints a per-guide element matrix and lists anything missing. CI runs both `--check` and `--audit`.
 
 ---
 
@@ -160,6 +202,9 @@ python -m http.server 8000
 | NATS | [nats-io/nats-server](https://github.com/nats-io/nats-server) | v2.11 |
 | robfig/cron | [robfig/cron](https://github.com/robfig/cron) | v3 |
 | samber/lo | [samber/lo](https://github.com/samber/lo) | v1 |
+| go-redis | [redis/go-redis](https://github.com/redis/go-redis) | v9 (module path `/v9`) |
+| gRPC-Go | [grpc/grpc-go](https://github.com/grpc/grpc-go) | v1.x (stable API, continuous releases) |
+| Zap | [uber-go/zap](https://github.com/uber-go/zap) | v1.27.x |
 | Go Generics / Reflection | [Official Go proposal & blog](https://go.dev/blog/laws-of-reflection) | Go 1.18+ |
 
 > ⏱ **On freshness:** these projects move fast. Always cross-check against the latest upstream release. If you spot an outdated version or a stale conclusion, an Issue or PR is very welcome.
@@ -170,16 +215,17 @@ python -m http.server 8000
 
 Contributions are very welcome, especially:
 
-- **New topics** (Redis, gRPC, Zap, Viper, Prometheus, ClickHouse, MongoDB, Docker/K8s, …)
+- **New topics** (Viper, Prometheus, ClickHouse, MongoDB, Docker/K8s, OpenTelemetry, slog in practice, …; Redis / gRPC / Zap are now covered)
 - **Version bumps** — sync a guide after an upstream release
 - **Corrections** — wrong internals, broken code, outdated conclusions
-- **HTML rendering** — style or highlighting fixes
+- **Build script** — improve parsing/rendering in `tools/build_html.py` (never hand-edit HTML)
 
 ```bash
 git clone https://github.com/Weisg1999/open-guide.git
 cd open-guide
 git checkout -b feat/your-topic
-# add your-topic/your-topic-guide.md (please follow the 7-section structure)
+# add your-topic/your-topic-guide.md (cover the 7 required elements in Section 5)
+python tools/build_html.py --topic your-topic
 git commit -m "docs: add xxx guide"
 git push origin feat/your-topic
 ```
@@ -187,10 +233,10 @@ git push origin feat/your-topic
 **Writing conventions** (consistency is what makes the collection readable):
 
 1. Open with a `>` blockquote: one-line positioning + upstream repo link + documented version & license.
-2. Follow the 7-section structure (see [Section 5](#5-the-standard-structure-of-every-guide)).
+2. Cover the 7 required elements in [Section 5](#5-required-elements-of-every-guide) (numbering/headings are flexible, the elements are not).
 3. Tag every code block with its language (``` ```go ```, ``` ```bash ```) and make it runnable.
-4. Always end with "Pitfalls & Best Practices" and "Comparison".
-5. HTML is rendered from the Markdown; keep the naming convention `<topic>/<topic>-guide.{md,html}`.
+4. End with two standalone chapters: "Pitfalls & Best Practices" and "Comparison" (the latter needs a head-to-head table and a one-line decision rule).
+5. HTML is built with `python tools/build_html.py` from the Markdown — **never hand-edit HTML**. Keep the naming convention `<topic>/<topic>-guide.{md,html}`; unconfigured topics get an automatic palette.
 
 ---
 

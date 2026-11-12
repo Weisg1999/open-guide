@@ -1,0 +1,10 @@
+# Python build cache
+__pycache__/
+*.py[cod]
+
+# IDE / OS
+.idea/
+.DS_Store
+
+# WorkBuddy local workspace data (session notes, not project docs)
+.workbuddy/

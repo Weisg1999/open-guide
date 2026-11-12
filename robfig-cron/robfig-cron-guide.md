@@ -340,3 +340,32 @@ c := cron.New(cron.WithLogger(logger))
 | v3 (2019.6) | Go Modules、标准 spec 为默认、Chain/JobWrapper、logr 日志、大量 bug 修复；**当前推荐** |
 
 v3 发布后 API 趋于稳定，社区以维护为主，新项目直接使用 `github.com/robfig/cron/v3` 即可。
+
+---
+
+## 7. 选型对比
+
+robfig/cron 的边界非常清晰：**它是进程内的「触发器」，不是「任务执行系统」**。它负责「到点了调用这个函数」，不负责失败重试、任务持久化、跨实例互斥与执行结果追踪。绝大多数选型事故都来自把这两件事混为一谈。
+
+| 维度 | robfig/cron | asynq | Kubernetes CronJob | 分布式调度（XXL-JOB 等） | `time.Ticker` 自研 |
+|---|---|---|---|---|---|
+| 形态 | Go 库，嵌入进程 | Go 库 + Redis | K8s 资源 | 独立调度中心 | 标准库 |
+| 表达式 | 5/6 字段 cron、`@every`、`@daily` | cron（Scheduler）+ 一次性延时 | 标准 5 字段 cron | cron + 可视化分片/路由 | 仅固定间隔 |
+| 依赖 | 无 | Redis | K8s 集群 | 调度中心 + DB | 无 |
+| 失败重试 / 死信 | 无（需自己写） | **原生** | Job `backoffLimit` | 有 | 无 |
+| 任务持久化 | 无（重启即丢内存 entries） | **有**（Redis） | 有（etcd） | 有（DB） | 无 |
+| 错过触发补跑 | 不补 | 不涉及 | `startingDeadlineSeconds` 有限支持 | 多数支持 | 不补 |
+| 多副本重复触发 | **会重复 N 份**（需外部锁） | 不会（队列竞争消费） | 不会 | 不会（中心分片） | 会重复 |
+| 任务级观测 / Web UI | 无 | **有**（Asynqmon） | kubectl / 日志 | 有控制台 | 无 |
+| 并发控制 | `SkipIfStillRunning` 等 JobWrapper | Concurrency + 队列 | `concurrencyPolicy` | 有 | 自行加锁 |
+| 运维成本 | **极低** | 低 | 中 | 高 | 极低 |
+
+一句话决策：
+
+- **单体服务、少量本地定时任务**（缓存预热、清理临时文件、定时上报），且能接受重启期间错过触发 → **robfig/cron**，记得挂 `cron.Recover(logger)` 与 `SkipIfStillRunning`；
+- **任务有副作用、失败要重试、要查死信、要 Web UI** → 触发器仍可用 cron，但把「执行」交给 [asynq](../asynq/asynq技术文档与使用手册.md)，即「cron 只入队」；
+- **已经是 K8s 环境、任务是独立批处理/Job** → CronJob，天然有调度与重试语义，不必在业务进程里再塞一个调度器；
+- **大量任务、需要可视化编排、分片广播、跨语言执行器** → XXL-JOB / ElasticJob 这类调度中心；
+- **只是每 N 秒做一次内存态检查** → `time.Ticker` 更直接，别引入 cron 表达式。
+
+> ⚠️ 最常见的坑：**在 K8s 多副本 Deployment 里直接跑 robfig/cron**，同一任务被触发 N 次。要么把副本数固定为 1（并接受单点），要么用分布式锁（`SET NX`）在任务入口去重，要么改成「单副本 Scheduler 入队 + 多副本 worker 消费」。

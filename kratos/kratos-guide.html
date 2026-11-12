@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kratos 技术指南</title>
+<title>Kratos · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
 <style>
   :root{
     --accent:#16a34a; --accent-light:#dcfce7; --accent-dark:#166534;
@@ -24,113 +25,112 @@
   nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
   nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
   nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
   main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
-  .hero{background:linear-gradient(135deg,#14532d 0%,#16a34a 55%,#22c55e 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(22,163,74,.25)}
+  .hero{background:linear-gradient(135deg,#166534 0%,#16a34a 58%,#166534 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
   .hero h1{font-size:30px;margin-bottom:10px}
-  .hero p{opacity:.92;font-size:15px;max-width:680px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
   .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
   .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
   section{margin-bottom:46px}
   h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
   h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
-  h4{font-size:15px;margin:16px 0 8px;color:#14532d}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
   p{margin-bottom:12px}
   ul,ol{padding-left:24px;margin-bottom:12px}
   li{margin-bottom:6px}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin-bottom:18px;box-shadow:0 1px 3px rgba(5,46,22,.06)}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
   pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
-  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fc7a4;background:#0a4424;padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
   code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
-  p code,li code,td code{background:#e9f5ec;color:#15803d;border:1px solid #d3eada;padding:1px 6px;border-radius:6px;font-size:.88em}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
   .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
-  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(5,46,22,.06)}
-  th{background:#ddf0e4;color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
   td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
-  tr:nth-child(even) td{background:#f6fbf7}
-  .tip,.warn,.danger{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px;display:flex;gap:10px;align-items:flex-start}
-  .tip{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
-  .warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
-  .danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
-  .tip b,.warn b,.danger b{flex-shrink:0}
-  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0;box-shadow:0 1px 3px rgba(5,46,22,.06)}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
   .figure svg{width:100%;height:auto;display:block}
   .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
   .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
-  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:0 1px 3px rgba(5,46,22,.06)}
-  .feature .ft{font-weight:700;font-size:14px;color:var(--accent-dark);margin-bottom:6px}
-  .feature .fd{font-size:12.5px;color:var(--muted);line-height:1.65}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
   footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
   @media (max-width:900px){
     nav.sidebar{display:none}
     main{padding:24px 18px 60px}
     .hero{padding:28px 22px}
-    .features{grid-template-columns:1fr}
   }
 </style>
 </head>
 <body>
 <div class="layout">
-
 <nav class="sidebar">
   <div class="logo">Kratos<span class="ver">v3.0</span></div>
   <div class="sub">云原生微服务框架指南</div>
-  <a href="#intro">1. 项目简介</a>
-  <a class="sub-link" href="#intro-why">1.1 定位与取舍</a>
-  <a class="sub-link" href="#intro-install">1.2 安装与快速开始</a>
-  <a href="#features">2. 功能特性总览</a>
-  <a href="#concepts">3. 核心概念与原理</a>
-  <a class="sub-link" href="#c-layout">3.1 kratos-layout 分层</a>
-  <a class="sub-link" href="#c-app">3.2 App 生命周期</a>
-  <a class="sub-link" href="#c-transport">3.3 统一传输层</a>
-  <a class="sub-link" href="#c-middleware">3.4 中间件洋葱模型</a>
-  <a class="sub-link" href="#c-registry">3.5 注册发现</a>
-  <a class="sub-link" href="#c-config">3.6 配置系统</a>
-  <a class="sub-link" href="#c-errors">3.7 错误模型</a>
-  <a href="#practice">4. 使用实战</a>
-  <a class="sub-link" href="#p-proto">4.1 proto 契约与生成</a>
-  <a class="sub-link" href="#p-layers">4.2 业务三层实现</a>
-  <a class="sub-link" href="#p-server">4.3 装配 Server 与中间件</a>
-  <a class="sub-link" href="#p-reg">4.4 注册发现（etcd）</a>
-  <a class="sub-link" href="#p-conf">4.5 配置加载</a>
-  <a href="#v3">5. v3 要点与 v2 迁移</a>
-  <a href="#pitfalls">6. 常见坑与最佳实践</a>
-  <a href="#compare">7. 选型对比</a>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#安装与快速开始">安装与快速开始</a>
+  <a href="#2-功能特性总览">2. 功能特性总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-kratos-layout约定优于配置的分层">3.1 kratos-layout：约定优于配置的分层</a>
+  <a class="sub-link" href="#32-app生命周期管理器">3.2 App：生命周期管理器</a>
+  <a class="sub-link" href="#33-统一传输层一套代码双协议">3.3 统一传输层：一套代码，双协议</a>
+  <a class="sub-link" href="#34-中间件洋葱模型">3.4 中间件：洋葱模型</a>
+  <a class="sub-link" href="#35-服务注册发现与-rpc">3.5 服务注册发现与 RPC</a>
+  <a class="sub-link" href="#36-配置系统">3.6 配置系统</a>
+  <a class="sub-link" href="#37-错误模型">3.7 错误模型</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-proto-契约与生成完整流程">4.1 proto 契约与生成（完整流程）</a>
+  <a class="sub-link" href="#42-业务实现三层穿透">4.2 业务实现（三层穿透）</a>
+  <a class="sub-link" href="#43-装配-server-与中间件">4.3 装配 server 与中间件</a>
+  <a class="sub-link" href="#44-注册发现以-etcd-为例">4.4 注册发现（以 etcd 为例）</a>
+  <a class="sub-link" href="#45-配置加载与使用">4.5 配置加载与使用</a>
+  <a href="#5-v30-版本要点与-v2-迁移">5. v3.0 版本要点与 v2 迁移</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
 </nav>
-
 <main>
-
 <div class="hero">
-  <h1>Kratos</h1>
-  <p>Bilibili 开源的云原生 Go 微服务框架：<b>API-first（Protobuf 驱动）、HTTP/gRPC 双协议统一传输、可插拔组件化设计</b>——一组小而明确的原语 + 代码生成工作流，框架不绑架业务。</p>
-  <div class="meta">
-    <span>v3.0.0 · 2026.6 发布</span>
-    <span>Go 1.25+</span>
-    <span>MIT License</span>
-    <span>Bilibili 出品</span>
-    <span>proto 契约驱动</span>
-    <span>HTTP + gRPC 双协议</span>
-  </div>
+  <h1>Kratos 技术介绍与使用指南</h1>
+<p>Bilibili 开源的云原生 Go 微服务框架：API-first（Protobuf 驱动）、HTTP/gRPC 双协议统一传输、可插拔组件化设计——一组小而明确的原语 + 代码生成工作流，框架不绑架业务。</p>
+<p style="opacity:.8;font-size:13.5px">云原生微服务框架指南</p>
+<div class="meta"><span>v3.0.0 · 2026.6 发布</span><span>Go 1.25+</span><span>MIT License</span><span>Bilibili 出品</span><span>proto 契约驱动</span><span>HTTP + gRPC 双协议</span></div>
 </div>
-
-<!-- ============ 1 项目简介 ============ -->
-<section id="intro">
-  <h2>1. 项目简介</h2>
-
-  <p>Kratos（名字取自希腊神话战神）是 Bilibili 沉淀多年微服务工程实践后开源的 Go 框架，核心哲学是<b>「框架不绑架业务」</b>：它不是全家桶式重框架，而是一组小而明确的原语（transport、middleware、registry、config、log、encoding）+ 代码生成工作流，让团队把精力放在业务逻辑上。</p>
-
-  <h3 id="intro-why">1.1 定位与取舍</h3>
-  <p>与 Spring Cloud 式「大而全」或 go-micro 式「强抽象」不同，Kratos 的取舍是：</p>
-  <ul>
-    <li><b>API-first</b>：接口即契约。用 Protobuf 定义服务，一次生成 gRPC 与 RESTful HTTP 两套 server/client 代码，proto 文件本身就是文档（注释可生成 OpenAPI）；</li>
-    <li><b>双协议统一</b>：HTTP 与 gRPC 走同一套 <code>transport.Server</code> 抽象、同一套中间件链、同一套错误/元数据模型；</li>
-    <li><b>组件可插拔</b>：注册中心、配置中心、日志、编码器都是接口 + contrib 生态（etcd / consul / nacos / apollo / zap…按需引入）；</li>
-    <li><b>工程脚手架内置</b>：CLI 一条命令生成符合社区共识的分层项目骨架（kratos-layout），杜绝「每个团队一个目录结构」。</li>
-  </ul>
-  <p>适用场景：中大型团队的 Go 微服务标准化、需要同时暴露 gRPC（内部）与 HTTP（网关/前端）的服务、追求代码生成而非手写胶水的工程文化。</p>
-  <div class="warn"><b>⚠️ 不适合的场景：</b><span>简单的单体 Web 应用（Gin / Echo 更轻）或 CLI 工具——Kratos 的价值在「多服务协作的工程标准化」，单体场景引入 proto / wire / layout 心智是负收益。</span></div>
-
-  <h3 id="intro-install">1.2 安装与快速开始</h3>
-  <pre><code class="lang-bash"># 要求：Go 1.25+、protoc、protoc-gen-go
+<blockquote><p>Bilibili 开源的云原生 Go 微服务框架：API-first（Protobuf 驱动）、HTTP/gRPC 双协议统一传输、可插拔组件化设计。 仓库：<a href="https://github.com/go-kratos/kratos">https://github.com/go-kratos/kratos</a>　|　当前主线：<strong>v3.0.0</strong>（2026.6 发布，Go 1.25+）</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p>Kratos（名字取自希腊神话战神）是 Bilibili 沉淀多年微服务工程实践后开源的 Go 框架，核心哲学是<strong>"框架不绑架业务"</strong>：它不是全家桶式重框架，而是一组小而明确的原语（transport、middleware、registry、config、log、encoding）+ 代码生成工作流，让团队把精力放在业务逻辑上。</p>
+<p>与 Spring Cloud 式"大而全"或 go-micro 式"强抽象"不同，Kratos 的取舍是：</p>
+<ul><li><strong>API-first</strong>：接口即契约。用 Protobuf 定义服务，一次生成 gRPC 与 RESTful HTTP 两套 server/client 代码，proto 文件本身就是文档（注释可生成 OpenAPI）；</li><li><strong>双协议统一</strong>：HTTP 与 gRPC 走同一套 <code>transport.Server</code> 抽象、同一套中间件链、同一套错误/元数据模型；</li><li><strong>组件可插拔</strong>：注册中心、配置中心、日志、编码器都是接口 + contrib 生态（etcd/consul/nacos/apollo/zap…按需引入）；</li><li><strong>工程脚手架内置</strong>：CLI 一条命令生成符合社区共识的分层项目骨架（kratos-layout），杜绝"每个团队一个目录结构"。</li></ul>
+<p>适用场景：中大型团队的 Go 微服务标准化、需要同时暴露 gRPC（内部）与 HTTP（网关/前端）的服务、追求代码生成而非手写胶水的工程文化。<strong>不适合</strong>：简单的单体 Web 应用（Gin/Echo 更轻）或 CLI 工具。</p>
+<h3 id="安装与快速开始">安装与快速开始</h3>
+<pre><code class="lang-bash"># 要求：Go 1.25+、protoc、protoc-gen-go
 # 安装 CLI
 go install github.com/go-kratos/kratos/cmd/kratos/v3@latest
 
@@ -143,13 +143,12 @@ kratos run
 
 # 完整的 proto 工作流
 kratos proto add api/helloworld/helloworld.proto    # 生成 proto 骨架
-kratos proto client api/helloworld/helloworld.proto  # 生成 client 代码
-kratos proto server api/helloworld/helloworld.proto -t internal/service  # 生成 server 桩
+kratos proto client api/helloworld/helloworld.proto # 生成 client 代码
+kratos proto server api/helloworld/helloworld.proto -t internal/service # 生成 server 桩
 go generate ./...
 kratos run</code></pre>
-
-  <p>最小化应用（不依赖脚手架，一个进程同时挂 HTTP + gRPC）：</p>
-  <pre><code class="lang-go">package main
+<p>最小化应用（不依赖脚手架）：</p>
+<pre><code class="lang-go">package main
 
 import (
     "github.com/go-kratos/kratos/v3"
@@ -170,13 +169,13 @@ func main() {
         panic(err)
     }
 }</code></pre>
-  <div class="tip"><b>💡 三行核心：</b><span><code>http.NewServer</code> + <code>grpc.NewServer</code> + <code>kratos.Server(...)</code> 把两个传输层挂进同一个 App——这就是「双协议统一」最直观的样子，后续所有能力（中间件、注册、配置）都围绕这两个 server 对等展开。</span></div>
-</section>
+<hr>
 
-<!-- ============ 2 功能特性 ============ -->
-<section id="features">
-  <h2>2. 功能特性总览</h2>
-  <div class="features">
+<div class="warn"><b>⚠️ 不适合的场景：</b><span>简单的单体 Web 应用（Gin / Echo 更轻）或 CLI 工具——Kratos 的价值在「多服务协作的工程标准化」，单体场景引入 proto / wire / layout 心智是负收益。</span></div>
+<div class="tip"><b>💡 三行核心：</b><span><code>http.NewServer</code> + <code>grpc.NewServer</code> + <code>kratos.Server(...)</code> 把两个传输层挂进同一个 App——这就是「双协议统一」最直观的样子，后续所有能力（中间件、注册、配置）都围绕这两个 server 对等展开。</span></div>
+</section>
+<section data-anchor="2-功能特性总览">
+<h2 id="2-功能特性总览">2. 功能特性总览<span class="lvl b">速览</span></h2><div class="features">
     <div class="feature"><div class="ft">🔌 API-first 工作流</div><div class="fd">proto 定义接口 → 自动生成 HTTP / gRPC 双协议代码；proto 注释可产出 OpenAPI 文档。</div></div>
     <div class="feature"><div class="ft">🚚 统一传输层</div><div class="fd">transport/http 与 transport/grpc 同一抽象：Filter（中间件）、Router、Metadata、Codec 对等。</div></div>
     <div class="feature"><div class="ft">🧅 中间件洋葱模型</div><div class="fd">middleware.Middleware 签名统一，Server / 路由 / Match 级挂载；内置 recovery、logging、validate、tracing、metrics。</div></div>
@@ -190,27 +189,14 @@ func main() {
     <div class="feature"><div class="ft">👁️ 可观测性</div><div class="fd">OpenTelemetry tracing / metrics 一等公民（middleware + contrib handler）。</div></div>
     <div class="feature"><div class="ft">🔧 代码生成家族</div><div class="fd">protoc-gen-go-http / protoc-gen-go-errors / protoc-gen-go-grpc 生成器，路由绑定零手写。</div></div>
   </div>
-  <div class="tip"><b>💡 此外：</b><span>http.Server 原生支持 <b>WebSocket</b> 升级与流式接口绑定——与 HTTP / gRPC 同一传输层抽象，无需另起服务器。</span></div>
+<div class="tip"><b>💡 此外：</b><span>http.Server 原生支持 <b>WebSocket</b> 升级与流式接口绑定——与 HTTP / gRPC 同一传输层抽象，无需另起服务器。</span></div>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>API-first 工作流</td><td>proto 定义接口 → 自动生成 HTTP/gRPC 双协议代码；proto 注释可产出 OpenAPI 文档</td></tr><tr><td>统一传输层</td><td><code>transport/http</code> 与 <code>transport/grpc</code> 同一抽象：Filter（中间件）、Router、Metadata、Codec 对等</td></tr><tr><td>中间件（洋葱模型）</td><td><code>middleware.Middleware</code> 签名统一，Server/路由/Match 级别挂载；内置 recovery/logging/validate/tracing/metrics</td></tr><tr><td>服务注册发现</td><td><code>registry.Registrar/Discovery</code> 接口；contrib 支持 etcd、consul、nacos、zookeeper、kubernetes 等</td></tr><tr><td>配置中心</td><td><code>config.Config</code>：多来源（file/env/apollo/nacos/consul）按 key 合并、热更新 Watch</td></tr><tr><td>日志</td><td>v3 基于标准库 <code>log/slog</code>，Kratos 提供 <code>log.NewLogger/NewHandler</code> 与过滤能力；OTel 扩展在 contrib</td></tr><tr><td>错误模型</td><td>proto 定义错误码 <code>errors.Errorf(500, "USER_NOT_FOUND", ...)</code>，HTTP status 与 gRPC code 自动双向映射</td></tr><tr><td>元数据传递</td><td><code>metadata</code> 跨 HTTP header / gRPC metadata 的统一键值对透传（如 x-md-global-）</td></tr><tr><td>校验</td><td>protovalidate（PGV 继任者）注解驱动 + v3 支持自定义 validator</td></tr><tr><td>弹性组件</td><td>selector（负载均衡：round_robin/p2c/weighted）、circuitbreaker（熔断）、rate（限流）</td></tr><tr><td>可观测</td><td>OpenTelemetry tracing/metrics 一等公民（middleware + contrib handler）</td></tr><tr><td>WebSocket</td><td>http.Server 原生支持 ws 升级与流式接口绑定</td></tr><tr><td>代码生成</td><td>protoc-gen-go-http / protoc-gen-go-errors / protoc-gen-go-grpc 生成器家族</td></tr></tbody></table></div>
+<hr>
+
 </section>
-
-<!-- ============ 3 核心概念 ============ -->
-<section id="concepts">
-  <h2>3. 核心概念与原理</h2>
-
-  <h3 id="c-layout">3.1 kratos-layout：约定优于配置的分层</h3>
-  <p>CLI 生成的项目骨架来自社区模板 kratos-layout：</p>
-  <pre><code class="lang-txt">helloworld/
-<span class="kw">├─ api/helloworld/</span>          <span class="cmt"># proto 契约 + 生成的 *.pb.go / *_http.pb.go / *_grpc.pb.go</span>
-<span class="kw">├─ cmd/helloworld/main.go</span>   <span class="cmt"># 唯一入口：装配 wire 注入</span>
-<span class="kw">├─ configs/</span>                 <span class="cmt"># 本地配置文件</span>
-<span class="kw">└─ internal/</span>
-    <span class="typ">├─ server/</span>              <span class="cmt"># 装配层：newHTTPServer/newGRPCServer（挂中间件、路由）</span>
-    <span class="typ">├─ service/</span>             <span class="cmt"># 接口实现层：实现生成的 Service 接口，做参数组装</span>
-    <span class="typ">├─ biz/</span>                 <span class="cmt"># 业务核心层：Entity + Repo 接口定义（依赖倒置核心）</span>
-    <span class="typ">├─ data/</span>                <span class="cmt"># 数据层：Repo 接口的实现（DB/缓存/外部调用）</span>
-    <span class="typ">└─ conf/</span>                <span class="cmt"># 配置结构（proto 生成）</span></code></pre>
-
-  <div class="figure">
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-kratos-layout约定优于配置的分层">3.1 kratos-layout：约定优于配置的分层</h3><div class="figure">
     <svg viewBox="0 0 880 440" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs>
         <marker id="k1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#16a34a"/></marker>
@@ -266,20 +252,20 @@ func main() {
     </svg>
     <figcaption>图 1 · kratos-layout 分层与依赖方向：<code>service → biz ← data</code> 严格单向；biz 定义 Repo 接口、data 提供实现（依赖倒置），cmd 用 wire 在编译期完成注入</figcaption>
   </div>
-
-  <p>依赖方向严格单向：<code>service → biz ← data</code>。<b>biz 定义 Repo 接口、data 实现它</b>——业务层不依赖任何具体存储，这是脚手架里最重要的工程决策（依赖倒置）。<code>cmd</code> 使用 google/wire 在编译期完成依赖注入。</p>
-  <div class="tip"><b>💡 为什么重要：</b><span>biz 是业务复用单元（用例），data 才知道存储——换 MySQL 为 redis、mock 掉仓储做单测，都不需要动 biz 一行代码。</span></div>
-
-  <h3 id="c-app">3.2 App：生命周期管理器</h3>
-  <p><code>kratos.New()</code> 返回的 App 是进程级生命周期容器：</p>
-  <ul>
-    <li>聚合任意多个 <code>transport.Server</code>（HTTP / gRPC 可并存，也可多个实例）；</li>
-    <li>生命周期钩子：<code>BeforeStart / AfterStart / BeforeStop / AfterStop</code>（清理资源、预热的挂点）；</li>
-    <li>监听系统信号（默认 SIGINT / SIGTERM，<code>kratos.Signal()</code> 可改），触发<b>优雅退出</b>：先注销注册中心 → 再停止接收新请求 → 等待存量请求完成；</li>
-    <li>若配置了 <code>Registrar</code>，启动时自动注册、退出时自动反注册。</li>
-  </ul>
-
-  <div class="figure">
+<div class="tip"><b>💡 为什么重要：</b><span>biz 是业务复用单元（用例），data 才知道存储——换 MySQL 为 redis、mock 掉仓储做单测，都不需要动 biz 一行代码。</span></div>
+<p>CLI 生成的项目骨架（社区模板 <a href="https://github.com/go-kratos/kratos-layout">kratos-layout</a>）：</p>
+<pre><code class="lang-text">helloworld/
+├── api/helloworld/          # proto 契约 + 生成的 *.pb.go / *_http.pb.go / *_grpc.pb.go
+├── cmd/helloworld/main.go   # 唯一入口：装配 wire 注入
+├── configs/                 # 本地配置文件
+└── internal/
+    ├── server/              # 装配层：newHTTPServer/newGRPCServer（挂中间件、路由）
+    ├── service/             # 接口实现层：实现生成的 Service 接口，做参数组装
+    ├── biz/                 # 业务核心层：Entity + Repo 接口定义（依赖倒置核心）
+    ├── data/                # 数据层：Repo 接口的实现（DB/缓存/外部调用）
+    └── conf/                # 配置结构（proto 生成）</code></pre>
+<p>依赖方向严格单向：<code>service → biz ← data</code>。<strong>biz 定义 Repo 接口、data 实现它</strong>——业务层不依赖任何具体存储，这是脚手架里最重要的工程决策（依赖倒置）。<code>cmd</code> 使用 <a href="https://github.com/google/wire">google/wire</a> 在编译期完成依赖注入。</p>
+<h3 id="32-app生命周期管理器">3.2 App：生命周期管理器</h3><div class="figure">
     <svg viewBox="0 0 880 342" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs>
         <marker id="k2a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#16a34a"/></marker>
@@ -339,19 +325,9 @@ func main() {
     </svg>
     <figcaption>图 2 · App 生命周期：启动阶段依次执行钩子、拉起 Server 并注册；运行中阻塞等待信号；收到 SIGTERM 后按「反注册 → BeforeStop → 停止接收新请求 → 等待存量完成 → AfterStop」优雅退出</figcaption>
   </div>
-
-  <h3 id="c-transport">3.3 统一传输层：一套代码，双协议</h3>
-  <p>proto 里的 <code>google.api.http</code> 注解声明 REST 映射：</p>
-  <pre><code class="lang-proto">service Greeter {
-  rpc SayHello (HelloRequest) returns (HelloReply) {
-    option (google.api.http) = {
-      get: "/helloworld/{name}"
-    };
-  }
-}</code></pre>
-  <p>protoc-gen-go-http 据此生成 HTTP server 代码：GET <code>/helloworld/kratos</code> 的 path 参数自动绑定到 <code>HelloRequest.Name</code>，同一服务同时提供 gRPC <code>SayHello</code>。<b>路由、参数绑定、编解码全部生成，不写胶水</b>。v3 还支持 <code>google.api.HttpBody</code> 作为响应（直接控制原始 HTTP body，用于返回 HTML / 文件）。</p>
-
-  <div class="figure">
+<p><code>kratos.New()</code> 返回的 App 是进程级生命周期容器：</p>
+<ul><li>聚合任意多个 <code>transport.Server</code>（HTTP/gRPC 可并存，也可多个实例）；</li><li>生命周期钩子：<code>BeforeStart / AfterStart / BeforeStop / AfterStop</code>（清理资源、预热的挂点）；</li><li>监听系统信号（默认 SIGINT/SIGTERM，<code>kratos.Signal()</code> 可改），触发<strong>优雅退出</strong>：先注销注册中心 → 再停止接收新请求 → 等待存量请求完成；</li><li>若配置了 <code>Registrar</code>，启动时自动注册、退出时自动反注册。</li></ul>
+<h3 id="33-统一传输层一套代码双协议">3.3 统一传输层：一套代码，双协议</h3><div class="figure">
     <svg viewBox="0 0 880 356" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs>
         <marker id="k3a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#16a34a"/></marker>
@@ -410,22 +386,16 @@ func main() {
     </svg>
     <figcaption>图 3 · API-first 工作流：一份 proto 契约经 protoc 生成器家族产出 HTTP server、gRPC server、双协议 client 与 OpenAPI 文档——「一份契约，多端产物」</figcaption>
   </div>
-
-  <h3 id="c-middleware">3.4 中间件：洋葱模型</h3>
-  <pre><code class="lang-go">type Middleware func(Handler) Handler
-type Handler func(ctx context.Context, req any) (any, error)</code></pre>
-  <p>请求像穿透洋葱一样经过各层中间件（鉴权 → 日志 → tracing → validate → recovery），每层可前后夹逻辑。挂载级别：</p>
-  <pre><code class="lang-go">// 全局（该 server 所有路由）
-http.Server(http.Filter(middleware.Recovery(), middleware.Logging(...)))
-
-// 路由级
-http.Server(http.Middleware(
-    match.New().Route("/api.v1.Greeter/.*", jwt.Server(...)).Build(), // 仅匹配路由走 JWT
-    middleware.Recovery(),
-))</code></pre>
-  <p>gRPC 同样用 <code>grpc.Middleware / StreamInterceptor / UnaryInterceptor</code> 挂载——<b>中间件跨协议复用</b>是统一传输层的直接收益。</p>
-
-  <div class="figure">
+<p>proto 里的 <code>google.api.http</code> 注解声明 REST 映射：</p>
+<pre><code class="lang-protobuf">service Greeter {
+  rpc SayHello (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/helloworld/{name}"
+    };
+  }
+}</code></pre>
+<p>protoc-gen-go-http 据此生成 HTTP server 代码：GET <code>/helloworld/kratos</code> 的 path 参数自动绑定到 <code>HelloRequest.Name</code>，同一服务同时提供 gRPC <code>SayHello</code>。<strong>路由、参数绑定、编解码全部生成，不写胶水</strong>。v3 还支持 <code>google.api.HttpBody</code> 作为响应（直接控制原始 HTTP body，用于返回 HTML/文件）。</p>
+<h3 id="34-中间件洋葱模型">3.4 中间件：洋葱模型</h3><div class="figure">
     <svg viewBox="0 0 880 380" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs>
         <marker id="k4a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#16a34a"/></marker>
@@ -474,19 +444,18 @@ http.Server(http.Middleware(
     </svg>
     <figcaption>图 4 · 统一传输层与中间件洋葱模型：HTTP 与 gRPC 共享同一套 Middleware 链与错误 / 元数据 / 编解码模型，请求逐层穿透各中间件到达业务 Handler</figcaption>
   </div>
-
-  <h3 id="c-registry">3.5 服务注册发现与 RPC</h3>
-  <p>服务端把 endpoint 注册到 registry；客户端用 discovery 构建自定义 gRPC resolver / HTTP 客户端，配合 <b>selector</b> 做负载均衡（p2c / round_robin / weighted、subset），并可用 circuitbreaker / rate 中间件包住出站调用：</p>
-  <pre><code class="lang-go">conn, err := grpc.DialInsecure(ctx,
-    grpc.WithEndpoint("discovery:///"+serviceName),
-    grpc.WithDiscovery(r),          // registry.Discovery
-    grpc.WithMiddleware(
-        circuitbreaker.Client(),                 // 熔断
-        selector.Client(selector.NewRoundRobin()), // 负载均衡
-    ),
-)</code></pre>
-
-  <div class="figure">
+<pre><code class="lang-go">type Middleware func(Handler) Handler
+type Handler func(ctx context.Context, req any) (any, error)</code></pre>
+<p>请求像穿透洋葱一样经过各层中间件（鉴权 → 日志 → tracing → validate → recovery），每层可前后夹逻辑。挂载级别：</p>
+<pre><code class="lang-go">// 全局（该 server 所有路由）
+http.Server(http.Filter(middleware.Recovery(), middleware.Logging(...)))
+// 路由级
+http.Server(http.Middleware(
+    match.New().Route("/api.v1.Greeter/.*", jwt.Server(...)).Build(), // 仅匹配路由走 JWT
+    middleware.Recovery(),
+))</code></pre>
+<p>gRPC 同样用 <code>grpc.Middleware/StreamInterceptor/UnaryInterceptor</code> 挂载——<strong>中间件跨协议复用</strong>是统一传输层的直接收益。</p>
+<h3 id="35-服务注册发现与-rpc">3.5 服务注册发现与 RPC</h3><div class="figure">
     <svg viewBox="0 0 880 404" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs>
         <marker id="k5a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#16a34a"/></marker>
@@ -551,28 +520,33 @@ http.Server(http.Middleware(
     </svg>
     <figcaption>图 5 · 服务注册发现拓扑：Provider 启动注册 / 退出注销；Consumer 通过 Discovery 订阅实例、Selector 负载均衡，调用直连节点而不经过注册中心</figcaption>
   </div>
-
-  <h3 id="c-config">3.6 配置系统</h3>
-  <p><code>config.New(config.Source(file.NewSource(path), ...))</code> 拉取多来源并按键合并（后加载覆盖先加载）；<code>config.Watch(ctx, "service.name", func(...))</code> 热更新。v3 新增<b>泛型 Get</b>：<code>conf.Get[T](...)</code> 直接反序列化为目标类型。结构由 proto 定义（configs 里是 yaml，<code>conf.pb.go</code> 是结构）。</p>
-  <div class="tip"><b>💡 多 Source 合并规则：</b><span>按 key 合并、后者覆盖前者——完整加载与 Watch 代码见 <a href="#p-conf">4.5</a>。</span></div>
-
-  <h3 id="c-errors">3.7 错误模型</h3>
-  <pre><code class="lang-go">// 定义（通常 proto 生成错误码定义）
+<p>服务端把 endpoint 注册到 registry；客户端用 discovery 构建自定义 gRPC resolver / HTTP 客户端，配合 <strong>selector</strong> 做负载均衡（p2c/round_robin/weighted、subset），并可用 circuitbreaker/rate 中间件包住出站调用：</p>
+<pre><code class="lang-go">conn, err := grpc.DialInsecure(ctx,
+    grpc.WithEndpoint("discovery:///'+serviceName"),
+    grpc.WithDiscovery(r),          // registry.Discovery
+    grpc.WithMiddleware(
+        circuitbreaker.Client(),    // 熔断
+        selector.Client(selector.NewRoundRobin()), // 负载均衡
+    ),
+)</code></pre>
+<h3 id="36-配置系统">3.6 配置系统</h3><div class="tip"><b>💡 多 Source 合并规则：</b><span>按 key 合并、后者覆盖前者——完整加载与 Watch 代码见 <a href="#45-配置加载与使用">4.5</a>。</span></div>
+<p><code>config.New(config.Source(file.NewSource(path), ...))</code> 拉取多来源并按键合并（后加载覆盖先加载）；<code>config.Watch(ctx, "service.name", func(...))</code> 热更新。v3 新增<strong>泛型 Get</strong>：<code>conf.Get[T](...)</code> 直接反序列化为目标类型。结构由 proto 定义（configs 里是 yaml，<code>conf.pb.go</code> 是结构）。</p>
+<h3 id="37-错误模型">3.7 错误模型</h3>
+<pre><code class="lang-go">// 定义（通常 proto 生成错误码定义）
 err := errors.Errorf(500, "USER_NOT_FOUND", "user %d not found", id)
 
 // HTTP 响应：status 500 + body {"code":500,"reason":"USER_NOT_FOUND","message":"..."}
 // gRPC 响应：自动映射 status details
 // 客户端还原
 if errors.IsForbiddenException(err) { ... }</code></pre>
-  <p>业务错误带 <b>reason 机器码</b>（区别于裸 HTTP status），双协议自动映射——网关 / 前端拿 reason 做国际化文案。</p>
+<p>业务错误带 <strong>reason 机器码</strong>（区别于裸 HTTP status），双协议自动映射——网关/前端拿 reason 做国际化文案。</p>
+<hr>
+
 </section>
-
-<!-- ============ 4 使用实战 ============ -->
-<section id="practice">
-  <h2>4. 使用实战</h2>
-
-  <h3 id="p-proto">4.1 proto 契约与生成（完整流程）</h3>
-  <pre><code class="lang-proto">// api/helloworld/v1/greeter.proto
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-proto-契约与生成完整流程">4.1 proto 契约与生成（完整流程）</h3>
+<pre><code class="lang-protobuf">// api/helloworld/v1/greeter.proto
 syntax = "proto3";
 package helloworld.v1;
 
@@ -589,11 +563,10 @@ service GreeterService {
     option (google.api.http) = { post: "/v1/greetings" body: "*" };
   }
 }</code></pre>
-  <pre><code class="lang-bash">kratos proto client api/helloworld/v1/greeter.proto  # 生成 pb/grpc/http client+server
+<pre><code class="lang-bash">kratos proto client api/helloworld/v1/greeter.proto  # 生成 pb/grpc/http client+server
 kratos proto server api/helloworld/v1/greeter.proto -t internal/service</code></pre>
-
-  <h3 id="p-layers">4.2 业务实现（三层穿透）</h3>
-  <pre><code class="lang-go">// internal/service/greeter.go —— 接口实现层
+<h3 id="42-业务实现三层穿透">4.2 业务实现（三层穿透）</h3><div class="tip"><b>💡 读法：</b><span>service 只做参数组装与错误翻译；biz 承载用例与规则（含 forbidden 判断）；data 只认 Repo 接口——三层各自可独立测试与替换。</span></div>
+<pre><code class="lang-go">// internal/service/greeter.go —— 接口实现层
 type GreeterService struct {
     v1.UnimplementedGreeterServiceServer
     uc *biz.GreeterUsecase
@@ -626,10 +599,8 @@ func (r *greeterRepo) Save(ctx context.Context, g *biz.Greeter) (*biz.Greeter, e
     // GORM ent or redis ...
     return g, nil
 }</code></pre>
-  <div class="tip"><b>💡 读法：</b><span>service 只做参数组装与错误翻译；biz 承载用例与规则（含 forbidden 判断）；data 只认 Repo 接口——三层各自可独立测试与替换。</span></div>
-
-  <h3 id="p-server">4.3 装配 server 与中间件</h3>
-  <pre><code class="lang-go">// internal/server/http.go
+<h3 id="43-装配-server-与中间件">4.3 装配 server 与中间件</h3>
+<pre><code class="lang-go">// internal/server/http.go
 func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, logger *slog.Logger) *http.Server {
     var opts = []http.ServerOption{
         http.Middleware(
@@ -651,9 +622,8 @@ func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, logger *slog
     v1.RegisterGreeterServiceHTTPServer(srv, greeter)
     return srv
 }</code></pre>
-
-  <h3 id="p-reg">4.4 注册发现（以 etcd 为例）</h3>
-  <pre><code class="lang-go">import etcdreg "github.com/go-kratos/kratos/contrib/registry/etcd/v3"
+<h3 id="44-注册发现以-etcd-为例">4.4 注册发现（以 etcd 为例）</h3>
+<pre><code class="lang-go">import etcdreg "github.com/go-kratos/kratos/contrib/registry/etcd/v3"
 
 client, _ := clientv3.New(clientv3.Config{Endpoints: []string{"127.0.0.1:2379"}})
 r := etcdreg.New(client)
@@ -663,9 +633,8 @@ app := kratos.New(
     kratos.Server(httpSrv, grpcSrv),
     kratos.Registrar(r),   // 启动注册 / 退出注销
 )</code></pre>
-
-  <h3 id="p-conf">4.5 配置加载与使用</h3>
-  <pre><code class="lang-go">// cmd 里加载 configs/config.yaml
+<h3 id="45-配置加载与使用">4.5 配置加载与使用</h3>
+<pre><code class="lang-go">// cmd 里加载 configs/config.yaml
 c := config.New(
     config.WithSource(
         file.NewSource("configs"),
@@ -683,25 +652,11 @@ if err := c.Scan(&amp;bc); err != nil { panic(err) }
 _ = c.Watch(ctx, "server", func(key string, value config.Value) {
     // 拉新值重建连接等
 })</code></pre>
+<hr>
+
 </section>
-
-<!-- ============ 5 v3 与迁移 ============ -->
-<section id="v3">
-  <h2>5. v3.0 版本要点与 v2 迁移</h2>
-  <p>v3 主旨：<b>削减核心依赖、把隐式行为显式化</b>（详见官方 v2-to-v3 迁移指南）：</p>
-  <table>
-    <tr><th style="width:120px">变化</th><th style="width:250px">v2</th><th>v3</th></tr>
-    <tr><td>模块路径</td><td><code>/v2</code></td><td><code>/v3</code>（Go 1.25+）</td></tr>
-    <tr><td>日志</td><td>自研 <code>log.Logger/Helper/Valuer</code></td><td>标准库 <b><code>log/slog</code></b>：<code>log.NewLogger(slog.NewJSONHandler(...))</code>；OTel handler 在 contrib</td></tr>
-    <tr><td>JSON 编码</td><td><code>encoding/json</code> 混处理 Go 值与 proto</td><td><b>拆分</b>：<code>encoding/json</code>（标准 JSON）+ <code>encoding/protojson</code>（proto JSON）；兼容行为走 contrib</td></tr>
-    <tr><td>JWT 中间件</td><td>核心仓 <code>middleware/auth/jwt</code></td><td>移到 <code>contrib/middleware/jwt/v3</code>（不用 JWT 就不拉 golang-jwt 依赖）</td></tr>
-    <tr><td>熔断器</td><td>默认依赖 aegis</td><td>内置默认实现；自定义才引 aegis（<code>WithBreakerFactory</code>）</td></tr>
-    <tr><td>HTTP binding</td><td><code>transport/http/binding</code> 包</td><td>移除：<code>http.BuildPath</code> + <code>transport/http.Context</code> 的 <code>Bind/BindVars/BindQuery/BindForm</code></td></tr>
-  </table>
-
-  <p>v3 新特性：errors 标准库 wrappers、<code>google.api.HttpBody</code> 响应、config 泛型 <code>Get</code>、自定义 validator、JWT <code>WithParserOptions</code>、<code>TooManyRequests</code> 错误类型、HTTP ServerStream 读写超时、<code>kratos new --repo</code> 等。</p>
-
-  <div class="figure">
+<section data-anchor="5-v30-版本要点与-v2-迁移">
+<h2 id="5-v30-版本要点与-v2-迁移">5. v3.0 版本要点与 v2 迁移<span class="lvl b">版本</span></h2><div class="figure">
     <svg viewBox="0 0 880 400" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs>
         <marker id="k6a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#16a34a"/></marker>
@@ -780,122 +735,82 @@ _ = c.Watch(ctx, "server", func(key string, value config.Value) {
     </svg>
     <figcaption>图 6 · v2 → v3 迁移四要点：模块路径、日志 slog、JSON 编码拆分、JWT 移入 contrib——主旨是削减核心依赖、把隐式行为显式化</figcaption>
   </div>
+<p>v3 主旨：<strong>削减核心依赖、把隐式行为显式化</strong>（详见官方 v2-to-v3 迁移指南）：</p>
+<div class="table-wrap"><table><thead><tr><th>变化</th><th>v2</th><th>v3</th></tr></thead><tbody><tr><td>模块路径</td><td><code>/v2</code></td><td><code>/v3</code>（Go 1.25+）</td></tr><tr><td>日志</td><td>自研 <code>log.Logger/Helper/Valuer</code></td><td>标准库 <strong><code>log/slog</code></strong>：<code>log.NewLogger(slog.NewJSONHandler(...))</code>；OTel handler 在 contrib</td></tr><tr><td>JSON 编码</td><td><code>encoding/json</code> 混处理 Go 值与 proto</td><td><strong>拆分</strong>：<code>encoding/json</code>（标准 JSON）+ <code>encoding/protojson</code>（proto JSON）；兼容行为走 contrib</td></tr><tr><td>JWT 中间件</td><td>核心仓 <code>middleware/auth/jwt</code></td><td>移到 <code>contrib/middleware/jwt/v3</code>（不用 JWT 就不拉 golang-jwt 依赖）</td></tr><tr><td>熔断器</td><td>默认依赖 aegis</td><td>内置默认实现；自定义才引 aegis（<code>WithBreakerFactory</code>）</td></tr><tr><td>HTTP binding</td><td><code>transport/http/binding</code> 包</td><td>移除：<code>http.BuildPath</code> + <code>transport/http.Context</code> 的 <code>Bind/BindVars/BindQuery/BindForm</code></td></tr></tbody></table></div>
+<p>v3 新特性：errors 标准库 wrappers、<code>google.api.HttpBody</code> 响应、config 泛型 <code>Get</code>、自定义 validator、JWT <code>WithParserOptions</code>、<code>TooManyRequests</code> 错误类型、HTTP ServerStream 读写超时、<code>kratos new --repo</code> 等。</p>
+<p><strong>迁移步骤</strong>：改 import <code>/v2</code>→<code>/v3</code>（contrib 同理）→ 选定 JSON codec（新代码显式 import <code>encoding/json</code> + <code>encoding/protojson</code>）→ 日志换 slog API → JWT 改 contrib 路径 → 检查自定义熔断 → 替换 binding 直用 → <code>go generate ./...</code> 重新生成 → <code>go mod tidy &amp;&amp; go test ./...</code>。</p>
+<p>v2（2.9.x）仍是存量主流：2.8.4 起 validate 中间件已从 PGV 迁移到 <strong>protovalidate</strong>（PGV 进入维护期），v3 全面延续 protovalidate 路线。</p>
+<hr>
 
-  <h4>迁移步骤</h4>
-  <ol>
-    <li>改 import <code>/v2</code> → <code>/v3</code>（contrib 同理）；</li>
-    <li>选定 JSON codec（新代码显式 import <code>encoding/json</code> + <code>encoding/protojson</code>）；</li>
-    <li>日志换 slog API；</li>
-    <li>JWT 改 contrib 路径；</li>
-    <li>检查自定义熔断；</li>
-    <li>替换 binding 直用；</li>
-    <li><code>go generate ./...</code> 重新生成；</li>
-    <li><code>go mod tidy &amp;&amp; go test ./...</code>。</li>
-  </ol>
-  <div class="tip"><b>💡 v2 存量怎么办：</b><span>v2（2.9.x）仍是存量主流：2.8.4 起 validate 中间件已从 PGV 迁移到 <b>protovalidate</b>（PGV 进入维护期），v3 全面延续 protovalidate 路线——先在 v2 上完成 protovalidate 切换，再升 v3 更平滑。</span></div>
+<div class="tip"><b>💡 v2 存量怎么办：</b><span>v2（2.9.x）仍是存量主流：2.8.4 起 validate 中间件已从 PGV 迁移到 <b>protovalidate</b>（PGV 进入维护期），v3 全面延续 protovalidate 路线——先在 v2 上完成 protovalidate 切换，再升 v3 更平滑。</span></div>
 </section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2><div class="danger"><b>🚫 不要绕过分层：</b><span>service 里直接写 SQL 是最常见堕落——biz 是业务复用单元（用例）、data 才知道存储；保持 <code>service → biz ← data</code> 依赖方向，用 wire 组织装配。</span></div>
+<div class="warn"><b>📋 proto 即契约，早评审：</b><span>接口变更的成本在 proto 评审时就该付掉；generate 之后不要手改 <code>*.pb.go</code>——下次生成会全部丢失。</span></div>
+<div class="danger"><b>❗ 错误必须带 reason：</b><span>只返回 HTTP 500 数字码会让前端无法区分场景；<code>errors.Errorf(code, reason, msg)</code> 的 reason 是团队共享枚举，收口在 proto 生成。</span></div>
+<div class="warn"><b>🔑 JWT / 白名单用 selector：</b><span>全局 auth 中间件 + <code>selector.Match</code> 白名单（健康检查、登录接口）是标准姿势；不要为个别路由另起 server。</span></div>
+<div class="danger"><b>🌐 注册中心的 endpoint 广告地址：</b><span>容器里 0.0.0.0 不可达，需要 <code>kratos.Endpoint</code> 或 <code>ADVERTISE_URI</code> 暴露可路由地址（K8s 场景注意 Pod IP）。</span></div>
+<div class="danger"><b>⏱️ graceful stop 超时：</b><span><code>kratos.StopTimeout</code> 默认 30s，K8s <code>terminationGracePeriodSeconds</code> 要比它大，否则 SIGKILL 掐断在途请求。</span></div>
+<div class="warn"><b>⚙️ 配置优先级：</b><span>多 Source 后者覆盖前者，推荐 file（基线）→ env（部署差异）→ 远程配置中心（动态）。</span></div>
+<div class="danger"><b>🔤 v3 升级先跑通编码：</b><span>JSON codec 拆分是最容易踩的破坏点——依赖 proto JSON 语义（int64 字符串化、enum 名）的服务必须显式引 protojson 或 contrib 兼容包，且<b>不要同时注册两个 json codec</b>。</span></div>
+<div class="warn"><b>🧰 生成工具链版本对齐：</b><span>protoc / protoc-gen-go / kratos CLI 版本不一致会产生诡异编译错，团队统一 <code>kratos upgrade</code> + Makefile 固定版本。</span></div>
+<div class="warn"><b>🔥 hot reload 只用于开发：</b><span><code>kratos run</code> 自带热重载（air）；生产环境是普通二进制，无热更新概念。</span></div>
+<ol><li><strong>不要绕过分层</strong>：service 里直接写 SQL 是最常见堕落——biz 是业务复用单元（用例）、data 才知道存储；保持 <code>service → biz ← data</code> 依赖方向，用 wire 组织装配；</li><li><strong>proto 即契约，早评审</strong>：接口变更的成本在 proto 评审时就该付掉；generate 之后不要手改 <code>*.pb.go</code>；</li><li><strong>错误必须带 reason</strong>：只返回 HTTP 500 数字码会让前端无法区分场景；<code>errors.Errorf(code, reason, msg)</code> 的 reason 是团队共享枚举，收口在 proto 生成；</li><li><strong>JWT/白名单用 selector</strong>：全局 auth 中间件 + <code>selector.Match</code> 白名单（健康检查、登录接口）是标准姿势；</li><li><strong>注册中心的 endpoint 广告地址</strong>：容器里 0.0.0.0 不可达，需要 <code>kratos.Endpoint</code> 或 <code>ADVERTISE_URI</code> 暴露可路由地址（K8s 场景注意 Pod IP）；</li><li><strong>graceful stop 超时</strong>：<code>kratos.StopTimeout</code> 默认 30s，K8s <code>terminationGracePeriodSeconds</code> 要比它大，否则 SIGKILL 掐断在途请求；</li><li><strong>配置优先级</strong>：多 Source 后者覆盖前者，推荐 file（基线）→ env（部署差异）→ 远程配置中心（动态）；</li><li><strong>v3 升级先跑通编码</strong>：JSON codec 拆分是最容易踩的破坏点——依赖 proto JSON 语义（int64 字符串化、enum 名）的服务必须显式引 protojson 或 contrib 兼容包，且<strong>不要同时注册两个 json codec</strong>；</li><li><strong>生成工具链版本对齐</strong>：protoc/protoc-gen-go/kratos CLI 版本不一致会产生诡异编译错，团队统一 <code>kratos upgrade</code> + Makefile 固定版本；</li><li><strong>hot reload 用于开发</strong>：<code>kratos run</code> 自带热重载（air）；生产环境是普通二进制，无热更新概念。</li></ol>
+<hr>
 
-<!-- ============ 6 常见坑 ============ -->
-<section id="pitfalls">
-  <h2>6. 常见坑与最佳实践</h2>
-
-  <div class="danger"><b>🚫 不要绕过分层：</b><span>service 里直接写 SQL 是最常见堕落——biz 是业务复用单元（用例）、data 才知道存储；保持 <code>service → biz ← data</code> 依赖方向，用 wire 组织装配。</span></div>
-
-  <div class="warn"><b>📋 proto 即契约，早评审：</b><span>接口变更的成本在 proto 评审时就该付掉；generate 之后不要手改 <code>*.pb.go</code>——下次生成会全部丢失。</span></div>
-
-  <div class="danger"><b>❗ 错误必须带 reason：</b><span>只返回 HTTP 500 数字码会让前端无法区分场景；<code>errors.Errorf(code, reason, msg)</code> 的 reason 是团队共享枚举，收口在 proto 生成。</span></div>
-
-  <div class="warn"><b>🔑 JWT / 白名单用 selector：</b><span>全局 auth 中间件 + <code>selector.Match</code> 白名单（健康检查、登录接口）是标准姿势；不要为个别路由另起 server。</span></div>
-
-  <div class="danger"><b>🌐 注册中心的 endpoint 广告地址：</b><span>容器里 0.0.0.0 不可达，需要 <code>kratos.Endpoint</code> 或 <code>ADVERTISE_URI</code> 暴露可路由地址（K8s 场景注意 Pod IP）。</span></div>
-
-  <div class="danger"><b>⏱️ graceful stop 超时：</b><span><code>kratos.StopTimeout</code> 默认 30s，K8s <code>terminationGracePeriodSeconds</code> 要比它大，否则 SIGKILL 掐断在途请求。</span></div>
-
-  <div class="warn"><b>⚙️ 配置优先级：</b><span>多 Source 后者覆盖前者，推荐 file（基线）→ env（部署差异）→ 远程配置中心（动态）。</span></div>
-
-  <div class="danger"><b>🔤 v3 升级先跑通编码：</b><span>JSON codec 拆分是最容易踩的破坏点——依赖 proto JSON 语义（int64 字符串化、enum 名）的服务必须显式引 protojson 或 contrib 兼容包，且<b>不要同时注册两个 json codec</b>。</span></div>
-
-  <div class="warn"><b>🧰 生成工具链版本对齐：</b><span>protoc / protoc-gen-go / kratos CLI 版本不一致会产生诡异编译错，团队统一 <code>kratos upgrade</code> + Makefile 固定版本。</span></div>
-
-  <div class="warn"><b>🔥 hot reload 只用于开发：</b><span><code>kratos run</code> 自带热重载（air）；生产环境是普通二进制，无热更新概念。</span></div>
 </section>
-
-<!-- ============ 7 选型对比 ============ -->
-<section id="compare">
-  <h2>7. 选型对比</h2>
-  <table>
-    <tr><th style="width:130px">维度</th><th>Kratos</th><th>go-zero</th><th>Gin/Echo</th><th>go-micro</th></tr>
-    <tr><td>定位</td><td>微服务全家桶（轻内核+contrib）</td><td>微服务全家桶（单体工具链）</td><td>Web 框架</td><td>微服务 RPC 框架</td></tr>
-    <tr><td>接口契约</td><td><b>proto-first，双协议生成</b></td><td>api 文件（自定义 DSL）</td><td>手写路由</td><td>proto-first</td></tr>
-    <tr><td>HTTP+gRPC 同源</td><td>✅ 核心卖点</td><td>✅</td><td>❌（仅 HTTP）</td><td>gRPC 为主</td></tr>
-    <tr><td>学习曲线</td><td>中（需 proto/wire/layout 心智）</td><td>低-中</td><td>低</td><td>中-高（抽象重）</td></tr>
-    <tr><td>工程规范</td><td><b>强</b>（layout+CLI 强约束）</td><td>强</td><td>无</td><td>弱</td></tr>
-    <tr><td>生态背景</td><td>B 站生产验证 + CNCF 周边丰富</td><td>国内社区活跃</td><td>最广泛</td><td>海外社区</td></tr>
-  </table>
-  <div class="tip"><b>💡 一句话：</b><span><b>团队要 proto 契约驱动 + HTTP/gRPC 双协议 + 强工程规范，选 Kratos；要更白盒的工具化全家桶选 go-zero；只是写 Web API 用 Gin/Echo 就够。</b></span></div>
-  <p style="font-size:12.5px;color:var(--muted)">参考：go-kratos.dev 官方文档 · github.com/go-kratos/kratos · github.com/go-kratos/kratos-layout · docs/migration/v2-to-v3.md（v2→v3 迁移指南）· github.com/go-kratos/examples</p>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2><div class="tip"><b>💡 一句话：</b><span><b>团队要 proto 契约驱动 + HTTP/gRPC 双协议 + 强工程规范，选 Kratos；要更白盒的工具化全家桶选 go-zero；只是写 Web API 用 Gin/Echo 就够。</b></span></div>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>Kratos</th><th>go-zero</th><th>Gin/Echo</th><th>go-micro</th></tr></thead><tbody><tr><td>定位</td><td>微服务全家桶（轻内核+contrib）</td><td>微服务全家桶（单体工具链）</td><td>Web 框架</td><td>微服务 RPC 框架</td></tr><tr><td>接口契约</td><td><strong>proto-first，双协议生成</strong></td><td>api 文件（自定义 DSL）</td><td>手写路由</td><td>proto-first</td></tr><tr><td>HTTP+gRPC 同源</td><td>✅ 核心卖点</td><td>✅</td><td>❌（仅 HTTP）</td><td>gRPC 为主</td></tr><tr><td>学习曲线</td><td>中（需 proto/wire/layout 心智）</td><td>低-中</td><td>低</td><td>中-高（抽象重）</td></tr><tr><td>工程规范</td><td><strong>强</strong>（layout+CLI 强约束）</td><td>强</td><td>无</td><td>弱</td></tr><tr><td>生态背景</td><td>B 站生产验证 + CNCF 周边丰富</td><td>国内社区活跃</td><td>最广泛</td><td>海外社区</td></tr></tbody></table></div>
+<p>一句话：<strong>团队要 proto 契约驱动 + HTTP/gRPC 双协议 + 强工程规范，选 Kratos；要更白盒的工具化全家桶选 go-zero；只是写 Web API 用 Gin/Echo 就够</strong>。</p>
+<p>参考：<a href="https://go-kratos.dev/">官方文档 go-kratos.dev</a>、<a href="https://github.com/go-kratos/kratos-layout">kratos-layout 模板</a>、<a href="https://github.com/go-kratos/kratos/blob/main/docs/migration/v2-to-v3.md">v2→v3 迁移指南</a>、<a href="https://github.com/go-kratos/examples">examples 仓库</a>。</p>
 </section>
-
-<footer>Kratos 技术指南 · 内容整理自 go-kratos.dev 官方文档与 go-kratos/kratos 仓库（v3.0）· 2026-09</footer>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
 </main>
 </div>
-
 <script>
-document.querySelectorAll('pre code.lang-go').forEach(function(block){
-  var src = block.textContent;
-  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  var master = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any|Context|Server|Client|Option|ServerOption|ClientOption|Middleware|Handler|Registrar|Discovery|Config|Value|Logger|Bootstrap|GreeterUsecase|GreeterRepo|GreeterService|Greeter|Token)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
-  var out = src.replace(master, function(m, c1, c2, s, kw, typ, num, fn){
-    if (c1 || c2) return '<span class="cmt">'+m+'</span>';
-    if (s) return '<span class="str">'+m+'</span>';
-    if (kw) return '<span class="kw">'+m+'</span>';
-    if (typ) return '<span class="typ">'+m+'</span>';
-    if (num) return '<span class="num">'+m+'</span>';
-    if (fn) return '<span class="fn">'+m+'</span>';
-    return m;
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
   });
-  block.innerHTML = out;
-});
-document.querySelectorAll('pre code.lang-bash').forEach(function(block){
-  var src = block.textContent;
-  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  var master = /(#[^\n]*)|('(?:[^']|'')*'|"(?:\\.|[^"\\\n])*")|(--?[a-zA-Z][a-zA-Z0-9-]*)|\b(kratos|go|protoc|cd|make|curl)\b|\b(new|run|upgrade|install|proto|add|client|server|mod|tidy|generate|test|get)\b|\b(\d+)\b/g;
-  var out = src.replace(master, function(m, c, s, flag, cmd, sub, num){
-    if (c) return '<span class="cmt">'+m+'</span>';
-    if (s) return '<span class="str">'+m+'</span>';
-    if (flag) return '<span class="typ">'+m+'</span>';
-    if (cmd) return '<span class="kw">'+m+'</span>';
-    if (sub) return '<span class="fn">'+m+'</span>';
-    if (num) return '<span class="num">'+m+'</span>';
-    return m;
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
   });
-  block.innerHTML = out;
-});
-document.querySelectorAll('pre code.lang-proto').forEach(function(block){
-  var src = block.textContent;
-  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  var master = /(\/\/[^\n]*)|("(?:\\.|[^"\\\n])*")|\b(syntax|package|import|service|rpc|returns|option|message|enum|repeated|optional|oneof|map)\b|\b(string|int32|int64|uint32|bool|bytes|double|float)\b|\b(\d+)\b/g;
-  var out = src.replace(master, function(m, c, s, kw, typ, num){
-    if (c) return '<span class="cmt">'+m+'</span>';
-    if (s) return '<span class="str">'+m+'</span>';
-    if (kw) return '<span class="kw">'+m+'</span>';
-    if (typ) return '<span class="typ">'+m+'</span>';
-    if (num) return '<span class="num">'+m+'</span>';
-    return m;
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
   });
-  block.innerHTML = out;
-});
-document.querySelectorAll('pre code').forEach(function(b){
-  var m = (b.className || '').match(/lang-(\w+)/);
-  if (!m) return;
-  var map = {go:'Go', bash:'Shell', proto:'Protobuf', txt:'Layout'};
-  var label = map[m[1]];
-  if (!label) return;
-  var s = document.createElement('span');
-  s.className = 'codelabel';
-  s.textContent = label;
-  b.closest('pre').appendChild(s);
-});
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
 </script>
 </body>
 </html>

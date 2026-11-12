@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>robfig/cron 技术指南 — Go 定时任务调度库</title>
+<title>robfig/cron · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
 <style>
   :root{
     --accent:#2563eb; --accent-light:#dbeafe; --accent-dark:#1e40af;
@@ -16,69 +17,71 @@
   body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
   a{color:var(--accent);text-decoration:none}
   a:hover{text-decoration:underline}
-
   .layout{display:flex;max-width:1280px;margin:0 auto}
-  nav.sidebar{width:250px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
   nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
   nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
   nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
   nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
   nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
   nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
   main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
-
-  .hero{background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 55%,#3b82f6 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(37,99,235,.25)}
+  .hero{background:linear-gradient(135deg,#1e40af 0%,#2563eb 58%,#1e40af 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
   .hero h1{font-size:30px;margin-bottom:10px}
-  .hero p{opacity:.92;font-size:15px;max-width:640px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
   .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
   .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
-
   section{margin-bottom:46px}
   h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
-  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark)}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
   p{margin-bottom:12px}
   ul,ol{padding-left:24px;margin-bottom:12px}
   li{margin-bottom:6px}
-  strong{color:#0f172a}
-
-  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin-bottom:18px;box-shadow:0 1px 3px rgba(15,23,42,.05)}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
-  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
-  .feature .ic{font-size:22px;margin-bottom:6px}
-  .feature b{display:block;font-size:14.5px;margin-bottom:4px}
-  .feature span{font-size:12.8px;color:var(--muted);line-height:1.55}
-
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
   pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
-  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#94a3b8;background:#1e293b;padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
   code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
-  p code,li code,td code{background:#eef2f7;color:#c026d3;border:1px solid #e2e8f0;padding:1px 6px;border-radius:6px;font-size:.88em}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
   .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
-
-  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(15,23,42,.05)}
-  th{background:#eef4ff;color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
   td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
-  tr:nth-child(even) td{background:#fafbfd}
-
-  .tip,.warn,.danger{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px;display:flex;gap:10px;align-items:flex-start}
-  .tip{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
-  .warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
-  .danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
-  .tip b,.warn b,.danger b{flex-shrink:0}
-
-  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0;box-shadow:0 1px 3px rgba(15,23,42,.05)}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
   .figure svg{width:100%;height:auto;display:block}
   .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
-
-  .timeline{position:relative;padding-left:26px}
-  .timeline::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:3px;background:var(--accent-light);border-radius:2px}
-  .timeline .tl-item{position:relative;margin-bottom:18px}
-  .timeline .tl-item::before{content:"";position:absolute;left:-24px;top:7px;width:13px;height:13px;border-radius:50%;background:var(--accent);border:3px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
-  .timeline b{color:var(--accent-dark)}
-  .timeline span{font-size:13.5px;color:var(--muted)}
-
-  .pill{display:inline-block;background:var(--accent-light);color:var(--accent-dark);border-radius:16px;padding:2px 12px;font-size:12px;margin:2px 4px 2px 0}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
   footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
-
   @media (max-width:900px){
     nav.sidebar{display:none}
     main{padding:24px 18px 60px}
@@ -88,71 +91,122 @@
 </head>
 <body>
 <div class="layout">
-
 <nav class="sidebar">
   <div class="logo">robfig/cron<span class="ver">v3</span></div>
   <div class="sub">Go 定时任务调度库 · 技术指南</div>
-  <a href="#intro">1. 库简介</a>
-  <a href="#features">2. 功能特性总览</a>
-  <a href="#concepts">3. 核心概念与架构</a>
-  <a href="#loop">4. 运行循环原理</a>
-  <a href="#expr">5. 表达式全解析</a>
-  <a href="#chain">6. 装饰器链</a>
-  <a href="#usage">7. 代码实战</a>
-  <a class="sub-link" href="#u-quick">快速上手</a>
-  <a class="sub-link" href="#u-sec">秒级精度 / 描述符</a>
-  <a class="sub-link" href="#u-tz">时区处理</a>
-  <a class="sub-link" href="#u-job">自定义 Job</a>
-  <a class="sub-link" href="#u-dyn">动态管理任务</a>
-  <a class="sub-link" href="#u-stop">优雅停止 / 日志</a>
-  <a href="#pitfalls">8. 常见坑与最佳实践</a>
-  <a href="#versions">9. 版本演进</a>
+  <a href="#1-库简介">1. 库简介</a>
+  <a class="sub-link" href="#安装">安装</a>
+  <a href="#2-功能特性总览">2. 功能特性总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-五个核心抽象">3.1 五个核心抽象</a>
+  <a class="sub-link" href="#32-运行循环核心源码解读">3.2 运行循环（核心源码解读）</a>
+  <a class="sub-link" href="#33-表达式解析parsergo">3.3 表达式解析（parser.go）</a>
+  <a class="sub-link" href="#34-装饰器链chaingo">3.4 装饰器链（chain.go）</a>
+  <a class="sub-link" href="#35-v3-的主要变更相对-v1v2">3.5 v3 的主要变更（相对 v1/v2）</a>
+  <a href="#4-使用方法代码实战">4. 使用方法（代码实战）</a>
+  <a class="sub-link" href="#41-快速上手">4.1 快速上手</a>
+  <a class="sub-link" href="#42-秒级精度与预定义描述符">4.2 秒级精度与预定义描述符</a>
+  <a class="sub-link" href="#43-时区">4.3 时区</a>
+  <a class="sub-link" href="#44-自定义-job实现-job-接口">4.4 自定义 Job（实现 Job 接口）</a>
+  <a class="sub-link" href="#45-装饰器panic-恢复与防重叠">4.5 装饰器：panic 恢复与防重叠</a>
+  <a class="sub-link" href="#46-运行中动态管理任务">4.6 运行中动态管理任务</a>
+  <a class="sub-link" href="#47-优雅停止">4.7 优雅停止</a>
+  <a class="sub-link" href="#48-集成结构化日志">4.8 集成结构化日志</a>
+  <a href="#5-常见坑与最佳实践">5. 常见坑与最佳实践</a>
+  <a href="#6-版本演进一览">6. 版本演进一览</a>
+  <a href="#7-选型对比">7. 选型对比</a>
 </nav>
-
 <main>
-
 <div class="hero">
-  <h1>robfig/cron</h1>
-  <p>Go 语言事实标准的<b>进程内定时任务调度器</b>：以标准 cron 表达式驱动，单 goroutine 调度 + 每任务独立执行，支持秒级精度、时区、装饰器链与优雅停止。</p>
-  <div class="meta">
-    <span>github.com/robfig/cron</span>
-    <span>当前主线 v3</span>
-    <span>Go 1.11+</span>
-    <span>MIT License</span>
-  </div>
+  <h1>robfig/cron 技术介绍与使用指南</h1>
+<p>Go 语言事实标准的进程内定时任务调度器：以标准 cron 表达式驱动，单 goroutine 调度 + 每任务独立执行，支持秒级精度、时区、装饰器链与优雅停止。</p>
+<p style="opacity:.8;font-size:13.5px">Go 定时任务调度库 · 技术指南</p>
+<div class="meta"><span>github.com/robfig/cron</span><span>当前主线 v3</span><span>Go 1.11+</span><span>MIT License</span></div>
 </div>
-
-<!-- ================= 1 简介 ================= -->
-<section id="intro">
-  <h2>1. 库简介</h2>
-  <div class="card">
+<blockquote><p>Go 语言中最流行的定时任务库，以标准 cron 表达式驱动，单机进程内调度。 仓库：<a href="https://github.com/robfig/cron">https://github.com/robfig/cron</a>　|　当前主线版本：v3</p></blockquote>
+<section data-anchor="1-库简介">
+<h2 id="1-库简介">1. 库简介<span class="lvl b">入门</span></h2><div class="card">
     <p><b>robfig/cron</b> 把 Unix <code>cron</code> 守护进程的核心能力搬进了 Go 应用：用<b>标准 5 字段 cron 表达式</b>（分 时 日 月 周）描述触发时间，到点自动执行注册的函数或对象。</p>
     <p>它解决的是「<b>单进程内的周期性触发</b>」问题——不持久化、不分布式、错过的触发不补跑。在「一个服务里跑几个定时逻辑」的场景下它几乎是无脑之选；若需要分布式、可重试、可观测的任务队列，请考虑 Asynq 等方案。</p>
     <pre><code class="lang-bash">go get github.com/robfig/cron/v3</code></pre>
     <pre><code class="lang-go">import "github.com/robfig/cron/v3"</code></pre>
   </div>
+<p><code>robfig/cron</code> 是一个用 Go 实现的<strong>进程内定时任务调度器</strong>。它的设计目标是把 Unix <code>cron</code> 守护进程的核心能力搬进 Go 应用：</p>
+<ul><li>使用<strong>标准 5 字段 cron 表达式</strong>（分 时 日 月 周）描述触发时间；</li><li>可选开启<strong>秒级精度</strong>（Quartz 风格 6 字段）；</li><li>支持<strong>时区</strong>（全局时区 + 单任务 <code>CRON_TZ=</code> 前缀）；</li><li>支持 <code>@every 5m</code> 这类<strong>固定间隔描述符</strong>；</li><li>基于<strong>装饰器链（Chain/JobWrapper）</strong>提供可插拔的横切能力：panic 恢复、防重叠执行、日志等。</li></ul>
+<p>它解决的是"单进程内的周期性触发"问题——不持久化、不分布式、不保证错过补偿（错过的触发会被跳过而非补跑）。如果需要分布式、可重试、可观测的任务队列，应考虑 Asynq 等方案；但在"一个服务里跑几个定时逻辑"的场景下，robfig/cron 几乎是事实标准。</p>
+<h3 id="安装">安装</h3>
+<pre><code class="lang-bash">go get github.com/robfig/cron/v3</code></pre>
+<pre><code class="lang-go">import "github.com/robfig/cron/v3"</code></pre>
+<p>要求 Go 1.11+（Go Modules）。</p>
+<hr>
+
 </section>
+<section data-anchor="2-功能特性总览">
+<h2 id="2-功能特性总览">2. 功能特性总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>标准表达式</td><td>默认解析 5 字段标准 cron spec（首字段为"分"）</td></tr><tr><td>秒级精度</td><td><code>cron.New(cron.WithSeconds())</code> 开启 6 字段（Quartz 兼容，不含年字段）</td></tr><tr><td>预定义描述符</td><td><code>@yearly</code> <code>@monthly</code> <code>@weekly</code> <code>@daily</code> <code>@hourly</code> <code>@every &lt;dur&gt;</code></td></tr><tr><td>时区支持</td><td>全局 <code>WithLocation()</code>；单条表达式 <code>CRON_TZ=Asia/Tokyo ...</code>（兼容旧 <code>TZ=</code>）</td></tr><tr><td>动态管理</td><td>运行中 Add / Remove / Entries 快照，均线程安全</td></tr><tr><td>装饰器链</td><td><code>WithChain(...)</code> 挂载 JobWrapper，内置 Recover / SkipIfStillRunning / DelayIfStillRunning</td></tr><tr><td>结构化日志</td><td>兼容 go-logr 的 <code>Logger</code> 接口，<code>WithLogger()</code> 注入</td></tr><tr><td>自定义解析器</td><td><code>WithParser()</code> 替换表达式解析行为（可扩展字段布局）</td></tr><tr><td>优雅停止</td><td><code>Stop()</code> 返回 <code>context.Context</code>，可等待在跑任务全部结束</td></tr></tbody></table></div>
+<hr>
 
-<!-- ================= 2 特性 ================= -->
-<section id="features">
-  <h2>2. 功能特性总览</h2>
-  <div class="grid">
-    <div class="feature"><div class="ic">⏱️</div><b>标准表达式</b><span>默认解析 5 字段标准 cron spec，首字段为「分」，符合 Wikipedia 规范</span></div>
-    <div class="feature"><div class="ic">⚡</div><b>秒级精度</b><span>cron.New(cron.WithSeconds()) 开启 Quartz 兼容的 6 字段布局（不支持年字段）</span></div>
-    <div class="feature"><div class="ic">📅</div><b>预定义描述符</b><span>@yearly / @monthly / @weekly / @daily / @hourly / @every 5m 开箱即用</span></div>
-    <div class="feature"><div class="ic">🌏</div><b>时区支持</b><span>全局 WithLocation()；单条表达式可用 CRON_TZ=Asia/Tokyo 前缀（兼容旧 TZ=）</span></div>
-    <div class="feature"><div class="ic">🔄</div><b>动态管理</b><span>运行中 Add / Remove / Entries 快照，全部通过 channel 传递，线程安全</span></div>
-    <div class="feature"><div class="ic">🧅</div><b>装饰器链</b><span>Chain + JobWrapper 提供可插拔横切能力：Recover / SkipIfStillRunning / DelayIfStillRunning</span></div>
-    <div class="feature"><div class="ic">📝</div><b>结构化日志</b><span>兼容 go-logr 的 Logger 接口，可对接 zap / logrus 等主流日志库</span></div>
-    <div class="feature"><div class="ic">🛑</div><b>优雅停止</b><span>Stop() 返回 context.Context，可等待所有正在执行的任务结束后再退出</span></div>
-  </div>
 </section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-五个核心抽象">3.1 五个核心抽象</h3>
+<pre><code class="lang-text">Cron ────持有───► Entry[] ──引用──► Schedule（何时）
+  │                                Entry ──引用──► Job（做什么）
+  └──Chain 装饰 Job ► WrappedJob（怎么包着做）</code></pre>
+<ul><li><strong><code>Cron</code></strong>：调度器本体。内部维护 <code>entries []*Entry</code>，一个独占的调度 goroutine，以及 add / remove / snapshot / stop 四个 channel。</li><li><strong><code>Schedule</code></strong>：调度策略接口，唯一方法 <code>Next(t time.Time) time.Time</code>——"给定当前时刻，下次触发是何时"。内置实现：</li><ul><li><code>SpecSchedule</code>：由 cron 表达式解析而来，按"分钟对齐"逐字段推进求解下一次触发；</li><li><code>ConstantDelaySchedule</code>：<code>@every 5m</code> 生成，从 Add 时刻起每 5 分钟触发一次。</li></ul><li><strong><code>Job</code></strong>：任务接口，唯一方法 <code>Run()</code>。库提供 <code>FuncJob</code>（<code>func()</code> 的适配器），任何实现 <code>Run()</code> 的结构体都可作为任务。</li><li><strong><code>Entry</code></strong>：一条调度记录 = ID + Schedule + Job + <code>Next</code>（下次触发时间）+ <code>Prev</code>（上次触发时间）。</li><li><strong><code>Chain</code> / <code>JobWrapper</code></strong>：装饰器模式。<code>JobWrapper</code> 是 <code>func(Job) Job</code>，<code>Chain.Then(job)</code> 等价于 <code>m1(m2(m3(job)))</code>——按传入顺序从外到内包裹任务。</li></ul>
+<h3 id="32-运行循环核心源码解读">3.2 运行循环（核心源码解读）</h3>
+<p><code>Start()</code> 后调度 goroutine 执行 <code>run()</code>，其主循环逻辑：</p>
+<pre><code class="lang-go">for {
+    // 1. 每轮按 Next 时间升序排序（零值排最后）
+    sort.Sort(byTime(c.entries))
 
-<!-- ================= 3 架构 ================= -->
-<section id="concepts">
-  <h2>3. 核心概念与架构</h2>
+    // 2. 计算最近的触发时间，设定 timer
+    timer = time.NewTimer(c.entries[0].Next.Sub(now))
 
-  <div class="figure">
+    for {
+        select {
+        case now = &lt;-timer.C:                    // 到点：触发所有 Next &lt;= now 的任务
+            for _, e := range c.entries {
+                if e.Next.After(now) { break }
+                c.startJob(e.WrappedJob)         // 每个任务独立 goroutine 执行
+                e.Prev = e.Next
+                e.Next = e.Schedule.Next(now)    // 立即计算下一次触发
+            }
+        case newEntry := &lt;-c.add:                // 运行中新增任务
+        case replyChan := &lt;-c.snapshot:           // Entries() 请求快照
+        case id := &lt;-c.remove:                   // 运行中删除任务
+        case &lt;-c.stop:                           // 停止
+            return
+        }
+        break
+    }
+}</code></pre>
+<p>关键结论：</p>
+<ol><li><strong>单 goroutine 调度</strong>：所有 entries 的读写只发生在这一个 goroutine 里，天然免锁；外部调用（Add/Remove/Entries）在 running 状态下全部通过 channel 传递，这就是它线程安全的来源。</li><li><strong>排序 + Timer</strong>：每轮把 entries 按 <code>Next</code> 升序排列，只对最早的一个设 timer——而不是轮询。没有任务时睡眠 100000 小时（仍能响应 add/stop）。</li><li><strong>触发即起新 goroutine</strong>：<code>startJob</code> 里 <code>go func(){ j.Run() }()</code>，因此<strong>单个任务慢不会阻塞其他任务</strong>，也不会阻塞调度循环。</li><li><strong>错过的触发会被跳过</strong>：例如任务本应 10:00 触发但进程 10:05 才启动，10:00 的触发直接消失（<code>Next</code> 从当前时间重新求解），没有补跑机制。</li><li><strong>重叠执行默认允许</strong>：若任务耗时超过触发间隔，下一轮到点会再次起新 goroutine，同一任务并发多份。防重叠需显式加 <code>SkipIfStillRunning</code> / <code>DelayIfStillRunning</code> 装饰器。</li></ol>
+<h3 id="33-表达式解析parsergo">3.3 表达式解析（parser.go）</h3>
+<p>默认解析器为标准 5 字段布局：</p>
+<pre><code class="lang-text">┌───────────── 分钟 (0 - 59)
+│ ┌───────────── 小时 (0 - 23)
+│ │ ┌───────────── 日   (1 - 31)
+│ │ │ ┌───────────── 月   (1 - 12)
+│ │ │ │ ┌───────────── 周   (0 - 6, 周日=0)
+│ │ │ │ │
+* * * * *</code></pre>
+<p>语法规则：</p>
+<ul><li><code>*</code>：任意值；<code>5</code>：固定值；<code>*/15</code>：步进（每 15 个单位）；</li><li><code>1-5</code>：范围；<code>1,3,5</code>：列表；可组合如 <code>1-10/2</code>；</li><li>月/周可用英文缩写（<code>JAN-DEC</code>、<code>SUN-SAT</code>），不区分大小写；</li><li><strong>日(Dom) 与 周(Dow) 同时指定时是"或"语义</strong>（与标准 cron 一致）：<code>0 0 1 * 1</code> 表示每月 1 号<strong>或</strong>每周一零点；</li><li><code>WithSeconds()</code> 开启后为 6 字段（秒 分 时 日 月 周），兼容 Quartz 但不支持年字段。</li></ul>
+<p>预定义描述符：</p>
+<div class="table-wrap"><table><thead><tr><th>描述符</th><th>等价表达式</th><th>含义</th></tr></thead><tbody><tr><td><code>@yearly</code> / <code>@annually</code></td><td><code>0 0 1 1 *</code></td><td>每年 1 月 1 日 0 点</td></tr><tr><td><code>@monthly</code></td><td><code>0 0 1 * *</code></td><td>每月 1 日 0 点</td></tr><tr><td><code>@weekly</code></td><td><code>0 0 * * 0</code></td><td>每周日 0 点</td></tr><tr><td><code>@daily</code> / <code>@midnight</code></td><td><code>0 0 * * *</code></td><td>每天 0 点</td></tr><tr><td><code>@hourly</code></td><td><code>0 * * * *</code></td><td>每小时第 0 分</td></tr><tr><td><code>@every 1h30m</code></td><td>—</td><td>从添加时刻起固定间隔（<code>time.ParseDuration</code>）</td></tr></tbody></table></div>
+<p>时区前缀：<code>CRON_TZ=Asia/Shanghai 0 30 9 * * *</code>（旧写法 <code>TZ=</code> 仍支持）。</p>
+<h3 id="34-装饰器链chaingo">3.4 装饰器链（chain.go）</h3>
+<pre><code class="lang-go">NewChain(m1, m2, m3).Then(job) ≡ m1(m2(m3(job)))</code></pre>
+<p>内置三个 JobWrapper：</p>
+<ul><li><strong><code>Recover(logger)</code></strong>：<code>defer recover()</code> 捕获任务 panic，打印堆栈。<strong>v3 默认不再 recover</strong>，必须显式挂载；</li><li><strong><code>SkipIfStillRunning(logger)</code></strong>：上一次还没跑完就跳过本次触发（用容量 1 的 channel 实现，非阻塞抢锁）；</li><li><strong><code>DelayIfStillRunning(logger)</code></strong>：上一次没跑完则本次等待（mutex 串行化），延迟超过 1 分钟记日志。</li></ul>
+<p>Chain 是全局的（构造 Cron 时通过 <code>WithChain</code> 设定，对该实例所有任务生效），任务级差异可通过 <code>cron.Schedule(schedule, customWrappedJob)</code> 自行包裹实现。</p>
+<h3 id="35-v3-的主要变更相对-v1v2">3.5 v3 的主要变更（相对 v1/v2）</h3>
+<ul><li>导入路径变为 <code>github.com/robfig/cron/v3</code>；</li><li>默认解析<strong>标准 5 字段</strong>（v1 默认带秒，是混乱之源），秒字段需显式开启；</li><li>构造改为函数式选项（<code>WithLocation/WithParser/WithChain/WithSeconds/WithLogger</code>），废弃 <code>SetLocation</code> 等 setter；</li><li>日志改用 go-logr 接口，移除 <code>WithPanicLogger</code>/<code>WithVerboseLogger</code>；</li><li>默认不 recover panic，交给 Chain；</li><li>修复了"删除任务导致下一个任务延迟执行"等多个历史 bug。</li></ul>
+<hr>
+
+<div class="figure">
     <svg viewBox="0 0 880 430" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs>
         <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -224,24 +278,122 @@
     </svg>
     <figcaption>图 1 · robfig/cron 核心架构：Cron 持有 Entry 列表，Entry 组合 Schedule（何时）与 Job（做什么），Chain 把 Job 包成 WrappedJob（怎么包着做）</figcaption>
   </div>
-
-  <h3>五个核心抽象</h3>
-  <table>
-    <tr><th style="width:130px">抽象</th><th>职责</th></tr>
-    <tr><td><code>Cron</code></td><td>调度器本体。独占一个调度 goroutine，通过 add / remove / snapshot / stop 四个 channel 与外界通信</td></tr>
-    <tr><td><code>Schedule</code></td><td><b>何时</b>执行。接口唯一方法 <code>Next(t) time.Time</code>。内置 SpecSchedule（表达式）与 ConstantDelaySchedule（@every 固定间隔）</td></tr>
-    <tr><td><code>Job</code></td><td><b>做什么</b>。接口唯一方法 <code>Run()</code>；<code>FuncJob</code> 是 <code>func()</code> 的现成适配器</td></tr>
-    <tr><td><code>Entry</code></td><td>一条调度记录：ID + Schedule + Job + <code>Next</code>（下次触发）+ <code>Prev</code>(上次触发)</td></tr>
-    <tr><td><code>Chain</code></td><td><b>怎么包着做</b>。<code>JobWrapper</code> 是 <code>func(Job) Job</code>，按传入顺序从外到内包裹任务</td></tr>
-  </table>
 </section>
+<section data-anchor="4-使用方法代码实战">
+<h2 id="4-使用方法代码实战">4. 使用方法（代码实战）<span class="lvl m">实战</span></h2>
+<h3 id="41-快速上手">4.1 快速上手</h3>
+<pre><code class="lang-go">package main
 
-<!-- ================= 4 运行循环 ================= -->
-<section id="loop">
-  <h2>4. 运行循环原理</h2>
-  <p><code>Start()</code> 之后，<code>run()</code> 在一个独立 goroutine 里持续运转。理解这个循环，就理解了 robfig/cron 的一切行为特征。</p>
+import (
+	"fmt"
+	"time"
 
-  <div class="figure">
+	"github.com/robfig/cron/v3"
+)
+
+func main() {
+	c := cron.New() // 标准 5 字段解析器，时区 time.Local
+
+	// 每分钟打印一次
+	c.AddFunc("* * * * *", func() {
+		fmt.Println("每分钟触发:", time.Now().Format("15:04:05"))
+	})
+
+	// 每天凌晨 2:30
+	id, err := c.AddFunc("30 2 * * *", func() {
+		fmt.Println("每日对账任务")
+	})
+	if err != nil {
+		panic(err) // 表达式非法时返回 error
+	}
+	_ = id
+
+	c.Start()
+	defer c.Stop()
+
+	select {} // 阻塞主 goroutine
+}</code></pre>
+<h3 id="42-秒级精度与预定义描述符">4.2 秒级精度与预定义描述符</h3>
+<pre><code class="lang-go">c := cron.New(cron.WithSeconds()) // 6 字段：秒 分 时 日 月 周
+
+c.AddFunc("*/5 * * * * *", func() {}) // 每 5 秒
+c.AddFunc("0 30 9 * * MON-FRI", func() {}) // 工作日 9:30:00
+
+c2 := cron.New()
+c2.AddFunc("@every 2h30m", func() {}) // 每 2.5 小时（固定间隔）
+c2.AddFunc("@daily", func() {})       // 每天 0 点</code></pre>
+<blockquote class="warn"><p>注意区别：<code>@every 1h</code> 是<strong>固定间隔</strong>（从 Add 时刻起算，走 <code>ConstantDelaySchedule</code>），而 <code>0 * * * *</code> 是<strong>整点对齐</strong>（走 <code>SpecSchedule</code>）。</p></blockquote>
+<h3 id="43-时区">4.3 时区</h3>
+<pre><code class="lang-go">// 方式一：全局时区
+loc, _ := time.LoadLocation("Asia/Shanghai")
+c := cron.New(cron.WithLocation(loc))
+
+// 方式二：单表达式指定时区（推荐，规格化写法）
+c.AddFunc("CRON_TZ=Asia/Tokyo 0 6 * * *", func() {}) // 东京时间早 6 点</code></pre>
+<h3 id="44-自定义-job实现-job-接口">4.4 自定义 Job（实现 Job 接口）</h3>
+<pre><code class="lang-go">type SyncJob struct {
+	Table string
+}
+
+func (s *SyncJob) Run() {
+	fmt.Printf("同步表 %s ...\n", s.Table)
+}
+
+func main() {
+	c := cron.New()
+	id, _ := c.AddJob("*/10 * * * *", &amp;SyncJob{Table: "orders"})
+	fmt.Println("entry id:", id)
+	c.Start()
+	select {}
+}</code></pre>
+<h3 id="45-装饰器panic-恢复与防重叠">4.5 装饰器：panic 恢复与防重叠</h3>
+<pre><code class="lang-go">c := cron.New(
+	cron.WithChain(
+		cron.Recover(cron.DefaultLogger),        // 捕获 panic 并记日志
+		cron.SkipIfStillRunning(cron.DefaultLogger), // 上次未跑完则跳过本次
+	),
+	cron.WithSeconds(),
+)
+
+c.AddFunc("*/5 * * * * *", func() {
+	panic("boom") // 不会拖垮调度器
+})</code></pre>
+<p>自定义 JobWrapper 也非常简单：</p>
+<pre><code class="lang-go">func WithMetric(name string) cron.JobWrapper {
+	return func(j cron.Job) cron.Job {
+		return cron.FuncJob(func() {
+			start := time.Now()
+			j.Run()
+			recordDuration(name, time.Since(start)) // 上报耗时
+		})
+	}
+}</code></pre>
+<h3 id="46-运行中动态管理任务">4.6 运行中动态管理任务</h3>
+<pre><code class="lang-go">c := cron.New()
+c.Start()
+
+id, _ := c.AddFunc("*/1 * * * *", func() { fmt.Println("tick") })
+// 运行中添加：经 add channel 交给调度 goroutine，立即生效
+
+for _, e := range c.Entries() { // 快照，线程安全
+	fmt.Printf("entry=%d next=%v prev=%v\n", e.ID, e.Next, e.Prev)
+}
+
+time.Sleep(5 * time.Minute)
+c.Remove(id) // 移除；Entry(id) 可查单个</code></pre>
+<h3 id="47-优雅停止">4.7 优雅停止</h3>
+<pre><code class="lang-go">ctx := c.Stop() // 发停止信号，不再派发新触发
+&lt;-ctx.Done()    // 等待所有"正在执行"的任务结束
+fmt.Println("所有任务已退出")</code></pre>
+<p><code>Start()</code> 与 <code>Run()</code> 的区别：<code>Start</code> 起后台 goroutine 立即返回；<code>Run</code> 在<strong>当前 goroutine</strong> 阻塞执行（适合进程只跑调度器的场景）。</p>
+<h3 id="48-集成结构化日志">4.8 集成结构化日志</h3>
+<pre><code class="lang-go">logger := cron.VerbosePrintfLogger(log.New(os.Stdout, "cron: ", log.LstdFlags))
+c := cron.New(cron.WithLogger(logger))
+// 输出 schedule/wake/run/added/removed 等事件，便于排查"为什么没触发"</code></pre>
+<p>自定义日志只需实现 <code>cron.Logger</code>（Error/Info 两个方法），可直接对接 zap/logr 等。</p>
+<hr>
+
+<div class="figure">
     <svg viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs>
         <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -301,20 +453,7 @@
     </svg>
     <figcaption>图 2 · run() 主循环：排序 → 设 Timer → select 事件分发 → 回环。调度逻辑集中在单个 goroutine，天然免锁</figcaption>
   </div>
-
-  <h3>关键源码（有删减）</h3>
-  <pre><code class="lang-go"><span class="cmt">// 触发到点任务：每个任务独立 goroutine，互不阻塞</span>
-<span class="kw">case</span> now = &lt;-timer.C:
-    <span class="kw">for</span> _, e := <span class="kw">range</span> c.entries {
-        <span class="kw">if</span> e.Next.After(now) || e.Next.IsZero() {
-            <span class="kw">break</span>
-        }
-        c.startJob(e.WrappedJob)          <span class="cmt">// go func(){ j.Run() }()</span>
-        e.Prev = e.Next
-        e.Next = e.Schedule.Next(now)     <span class="cmt">// 立即求解下一次触发</span>
-    }</code></pre>
-
-  <div class="figure">
+<div class="figure">
     <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs><marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>
       <!-- 调度 goroutine -->
@@ -352,15 +491,14 @@
     </svg>
     <figcaption>图 3 · 并发模型：调度集中、执行分散。任务 A 耗时超过触发间隔时，下一轮到点会再次起新 goroutine —— 防重叠需 SkipIfStillRunning 装饰器</figcaption>
   </div>
-
-  <div class="tip"><b>✅ 结论：</b><span>① 单 goroutine 调度 → entries 读写无锁；外部 Add/Remove/Entries 通过 channel 传递，这是线程安全的来源。② 排序 + Timer 精确休眠而非轮询。③ 错过的触发直接跳过（无补跑）。④ 默认允许任务重叠执行。</span></div>
+<div class="tip"><b>✅ 结论：</b><span>① 单 goroutine 调度 → entries 读写无锁；外部 Add/Remove/Entries 通过 channel 传递，这是线程安全的来源。② 排序 + Timer 精确休眠而非轮询。③ 错过的触发直接跳过（无补跑）。④ 默认允许任务重叠执行。</span></div>
 </section>
+<section data-anchor="5-常见坑与最佳实践">
+<h2 id="5-常见坑与最佳实践">5. 常见坑与最佳实践<span class="lvl b">版本</span></h2>
+<ol><li><strong>忘记 <code>Start()</code></strong>：Add 之后不 Start，任务静静躺在 entries 里。</li><li><strong>默认 5 字段</strong>：从 v1 迁移时 <code>* * * * *</code> 不再是"每秒"而是"每分"；要秒级请 <code>WithSeconds()</code>。</li><li><strong>panic 不再默认恢复</strong>：生产环境务必挂 <code>cron.Recover(logger)</code>，否则一个任务的 panic 会崩掉整个进程（任务 goroutine 的 panic 无人 recover 时会终止程序）。</li><li><strong>长任务重叠</strong>：默认允许同一任务并发多份。清理/上报类任务通常要 <code>SkipIfStillRunning</code>。</li><li><strong>不要在任务里直接操作 entries</strong>：一律走 Add/Remove/Entries 接口，它们才是线程安全的。</li><li><strong>错过即跳过</strong>：进程重启后不会补跑停机期间错过的触发；需要补偿逻辑要在任务内部自行实现（如对比 <code>e.Prev</code>）。</li><li><strong>时区陷阱</strong>：服务器时区 ≠ 业务时区时，显式 <code>WithLocation</code> 或 <code>CRON_TZ=</code>，并注意夏令时（库对不存在的时间点有处理，但业务上仍建议用无夏令时时区）。</li><li><strong>K8s 多副本场景</strong>：每个 Pod 各自跑一份 cron，同一任务会被触发 N 次。需要分布式锁（如 Redis <code>SET NX</code>）或改用中心化调度方案——这也是 robfig/cron 与分布式任务队列（Asynq 等）的本质边界。</li></ol>
+<hr>
 
-<!-- ================= 5 表达式 ================= -->
-<section id="expr">
-  <h2>5. 表达式全解析</h2>
-
-  <div class="figure">
+<div class="figure">
     <svg viewBox="0 0 880 330" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <!-- 示例行 -->
       <text x="440" y="30" text-anchor="middle" font-size="14" font-weight="700" fill="#1e293b">标准 5 字段布局（默认）</text>
@@ -412,27 +550,15 @@
     </svg>
     <figcaption>图 4 · cron 表达式五字段：语法支持 * / 步进、- 范围、, 列表及其组合（如 1-10/2）</figcaption>
   </div>
-
-  <h3>预定义描述符</h3>
-  <table>
-    <tr><th>描述符</th><th>等价表达式</th><th>含义</th></tr>
-    <tr><td><code>@yearly</code> / <code>@annually</code></td><td><code>0 0 1 1 *</code></td><td>每年 1 月 1 日 0 点</td></tr>
-    <tr><td><code>@monthly</code></td><td><code>0 0 1 * *</code></td><td>每月 1 日 0 点</td></tr>
-    <tr><td><code>@weekly</code></td><td><code>0 0 * * 0</code></td><td>每周日 0 点</td></tr>
-    <tr><td><code>@daily</code> / <code>@midnight</code></td><td><code>0 0 * * *</code></td><td>每天 0 点</td></tr>
-    <tr><td><code>@hourly</code></td><td><code>0 * * * *</code></td><td>每小时第 0 分</td></tr>
-    <tr><td><code>@every 1h30m</code></td><td>—</td><td>从添加时刻起固定间隔（<code>time.ParseDuration</code> 语法）</td></tr>
-  </table>
-
-  <div class="warn"><b>⚠️ 注意：</b><span><code>@every 1h</code> 是「固定间隔」（从 Add 时刻起算，走 ConstantDelaySchedule），而 <code>0 * * * *</code> 是「整点对齐」（走 SpecSchedule），两者语义不同。另外 Dom 与 Dow 同时指定时是「或」关系：<code>0 0 1 * 1</code> = 每月 1 号<b>或</b>每周一的零点。</span></div>
+<div class="warn"><b>⚠️ 注意：</b><span><code>@every 1h</code> 是「固定间隔」（从 Add 时刻起算，走 ConstantDelaySchedule），而 <code>0 * * * *</code> 是「整点对齐」（走 SpecSchedule），两者语义不同。另外 Dom 与 Dow 同时指定时是「或」关系：<code>0 0 1 * 1</code> = 每月 1 号<b>或</b>每周一的零点。</span></div>
 </section>
+<section data-anchor="6-版本演进一览">
+<h2 id="6-版本演进一览">6. 版本演进一览<span class="lvl a">避坑</span></h2>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>要点</th></tr></thead><tbody><tr><td>v1</td><td>最初的可选秒字段格式，gopkg.in 分发</td></tr><tr><td>v2</td><td>支持移除任务等（未正式发布为默认）</td></tr><tr><td>v3 (2019.6)</td><td>Go Modules、标准 spec 为默认、Chain/JobWrapper、logr 日志、大量 bug 修复；<strong>当前推荐</strong></td></tr></tbody></table></div>
+<p>v3 发布后 API 趋于稳定，社区以维护为主，新项目直接使用 <code>github.com/robfig/cron/v3</code> 即可。</p>
+<hr>
 
-<!-- ================= 6 装饰器 ================= -->
-<section id="chain">
-  <h2>6. 装饰器链（Chain / JobWrapper）</h2>
-  <p>Chain 是 robfig/cron v3 最优雅的设计：<code>JobWrapper</code> 是 <code>func(Job) Job</code>，Chain 按传入顺序从外到内包裹任务，形成洋葱结构，为任务注入横切行为。</p>
-
-  <div class="figure">
+<div class="figure">
     <svg viewBox="0 0 880 320" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs><marker id="arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>
       <!-- 洋葱结构 -->
@@ -458,153 +584,23 @@
     </svg>
     <figcaption>图 5 · Chain 洋葱模型：NewChain(m1, m2, m3).Then(job) ≡ m1(m2(m3(job)))，请求从外向内穿透各层 Wrapper</figcaption>
   </div>
-
-  <h3>内置三个 JobWrapper</h3>
-  <table>
-    <tr><th>Wrapper</th><th>行为</th><th>实现要点</th></tr>
-    <tr><td><code>Recover(logger)</code></td><td>捕获任务 panic 并记录堆栈日志</td><td><code>defer recover()</code> + <code>runtime.Stack</code>；v3 默认不 recover，必须显式挂载</td></tr>
-    <tr><td><code>SkipIfStillRunning(logger)</code></td><td>上一次没跑完则<b>跳过</b>本次触发</td><td>容量 1 的 channel 非阻塞抢锁，抢不到即 skip</td></tr>
-    <tr><td><code>DelayIfStillRunning(logger)</code></td><td>上一次没跑完则<b>排队等待</b>（串行化）</td><td>mutex 互斥，延迟超 1 分钟记 Info 日志</td></tr>
-  </table>
 </section>
-
-<!-- ================= 7 实战 ================= -->
-<section id="usage">
-  <h2>7. 代码实战</h2>
-
-  <h3 id="u-quick">7.1 快速上手</h3>
-  <pre><code class="lang-go"><span class="kw">package</span> main
-
-<span class="kw">import</span> (
-    <span class="str">"fmt"</span>
-    <span class="str">"time"</span>
-
-    <span class="str">"github.com/robfig/cron/v3"</span>
-)
-
-<span class="kw">func</span> <span class="fn">main</span>() {
-    c := cron.<span class="fn">New</span>() <span class="cmt">// 标准 5 字段解析器，时区 time.Local</span>
-
-    <span class="cmt">// 每分钟打印一次</span>
-    c.<span class="fn">AddFunc</span>(<span class="str">"* * * * *"</span>, <span class="kw">func</span>() {
-        fmt.<span class="fn">Println</span>(<span class="str">"每分钟触发:"</span>, time.<span class="fn">Now</span>().<span class="fn">Format</span>(<span class="str">"15:04:05"</span>))
-    })
-
-    <span class="cmt">// 每天凌晨 2:30（表达式非法时返回 error）</span>
-    _, err := c.<span class="fn">AddFunc</span>(<span class="str">"30 2 * * *"</span>, <span class="kw">func</span>() {
-        fmt.<span class="fn">Println</span>(<span class="str">"每日对账任务"</span>)
-    })
-    <span class="kw">if</span> err != <span class="kw">nil</span> {
-        <span class="fn">panic</span>(err)
-    }
-
-    c.<span class="fn">Start</span>()
-    <span class="kw">defer</span> c.<span class="fn">Stop</span>()
-
-    <span class="kw">select</span> {} <span class="cmt">// 阻塞主 goroutine</span>
-}</code></pre>
-
-  <h3 id="u-sec">7.2 秒级精度与预定义描述符</h3>
-  <pre><code class="lang-go">c := cron.<span class="fn">New</span>(cron.<span class="fn">WithSeconds</span>()) <span class="cmt">// 6 字段：秒 分 时 日 月 周</span>
-
-c.<span class="fn">AddFunc</span>(<span class="str">"*/5 * * * * *"</span>, <span class="kw">func</span>() {})     <span class="cmt">// 每 5 秒</span>
-c.<span class="fn">AddFunc</span>(<span class="str">"0 30 9 * * MON-FRI"</span>, <span class="kw">func</span>() {}) <span class="cmt">// 工作日 9:30:00</span>
-
-c2 := cron.<span class="fn">New</span>()
-c2.<span class="fn">AddFunc</span>(<span class="str">"@every 2h30m"</span>, <span class="kw">func</span>() {}) <span class="cmt">// 每 2.5 小时（固定间隔）</span>
-c2.<span class="fn">AddFunc</span>(<span class="str">"@daily"</span>, <span class="kw">func</span>() {})       <span class="cmt">// 每天 0 点</span></code></pre>
-
-  <h3 id="u-tz">7.3 时区处理</h3>
-  <pre><code class="lang-go"><span class="cmt">// 方式一：全局时区</span>
-loc, _ := time.<span class="fn">LoadLocation</span>(<span class="str">"Asia/Shanghai"</span>)
-c := cron.<span class="fn">New</span>(cron.<span class="fn">WithLocation</span>(loc))
-
-<span class="cmt">// 方式二：单表达式指定时区（规格化写法，推荐）</span>
-c.<span class="fn">AddFunc</span>(<span class="str">"CRON_TZ=Asia/Tokyo 0 6 * * *"</span>, <span class="kw">func</span>() {}) <span class="cmt">// 东京时间早 6 点</span></code></pre>
-
-  <h3 id="u-job">7.4 自定义 Job（实现 Job 接口）</h3>
-  <pre><code class="lang-go"><span class="kw">type</span> <span class="typ">SyncJob</span> <span class="kw">struct</span> {
-    Table <span class="typ">string</span>
-}
-
-<span class="kw">func</span> (s *<span class="typ">SyncJob</span>) <span class="fn">Run</span>() {
-    fmt.<span class="fn">Printf</span>(<span class="str">"同步表 %s ...\n"</span>, s.Table)
-}
-
-<span class="kw">func</span> <span class="fn">main</span>() {
-    c := cron.<span class="fn">New</span>()
-    id, _ := c.<span class="fn">AddJob</span>(<span class="str">"*/10 * * * *"</span>, &amp;<span class="typ">SyncJob</span>{Table: <span class="str">"orders"</span>})
-    fmt.<span class="fn">Println</span>(<span class="str">"entry id:"</span>, id)
-    c.<span class="fn">Start</span>()
-    <span class="kw">select</span> {}
-}</code></pre>
-
-  <h3>7.5 装饰器：panic 恢复与防重叠</h3>
-  <pre><code class="lang-go">c := cron.<span class="fn">New</span>(
-    cron.<span class="fn">WithChain</span>(
-        cron.<span class="fn">Recover</span>(cron.DefaultLogger),            <span class="cmt">// 捕获 panic 并记日志</span>
-        cron.<span class="fn">SkipIfStillRunning</span>(cron.DefaultLogger), <span class="cmt">// 上次未跑完则跳过本次</span>
-    ),
-    cron.<span class="fn">WithSeconds</span>(),
-)
-
-c.<span class="fn">AddFunc</span>(<span class="str">"*/5 * * * * *"</span>, <span class="kw">func</span>() {
-    <span class="fn">panic</span>(<span class="str">"boom"</span>) <span class="cmt">// 不会拖垮调度器</span>
-})
-
-<span class="cmt">// 自定义 JobWrapper 也非常简单：</span>
-<span class="kw">func</span> <span class="fn">WithMetric</span>(name <span class="typ">string</span>) cron.<span class="typ">JobWrapper</span> {
-    <span class="kw">return func</span>(j cron.<span class="typ">Job</span>) cron.<span class="typ">Job</span> {
-        <span class="kw">return</span> cron.<span class="fn">FuncJob</span>(<span class="kw">func</span>() {
-            start := time.<span class="fn">Now</span>()
-            j.<span class="fn">Run</span>()
-            <span class="fn">recordDuration</span>(name, time.<span class="fn">Since</span>(start)) <span class="cmt">// 上报耗时</span>
-        })
-    }
-}</code></pre>
-
-  <h3 id="u-dyn">7.6 运行中动态管理任务</h3>
-  <pre><code class="lang-go">c := cron.<span class="fn">New</span>()
-c.<span class="fn">Start</span>()
-
-id, _ := c.<span class="fn">AddFunc</span>(<span class="str">"*/1 * * * *"</span>, <span class="kw">func</span>() { fmt.<span class="fn">Println</span>(<span class="str">"tick"</span>) })
-<span class="cmt">// 运行中添加：经 add channel 交给调度 goroutine，立即生效</span>
-
-<span class="kw">for</span> _, e := <span class="kw">range</span> c.<span class="fn">Entries</span>() { <span class="cmt">// 快照，线程安全</span>
-    fmt.<span class="fn">Printf</span>(<span class="str">"entry=%d next=%v prev=%v\n"</span>, e.ID, e.Next, e.Prev)
-}
-
-time.<span class="fn">Sleep</span>(5 * time.Minute)
-c.<span class="fn">Remove</span>(id) <span class="cmt">// 移除；c.Entry(id) 可查单个条目</span></code></pre>
-
-  <h3 id="u-stop">7.7 优雅停止与日志</h3>
-  <pre><code class="lang-go">ctx := c.<span class="fn">Stop</span>() <span class="cmt">// 发停止信号，不再派发新触发</span>
-&lt;-ctx.<span class="fn">Done</span>()    <span class="cmt">// 等待所有「正在执行」的任务结束（内部 sync.WaitGroup）</span>
-fmt.<span class="fn">Println</span>(<span class="str">"所有任务已退出"</span>)
-
-<span class="cmt">// 集成结构化日志：输出 schedule/wake/run/added/removed 事件，排查「为什么没触发」必备</span>
-logger := cron.<span class="fn">VerbosePrintfLogger</span>(log.<span class="fn">New</span>(os.Stdout, <span class="str">"cron: "</span>, log.LstdFlags))
-c := cron.<span class="fn">New</span>(cron.<span class="fn">WithLogger</span>(logger))</code></pre>
-
-  <div class="tip"><b>💡 Start vs Run：</b><span><code>Start()</code> 起后台 goroutine 立即返回；<code>Run()</code> 在当前 goroutine 阻塞执行，适合「进程只跑调度器」的场景。两者重复调用都是 no-op。</span></div>
-</section>
-
-<!-- ================= 8 坑 ================= -->
-<section id="pitfalls">
-  <h2>8. 常见坑与最佳实践</h2>
-  <div class="danger"><b>🚫 忘记 Start()：</b><span>Add 之后不 Start，任务静静躺在 entries 里永远不会执行。</span></div>
-  <div class="danger"><b>🚫 panic 不再默认恢复：</b><span>v3 默认不 recover。生产环境务必挂 <code>cron.Recover(logger)</code>，否则一个任务的 panic 会崩掉整个进程。</span></div>
-  <div class="warn"><b>⚠️ v1 → v3 迁移：</b><span>默认解析从「可选秒字段的 6 段」变为「标准 5 段」。<code>* * * * *</code> 在 v1 是每秒、在 v3 是每分。要秒级请 <code>WithSeconds()</code>。</span></div>
-  <div class="warn"><b>⚠️ 长任务重叠：</b><span>默认允许同一任务并发多份。清理 / 上报类任务通常要加 <code>SkipIfStillRunning</code>。</span></div>
-  <div class="warn"><b>⚠️ 错过即跳过：</b><span>进程重启后不会补跑停机期间错过的触发，需要补偿逻辑请在任务内部自行实现（如对比 <code>e.Prev</code>）。</span></div>
-  <div class="warn"><b>⚠️ 时区陷阱：</b><span>服务器时区 ≠ 业务时区时，显式 <code>WithLocation</code> 或 <code>CRON_TZ=</code>；夏令时切换日建议业务上使用无夏令时时区。</span></div>
-  <div class="warn"><b>⚠️ K8s 多副本：</b><span>每个 Pod 各跑一份 cron，同一任务会被触发 N 次。需要分布式锁（Redis SET NX）或改用中心化调度 —— 这是 robfig/cron 与分布式任务队列（Asynq 等）的本质边界。</span></div>
-</section>
-
-<!-- ================= 9 版本 ================= -->
-<section id="versions">
-  <h2>9. 版本演进</h2>
-  <div class="card">
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<p>robfig/cron 的边界非常清晰：<strong>它是进程内的「触发器」，不是「任务执行系统」</strong>。它负责「到点了调用这个函数」，不负责失败重试、任务持久化、跨实例互斥与执行结果追踪。绝大多数选型事故都来自把这两件事混为一谈。</p>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>robfig/cron</th><th>asynq</th><th>Kubernetes CronJob</th><th>分布式调度（XXL-JOB 等）</th><th><code>time.Ticker</code> 自研</th></tr></thead><tbody><tr><td>形态</td><td>Go 库，嵌入进程</td><td>Go 库 + Redis</td><td>K8s 资源</td><td>独立调度中心</td><td>标准库</td></tr><tr><td>表达式</td><td>5/6 字段 cron、<code>@every</code>、<code>@daily</code></td><td>cron（Scheduler）+ 一次性延时</td><td>标准 5 字段 cron</td><td>cron + 可视化分片/路由</td><td>仅固定间隔</td></tr><tr><td>依赖</td><td>无</td><td>Redis</td><td>K8s 集群</td><td>调度中心 + DB</td><td>无</td></tr><tr><td>失败重试 / 死信</td><td>无（需自己写）</td><td><strong>原生</strong></td><td>Job <code>backoffLimit</code></td><td>有</td><td>无</td></tr><tr><td>任务持久化</td><td>无（重启即丢内存 entries）</td><td><strong>有</strong>（Redis）</td><td>有（etcd）</td><td>有（DB）</td><td>无</td></tr><tr><td>错过触发补跑</td><td>不补</td><td>不涉及</td><td><code>startingDeadlineSeconds</code> 有限支持</td><td>多数支持</td><td>不补</td></tr><tr><td>多副本重复触发</td><td><strong>会重复 N 份</strong>（需外部锁）</td><td>不会（队列竞争消费）</td><td>不会</td><td>不会（中心分片）</td><td>会重复</td></tr><tr><td>任务级观测 / Web UI</td><td>无</td><td><strong>有</strong>（Asynqmon）</td><td>kubectl / 日志</td><td>有控制台</td><td>无</td></tr><tr><td>并发控制</td><td><code>SkipIfStillRunning</code> 等 JobWrapper</td><td>Concurrency + 队列</td><td><code>concurrencyPolicy</code></td><td>有</td><td>自行加锁</td></tr><tr><td>运维成本</td><td><strong>极低</strong></td><td>低</td><td>中</td><td>高</td><td>极低</td></tr></tbody></table></div>
+<p>一句话决策：</p>
+<ul><li><strong>单体服务、少量本地定时任务</strong>（缓存预热、清理临时文件、定时上报），且能接受重启期间错过触发 → <strong>robfig/cron</strong>，记得挂 <code>cron.Recover(logger)</code> 与 <code>SkipIfStillRunning</code>；</li><li><strong>任务有副作用、失败要重试、要查死信、要 Web UI</strong> → 触发器仍可用 cron，但把「执行」交给 <a href="../asynq/asynq技术文档与使用手册.html">asynq</a>，即「cron 只入队」；</li><li><strong>已经是 K8s 环境、任务是独立批处理/Job</strong> → CronJob，天然有调度与重试语义，不必在业务进程里再塞一个调度器；</li><li><strong>大量任务、需要可视化编排、分片广播、跨语言执行器</strong> → XXL-JOB / ElasticJob 这类调度中心；</li><li><strong>只是每 N 秒做一次内存态检查</strong> → <code>time.Ticker</code> 更直接，别引入 cron 表达式。</li></ul>
+<blockquote class="warn"><p>⚠️ 最常见的坑：<strong>在 K8s 多副本 Deployment 里直接跑 robfig/cron</strong>，同一任务被触发 N 次。要么把副本数固定为 1（并接受单点），要么用分布式锁（<code>SET NX</code>）在任务入口去重，要么改成「单副本 Scheduler 入队 + 多副本 worker 消费」。</p></blockquote>
+<div class="tip"><b>💡 Start vs Run：</b><span><code>Start()</code> 起后台 goroutine 立即返回；<code>Run()</code> 在当前 goroutine 阻塞执行，适合「进程只跑调度器」的场景。两者重复调用都是 no-op。</span></div>
+<div class="danger"><b>🚫 忘记 Start()：</b><span>Add 之后不 Start，任务静静躺在 entries 里永远不会执行。</span></div>
+<div class="danger"><b>🚫 panic 不再默认恢复：</b><span>v3 默认不 recover。生产环境务必挂 <code>cron.Recover(logger)</code>，否则一个任务的 panic 会崩掉整个进程。</span></div>
+<div class="warn"><b>⚠️ v1 → v3 迁移：</b><span>默认解析从「可选秒字段的 6 段」变为「标准 5 段」。<code>* * * * *</code> 在 v1 是每秒、在 v3 是每分。要秒级请 <code>WithSeconds()</code>。</span></div>
+<div class="warn"><b>⚠️ 长任务重叠：</b><span>默认允许同一任务并发多份。清理 / 上报类任务通常要加 <code>SkipIfStillRunning</code>。</span></div>
+<div class="warn"><b>⚠️ 错过即跳过：</b><span>进程重启后不会补跑停机期间错过的触发，需要补偿逻辑请在任务内部自行实现（如对比 <code>e.Prev</code>）。</span></div>
+<div class="warn"><b>⚠️ 时区陷阱：</b><span>服务器时区 ≠ 业务时区时，显式 <code>WithLocation</code> 或 <code>CRON_TZ=</code>；夏令时切换日建议业务上使用无夏令时时区。</span></div>
+<div class="warn"><b>⚠️ K8s 多副本：</b><span>每个 Pod 各跑一份 cron，同一任务会被触发 N 次。需要分布式锁（Redis SET NX）或改用中心化调度 —— 这是 robfig/cron 与分布式任务队列（Asynq 等）的本质边界。</span></div>
+<div class="card">
     <div class="timeline">
       <div class="tl-item"><b>v1</b><br><span>最初版本，gopkg.in 分发；默认「可选秒字段」格式，与标准 cron / Quartz 均不兼容，是混乱之源</span></div>
       <div class="tl-item"><b>v2</b><br><span>分支版本，引入移除任务等能力，未成为默认</span></div>
@@ -613,37 +609,52 @@ c := cron.<span class="fn">New</span>(cron.<span class="fn">WithLogger</span>(lo
     <p style="margin-top:8px">v3 发布后 API 趋于稳定，社区以维护为主，新项目直接使用 v3 即可。</p>
   </div>
 </section>
-
-<footer>robfig/cron 技术指南 · 基于 v3 源码与官方 README 整理 · 2026-09</footer>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
 </main>
 </div>
-
 <script>
-// 极简 Go 语法高亮（免外部依赖）
-document.querySelectorAll('pre code.lang-go').forEach(function(block){
-  var src = block.textContent;
-  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  var master = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
-  var out = src.replace(master, function(m, c1, c2, s, kw, typ, num, fn){
-    if (c1 || c2) return '<span class="cmt">'+m+'</span>';
-    if (s) return '<span class="str">'+m+'</span>';
-    if (kw) return '<span class="kw">'+m+'</span>';
-    if (typ) return '<span class="typ">'+m+'</span>';
-    if (num) return '<span class="num">'+m+'</span>';
-    if (fn) return '<span class="fn">'+m+'</span>';
-    return m;
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
   });
-  block.innerHTML = out;
-});
-// 代码块标签
-document.querySelectorAll('pre code.lang-go').forEach(function(b){
-  var label=document.createElement('span');label.className='codelabel';label.textContent='Go';
-  b.closest('pre').appendChild(label);
-});
-document.querySelectorAll('pre code.lang-bash').forEach(function(b){
-  var label=document.createElement('span');label.className='codelabel';label.textContent='Shell';
-  b.closest('pre').appendChild(label);
-});
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
 </script>
 </body>
 </html>

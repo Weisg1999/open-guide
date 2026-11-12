@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Go 泛型（Generics）由浅入深教程</title>
+<title>Go 泛型 · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
 <style>
   :root{
     --accent:#0d9488; --accent-light:#ccfbf1; --accent-dark:#115e59;
@@ -24,40 +25,60 @@
   nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
   nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
   nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
   main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
-  .hero{background:linear-gradient(135deg,#134e4a 0%,#0d9488 55%,#14b8a6 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(13,148,136,.25)}
+  .hero{background:linear-gradient(135deg,#115e59 0%,#0d9488 58%,#115e59 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
   .hero h1{font-size:30px;margin-bottom:10px}
-  .hero p{opacity:.92;font-size:15px;max-width:660px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
   .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
   .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
   section{margin-bottom:46px}
   h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
-  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark)}
-  h4{font-size:15px;margin:16px 0 8px;color:#0f172a}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
   p{margin-bottom:12px}
   ul,ol{padding-left:24px;margin-bottom:12px}
   li{margin-bottom:6px}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin-bottom:18px;box-shadow:0 1px 3px rgba(19,78,74,.06)}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
   pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
-  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fb5b0;background:#0a3630;padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
   code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
-  p code,li code,td code{background:#eef7f5;color:#0d9488;border:1px solid #dbeceb;padding:1px 6px;border-radius:6px;font-size:.88em}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
   .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
-  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(19,78,74,.06)}
-  th{background:#e6f5f2;color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
   td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
-  tr:nth-child(even) td{background:#fafefd}
-  .tip,.warn,.danger{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px;display:flex;gap:10px;align-items:flex-start}
-  .tip{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
-  .warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
-  .danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
-  .tip b,.warn b,.danger b{flex-shrink:0}
-  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0;box-shadow:0 1px 3px rgba(19,78,74,.06)}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
   .figure svg{width:100%;height:auto;display:block}
   .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
-  .pill{display:inline-block;background:var(--accent-light);color:var(--accent-dark);border-radius:16px;padding:2px 12px;font-size:12px;margin:2px 4px 2px 0}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
   .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
-  .lvl.b{background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
   .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
   .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
   footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
@@ -70,41 +91,48 @@
 </head>
 <body>
 <div class="layout">
-
 <nav class="sidebar">
   <div class="logo">Go 泛型<span class="ver">1.18+</span></div>
   <div class="sub">Type Parameters 由浅入深</div>
-  <a href="#why">1. 为什么需要泛型</a>
-  <a class="sub-link" href="#w-pain">1.1 没有泛型的痛苦</a>
-  <a class="sub-link" href="#w-syntax">1.3 语法速览</a>
-  <a href="#constraint">2. 类型约束</a>
-  <a class="sub-link" href="#c-union">2.4 联合与 ~</a>
-  <a href="#type">3. 泛型类型与方法</a>
-  <a href="#advanced">4. 进阶技巧</a>
-  <a href="#impl">5. 实现原理</a>
-  <a href="#limits">6. 限制与常见坑</a>
-  <a href="#practice">7. 综合实战：泛型缓存</a>
+  <a href="#1-为什么需要泛型入门">1. 为什么需要泛型（入门）</a>
+  <a class="sub-link" href="#11-没有泛型的痛苦">1.1 没有泛型的痛苦</a>
+  <a class="sub-link" href="#12-泛型编译期的多态">1.2 泛型：编译期的多态</a>
+  <a class="sub-link" href="#13-语法速览">1.3 语法速览</a>
+  <a href="#2-类型约束初级">2. 类型约束（初级）</a>
+  <a class="sub-link" href="#21-内置约束">2.1 内置约束</a>
+  <a class="sub-link" href="#22-标准库约束">2.2 标准库约束</a>
+  <a class="sub-link" href="#23-自定义约束接口即约束">2.3 自定义约束：接口即约束</a>
+  <a class="sub-link" href="#24-联合类型union与底层类型">2.4 联合类型（union）与底层类型（~）</a>
+  <a class="sub-link" href="#25-混合约束类型集合-方法">2.5 混合约束：类型集合 + 方法</a>
+  <a href="#3-泛型类型与方法初级-中级">3. 泛型类型与方法（初级 → 中级）</a>
+  <a class="sub-link" href="#31-泛型类型容器">3.1 泛型类型（容器）</a>
+  <a class="sub-link" href="#32-泛型-map-函数类型-结构体多参数">3.2 泛型 map / 函数类型 / 结构体多参数</a>
+  <a class="sub-link" href="#33-零值技巧">3.3 零值技巧</a>
+  <a class="sub-link" href="#34-类型推导type-inference">3.4 类型推导（type inference）</a>
+  <a href="#4-进阶技巧中级">4. 进阶技巧（中级）</a>
+  <a class="sub-link" href="#41-指针约束接收者方法调用的关键坑">4.1 指针约束：接收者方法调用的关键坑</a>
+  <a class="sub-link" href="#42-约束里引用自身-递归约束">4.2 约束里引用自身 / 递归约束</a>
+  <a class="sub-link" href="#43-泛型与接口配合给接口加方法">4.3 泛型与接口配合：给接口&quot;加方法&quot;</a>
+  <a class="sub-link" href="#44-泛型-goroutine-工具与-channel">4.4 泛型 goroutine 工具与 channel</a>
+  <a class="sub-link" href="#45-用泛型实现类型安全的可选值">4.5 用泛型实现类型安全的「可选值」</a>
+  <a href="#5-实现原理gc-shape-stenciling高级">5. 实现原理：GC Shape Stenciling（高级）</a>
+  <a class="sub-link" href="#何时该用接口何时该用泛型">何时该用接口、何时该用泛型？</a>
+  <a href="#6-限制与常见坑高级">6. 限制与常见坑（高级）</a>
+  <a href="#7-综合实战类型安全的通用缓存高级">7. 综合实战：类型安全的通用缓存（高级）</a>
+  <a href="#8-泛型-vs-反射-vs-interface如何取舍">8. 泛型 vs 反射 vs interface{}：如何取舍</a>
+  <a href="#9-学习路线建议">9. 学习路线建议</a>
 </nav>
-
 <main>
-
 <div class="hero">
-  <h1>Go 泛型（Generics）</h1>
-  <p>Go 1.18（2022.3）引入的<b>类型参数</b>（Type Parameters）是语言十年来最大的变革：一套代码适配所有类型，编译期类型检查 + 零装箱开销。本教程从痛点出发，一路深入到 GC Shape 实现原理。</p>
-  <div class="meta">
-    <span>Go ≥ 1.18</span>
-    <span>Type Parameters Proposal</span>
-    <span>标准库 slices / maps</span>
-    <span>由浅入深 · 7 章</span>
-  </div>
+  <h1>Go 泛型（Generics）由浅入深教程</h1>
+<p>Go 1.18（2022.3）引入的类型参数（Type Parameters）是语言十年来最大的变革：一套代码适配所有类型，编译期类型检查 + 零装箱开销。本教程从痛点出发，一路深入到 GC Shape 实现原理。</p>
+<p style="opacity:.8;font-size:13.5px">Type Parameters 由浅入深</p>
+<div class="meta"><span>Go ≥ 1.18</span><span>Type Parameters Proposal</span><span>标准库 slices / maps</span><span>由浅入深 · 7 章</span></div>
 </div>
-
-<!-- ============ 1 为什么 ============ -->
-<section id="why">
-  <h2>1. 为什么需要泛型<span class="lvl b">入门</span></h2>
-
-  <h3 id="w-pain">1.1 没有泛型的痛苦</h3>
-  <div class="figure">
+<blockquote><p>Go 1.18（2022.3）正式引入类型参数（Type Parameters），这是 Go 语言十年来最大的语法变革。 官方提案：<a href="https://go.googlesource.com/proposal/+/refs/heads/master/design/43651-type-parameters.md">Type Parameters Proposal</a></p></blockquote>
+<section data-anchor="1-为什么需要泛型入门">
+<h2 id="1-为什么需要泛型入门">1. 为什么需要泛型（入门）<span class="lvl b">入门</span></h2>
+<h3 id="11-没有泛型的痛苦">1.1 没有泛型的痛苦</h3><div class="figure">
     <svg viewBox="0 0 880 330" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
       <!-- 左：复制粘贴 -->
@@ -137,22 +165,42 @@
     </svg>
     <figcaption>图 1 · 1.18 之前的两难：要么重复代码，要么放弃类型安全 —— 泛型同时终结两者</figcaption>
   </div>
-
-  <h3>1.2 泛型：编译期的多态</h3>
-  <pre><code class="lang-go"><span class="kw">func</span> <span class="fn">Max</span>[T cmp.<span class="typ">Ordered</span>](a, b T) T {
-    <span class="kw">if</span> a &gt; b {
-        <span class="kw">return</span> a
+<p>Go 1.18 之前，写一个「返回两数中较大者」的函数，每种类型都要复制一遍：</p>
+<pre><code class="lang-go">func MaxInt(a, b int) int { if a &gt; b { return a }; return b }
+func MaxInt64(a, b int64) int64 { if a &gt; b { return a }; return b }
+func MaxFloat64(a, b float64) float64 { if a &gt; b { return a }; return b }
+// ...字符串、uint、自定义类型……</code></pre>
+<p>另一种「通用」做法是 <code>interface{}</code>：</p>
+<pre><code class="lang-go">func Max(a, b interface{}) interface{} {
+    switch a.(type) { // 运行时断言，分支爆炸
+    case int:
+        if a.(int) &gt; b.(int) { return a }
+    ...
     }
-    <span class="kw">return</span> b
+    return b
+}</code></pre>
+<p>两大问题：</p>
+<div class="table-wrap"><table><thead><tr><th>方案</th><th>问题</th></tr></thead><tbody><tr><td>复制粘贴</td><td>代码重复、维护成本、漏改 bug</td></tr><tr><td><code>interface{}</code></td><td><strong>失去编译期类型检查</strong>（传错类型运行时才炸）、<strong>装箱开销</strong>（值要逃逸到堆）、调用处到处类型断言</td></tr></tbody></table></div>
+<h3 id="12-泛型编译期的多态">1.2 泛型：编译期的多态</h3>
+<pre><code class="lang-go">func Max[T cmp.Ordered](a, b T) T {
+    if a &gt; b {
+        return a
+    }
+    return b
 }
 
-<span class="fn">Max</span>(1, 2)          <span class="cmt">// T 推导为 int</span>
-<span class="fn">Max</span>(3.14, 2.71)    <span class="cmt">// T 推导为 float64</span>
-<span class="fn">Max</span>(<span class="str">"a"</span>, <span class="str">"b"</span>)      <span class="cmt">// T 推导为 string</span>
-<span class="fn">Max</span>(1, <span class="str">"a"</span>)       <span class="cmt">// ❌ 编译错误，当场发现</span></code></pre>
+Max(1, 2)          // T 推导为 int
+Max(3.14, 2.71)    // T 推导为 float64
+Max("a", "b")      // T 推导为 string</code></pre>
+<p>一次编写，所有支持 <code>&gt;</code> 比较的类型都能用，且<strong>编译期即可发现类型错误、零装箱开销</strong>。</p>
+<h3 id="13-语法速览">1.3 语法速览</h3>
+<pre><code class="lang-go">func Name[T, U any](a T, b U) U   // 类型参数列表放在函数名后
+//     ^^^^^^^^^^
+//     方括号内声明类型参数，逗号分隔</code></pre>
+<div class="table-wrap"><table><thead><tr><th>术语</th><th>说明</th><th>示例</th></tr></thead><tbody><tr><td>类型参数（type parameter）</td><td>函数/类型声明中的"占位类型"</td><td><code>T</code>、<code>K</code>、<code>V</code></td></tr><tr><td>类型实参（type argument）</td><td>调用时传入的具体类型</td><td><code>Max[int](1,2)</code> 中的 <code>int</code></td></tr><tr><td>约束（constraint）</td><td>限定类型参数必须满足的要求</td><td><code>any</code>、<code>cmp.Ordered</code></td></tr><tr><td>实例化（instantiation）</td><td>用实参替换形参生成具体版本</td><td><code>Max[int]</code></td></tr></tbody></table></div>
+<hr>
 
-  <h3 id="w-syntax">1.3 语法速览与术语</h3>
-  <div class="figure">
+<div class="figure">
     <svg viewBox="0 0 880 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <text x="440" y="60" text-anchor="middle" font-family="Consolas,monospace" font-size="26" font-weight="700">
         <tspan fill="#0d9488">func</tspan> <tspan fill="#1e293b">Map</tspan><tspan fill="#b45309" font-size="30">[</tspan><tspan fill="#be185d">T</tspan><tspan fill="#475569">, </tspan><tspan fill="#be185d">U</tspan><tspan fill="#475569"> </tspan><tspan fill="#0369a1">any</tspan><tspan fill="#b45309" font-size="30">]</tspan><tspan fill="#1e293b">(xs </tspan><tspan fill="#be185d">[]T</tspan><tspan fill="#1e293b">, f </tspan><tspan fill="#be185d">func</tspan><tspan fill="#1e293b">(</tspan><tspan fill="#be185d">T</tspan><tspan fill="#1e293b">) </tspan><tspan fill="#be185d">U</tspan><tspan fill="#1e293b">) </tspan><tspan fill="#be185d">[]U</tspan>
@@ -174,45 +222,56 @@
     </svg>
     <figcaption>图 2 · 泛型语法解剖：方括号声明类型参数，约束限定"允许哪些类型、能做什么操作"</figcaption>
   </div>
-
-  <table>
-    <tr><th style="width:150px">术语</th><th>说明</th><th>示例</th></tr>
-    <tr><td>类型参数 parameter</td><td>声明中的"占位类型"</td><td><code>T</code>、<code>K</code>、<code>V</code></td></tr>
-    <tr><td>类型实参 argument</td><td>调用时传入的具体类型</td><td><code>Max[int](1,2)</code> 中的 <code>int</code></td></tr>
-    <tr><td>约束 constraint</td><td>限定类型参数的要求</td><td><code>any</code>、<code>cmp.Ordered</code></td></tr>
-    <tr><td>实例化 instantiation</td><td>实参替换形参生成具体版本</td><td><code>Map[int,string]</code></td></tr>
-  </table>
 </section>
-
-<!-- ============ 2 约束 ============ -->
-<section id="constraint">
-  <h2>2. 类型约束<span class="lvl b">初级</span></h2>
-
-  <h3>2.1 内置与标准库约束</h3>
-  <pre><code class="lang-go">any          <span class="cmt">// = interface{}，任意类型，但什么操作都做不了（只能赋值传参）</span>
-comparable   <span class="cmt">// 可用 == / != 比较的类型（int/string/指针/struct…，不含 slice/map/func）</span>
-
-cmp.Ordered             <span class="cmt">// ~int|~int64|~uint|~float32|~float64|~string（可排序可比较）</span>
-constraints.Integer     <span class="cmt">// golang.org/x/exp/constraints：所有整数</span>
-constraints.Float       <span class="cmt">// 所有浮点</span></code></pre>
-
-  <h3>2.2 约束即接口：方法约束</h3>
-  <p>Go 泛型最优雅的设计：<b>约束就是接口</b>。约束代表一个「类型集合」，类型实参必须落在集合内。</p>
-  <pre><code class="lang-go"><span class="cmt">// T 必须实现 String() 方法</span>
-<span class="kw">type</span> <span class="typ">Stringer</span> <span class="kw">interface</span> {
-    <span class="fn">String</span>() <span class="typ">string</span>
+<section data-anchor="2-类型约束初级">
+<h2 id="2-类型约束初级">2. 类型约束（初级）<span class="lvl b">初级</span></h2>
+<p>约束是泛型的核心。它回答：「T 可以是什么类型？能对 T 做什么操作？」</p>
+<h3 id="21-内置约束">2.1 内置约束</h3>
+<pre><code class="lang-go">any            // = interface{}，任意类型，什么都不能做（只能赋值、传参）
+comparable     // 可用 == 和 != 比较的类型（int、string、指针、struct…，不含 slice/map/func）</code></pre>
+<h3 id="22-标准库约束">2.2 标准库约束</h3>
+<p><code>golang.org/x/exp/constraints</code>（1.21 起推荐用标准库 <code>cmp</code> 替代部分）：</p>
+<pre><code class="lang-go">cmp.Ordered               // ~int | ~int64 | ~uint | ~float32 | ~float64 | ~string
+constraints.Integer       // 所有整数类型
+constraints.Float         // 所有浮点类型
+constraints.Complex       // 所有复数类型
+constraints.Signed        // 有符号整数
+constraints.Unsigned      // 无符号整数</code></pre>
+<h3 id="23-自定义约束接口即约束">2.3 自定义约束：接口即约束</h3>
+<p>Go 泛型最优雅的设计：<strong>约束就是接口</strong>。</p>
+<pre><code class="lang-go">// 方法约束：T 必须实现 String() 方法
+type Stringer interface {
+    String() string
 }
 
-<span class="kw">func</span> <span class="fn">Join</span>[T <span class="typ">Stringer</span>](items []T) <span class="typ">string</span> {
-    <span class="kw">var</span> sb strings.<span class="typ">Builder</span>
-    <span class="kw">for</span> _, v := <span class="kw">range</span> items {
-        sb.<span class="fn">WriteString</span>(v.<span class="fn">String</span>())  <span class="cmt">// 编译器保证 T 有此方法</span>
+func Join[T Stringer](items []T) string {
+    var sb strings.Builder
+    for _, v := range items {
+        sb.WriteString(v.String())
     }
-    <span class="kw">return</span> sb.<span class="fn">String</span>()
+    return sb.String()
 }</code></pre>
+<h3 id="24-联合类型union与底层类型">2.4 联合类型（union）与底层类型（~）</h3>
+<pre><code class="lang-go">type Number interface {
+    int | int64 | float64   // 联合：T 只能是这三种「确切」类型
+}
 
-  <h3 id="c-union">2.4 联合类型与 ~（最常被忽略的知识点）</h3>
-  <div class="figure">
+type MyInt int   // MyInt 的底层类型是 int，但它 ≠ int
+
+type Number2 interface {
+    ~int | ~float64        // ~：底层类型是 int 或 float64 的「任何」类型（含 MyInt）
+}</code></pre>
+<p><code>~</code> 的必要性：Go 中 <code>type MyInt int</code> 定义了<strong>新类型</strong>，与 <code>int</code> 不互通。不用 <code>~</code> 的话 <code>Number</code> 不接受 <code>MyInt</code>。</p>
+<h3 id="25-混合约束类型集合-方法">2.5 混合约束：类型集合 + 方法</h3>
+<pre><code class="lang-go">// T 必须是整数类型，且实现 fmt.Stringer
+type StringableInt interface {
+    ~int | ~int64 | ~int32
+    String() string
+}</code></pre>
+<p>约束本质是<strong>类型集合（type set）</strong>：约束代表"所有满足条件的类型组成的集合"，类型实参必须落在这个集合里。</p>
+<hr>
+
+<div class="figure">
     <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <!-- 左：不带~ -->
       <rect x="30" y="30" width="390" height="230" rx="14" fill="#fff" stroke="#cbd5e1" stroke-width="1.6"/>
@@ -239,124 +298,147 @@ constraints.Float       <span class="cmt">// 所有浮点</span></code></pre>
     </svg>
     <figcaption>图 3 · 约束即类型集合：~（tilde）把「精确匹配」放宽为「底层类型匹配」，自定义类型（type MyInt int）才能进入集合</figcaption>
   </div>
-
-  <h3>2.5 混合约束：类型集合 + 方法</h3>
-  <pre><code class="lang-go"><span class="cmt">// T 必须是整数类型，且实现 fmt.Stringer —— 两种条件取交集</span>
-<span class="kw">type</span> <span class="typ">StringableInt</span> <span class="kw">interface</span> {
-    ~int | ~int64 | ~int32
-    <span class="fn">String</span>() <span class="typ">string</span>
-}</code></pre>
 </section>
-
-<!-- ============ 3 泛型类型 ============ -->
-<section id="type">
-  <h2>3. 泛型类型与方法<span class="lvl b">初级 → 中级</span></h2>
-
-  <pre><code class="lang-go"><span class="kw">type</span> <span class="typ">Stack</span>[T <span class="kw">any</span>] <span class="kw">struct</span> {
+<section data-anchor="3-泛型类型与方法初级-中级">
+<h2 id="3-泛型类型与方法初级-中级">3. 泛型类型与方法（初级 → 中级）<span class="lvl m">核心</span></h2>
+<h3 id="31-泛型类型容器">3.1 泛型类型（容器）</h3>
+<pre><code class="lang-go">type Stack[T any] struct {
     items []T
 }
 
-<span class="cmt">// 关键：方法的 receiver 必须带 [T]，不能新增类型参数</span>
-<span class="kw">func</span> (s *<span class="typ">Stack</span>[T]) <span class="fn">Push</span>(v T) {
-    s.items = <span class="fn">append</span>(s.items, v)
+func (s *Stack[T]) Push(v T) {          // 注意：方法的 receiver 必须带 [T]
+    s.items = append(s.items, v)
 }
 
-<span class="kw">func</span> (s *<span class="typ">Stack</span>[T]) <span class="fn">Pop</span>() (T, <span class="typ">bool</span>) {
-    <span class="kw">if</span> <span class="fn">len</span>(s.items) == 0 {
-        <span class="kw">var</span> zero T              <span class="cmt">// var 声明拿到 T 的零值</span>
-        <span class="kw">return</span> zero, <span class="kw">false</span>
+func (s *Stack[T]) Pop() (T, bool) {
+    if len(s.items) == 0 {
+        var zero T                       // var 声明得到 T 的零值
+        return zero, false
     }
-    n := <span class="fn">len</span>(s.items) - 1
+    n := len(s.items) - 1
     v := s.items[n]
     s.items = s.items[:n]
-    <span class="kw">return</span> v, <span class="kw">true</span>
+    return v, true
 }
 
-<span class="cmt">// 使用：实例化后就是普通类型</span>
-s := &amp;<span class="typ">Stack</span>[<span class="typ">int</span>]{}
-s.<span class="fn">Push</span>(1)
-v, ok := s.<span class="fn">Pop</span>()   <span class="cmt">// v=1, ok=true</span></code></pre>
+// 使用
+s := &amp;Stack[int]{}
+s.Push(1)
+v, ok := s.Pop()   // v=1, ok=true</code></pre>
+<h3 id="32-泛型-map-函数类型-结构体多参数">3.2 泛型 map / 函数类型 / 结构体多参数</h3>
+<pre><code class="lang-go">type Map[K comparable, V any] map[K]V    // map 的 key 必须可比较
 
-  <h4>更多泛型类型形态</h4>
-  <pre><code class="lang-go"><span class="kw">type</span> <span class="typ">Map</span>[K <span class="kw">comparable</span>, V <span class="kw">any</span>] <span class="kw">map</span>[K]V       <span class="cmt">// map 的 key 必须可比较</span>
-<span class="kw">type</span> <span class="typ">Transformer</span>[T, U <span class="kw">any</span>] <span class="kw">func</span>(T) U           <span class="cmt">// 泛型函数类型</span>
-<span class="kw">type</span> <span class="typ">Pair</span>[K <span class="kw">comparable</span>, V <span class="kw">any</span>] <span class="kw">struct</span> {    <span class="cmt">// 多类型参数</span>
+type Transformer[T, U any] func(T) U     // 泛型函数类型
+
+type Pair[K comparable, V any] struct {  // 多类型参数
     Key K
     Val V
 }</code></pre>
+<h3 id="33-零值技巧">3.3 零值技巧</h3>
+<p>泛型代码里没有 <code>T{}</code>、<code>nil</code>（不确定类型时），获取零值的标准姿势：</p>
+<pre><code class="lang-go">var zero T      // 方式一：var 声明
+zero := *new(T) // 方式二：new + 解引用</code></pre>
+<h3 id="34-类型推导type-inference">3.4 类型推导（type inference）</h3>
+<pre><code class="lang-go">func Map[T, U any](xs []T, f func(T) U) []U
 
-  <div class="tip"><b>💡 零值技巧：</b><span>泛型代码里不能写 <code>T{}</code>（T 可能是内置类型）也不能随便用 <code>nil</code>（T 可能是值类型）。标准姿势：<code>var zero T</code> 或 <code>*new(T)</code>。</span></div>
+xs := []int{1, 2, 3}
+ys := Map(xs, func(i int) string { return "" })  // T=int, U=string 全部自动推导
+zs := Map[int, string](xs, f)                    // 显式指定也可以</code></pre>
+<p>推导失败时（约束含联合、无参数可依据等）需要显式写出类型实参。</p>
+<hr>
 
-  <h4>类型推导</h4>
-  <pre><code class="lang-go"><span class="kw">func</span> <span class="fn">Map</span>[T, U <span class="kw">any</span>](xs []T, f <span class="kw">func</span>(T) U) []U
-
-xs := []<span class="typ">int</span>{1, 2, 3}
-ys := <span class="fn">Map</span>(xs, <span class="kw">func</span>(i <span class="typ">int</span>) <span class="typ">string</span> { <span class="kw">return</span> <span class="str">""</span> })
-<span class="cmt">// T=int, U=string 全部自动推导；推导失败时才需要显式 Map[int, string](xs, f)</span></code></pre>
+<div class="tip"><b>💡 零值技巧：</b><span>泛型代码里不能写 <code>T{}</code>（T 可能是内置类型）也不能随便用 <code>nil</code>（T 可能是值类型）。标准姿势：<code>var zero T</code> 或 <code>*new(T)</code>。</span></div>
 </section>
+<section data-anchor="4-进阶技巧中级">
+<h2 id="4-进阶技巧中级">4. 进阶技巧（中级）<span class="lvl m">中级</span></h2>
+<h3 id="41-指针约束接收者方法调用的关键坑">4.1 指针约束：接收者方法调用的关键坑</h3>
+<p><strong>泛型代码中，<code>T</code> 不会自动拥有 <code>*T</code> 的方法，反之亦然</strong>：</p>
+<pre><code class="lang-go">type Speaker interface{ Speak() string }
+type Cat struct{}
+func (c Cat) Speak() string   { return "meow" }   // 值接收者
+func (c *Cat) Speak2() string { return "meow" }   // 指针接收者
 
-<!-- ============ 4 进阶 ============ -->
-<section id="advanced">
-  <h2>4. 进阶技巧<span class="lvl m">中级</span></h2>
+func MakeSound[T Speaker](t T) string { return t.Speak() }
 
-  <h3>4.1 指针与值方法集的坑</h3>
-  <div class="warn"><b>⚠️ 核心规则：</b><span>泛型代码中，<code>T</code> 不会自动拥有 <code>*T</code> 的方法，反之亦然。<code>[T Speaker]</code> 传 <code>Cat{}</code> 还是 <code>&amp;Cat{}</code>，取决于方法用的是值接收者还是指针接收者。</span></div>
-  <pre><code class="lang-go"><span class="kw">type</span> <span class="typ">Cat</span> <span class="kw">struct</span>{}
-<span class="kw">func</span> (c <span class="typ">Cat</span>) <span class="fn">Speak</span>() <span class="typ">string</span>  { <span class="kw">return</span> <span class="str">"meow"</span> }   <span class="cmt">// 值接收者：Cat 和 *Cat 都实现</span>
-<span class="kw">func</span> (c *<span class="typ">Cat</span>) <span class="fn">Speak2</span>() <span class="typ">string</span> { <span class="kw">return</span> <span class="str">"meow"</span> } <span class="cmt">// 指针接收者：只有 *Cat 实现</span>
-
-<span class="kw">func</span> <span class="fn">MakeSound</span>[T <span class="typ">Speaker</span>](t T) <span class="typ">string</span> { <span class="kw">return</span> t.<span class="fn">Speak</span>() }
-
-<span class="fn">MakeSound</span>(<span class="typ">Cat</span>{})      <span class="cmt">// ✅ 值方法集满足</span>
-<span class="fn">MakeSound</span>(&amp;<span class="typ">Cat</span>{})     <span class="cmt">// ✅ 指针方法集包含值方法</span></code></pre>
-
-  <h3>4.2 递归约束：让方法返回「自身类型」</h3>
-  <pre><code class="lang-go"><span class="kw">type</span> <span class="typ">Clonable</span>[T <span class="kw">any</span>] <span class="kw">interface</span> {
-    <span class="fn">Clone</span>() T          <span class="cmt">// 约束引用类型参数自身</span>
+MakeSound(Cat{})       // ✅ Cat 实现了 Speaker（值方法集）
+MakeSound(&amp;Cat{})      // ✅ *Cat 的方法集包含值方法
+// 但若 Speaker 要求 Speak2（指针接收者），则 MakeSound(Cat{}) 编译失败</code></pre>
+<p>经验法则：<strong>约束里声明 <code>T</code>，就传 <code>T</code>；声明 <code>[T Speaker]</code> 并想用指针方法时，让调用方传 <code>*T</code></strong>。</p>
+<h3 id="42-约束里引用自身-递归约束">4.2 约束里引用自身 / 递归约束</h3>
+<p>经典的 <code>Clone</code> 问题——让方法返回"与接收者完全相同的类型"：</p>
+<pre><code class="lang-go">type Clonable[T any] interface {
+    Clone() T          // 约束引用类型参数自身
 }
 
-<span class="kw">func</span> <span class="fn">CloneAll</span>[T <span class="typ">Clonable</span>[T]](xs []T) []T {  <span class="cmt">// 注意嵌套写法</span>
-    out := <span class="fn">make</span>([]T, <span class="fn">len</span>(xs))
-    <span class="kw">for</span> i, x := <span class="kw">range</span> xs {
-        out[i] = x.<span class="fn">Clone</span>()
+func CloneAll[T Clonable[T]](xs []T) []T {
+    out := make([]T, len(xs))
+    for i, x := range xs {
+        out[i] = x.Clone()
     }
-    <span class="kw">return</span> out
+    return out
 }</code></pre>
-
-  <h3>4.3 关联值与指针：interface{ *T }</h3>
-  <pre><code class="lang-go"><span class="cmt">// PT 约束：既是 *T，又实现 String —— 编译期把「类型」和「它的指针」绑定起来</span>
-<span class="kw">func</span> <span class="fn">Process</span>[T <span class="kw">any</span>, PT <span class="kw">interface</span>{ *T; <span class="fn">String</span>() <span class="typ">string</span> }](v PT) {
-    fmt.<span class="fn">Println</span>(v.<span class="fn">String</span>())
-}</code></pre>
-
-  <h3>4.4 泛型 channel 工具与 Option 类型</h3>
-  <pre><code class="lang-go"><span class="cmt">// FanIn：多 channel 合一</span>
-<span class="kw">func</span> <span class="fn">FanIn</span>[T <span class="kw">any</span>](chans ...&lt;-<span class="kw">chan</span> T) &lt;-<span class="kw">chan</span> T {
-    out := <span class="fn">make</span>(<span class="kw">chan</span> T)
-    <span class="kw">var</span> wg sync.<span class="typ">WaitGroup</span>
-    wg.<span class="fn">Add</span>(<span class="fn">len</span>(chans))
-    <span class="kw">for</span> _, ch := <span class="kw">range</span> chans {
-        <span class="kw">go func</span>(c &lt;-<span class="kw">chan</span> T) { <span class="kw">defer</span> wg.<span class="fn">Done</span>(); <span class="kw">for</span> v := <span class="kw">range</span> c { out &lt;- v } }(ch)
-    }
-    <span class="kw">go func</span>() { wg.<span class="fn">Wait</span>(); <span class="fn">close</span>(out) }()
-    <span class="kw">return</span> out
+<p><code>Clonable[T]</code> 中出现 <code>T</code>，编译器要求实参满足 <code>Clone() X</code> 且返回类型 X 与自身一致。</p>
+<h3 id="43-泛型与接口配合给接口加方法">4.3 泛型与接口配合：给接口"加方法"</h3>
+<pre><code class="lang-go">// 传统做法：类型断言满天飞
+func Process(v any) {
+    if s, ok := v.(fmt.Stringer); ok { ... }
 }
 
-<span class="cmt">// 类型安全的可选值（Rust 风味）</span>
-<span class="kw">type</span> <span class="typ">Option</span>[T <span class="kw">any</span>] <span class="kw">struct</span> { val T; valid <span class="typ">bool</span> }
-<span class="kw">func</span> <span class="fn">Some</span>[T <span class="kw">any</span>](v T) <span class="typ">Option</span>[T] { <span class="kw">return</span> <span class="typ">Option</span>[T]{v, <span class="kw">true</span> } }
-<span class="kw">func</span> (o <span class="typ">Option</span>[T]) <span class="fn">UnwrapOr</span>(fallback T) T {
-    <span class="kw">if</span> o.valid { <span class="kw">return</span> o.val }
-    <span class="kw">return</span> fallback
+// 泛型做法：编译期绑定
+func Process[T any, PT interface{ *T; String() string }](v PT) {
+    // PT 约束：既是 *T，又有 String 方法 —— 声明的类型必须用指针实现 String
 }</code></pre>
+<p><code>interface{ *T; ... }</code> 中嵌入 <code>*T</code> 是 1.18+ 特殊支持（"constraint with type in it"），专门用于把值和其指针类型关联起来。</p>
+<h3 id="44-泛型-goroutine-工具与-channel">4.4 泛型 goroutine 工具与 channel</h3>
+<pre><code class="lang-go">func FanIn[T any](chans ...&lt;-chan T) &lt;-chan T {
+    out := make(chan T)
+    var wg sync.WaitGroup
+    wg.Add(len(chans))
+    for _, ch := range chans {
+        go func(c &lt;-chan T) {
+            defer wg.Done()
+            for v := range c {
+                out &lt;- v
+            }
+        }(ch)
+    }
+    go func() { wg.Wait(); close(out) }()
+    return out
+}</code></pre>
+<h3 id="45-用泛型实现类型安全的可选值">4.5 用泛型实现类型安全的「可选值」</h3>
+<pre><code class="lang-go">type Option[T any] struct {
+    val   T
+    valid bool
+}
+
+func Some[T any](v T) Option[T] { return Option[T]{v, true} }
+func None[T any]() Option[T]    { return Option[T]{} }
+
+func (o Option[T]) UnwrapOr(fallback T) T {
+    if o.valid { return o.val }
+    return fallback
+}
+
+name := Some("alice").UnwrapOr("anonymous")</code></pre>
+<hr>
+
+<div class="warn"><b>⚠️ 核心规则：</b><span>泛型代码中，<code>T</code> 不会自动拥有 <code>*T</code> 的方法，反之亦然。<code>[T Speaker]</code> 传 <code>Cat{}</code> 还是 <code>&amp;Cat{}</code>，取决于方法用的是值接收者还是指针接收者。</span></div>
 </section>
+<section data-anchor="5-实现原理gc-shape-stenciling高级">
+<h2 id="5-实现原理gc-shape-stenciling高级">5. 实现原理：GC Shape Stenciling（高级）<span class="lvl a">高级</span></h2>
+<p>Go 没有采用 C++ 的全量单态化（为每个实参生成独立机器码），也没有采用 Java 式的完全擦除，而是<strong>混合方案</strong>：</p>
+<ol><li><strong>同 GC shape 共享代码</strong>：所有指针类型共享一份实例（指针的内存布局相同，都是 8 字节）；<code>int</code>/<code>uint</code>/<code>float64</code> 等每种形状各一份；</li><li><strong>字典（dictionary）传递差异</strong>：共享代码中，类型相关的操作（大小、判等、方法调用）通过编译期生成的<strong>字典</strong>间接完成，字典作为隐藏参数传入。</li></ol>
+<pre><code class="lang-text">Max[int]  ─┐
+Max[MyInt]─┴─► 同一形状 → 共享一份机器码 + 字典A
+Max[string]──► 不同形状 → 另一份机器码 + 字典B
+Max[*User]───► 指针形状 → 与所有指针共享 + 字典C</code></pre>
+<p>推论（重要）：</p>
+<ul><li>泛型函数里<strong>两个不同名字的类型参数 <code>T</code>、<code>U</code> 即使形状相同也不能互转</strong>（编译器视角语义不同）；</li><li>指针/接口形状的操作走字典，比单态化代码<strong>略慢</strong>（多一层间接寻址），但代码体积不膨胀；</li><li>数值类型场景下差距通常可忽略。</li></ul>
+<h3 id="何时该用接口何时该用泛型">何时该用接口、何时该用泛型？</h3>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>接口（多态）</th><th>泛型</th></tr></thead><tbody><tr><td>绑定时机</td><td>运行时</td><td>编译期</td></tr><tr><td>异构集合（[]any 混装）</td><td>✅</td><td>❌</td></tr><tr><td>同构算法（对 []T 统一处理）</td><td>一般</td><td>✅ 性能与类型安全双优</td></tr><tr><td>需要存储/传递"未知类型"</td><td>✅</td><td>❌</td></tr><tr><td>算子类需求（T op T）</td><td>❌ 接口无法表达</td><td>✅ 约束直接表达</td></tr></tbody></table></div>
+<hr>
 
-<!-- ============ 5 原理 ============ -->
-<section id="impl">
-  <h2>5. 实现原理：GC Shape Stenciling<span class="lvl a">高级</span></h2>
-  <p>Go 没有采用 C++ 的全量单态化（每个实参生成独立机器码，代码膨胀），也没有采用 Java 式完全擦除（性能损失大），而是<b>混合方案</b>：</p>
-
-  <div class="figure">
+<div class="figure">
     <svg viewBox="0 0 880 360" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs><marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
       <!-- 源 -->
@@ -409,134 +491,152 @@ ys := <span class="fn">Map</span>(xs, <span class="kw">func</span>(i <span class
     </svg>
     <figcaption>图 4 · GC Shape Stenciling：相同内存布局（shape）的实参共享一份机器码，类型差异通过编译期生成的「字典」在运行时传递</figcaption>
   </div>
-
-  <h3>接口 vs 泛型 选型</h3>
-  <table>
-    <tr><th>维度</th><th>接口（运行时多态）</th><th>泛型（编译期多态）</th></tr>
-    <tr><td>绑定时机</td><td>运行时</td><td>编译期</td></tr>
-    <tr><td>异构集合 <code>[]any</code> 混装</td><td>✅</td><td>❌</td></tr>
-    <tr><td>同构算法（对 []T 统一处理）</td><td>一般</td><td>✅ 类型安全 + 性能双优</td></tr>
-    <tr><td>存储/传递「未知类型」</td><td>✅</td><td>❌</td></tr>
-    <tr><td>算子类需求（T op T）</td><td>❌ 接口无法表达</td><td>✅ 约束直接表达</td></tr>
-  </table>
 </section>
+<section data-anchor="6-限制与常见坑高级">
+<h2 id="6-限制与常见坑高级">6. 限制与常见坑（高级）<span class="lvl a">高级</span></h2>
+<ol><li><strong>方法不能有额外的类型参数</strong>：</li></ol>
+<pre><code class="lang-go">   func (s Stack[T]) Map[U any](f func(T) U) []U  // ❌ 编译错误</code></pre>
+<p>变通：写成顶层泛型函数 <code>func MapStack[T, U any](s Stack[T], f func(T) U) []U</code>。提案 #49085 讨论多年仍未放开。</p>
+<ol><li><strong>泛型类型不能做类型断言/类型 switch 的 case</strong>（只能对 <code>any</code> 断言）：</li></ol>
+<pre><code class="lang-go">   switch v := x.(type) {   // x 必须是接口类型
+   case T:                  // ❌ T 不是具体类型
+   }</code></pre>
+<ol><li><strong>约束里不能引用未定义的类型参数</strong>、联合里不能带方法（带方法的类型必须单独一行）。</li></ol>
+<ol><li><strong>不要为了泛型而泛型</strong>：只用一次的类型、<code>any</code> 约束 + 内部各种断言的写法，不如直接 <code>any</code> 或具体类型。泛型的前置条件是<strong>算法与类型无关</strong>。</li></ol>
+<ol><li><strong>零值接口陷阱</strong>：<code>var zero T</code> 当 T 被实例化为接口类型时 zero 是 nil，判断空要用类型信息而非简单比较。</li></ol>
+<ol><li><strong><code>comparable</code> 的边界</strong>：可比较 ≠ 可排序。slice/map/func 不满足 comparable（运行时 panic 的可比较字段边界，1.20 后才放宽为"普通可比较"）。</li></ol>
+<hr>
 
-<!-- ============ 6 限制 ============ -->
-<section id="limits">
-  <h2>6. 限制与常见坑<span class="lvl a">高级</span></h2>
-
-  <div class="danger"><b>🚫 方法不能有额外类型参数：</b><span>提案 #49085 讨论多年仍未放开。变通：写成顶层泛型函数。</span></div>
-  <pre><code class="lang-go"><span class="kw">func</span> (s <span class="typ">Stack</span>[T]) <span class="fn">Map</span>[U <span class="kw">any</span>](f <span class="kw">func</span>(T) U) []U  <span class="cmt">// ❌ 编译错误</span>
-
-<span class="cmt">// ✅ 变通方案</span>
-<span class="kw">func</span> <span class="fn">MapStack</span>[T, U <span class="kw">any</span>](s <span class="typ">Stack</span>[T], f <span class="kw">func</span>(T) U) []U { ... }</code></pre>
-
-  <div class="danger"><b>🚫 泛型类型不能做类型断言 / switch 的 case：</b><span>只能先转成 <code>any</code> 再断言。</span></div>
-  <pre><code class="lang-go"><span class="kw">switch</span> v := x.(type) {
-<span class="kw">case</span> T:              <span class="cmt">// ❌ T 不是具体类型</span>
-}</code></pre>
-
-  <div class="warn"><b>⚠️ 不要为了泛型而泛型：</b><span>约束是 <code>any</code> 然后内部各种类型断言的写法，完全违背泛型初衷——那不如直接用 <code>any</code>。泛型的<b>前置条件是算法与类型无关</b>（比较、索引、映射……）。</span></div>
-  <div class="warn"><b>⚠️ comparable ≠ 可排序：</b><span>slice/map/func 不满足 comparable；<code>cmp.Ordered</code> 才支持 <code>&lt; &gt;</code>。结构体含不可比较字段（如 slice）时 <code>==</code> 会运行时 panic。</span></div>
-  <div class="warn"><b>⚠️ 接口零值陷阱：</b><span>T 实例化为接口类型时 <code>var zero T</code> 是 nil，业务判断需用类型信息而非简单比较。</span></div>
+<div class="danger"><b>🚫 方法不能有额外类型参数：</b><span>提案 #49085 讨论多年仍未放开。变通：写成顶层泛型函数。</span></div>
+<div class="danger"><b>🚫 泛型类型不能做类型断言 / switch 的 case：</b><span>只能先转成 <code>any</code> 再断言。</span></div>
+<div class="warn"><b>⚠️ 不要为了泛型而泛型：</b><span>约束是 <code>any</code> 然后内部各种类型断言的写法，完全违背泛型初衷——那不如直接用 <code>any</code>。泛型的<b>前置条件是算法与类型无关</b>（比较、索引、映射……）。</span></div>
+<div class="warn"><b>⚠️ comparable ≠ 可排序：</b><span>slice/map/func 不满足 comparable；<code>cmp.Ordered</code> 才支持 <code>&lt; &gt;</code>。结构体含不可比较字段（如 slice）时 <code>==</code> 会运行时 panic。</span></div>
+<div class="warn"><b>⚠️ 接口零值陷阱：</b><span>T 实例化为接口类型时 <code>var zero T</code> 是 nil，业务判断需用类型信息而非简单比较。</span></div>
 </section>
+<section data-anchor="7-综合实战类型安全的通用缓存高级">
+<h2 id="7-综合实战类型安全的通用缓存高级">7. 综合实战：类型安全的通用缓存（高级）<span class="lvl a">高级</span></h2>
+<pre><code class="lang-go">package cache
 
-<!-- ============ 7 实战 ============ -->
-<section id="practice">
-  <h2>7. 综合实战：类型安全的 TTL 缓存<span class="lvl a">高级</span></h2>
-  <pre><code class="lang-go"><span class="kw">package</span> cache
-
-<span class="kw">import</span> (
-    <span class="str">"sync"</span>
-    <span class="str">"time"</span>
+import (
+    "sync"
+    "time"
 )
 
-<span class="kw">type</span> <span class="typ">entry</span>[V <span class="kw">any</span>] <span class="kw">struct</span> {
+type entry[V any] struct {
     val       V
-    expiresAt time.<span class="typ">Time</span>
+    expiresAt time.Time
 }
 
-<span class="cmt">// 并发安全、带 TTL、K/V 类型编译期绑定的内存缓存</span>
-<span class="kw">type</span> <span class="typ">Cache</span>[K <span class="kw">comparable</span>, V <span class="kw">any</span>] <span class="kw">struct</span> {
-    mu     sync.<span class="typ">RWMutex</span>
-    data   <span class="kw">map</span>[K]<span class="typ">entry</span>[V]      <span class="cmt">// K comparable → 可做 map 键</span>
-    ttl    time.<span class="typ">Duration</span>
-    loader <span class="kw">func</span>(K) (V, <span class="typ">error</span>)
+// Cache 是一个并发安全、带 TTL、key/value 类型在编译期绑定的内存缓存
+type Cache[K comparable, V any] struct {
+    mu       sync.RWMutex
+    data     map[K]entry[V]
+    ttl      time.Duration
+    loader   func(K) (V, error) // 可选的回源函数
 }
 
-<span class="kw">func</span> <span class="fn">New</span>[K <span class="kw">comparable</span>, V <span class="kw">any</span>](ttl time.<span class="typ">Duration</span>, loader <span class="kw">func</span>(K) (V, <span class="typ">error</span>)) *<span class="typ">Cache</span>[K, V] {
-    <span class="kw">return</span> &amp;<span class="typ">Cache</span>[K, V]{
-        data:   <span class="fn">make</span>(<span class="kw">map</span>[K]<span class="typ">entry</span>[V]),
+func New[K comparable, V any](ttl time.Duration, loader func(K) (V, error)) *Cache[K, V] {
+    return &amp;Cache[K, V]{
+        data:   make(map[K]entry[V]),
         ttl:    ttl,
         loader: loader,
     }
 }
 
-<span class="kw">func</span> (c *<span class="typ">Cache</span>[K, V]) <span class="fn">Get</span>(k K) (V, <span class="typ">bool</span>) {
-    c.mu.<span class="fn">RLock</span>()
+func (c *Cache[K, V]) Get(k K) (V, bool) {
+    c.mu.RLock()
     e, ok := c.data[k]
-    c.mu.<span class="fn">RUnlock</span>()
-    <span class="kw">if</span> !ok || time.<span class="fn">Now</span>().<span class="fn">After</span>(e.expiresAt) {
-        <span class="kw">var</span> zero V           <span class="cmt">// 零值技巧处理失败路径</span>
-        <span class="kw">return</span> zero, <span class="kw">false</span>
+    c.mu.RUnlock()
+    if !ok || time.Now().After(e.expiresAt) {
+        var zero V
+        return zero, false
     }
-    <span class="kw">return</span> e.val, <span class="kw">true</span>
+    return e.val, true
 }
 
-<span class="kw">func</span> (c *<span class="typ">Cache</span>[K, V]) <span class="fn">GetOrLoad</span>(k K) (V, <span class="typ">error</span>) {
-    <span class="kw">if</span> v, ok := c.<span class="fn">Get</span>(k); ok {
-        <span class="kw">return</span> v, <span class="kw">nil</span>
+func (c *Cache[K, V]) GetOrLoad(k K) (V, error) {
+    if v, ok := c.Get(k); ok {
+        return v, nil
     }
     v, err := c.loader(k)
-    <span class="kw">if</span> err != <span class="kw">nil</span> {
-        <span class="kw">var</span> zero V
-        <span class="kw">return</span> zero, err
+    if err != nil {
+        var zero V
+        return zero, err
     }
-    c.<span class="fn">Set</span>(k, v)
-    <span class="kw">return</span> v, <span class="kw">nil</span>
+    c.Set(k, v)
+    return v, nil
 }
 
-<span class="kw">func</span> (c *<span class="typ">Cache</span>[K, V]) <span class="fn">Set</span>(k K, v V) {
-    c.mu.<span class="fn">Lock</span>()
-    c.data[k] = <span class="typ">entry</span>[V]{v, time.<span class="fn">Now</span>().<span class="fn">Add</span>(c.ttl)}
-    c.mu.<span class="fn">Unlock</span>()
+func (c *Cache[K, V]) Set(k K, v V) {
+    c.mu.Lock()
+    c.data[k] = entry[V]{v, time.Now().Add(c.ttl)}
+    c.mu.Unlock()
 }</code></pre>
-  <div class="tip"><b>✅ 泛型化收益：</b><span>对比 1.18 之前的 <code>map[interface{}]interface{}</code> 版本——调用处零断言、编译期防错、值类型不装箱。要点：<code>K comparable</code> 做 map 键、<code>var zero V</code> 处理失败、receiver 带 <code>[K, V]</code>。</span></div>
+<p>要点：<code>K comparable</code> 保证能做 map 键、<code>V any</code> 任意值类型、<code>var zero V</code> 处理失败路径、方法 receiver 带 <code>[K, V]</code>。对比 1.18 之前的 <code>map[interface{}]interface{}</code> 版本：调用处零断言、编译期防错。</p>
 
-  <h3>学习路线</h3>
-  <table>
-    <tr><th>阶段</th><th>目标</th></tr>
-    <tr><td>第 1 周</td><td>掌握 <code>[T any]</code> 语法与 <code>comparable</code>/<code>cmp.Ordered</code>，重写项目里 2~3 个工具函数</td></tr>
-    <tr><td>第 2 周</td><td>写泛型容器（Stack/Queue/Set），吃透 receiver 的 <code>[T]</code> 与零值技巧</td></tr>
-    <tr><td>第 3 周</td><td>阅读标准库 <code>slices</code>/<code>maps</code> 与 <code>x/exp/constraints</code> 源码</td></tr>
-    <tr><td>第 4 周</td><td>递归约束、指针约束、GC Shape 原理，精读 Type Parameters Proposal</td></tr>
-  </table>
+<div class="tip"><b>✅ 泛型化收益：</b><span>对比 1.18 之前的 <code>map[interface{}]interface{}</code> 版本——调用处零断言、编译期防错、值类型不装箱。要点：<code>K comparable</code> 做 map 键、<code>var zero V</code> 处理失败、receiver 带 <code>[K, V]</code>。</span></div>
 </section>
+<section data-anchor="8-泛型-vs-反射-vs-interface如何取舍">
+<h2 id="8-泛型-vs-反射-vs-interface如何取舍">8. 泛型 vs 反射 vs <code>interface{}</code>：如何取舍</h2>
+<p>三者都能写出「处理多种类型」的代码，但代价发生的<strong>时间点</strong>完全不同：泛型在编译期，反射在运行期，<code>interface{}</code> 在两者之间（把检查推给调用方）。</p>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>泛型</th><th>反射</th><th><code>interface{}</code> / <code>any</code></th></tr></thead><tbody><tr><td>类型检查时机</td><td><strong>编译期</strong></td><td>运行期（panic 风险）</td><td>调用方自行断言</td></tr><tr><td>性能</td><td>接近手写单态代码（GC Shape 复用）</td><td>慢 1~2 个数量级，易逃逸分配</td><td>有装箱/断言开销</td></tr><tr><td>可读性 / IDE 支持</td><td>好，签名即约束</td><td>差，类型信息藏在字符串与 <code>reflect.Value</code> 里</td><td>差，签名不表达意图</td></tr><tr><td>能处理的类型集合</td><td>编译期已知、满足约束</td><td><strong>运行期才知道的类型</strong>（JSON、ORM、配置解析）</td><td>任意类型</td></tr><tr><td>依赖结构体 Tag / 字段名</td><td>不支持</td><td><strong>原生支持</strong></td><td>不支持</td></tr><tr><td>代码体积</td><td>可能膨胀（stenciling）</td><td>一份代码</td><td>一份代码</td></tr><tr><td>典型场景</td><td>容器、工具函数、类型安全 API</td><td>序列化、ORM 映射、依赖注入、调试器</td><td>遗留代码、<code>fmt.Println</code> 式接口</td></tr></tbody></table></div>
+<p>一句话决策：</p>
+<ul><li><strong>类型在编译期已知、要的是「一套逻辑复用」</strong> → 泛型（容器 <code>Set[T]</code>、<code>Map/Filter</code>、<code>Cache[K,V]</code>）；</li><li><strong>类型要到运行期才知道、需要读字段名/Tag/动态调用</strong> → 反射（见 <a href="../go-reflection/go-reflection-tutorial.html">Go 反射教程</a> 第 8 节）；</li><li><strong><code>interface{}</code> 只适合「我真的不关心里面是什么」</strong>（打印、透传、容器边界），一旦业务代码里出现类型断言分支，就该换成泛型。</li><li>组合套路：<strong>泛型定骨架 + 反射看内部</strong>——泛型保证调用方类型安全，反射只在边界处解析元数据，二者互补而非替代。</li></ul>
+<blockquote><p>反例：用泛型重写 <code>encoding/json</code> 是行不通的，因为 JSON 的结构在编译期完全未知；反过来，用反射写一个 <code>Max[T]</code> 则是拿运行期成本换编译期就能拿到的东西。</p></blockquote>
+<hr>
 
-<footer>Go 泛型由浅入深教程 · 参考 Type Parameters Proposal 与官方泛型教程 · 2026-09</footer>
+</section>
+<section data-anchor="9-学习路线建议">
+<h2 id="9-学习路线建议">9. 学习路线建议</h2>
+<ol><li><strong>第 1 周</strong>：掌握 <code>[T any]</code> 语法、<code>comparable</code>/<code>cmp.Ordered</code>，重写自己项目里的 2~3 个工具函数；</li><li><strong>第 2 周</strong>：写泛型容器（Stack/Queue/Set），理解 receiver 的 <code>[T]</code>；</li><li><strong>第 3 周</strong>：阅读 <code>golang.org/x/exp/constraints</code> 与 <code>slices</code>/<code>maps</code> 标准库源码；</li><li><strong>第 4 周</strong>：研究递归约束（Clonable）、指针约束、GC shape 原理，阅读提案文档。</li></ol>
+<p>参考：<a href="https://go.dev/doc/tutorial/generics">Go 官方泛型教程</a>、<a href="https://go.googlesource.com/proposal/+/refs/heads/master/design/43651-type-parameters.md">Type Parameters Proposal</a>、标准库 <code>slices</code>/<code>maps</code> 源码。</p>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
 </main>
 </div>
-
 <script>
-document.querySelectorAll('pre code.lang-go').forEach(function(block){
-  var src = block.textContent;
-  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  var master = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
-  var out = src.replace(master, function(m, c1, c2, s, kw, typ, num, fn){
-    if (c1 || c2) return '<span class="cmt">'+m+'</span>';
-    if (s) return '<span class="str">'+m+'</span>';
-    if (kw) return '<span class="kw">'+m+'</span>';
-    if (typ) return '<span class="typ">'+m+'</span>';
-    if (num) return '<span class="num">'+m+'</span>';
-    if (fn) return '<span class="fn">'+m+'</span>';
-    return m;
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
   });
-  block.innerHTML = out;
-});
-document.querySelectorAll('pre code.lang-go').forEach(function(b){
-  var label=document.createElement('span');label.className='codelabel';label.textContent='Go';
-  b.closest('pre').appendChild(label);
-});
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
 </script>
 </body>
 </html>

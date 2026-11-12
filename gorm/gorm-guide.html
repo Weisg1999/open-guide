@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GORM 技术指南</title>
+<title>GORM · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
 <style>
   :root{
     --accent:#4f46e5; --accent-light:#e0e7ff; --accent-dark:#312e81;
@@ -24,120 +25,119 @@
   nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
   nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
   nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
   main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
-  .hero{background:linear-gradient(135deg,#1e1b4b 0%,#4338ca 55%,#6366f1 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(67,56,202,.3)}
+  .hero{background:linear-gradient(135deg,#312e81 0%,#4f46e5 58%,#312e81 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
   .hero h1{font-size:30px;margin-bottom:10px}
-  .hero p{opacity:.92;font-size:15px;max-width:680px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
   .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
   .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
   section{margin-bottom:46px}
   h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
   h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
-  h4{font-size:15px;margin:16px 0 8px;color:#312e81}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
   p{margin-bottom:12px}
   ul,ol{padding-left:24px;margin-bottom:12px}
   li{margin-bottom:6px}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin-bottom:18px;box-shadow:0 1px 3px rgba(49,46,129,.07)}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
   pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
-  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#a5b4fc;background:#26205c;padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
   code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
-  p code,li code,td code{background:#edeffe;color:#4338ca;border:1px solid #d7dbf9;padding:1px 6px;border-radius:6px;font-size:.88em}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
   .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
-  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(49,46,129,.07)}
-  th{background:#e0e7ff;color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
   td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
-  tr:nth-child(even) td{background:#f7f8fd}
-  .tip,.warn,.danger{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px;display:flex;gap:10px;align-items:flex-start}
-  .tip{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
-  .warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
-  .danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
-  .tip b,.warn b,.danger b{flex-shrink:0}
-  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0;box-shadow:0 1px 3px rgba(49,46,129,.07)}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
   .figure svg{width:100%;height:auto;display:block}
   .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
   .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
-  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:0 1px 3px rgba(49,46,129,.07)}
-  .feature .ft{font-weight:700;font-size:14px;color:var(--accent-dark);margin-bottom:6px}
-  .feature .fd{font-size:12.5px;color:var(--muted);line-height:1.65}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
   footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
   @media (max-width:900px){
     nav.sidebar{display:none}
     main{padding:24px 18px 60px}
     .hero{padding:28px 22px}
-    .features{grid-template-columns:1fr}
   }
 </style>
 </head>
 <body>
 <div class="layout">
-
 <nav class="sidebar">
   <div class="logo">GORM<span class="ver">v1.31</span></div>
   <div class="sub">Go 全功能 ORM 指南</div>
-  <a href="#intro">1. 项目简介</a>
-  <a class="sub-link" href="#intro-why">1.1 定位与核心卖点</a>
-  <a class="sub-link" href="#intro-install">1.2 安装与快速开始</a>
-  <a href="#features">2. 功能特性总览</a>
-  <a href="#concepts">3. 核心概念与原理</a>
-  <a class="sub-link" href="#c-db">3.1 gorm.DB 双重身份</a>
-  <a class="sub-link" href="#c-model">3.2 模型与约定</a>
-  <a class="sub-link" href="#c-assoc">3.3 关联与加载策略</a>
-  <a class="sub-link" href="#c-tx">3.4 事务与 SavePoint</a>
-  <a class="sub-link" href="#c-hooks">3.5 Hooks 与插件</a>
-  <a class="sub-link" href="#c-generics">3.6 泛型接口 v1.30+</a>
-  <a href="#practice">4. 使用实战</a>
-  <a class="sub-link" href="#p-pool">4.1 连接池与健康</a>
-  <a class="sub-link" href="#p-query">4.2 查询实战</a>
-  <a class="sub-link" href="#p-assoc">4.3 关联实战</a>
-  <a class="sub-link" href="#p-softdel">4.4 软删除与乐观锁</a>
-  <a class="sub-link" href="#p-dbresolver">4.5 读写分离</a>
-  <a class="sub-link" href="#p-migrate">4.6 迁移</a>
-  <a href="#versions">5. 版本演进速览</a>
-  <a href="#pitfalls">6. 常见坑与最佳实践</a>
-  <a href="#compare">7. 选型对比</a>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#安装">安装</a>
+  <a class="sub-link" href="#快速开始">快速开始</a>
+  <a href="#2-功能特性总览">2. 功能特性总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-架构gormdb-的双重身份">3.1 架构：gorm.DB 的双重身份</a>
+  <a class="sub-link" href="#32-模型与约定">3.2 模型与约定</a>
+  <a class="sub-link" href="#33-关联模式与加载策略">3.3 关联模式与加载策略</a>
+  <a class="sub-link" href="#34-事务闭包-savepoint">3.4 事务：闭包 + SavePoint</a>
+  <a class="sub-link" href="#35-hooks-与插件体系">3.5 Hooks 与插件体系</a>
+  <a class="sub-link" href="#36-泛型接口v130新代码推荐">3.6 泛型接口（v1.30+，新代码推荐）</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-连接池与健康生产必配">4.1 连接池与健康（生产必配）</a>
+  <a class="sub-link" href="#42-查询实战">4.2 查询实战</a>
+  <a class="sub-link" href="#43-关联实战">4.3 关联实战</a>
+  <a class="sub-link" href="#44-软删除与乐观锁">4.4 软删除与乐观锁</a>
+  <a class="sub-link" href="#45-读写分离dbresolver-插件">4.5 读写分离（dbresolver 插件）</a>
+  <a class="sub-link" href="#46-迁移">4.6 迁移</a>
+  <a href="#5-版本演进速览">5. 版本演进速览</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
 </nav>
-
 <main>
-
 <div class="hero">
-  <h1>GORM</h1>
-  <p>Go 最流行的全功能 ORM：<b>链式 API · 关联与事务 · v1.30+ 泛型接口</b>——CRUD、四种关联与预加载、嵌套事务/SavePoint、钩子、迁移器、软删除、读写分离插件一应俱全，同时保留 Raw SQL 逃生舱。</p>
-  <div class="meta">
-    <span>v1.31.2 · 2026.6 发布</span>
-    <span>MIT License</span>
-    <span>gorm.io/gorm</span>
-    <span>多方言 MySQL · PG · SQLite · MSSQL</span>
-    <span>插件生态 dbresolver/sharding</span>
-    <span>v1.30+ 泛型接口</span>
-  </div>
+  <h1>GORM 技术介绍与使用指南</h1>
+<p>Go 最流行的全功能 ORM：链式 API · 关联与事务 · v1.30+ 泛型接口——CRUD、四种关联与预加载、嵌套事务/SavePoint、钩子、迁移器、软删除、读写分离插件一应俱全，同时保留 Raw SQL 逃生舱。</p>
+<p style="opacity:.8;font-size:13.5px">Go 全功能 ORM 指南</p>
+<div class="meta"><span>v1.31.2 · 2026.6 发布</span><span>MIT License</span><span>gorm.io/gorm</span><span>多方言 MySQL · PG · SQLite · MSSQL</span><span>插件生态 dbresolver/sharding</span><span>v1.30+ 泛型接口</span></div>
 </div>
-
-<!-- ============ 1 项目简介 ============ -->
-<section id="intro">
-  <h2>1. 项目简介</h2>
-
-  <p>GORM（Go + ORM 谐音「凝胶」）是 Go 使用最广的 ORM 库，设计哲学是<b>开发者友好的全功能 ORM</b>——把常见的数据库操作全部抽象为链式 API，同时保留逃生舱（Raw SQL / SQL 表达式 / Hint），复杂查询不被框架绑架。</p>
-
-  <h3 id="intro-why">1.1 定位与核心卖点</h3>
-  <ul>
-    <li><b>全功能 ORM</b>：CRUD、关联（belong to / has one / has many / many2many + 多态 + 预加载）、事务（嵌套/SavePoint）、钩子（BeforeCreate 等）、迁移器、软删除、乐观锁……</li>
-    <li><b>链式 API + 方法链安全</b>：<code>db.Where(...).Order(...).Find(...)</code>；<code>Session</code>/<code>Scopes</code> 控制复用；</li>
-    <li><b>多数据库方言</b>：MySQL / PostgreSQL / SQLite / SQL Server / TiDB，方言以独立 driver 模块发布；</li>
-    <li><b>插件体系</b>：官方 dbresolver（读写分离/多数据源）、Prometheus 指标、慢查询审计、分库分表（sharding）；</li>
-    <li><b>v1.30+ 泛型接口</b>：<code>gorm.G[User](db).Find(ctx)</code> 带来编译期类型安全，与旧 API 可混用。</li>
-  </ul>
-  <p>适用场景：业务系统开发（快速建模 + 常规 CRUD）、需要迁移器管理 schema、需要关联查询的领域模型。</p>
-  <div class="warn"><b>⚠️ 不适合的场景：</b><span>报表级复杂 SQL（链式写起来绕，用 Raw / 查询构造器或 sqlx 更直接）、极致性能的批量管道（database/sql 手写更可控）。</span></div>
-
-  <h3 id="intro-install">1.2 安装与快速开始</h3>
-  <pre><code class="lang-bash">go get -u gorm.io/gorm
+<blockquote><p>Go 生态最流行的全功能 ORM：链式 API、关联（预加载/联接）、事务/SavePoint、钩子、迁移器、软删除、读写分离插件、v1.30 起支持泛型接口。 仓库：<a href="https://github.com/go-gorm/gorm">https://github.com/go-gorm/gorm</a>　|　当前主线：<strong>v1.31.2</strong>（2026.6.25 发布，MIT 协议，模块路径 <code>gorm.io/gorm</code>）</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p>GORM（Go + ORM 谐音"凝胶"）是 Go 使用最广的 ORM 库。设计哲学：<strong>开发者友好的全功能 ORM</strong>——常见的数据库操作全部抽象为链式 API，同时保留逃生舱（Raw SQL / SQL 表达式 / Hint）。</p>
+<p>核心卖点：</p>
+<ul><li><strong>全功能 ORM</strong>：CRUD、关联（belong to / has one / has many / many2many + 多态 + 预加载）、事务（嵌套/SavePoint）、钩子（BeforeCreate 等）、迁移器、软删除、乐观锁……</li><li><strong>链式 API + 方法链安全</strong>：<code>db.Where(...).Order(...).Find(...)</code>；<code>Session</code>/<code>Scopes</code> 控制复用；</li><li><strong>多数据库方言</strong>：MySQL / PostgreSQL / SQLite / SQL Server / TiDB，方言以独立 driver 模块发布；</li><li><strong>插件体系</strong>：官方 dbresolver（读写分离/多数据源）、Prometheus 指标、慢查询审计、分库分表（sharding）；</li><li><strong>v1.30+ 泛型接口</strong>：<code>gorm.G[User](db).Find(ctx)</code> 带来编译期类型安全，与旧 API 可混用。</li></ul>
+<p>适用场景：业务系统开发（快速建模 + 常规 CRUD）、需要迁移器管理 schema、需要关联查询的领域模型。<strong>不适合</strong>：报表级复杂 SQL（写起来绕，用 Raw/查询构造器或 sqlx 更直接）、极致性能的批量管道（database/sql 手写更可控）。</p>
+<h3 id="安装">安装</h3>
+<pre><code class="lang-bash">go get -u gorm.io/gorm
 go get -u gorm.io/driver/mysql      # 按需选择方言驱动
 # postgres: gorm.io/driver/postgres
 # sqlite:   gorm.io/driver/sqlite
 # sqlserver: gorm.io/driver/sqlserver</code></pre>
-
-  <p>十行代码走完「建表 → 增 → 查 → 改 → 删」：</p>
-  <pre><code class="lang-go">package main
+<h3 id="快速开始">快速开始</h3>
+<pre><code class="lang-go">package main
 
 import (
     "gorm.io/driver/sqlite"
@@ -165,13 +165,13 @@ func main() {
     db.Model(&amp;product).Update("Price", 200)  // 更新单字段
     db.Delete(&amp;product)                      // 软删除（UPDATE deleted_at）
 }</code></pre>
-  <div class="tip"><b>💡 读法：</b><span>嵌入 <code>gorm.Model</code> 即获得 ID / 时间戳 / 软删除四件套；<code>Delete</code> 并不发 DELETE，而是 <code>UPDATE ... SET deleted_at = now()</code>——这是 GORM「约定优于配置」最直观的体现。</span></div>
-</section>
+<hr>
 
-<!-- ============ 2 功能特性 ============ -->
-<section id="features">
-  <h2>2. 功能特性总览</h2>
-  <div class="features">
+<div class="warn"><b>⚠️ 不适合的场景：</b><span>报表级复杂 SQL（链式写起来绕，用 Raw / 查询构造器或 sqlx 更直接）、极致性能的批量管道（database/sql 手写更可控）。</span></div>
+<div class="tip"><b>💡 读法：</b><span>嵌入 <code>gorm.Model</code> 即获得 ID / 时间戳 / 软删除四件套；<code>Delete</code> 并不发 DELETE，而是 <code>UPDATE ... SET deleted_at = now()</code>——这是 GORM「约定优于配置」最直观的体现。</span></div>
+</section>
+<section data-anchor="2-功能特性总览">
+<h2 id="2-功能特性总览">2. 功能特性总览<span class="lvl b">速览</span></h2><div class="features">
     <div class="feature"><div class="ft">🧩 模型定义</div><div class="fd">struct → 表：ID 主键约定、gorm tag 定制列/类型/索引、嵌入式结构体复用字段。</div></div>
     <div class="feature"><div class="ft">🔄 CRUD 全家桶</div><div class="fd">Create/CreateInBatches（批量+回填主键）、First/Take/Last/Find/FindInBatches、Update/Updates、Delete。</div></div>
     <div class="feature"><div class="ft">🔗 关联模式</div><div class="fd">belong to / has one / has many / many2many + 多态 + 自引用；foreignKey/references 标签定制。</div></div>
@@ -185,17 +185,14 @@ func main() {
     <div class="feature"><div class="ft">🌊 读写分离</div><div class="fd">dbresolver 插件：多数据源、读写分离、dbresolver.Write 写后立读强制走写库。</div></div>
     <div class="feature"><div class="ft">🧬 泛型接口</div><div class="fd">v1.30+ gorm.G[T](db) 类型安全 CRUD；Joins/Preload 增强（LimitPerRecord）。</div></div>
   </div>
-  <div class="tip"><b>💡 此外：</b><span>日志体系支持<b>分级 Logger</b>（SlowThreshold 慢查询阈值）与 Trace；查询构造另有命名参数、Group Conditions、子查询等能力（实战见 <a href="#p-query">4.2</a>）。</span></div>
+<div class="tip"><b>💡 此外：</b><span>日志体系支持<b>分级 Logger</b>（SlowThreshold 慢查询阈值）与 Trace；查询构造另有命名参数、Group Conditions、子查询等能力（实战见 <a href="#42-查询实战">4.2</a>）。</span></div>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>模型定义</td><td>struct → 表：主键（ID 约定）、<code>gorm:"column:type:size:index;..."</code> tag 定制、嵌入式结构</td></tr><tr><td>CRUD</td><td>Create/CreateInBatches（批量+回填主键）、First/Take/Last/Find/FindInBatches、Update/Updates、Delete</td></tr><tr><td>查询构造</td><td>Where/Or/Not/Order/Limit/Offset/Group/Having/Distinct/Joins/子查询/命名参数/Group Conditions</td></tr><tr><td>关联</td><td>四种关系 + 预加载（Preload/Joins/Association 模式）、多态、自引用、关联标签（foreignKey/references）</td></tr><tr><td>事务</td><td><code>db.Transaction(func(tx) error)</code> 闭包自动提交回滚、嵌套事务（SavePoint/RollbackTo）、手动 Begin/Commit</td></tr><tr><td>钩子</td><td>Before/After + Create/Update/Find/Save/Delete；另有插件级的 <code>AfterInitialize</code></td></tr><tr><td>软删除</td><td><code>gorm.DeletedAt</code> 字段自动过滤；<code>Unscoped()</code> 含已删数据/物理删除</td></tr><tr><td>乐观锁</td><td>版本字段 + <code>WHERE version = ?</code> 原子更新</td></tr><tr><td>迁移器</td><td>AutoMigrate（增量加列加索引）/ Migrator 手动 DDL（AddColumn/CreateIndex/HasTable...）</td></tr><tr><td>上下文</td><td><code>db.WithContext(ctx)</code> 贯穿链路（超时/取消/tracing）</td></tr><tr><td>高级模式</td><td>DryRun（生成 SQL 不执行）、PrepareStmt（预编译缓存）、Find To Map、SQL Expr、Upsert（OnConflict）</td></tr><tr><td>读写分离</td><td>dbresolver 插件：多数据源、读写分离、强制走写库（<code>dbresolver.Write</code>）</td></tr><tr><td><strong>泛型接口</strong></td><td>v1.30+：<code>gorm.G[T](db)</code> 类型安全的 CRUD，避免 SQL 污染；Joins/Preload 增强（LimitPerRecord）</td></tr><tr><td>日志</td><td>分级 Logger（SlowThreshold 慢查询）、Trace 支持</td></tr></tbody></table></div>
+<hr>
+
 </section>
-
-<!-- ============ 3 核心概念 ============ -->
-<section id="concepts">
-  <h2>3. 核心概念与原理</h2>
-
-  <h3 id="c-db">3.1 架构：gorm.DB 的双重身份</h3>
-  <p><code>*gorm.DB</code> 有两种工作模式：<b>全局模式</b>（<code>gorm.Open</code> 初始化后的默认形态，链式方法克隆 Statement，安全共享）与<b>会话/事务模式</b>（<code>Session</code>/<code>WithContext</code>/<code>Begin</code> 之后置 newDB 标记，链式方法原地生效）。</p>
-
-  <div class="figure">
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-架构gormdb-的双重身份">3.1 架构：gorm.DB 的双重身份</h3><div class="figure">
     <svg viewBox="0 0 880 440" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs>
         <marker id="f1i" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4f46e5"/></marker>
@@ -263,28 +260,18 @@ func main() {
     </svg>
     <figcaption>图 1 · gorm.DB 双重身份：全局模式下链式方法克隆 Statement（并发安全、可全局共享）；Session/Begin 后进入会话模式原地生效；finisher（Find/Create…）执行后的实例带着污染条件，不可复用</figcaption>
   </div>
-
-  <p>关键机制（面试高频）：<b>链式方法会克隆 Statement</b>。<code>db.Where(...)</code> 返回新的 <code>*gorm.DB</code>（带条件副本），因此并发使用同一个全局 <code>db</code> 是安全的——但 <b>finisher 方法（Find/Create…）执行后的实例不可再复用</b>做新查询。</p>
-  <pre><code class="lang-go">// 安全：并发复用全局 db —— 链式方法克隆 Statement，条件互不影响
+<div class="tip"><b>💡 记忆口诀：</b><span>「链式克隆、finisher 即弃」——需要复用条件时，用 <code>Session(&amp;gorm.Session{})</code> 或 <code>Scopes</code> 显式建立新会话。</span></div>
+<pre><code class="lang-text">*gorm.DB
+  ├── 全局模式（初始化后）── 安全共享，链式方法克隆出新会话
+  └── 会话/事务模式（Session/WithContext/Begin 之后）── newDB 标记，链式方法原地生效</code></pre>
+<p>关键机制（面试高频）：<strong>链式方法会克隆 Statement</strong>。<code>db.Where(...)</code> 返回新的 <code>*gorm.DB</code>（带条件副本），因此并发使用同一个全局 <code>db</code> 是安全的——但<strong> finisher 方法（Find/Create...）执行后的实例不可再复用</strong>做新查询。</p>
+<pre><code class="lang-go">// 安全：并发复用全局 db
 tx := db.Where("age &gt; ?", 18).Session(&amp;gorm.Session{})   // 显式新会话
 
 // 危险：finisher 之后的 db 带着污染的条件
 result := db.Where("a = 1").Find(&amp;users)
 db.Find(&amp;all)          // ❌ 可能仍带 a=1 的条件（旧版本行为，勿这样写）</code></pre>
-  <div class="tip"><b>💡 记忆口诀：</b><span>「链式克隆、finisher 即弃」——需要复用条件时，用 <code>Session(&amp;gorm.Session{})</code> 或 <code>Scopes</code> 显式建立新会话。</span></div>
-
-  <h3 id="c-model">3.2 模型与约定</h3>
-  <p>GORM 靠<b>命名约定</b>完成 struct → 表的映射，约定不满足时用 tag 显式覆盖：</p>
-  <table>
-    <tr><th style="width:90px">约定</th><th style="width:290px">规则</th><th>覆盖方式</th></tr>
-    <tr><td>主键</td><td>名为 <code>ID</code> 的字段</td><td><code>gorm:"primaryKey"</code></td></tr>
-    <tr><td>表名</td><td>结构体名复数蛇形 <code>UserInfo</code> → <code>user_infos</code></td><td><code>TableName()</code> 方法 / NamingStrategy</td></tr>
-    <tr><td>列名</td><td>字段名蛇形</td><td><code>gorm:"column:xxx"</code></td></tr>
-    <tr><td>时间</td><td><code>CreatedAt/UpdatedAt</code> 自动维护</td><td><code>autoCreateTime/autoUpdateTime</code>（支持 unix 秒/毫秒/纳秒）</td></tr>
-    <tr><td>软删</td><td><code>DeletedAt gorm.DeletedAt</code></td><td>—</td></tr>
-  </table>
-
-  <div class="figure">
+<h3 id="32-模型与约定">3.2 模型与约定</h3><div class="figure">
     <svg viewBox="0 0 880 430" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs>
         <marker id="f2i" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4f46e5"/></marker>
@@ -351,11 +338,8 @@ db.Find(&amp;all)          // ❌ 可能仍带 a=1 的条件（旧版本行为�
     </svg>
     <figcaption>图 2 · 模型映射约定：struct User → 表 users——ID 主键、蛇形列名、CreatedAt/UpdatedAt 自动维护、DeletedAt 软删除全部约定优先，不满足时用 gorm tag 或 TableName() 覆盖</figcaption>
   </div>
-
-  <h3 id="c-assoc">3.3 关联模式与加载策略</h3>
-  <p>四种关系一张图说清——<b>外键位置决定关系类型</b>：</p>
-
-  <div class="figure">
+<div class="table-wrap"><table><thead><tr><th>约定</th><th>规则</th><th>覆盖方式</th></tr></thead><tbody><tr><td>主键</td><td>名为 <code>ID</code> 的字段</td><td><code>gorm:"primaryKey"</code></td></tr><tr><td>表名</td><td>结构体名复数蛇形 <code>UserInfo</code> → <code>user_infos</code></td><td><code>TableName()</code> 方法 / NamingStrategy</td></tr><tr><td>列名</td><td>字段名蛇形</td><td><code>gorm:"column:xxx"</code></td></tr><tr><td>时间</td><td><code>CreatedAt/UpdatedAt</code> 自动维护</td><td><code>autoCreateTime/autoUpdateTime</code>（支持 unix 秒/毫秒/纳秒）</td></tr><tr><td>软删</td><td><code>DeletedAt gorm.DeletedAt</code></td><td>—</td></tr></tbody></table></div>
+<h3 id="33-关联模式与加载策略">3.3 关联模式与加载策略</h3><div class="figure">
     <svg viewBox="0 0 880 470" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs>
         <marker id="f3i" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4f46e5"/></marker>
@@ -421,15 +405,7 @@ db.Find(&amp;all)          // ❌ 可能仍带 a=1 的条件（旧版本行为�
     </svg>
     <figcaption>图 3 · 四种关联关系与外键位置：User belongs to Company（FK 在 User）、has one CreditCard（FK 在 CreditCard）、has many Pets（FK 在 Pet）、many2many Languages（中间表 user_languages）</figcaption>
   </div>
-
-  <p>三种加载方式（性能差异巨大）：</p>
-  <ul>
-    <li><b>Preload</b>：单独发一条 <code>IN (...)</code> 查询加载关联——适合一对多/集合；</li>
-    <li><b>Joins</b>：单条 JOIN 查询带出 belongs to / has one——少一次往返；</li>
-    <li><b>Association 模式</b>：<code>db.Model(&amp;user).Association("Pets")</code> 增删改查关联本身。</li>
-  </ul>
-
-  <div class="figure">
+<div class="figure">
     <svg viewBox="0 0 880 480" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <!-- N+1 -->
       <rect x="24" y="20" width="410" height="212" rx="12" fill="#fef2f2" stroke="#fecaca" stroke-width="1.6"/>
@@ -491,31 +467,15 @@ db.Find(&amp;all)          // ❌ 可能仍带 a=1 的条件（旧版本行为�
     </svg>
     <figcaption>图 4 · 三种加载策略与 N+1：循环访问关联产生 1+N 条 SQL；Preload 两条 SQL（主查询 + IN）、Joins 单条 JOIN、Association 直接操作关联本身</figcaption>
   </div>
-
-  <div class="tip"><b>💡 N+1 问题自查：</b><span><code>PrepareStmt + Logger</code> 打开 SQL 日志，循环里查关联就是 N+1，改 Preload 一次拉回。</span></div>
-
-  <h3 id="c-tx">3.4 事务：闭包 + SavePoint</h3>
-  <pre><code class="lang-go">db.Transaction(func(tx *gorm.DB) error {
-    if err := tx.Create(&amp;order).Error; err != nil {
-        return err                       // 返回 error 自动 ROLLBACK
-    }
-    if err := tx.Model(&amp;stock).Update("qty", gorm.Expr("qty - ?", n)).Error; err != nil {
-        return err
-    }
-    return nil                           // 返回 nil 自动 COMMIT
-})
-
-// 嵌套事务：内部 Transaction 创建 SavePoint，内层失败只回滚到 SavePoint
-db.Transaction(func(tx *gorm.DB) error {
-    tx.Create(&amp;a)
-    tx.Transaction(func(tx2 *gorm.DB) error {   // SAVEPOINT
-        tx2.Create(&amp;b)
-        return errors.New("rollback inner")     // 只回滚 b
-    })
-    return nil                                  // a 正常提交
-})</code></pre>
-
-  <div class="figure">
+<div class="tip"><b>💡 N+1 问题自查：</b><span><code>PrepareStmt + Logger</code> 打开 SQL 日志，循环里查关联就是 N+1，改 Preload 一次拉回。</span></div>
+<pre><code class="lang-text">User ──belongs to──► Company     （外键在 User）
+User ──has one──►    CreditCard  （外键在 CreditCard）
+User ──has many──►   Pets        （外键在 Pet）
+User ──many2many──►  Languages   （中间表 user_languages）</code></pre>
+<p>三种加载方式（性能差异巨大）：</p>
+<ul><li><strong>Preload</strong>：单独发一条 <code>IN (...)</code> 查询加载关联——适合一对多/集合；</li><li><strong>Joins</strong>：单条 JOIN 查询带出 belongs to/has one——少一次往返；</li><li><strong>Association 模式</strong>：<code>db.Model(&amp;user).Association("Pets")</code> 增删改查关联本身。</li></ul>
+<p>N+1 问题自查：<code>PrepareStmt + Logger</code> 打开 SQL 日志，循环里查关联就是 N+1，改 Preload 一次拉回。</p>
+<h3 id="34-事务闭包-savepoint">3.4 事务：闭包 + SavePoint</h3><div class="figure">
     <svg viewBox="0 0 880 430" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs>
         <marker id="f5i" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4f46e5"/></marker>
@@ -594,35 +554,33 @@ db.Transaction(func(tx *gorm.DB) error {
     </svg>
     <figcaption>图 5 · 事务与嵌套 SavePoint：外层 Transaction 内 Create a；内层 Transaction 创建 SAVEPOINT 后 Create b，失败仅 ROLLBACK TO SavePoint（撤销 b、保留 a）；外层继续 return nil 最终 COMMIT</figcaption>
   </div>
+<pre><code class="lang-go">db.Transaction(func(tx *gorm.DB) error {
+    if err := tx.Create(&amp;order).Error; err != nil {
+        return err                       // 返回 error 自动 ROLLBACK
+    }
+    if err := tx.Model(&amp;stock).Update("qty", gorm.Expr("qty - ?", n)).Error; err != nil {
+        return err
+    }
+    return nil                           // 返回 nil 自动 COMMIT
+})
 
-  <h3 id="c-hooks">3.5 Hooks 与插件体系</h3>
-  <pre><code class="lang-go">func (u *User) BeforeCreate(tx *gorm.DB) error {
+// 嵌套事务：内部 Transaction 创建 SavePoint，内层失败只回滚到 SavePoint
+db.Transaction(func(tx *gorm.DB) error {
+    tx.Create(&amp;a)
+    tx.Transaction(func(tx2 *gorm.DB) error {   // SAVEPOINT
+        tx2.Create(&amp;b)
+        return errors.New("rollback inner")     // 只回滚 b
+    })
+    return nil                                  // a 正常提交
+})</code></pre>
+<h3 id="35-hooks-与插件体系">3.5 Hooks 与插件体系</h3>
+<pre><code class="lang-go">func (u *User) BeforeCreate(tx *gorm.DB) error {
     if u.Name == "" { return errors.New("name required") }   // 返回 error 中止创建
     u.UUID = uuid.New()
     return nil
 }</code></pre>
-  <p>钩子按「实体方法存在与否」分发，多个实体同一钩子按创建顺序执行；插件（如 dbresolver / prometheus / sharding）通过 <code>Callbacks()</code> 注册到 Create / Query / Update / Delete / RawQuery 五条链，与钩子共享同一套回调管线。</p>
-
-  <h3 id="c-generics">3.6 泛型接口（v1.30+，新代码推荐）</h3>
-  <p>旧 API 的 <code>Find(&amp;users)</code> 需要传入目标切片引用，类型不匹配只能运行时发现；v1.30 起 <code>gorm.G[T](db)</code> 在编译期绑定模型类型，且 <code>ctx</code> 直接作为首参传递：</p>
-  <pre><code class="lang-go">// 旧：Find 需要传入目标切片，类型不匹配只能运行时发现
-// 新：编译期绑定模型类型
-user, err := gorm.G[User](db).Where("name = ?", "Jinzhu").First(ctx)
-users, err := gorm.G[User](db).Where("age &lt;= ?", 18).Find(ctx)
-gorm.G[User](db).Create(ctx, &amp;User{Name: "Alice"})
-
-// 高级特性经可选参数（clause/plugin）透传
-gorm.G[User](db, clause.Locking{Strength: "UPDATE"}).Find(ctx)
-gorm.G[User](db, dbresolver.Write).Find(ctx)      // 强制读主库
-
-// Preload 增强：每个主记录限载 2 个宠物
-gorm.G[User](db).Preload("Friends.Pets", func(db gorm.PreloadBuilder) error {
-    db.LimitPerRecord(2)
-    return nil
-}).Find(ctx)</code></pre>
-  <p>泛型版有意移除了易误用的 <code>FirstOrCreate/Save</code>（歧义与并发问题），并新增事务超时机制缓解连接泄漏。与旧 API 可混用，适合渐进迁移。</p>
-
-  <div class="figure">
+<p>钩子按"实体方法存在与否"分发，多个实体同一钩子按创建顺序执行；插件（如 dbresolver/prometheus/sharding）通过 <code>Callbacks()</code> 注册到 Create/Query/Update/Delete/RawQuery 五条链。</p>
+<h3 id="36-泛型接口v130新代码推荐">3.6 泛型接口（v1.30+，新代码推荐）</h3><div class="figure">
     <svg viewBox="0 0 880 452" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs>
         <marker id="f6i" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4f46e5"/></marker>
@@ -676,14 +634,29 @@ gorm.G[User](db).Preload("Friends.Pets", func(db gorm.PreloadBuilder) error {
     </svg>
     <figcaption>图 6 · v1.30 泛型接口：旧 Find(&amp;users) 类型问题运行时才暴露 vs 新 gorm.G[User](db).Find(ctx) 编译期类型安全；另有可选参数透传、LimitPerRecord 增强、移除易误用 API</figcaption>
   </div>
+<pre><code class="lang-go">// 旧：Find 需要传入目标切片，类型不匹配只能运行时发现
+// 新：编译期绑定模型类型
+user, err := gorm.G[User](db).Where("name = ?", "Jinzhu").First(ctx)
+users, err := gorm.G[User](db).Where("age &lt;= ?", 18).Find(ctx)
+gorm.G[User](db).Create(ctx, &amp;User{Name: "Alice"})
+
+// 高级特性经可选参数（clause/plugin）透传
+gorm.G[User](db, clause.Locking{Strength: "UPDATE"}).Find(ctx)
+gorm.G[User](db, dbresolver.Write).Find(ctx)      // 强制读主库
+
+// Preload 增强：每个主记录限载 2 个宠物
+gorm.G[User](db).Preload("Friends.Pets", func(db gorm.PreloadBuilder) error {
+    db.LimitPerRecord(2)
+    return nil
+}).Find(ctx)</code></pre>
+<p>泛型版有意移除了易误用的 <code>FirstOrCreate/Save</code>（歧义与并发问题），并新增事务超时机制缓解连接泄漏。</p>
+<hr>
+
 </section>
-
-<!-- ============ 4 使用实战 ============ -->
-<section id="practice">
-  <h2>4. 使用实战</h2>
-
-  <h3 id="p-pool">4.1 连接池与健康（生产必配）</h3>
-  <pre><code class="lang-go">import (
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-连接池与健康生产必配">4.1 连接池与健康（生产必配）</h3><div class="tip"><b>💡 生产清单：</b><span>分级 Logger（SlowThreshold 慢查询告警）+ PrepareStmt 预编译缓存 + 显式连接池三件套（MaxIdle/MaxOpen/ConnMaxLifetime）——上线前必配；健康检查用 <code>sqlDB.Ping()</code>。</span></div>
+<pre><code class="lang-go">import (
     "gorm.io/driver/mysql"
     "gorm.io/gorm"
     "gorm.io/gorm/logger"
@@ -699,10 +672,8 @@ sqlDB, _ := db.DB()                                // 拿到 *sql.DB 管理连�
 sqlDB.SetMaxIdleConns(10)
 sqlDB.SetMaxOpenConns(100)
 sqlDB.SetConnMaxLifetime(time.Hour)</code></pre>
-  <div class="tip"><b>💡 生产清单：</b><span>分级 Logger（SlowThreshold 慢查询告警）+ PrepareStmt 预编译缓存 + 显式连接池三件套（MaxIdle/MaxOpen/ConnMaxLifetime）——上线前必配；健康检查用 <code>sqlDB.Ping()</code>。</span></div>
-
-  <h3 id="p-query">4.2 查询实战</h3>
-  <pre><code class="lang-go">// 条件组合
+<h3 id="42-查询实战">4.2 查询实战</h3><div class="tip"><b>💡 First vs Take：</b><span><code>First</code> 隐式附加 <code>ORDER BY id LIMIT 1</code>，<code>Take</code> 不排序——语义不同别混用；<code>Find</code> 查不到返回空切片且不报错，只有 <code>First/Last/Take</code> 会返回 <code>ErrRecordNotFound</code>。</span></div>
+<pre><code class="lang-go">// 条件组合
 db.Where("name IN ?", []string{"a", "b"}).
    Where("age BETWEEN ? AND ?", 18, 30).
    Where("role = ?", "admin").Or("vip = ?", true).
@@ -714,7 +685,7 @@ db.Where("name IN ?", []string{"a", "b"}).
 db.Where("name = @name OR nickname = @name", sql.Named("name", "jinzhu")).Find(&amp;users)
 db.Where(db.Where("a = 1").Or("b = 2")).Where(db.Where("c = 3").Or("d = 4")).Find(&amp;users)
 
-// 选列 / 分批
+// 选列 / 去 map
 db.Model(&amp;User{}).Select("name, age").Find(&amp;results)
 db.Model(&amp;User{}).FindInBatches(&amp;results, 100, func(tx *gorm.DB, batch int) error {
     return nil                                     // 分批处理，内存友好
@@ -731,10 +702,8 @@ db.Clauses(clause.OnConflict{
     Columns:   []clause.Column{{Name: "id"}},
     DoUpdates: clause.AssignmentColumns([]string{"name", "age"}),
 }).Create(&amp;user)                                   // INSERT ... ON DUPLICATE KEY UPDATE</code></pre>
-  <div class="tip"><b>💡 First vs Take：</b><span><code>First</code> 隐式附加 <code>ORDER BY id LIMIT 1</code>，<code>Take</code> 不排序——语义不同别混用；<code>Find</code> 查不到返回空切片且不报错，只有 <code>First/Last/Take</code> 会返回 <code>ErrRecordNotFound</code>。</span></div>
-
-  <h3 id="p-assoc">4.3 关联实战</h3>
-  <pre><code class="lang-go">type User struct {
+<h3 id="43-关联实战">4.3 关联实战</h3><div class="tip"><b>💡 选择顺序：</b><span>集合关联（has many / many2many）用 <code>Preload</code>；单条关联（belongs to / has one）用 <code>Joins</code> 省一次往返；要增删关联记录本身（不动主表）才用 Association 模式。</span></div>
+<pre><code class="lang-go">type User struct {
     ID        uint
     Name      string
     CompanyID uint
@@ -755,10 +724,8 @@ db.Joins("Company").Find(&amp;users)
 // Association 模式：只操作关联
 db.Model(&amp;user).Association("Languages").Append([]Language{go, java})
 db.Model(&amp;user).Association("Pets").Count()</code></pre>
-  <div class="tip"><b>💡 选择顺序：</b><span>集合关联（has many / many2many）用 <code>Preload</code>；单条关联（belongs to / has one）用 <code>Joins</code> 省一次往返；要增删关联记录本身（不动主表）才用 Association 模式。</span></div>
-
-  <h3 id="p-softdel">4.4 软删除与乐观锁</h3>
-  <pre><code class="lang-go">// 软删除：DELETE → UPDATE ... SET deleted_at = now()
+<h3 id="44-软删除与乐观锁">4.4 软删除与乐观锁</h3><div class="warn"><b>⚠️ 软删除 + 唯一索引：</b><span>软删只是填 <code>deleted_at</code>，记录仍在——同唯一键再次插入会冲突。要么物理删除，要么唯一索引把 <code>deleted_at</code> 一起纳入。</span></div>
+<pre><code class="lang-go">// 软删除：DELETE → UPDATE ... SET deleted_at = now()
 db.Delete(&amp;user)                       // 普通 Where 查询自动加 deleted_at IS NULL
 db.Unscoped().Find(&amp;users)            // 含已删
 db.Unscoped().Delete(&amp;user)           // 物理删除
@@ -774,11 +741,9 @@ res := db.Model(&amp;Article{}).Where("id = ? AND version = ?", id, ver).
 if res.RowsAffected == 0 {
     // 并发冲突，重试或报错
 }</code></pre>
-  <div class="warn"><b>⚠️ 软删除 + 唯一索引：</b><span>软删只是填 <code>deleted_at</code>，记录仍在——同唯一键再次插入会冲突。要么物理删除，要么唯一索引把 <code>deleted_at</code> 一起纳入。</span></div>
-
-  <h3 id="p-dbresolver">4.5 读写分离（dbresolver 插件）</h3>
-  <pre><code class="lang-bash">go get gorm.io/plugin/dbresolver</code></pre>
-  <pre><code class="lang-go">import "gorm.io/plugin/dbresolver"
+<h3 id="45-读写分离dbresolver-插件">4.5 读写分离（dbresolver 插件）</h3><div class="tip"><b>💡 路由规则：</b><span>默认「写走 Sources、读走 Replicas」；<code>dbresolver.Use("orders")</code> 按表/库路由到独立数据源；写后立读场景用 <code>dbresolver.Write</code> 强制走写库，避免主从延迟读到旧值。</span></div>
+<pre><code class="lang-bash">go get gorm.io/plugin/dbresolver</code></pre>
+<pre><code class="lang-go">import "gorm.io/plugin/dbresolver"
 
 db.Use(dbresolver.Register(dbresolver.Config{
     Replicas: []gorm.Dialector{mysql.Open(replicaDSN)},   // 读
@@ -792,10 +757,8 @@ db.Scopes(dbresolver.Use("orders")).Find(&amp;orders)
 
 // 写后立读：强制主库
 db.Clauses(dbresolver.Write).First(&amp;user, id)</code></pre>
-  <div class="tip"><b>💡 路由规则：</b><span>默认「写走 Sources、读走 Replicas」；<code>dbresolver.Use("orders")</code> 按表/库路由到独立数据源；写后立读场景用 <code>dbresolver.Write</code> 强制走写库，避免主从延迟读到旧值。</span></div>
-
-  <h3 id="p-migrate">4.6 迁移</h3>
-  <pre><code class="lang-go">// 增量迁移：建表、加列、加索引（不删列不改类型——保守策略）
+<h3 id="46-迁移">4.6 迁移</h3><div class="warn"><b>⚠️ 生产建议：</b><span>迁移走版本化工具（golang-migrate / atlas / ent 的 atlas），<code>AutoMigrate</code> 用于开发与测试环境——它不删列、不改类型、不收窄范围（防丢数据）。</span></div>
+<pre><code class="lang-go">// 增量迁移：建表、加列、加索引（不删列不改类型——保守策略）
 db.AutoMigrate(&amp;User{}, &amp;Order{}, &amp;Article{})
 
 // Migrator 手动控制
@@ -803,112 +766,85 @@ db.Migrator().HasTable(&amp;User{})
 db.Migrator().AddColumn(&amp;User{}, "Age")
 db.Migrator().CreateIndex(&amp;User{}, "idx_name")
 db.Migrator().DropColumn(&amp;User{}, "Nickname")</code></pre>
-  <div class="warn"><b>⚠️ 生产建议：</b><span>迁移走版本化工具（golang-migrate / atlas / ent 的 atlas），<code>AutoMigrate</code> 用于开发与测试环境——它不删列、不改类型、不收窄范围（防丢数据）。</span></div>
+<p>生产建议：迁移走版本化工具（golang-migrate/atlas/ent 的 atlas），AutoMigrate 用于开发与测试环境。</p>
+<hr>
+
 </section>
+<section data-anchor="5-版本演进速览">
+<h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2><div class="tip"><b>💡 生态配套：</b><span><code>gen</code>（代码生成 / 类型安全 DAO）、<code>sharding</code>（分表）、<code>prometheus</code>（指标）、<code>sqlite</code>/<code>clickhouse</code> 等第三方方言。</span></div>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>时间</th><th>要点</th></tr></thead><tbody><tr><td>v2.0（模块 v1.20）</td><td>2020.8</td><td>从零重写：Context/批量插入/嵌套事务/关联增强/插件系统/Migrator，模块路径 <code>gorm.io/gorm</code></td></tr><tr><td>v1.21–v1.25</td><td>2020–2023</td><td>方言与关联持续打磨、性能修复、JSON 支持完善</td></tr><tr><td>v1.26</td><td>2025.5</td><td>稳定性与 32 位环境修复</td></tr><tr><td>v1.30.0</td><td>2025 末–2026 初</td><td><strong>泛型接口 <code>gorm.G[T]</code></strong>（编译期类型安全）、Joins/Preload 增强（LimitPerRecord、自定义 Join 条件）、事务超时处理（连接泄漏防护）</td></tr><tr><td>v1.31.x</td><td>2026.6</td><td>rows 泄漏修复（panic 场景 defer Close）、ExplainSQL 性能、migrator nil 防护、泛型 WithResult 错误填充</td></tr></tbody></table></div>
+<p>生态配套：<code>gen</code>（代码生成/类型安全 DAO）、<code>sharding</code>（分表）、<code>prometheus</code>、<code>sqlite</code>/<code>clickhouse</code> 等第三方方言。</p>
+<hr>
 
-<!-- ============ 5 版本演进 ============ -->
-<section id="versions">
-  <h2>5. 版本演进速览</h2>
-  <table>
-    <tr><th style="width:150px">版本</th><th style="width:130px">时间</th><th>要点</th></tr>
-    <tr><td>v2.0（模块 v1.20）</td><td>2020.8</td><td>从零重写：Context / 批量插入 / 嵌套事务 / 关联增强 / 插件系统 / Migrator，模块路径 <code>gorm.io/gorm</code></td></tr>
-    <tr><td>v1.21–v1.25</td><td>2020–2023</td><td>方言与关联持续打磨、性能修复、JSON 支持完善</td></tr>
-    <tr><td>v1.26</td><td>2025.5</td><td>稳定性与 32 位环境修复</td></tr>
-    <tr><td><b>v1.30.0</b></td><td>2025 末–2026 初</td><td><b>泛型接口 <code>gorm.G[T]</code></b>（编译期类型安全）、Joins/Preload 增强（LimitPerRecord、自定义 Join 条件）、事务超时处理（连接泄漏防护）</td></tr>
-    <tr><td><b>v1.31.x</b></td><td>2026.6</td><td>rows 泄漏修复（panic 场景 defer Close）、ExplainSQL 性能、migrator nil 防护、泛型 WithResult 错误填充</td></tr>
-  </table>
-  <div class="tip"><b>💡 生态配套：</b><span><code>gen</code>（代码生成 / 类型安全 DAO）、<code>sharding</code>（分表）、<code>prometheus</code>（指标）、<code>sqlite</code>/<code>clickhouse</code> 等第三方方言。</span></div>
 </section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2><div class="danger"><b>🚫 链式复用污染：</b><span>finisher（Find/Create）执行后的 <code>*gorm.DB</code> 不再复用；需要复用条件用 <code>Session(&amp;gorm.Session{})</code> 或 <code>Scopes</code> 显式建会话。</span></div>
+<div class="danger"><b>❗ Updates 的零值陷阱：</b><span><code>Updates(User{Name: "", Age: 18})</code> 用 struct 更新会<b>忽略零值字段</b>——要更新为零值用 <code>map[string]any{"name": ""}</code> 或 <code>Select("name").Updates(...)</code>。</span></div>
+<div class="warn"><b>🏗️ AutoMigrate 不删列：</b><span>删列 / 改类型 / 收窄范围都不做（防丢数据），DDL 变更走版本化迁移工具。</span></div>
+<div class="danger"><b>🔁 N+1 查询：</b><span>循环里访问关联字段就是 N+1；打开 SQL 日志自查，改 Preload / Joins。</span></div>
+<div class="warn"><b>🔍 First 的隐式主键排序：</b><span><code>First</code> 附加 <code>ORDER BY id LIMIT 1</code>，<code>Take</code> 不排序——语义不同别混用。</span></div>
+<div class="warn"><b>❓ ErrRecordNotFound 只有 First/Last/Take 返回：</b><span><code>Find</code> 查不到不报错（空切片）——判断存在用 <code>Count</code> 或 <code>First</code>。</span></div>
+<div class="danger"><b>⚠️ 事务里必须用 tx 而非 db：</b><span>闭包里误用全局 <code>db</code> 的操作不在事务里，且连接会泄漏。</span></div>
+<div class="danger"><b>🗑️ 软删除不覆盖唯一索引：</b><span>删除后同唯一键再次插入冲突——要么物理删除，要么唯一索引包含 <code>deleted_at</code>。</span></div>
+<div class="warn"><b>⚙️ PrepareStmt 与连接池：</b><span>预编译缓存按连接失效，频繁 <code>SetMaxOpenConns</code> 变更会降低命中率。</span></div>
+<div class="warn"><b>📦 大结果集必须分批：</b><span><code>FindInBatches</code> / 游标分页（<code>Where("id &gt; ?", lastID).Order("id").Limit(n)</code>）代替深分页 <code>Offset</code>。</span></div>
+<div class="danger"><b>⏱️ WithContext 别忘传：</b><span>没有 context 的查询无法被上层超时 / 取消 / 追踪——所有业务查询统一 <code>db.WithContext(ctx)</code>（或泛型接口直接传 ctx）。</span></div>
+<ol><li><strong>链式复用污染</strong>：finisher（Find/Create）执行后的 <code>*gorm.DB</code> 不再复用；需要复用条件用 <code>Session(&amp;gorm.Session{})</code> 或 <code>Scopes</code> 显式建会话；</li><li><strong>Updates 的零值陷阱</strong>：<code>Updates(User{Name: "", Age: 18})</code> 用 struct 更新会<strong>忽略零值字段</strong>——要更新为零值用 <code>map[string]any{"name": ""}</code> 或 <code>Select("name").Updates(...)</code>；</li><li><strong>AutoMigrate 不删列</strong>：删列/改类型/收窄范围都不做（防丢数据），DDL 变更走版本化迁移工具；</li><li><strong>N+1 查询</strong>：循环里访问关联字段就是 N+1；打开 SQL 日志自查，改 Preload/Joins；</li><li><strong><code>First</code> 的隐式主键排序</strong>：<code>First</code> 附加 <code>ORDER BY id LIMIT 1</code>，<code>Take</code> 不排序——语义不同别混用；</li><li><strong>ErrRecordNotFound 只有 First/Last/Take 返回</strong>：<code>Find</code> 查不到不报错（空切片）——判断存在用 <code>Count</code> 或 <code>First</code>；</li><li><strong>事务里必须用 tx 而非 db</strong>：闭包里误用全局 <code>db</code> 的操作不在事务里，且连接会泄漏；</li><li><strong>软删除不覆盖唯一索引</strong>：删除后同唯一键再次插入冲突——要么物理删除，要么唯一索引包含 <code>deleted_at</code>；</li><li><strong>PrepareStmt 与连接池</strong>：预编译缓存按连接失效，频繁 <code>SetMaxOpenConns</code> 变更会降低命中率；</li><li><strong>大结果集必须分批</strong>：<code>FindInBatches</code>/游标分页（<code>Where("id &gt; ?", lastID).Order("id").Limit(n)</code>）代替深分页 <code>Offset</code>；</li><li><strong>WithContext 别忘传</strong>：没有 context 的查询无法被上层超时/取消/追踪——所有业务查询统一 <code>db.WithContext(ctx)</code>（或泛型接口直接传 ctx）。</li></ol>
+<hr>
 
-<!-- ============ 6 常见坑 ============ -->
-<section id="pitfalls">
-  <h2>6. 常见坑与最佳实践</h2>
-
-  <div class="danger"><b>🚫 链式复用污染：</b><span>finisher（Find/Create）执行后的 <code>*gorm.DB</code> 不再复用；需要复用条件用 <code>Session(&amp;gorm.Session{})</code> 或 <code>Scopes</code> 显式建会话。</span></div>
-
-  <div class="danger"><b>❗ Updates 的零值陷阱：</b><span><code>Updates(User{Name: "", Age: 18})</code> 用 struct 更新会<b>忽略零值字段</b>——要更新为零值用 <code>map[string]any{"name": ""}</code> 或 <code>Select("name").Updates(...)</code>。</span></div>
-
-  <div class="warn"><b>🏗️ AutoMigrate 不删列：</b><span>删列 / 改类型 / 收窄范围都不做（防丢数据），DDL 变更走版本化迁移工具。</span></div>
-
-  <div class="danger"><b>🔁 N+1 查询：</b><span>循环里访问关联字段就是 N+1；打开 SQL 日志自查，改 Preload / Joins。</span></div>
-
-  <div class="warn"><b>🔍 First 的隐式主键排序：</b><span><code>First</code> 附加 <code>ORDER BY id LIMIT 1</code>，<code>Take</code> 不排序——语义不同别混用。</span></div>
-
-  <div class="warn"><b>❓ ErrRecordNotFound 只有 First/Last/Take 返回：</b><span><code>Find</code> 查不到不报错（空切片）——判断存在用 <code>Count</code> 或 <code>First</code>。</span></div>
-
-  <div class="danger"><b>⚠️ 事务里必须用 tx 而非 db：</b><span>闭包里误用全局 <code>db</code> 的操作不在事务里，且连接会泄漏。</span></div>
-
-  <div class="danger"><b>🗑️ 软删除不覆盖唯一索引：</b><span>删除后同唯一键再次插入冲突——要么物理删除，要么唯一索引包含 <code>deleted_at</code>。</span></div>
-
-  <div class="warn"><b>⚙️ PrepareStmt 与连接池：</b><span>预编译缓存按连接失效，频繁 <code>SetMaxOpenConns</code> 变更会降低命中率。</span></div>
-
-  <div class="warn"><b>📦 大结果集必须分批：</b><span><code>FindInBatches</code> / 游标分页（<code>Where("id &gt; ?", lastID).Order("id").Limit(n)</code>）代替深分页 <code>Offset</code>。</span></div>
-
-  <div class="danger"><b>⏱️ WithContext 别忘传：</b><span>没有 context 的查询无法被上层超时 / 取消 / 追踪——所有业务查询统一 <code>db.WithContext(ctx)</code>（或泛型接口直接传 ctx）。</span></div>
 </section>
-
-<!-- ============ 7 选型对比 ============ -->
-<section id="compare">
-  <h2>7. 选型对比</h2>
-  <table>
-    <tr><th style="width:110px">维度</th><th>GORM</th><th>ent（Facebook）</th><th>sqlx</th><th>sqlc</th></tr>
-    <tr><td>定位</td><td>全功能 ORM</td><td>实体框架（代码生成）</td><td>sql 增强库</td><td>SQL → 代码生成</td></tr>
-    <tr><td>类型安全</td><td>运行时（v1.30 泛型改善）</td><td><b>编译期最强</b></td><td>手写扫描</td><td><b>编译期</b></td></tr>
-    <tr><td>迁移 / 关联</td><td>内置</td><td>内置（图式）</td><td>无</td><td>无</td></tr>
-    <tr><td>学习曲线</td><td>低-中</td><td>中（schema DSL）</td><td>低</td><td>低（要会 SQL）</td></tr>
-    <tr><td>复杂 SQL</td><td>链式绕，可 Raw</td><td>一般</td><td><b>直接</b></td><td><b>原生</b></td></tr>
-    <tr><td>生态</td><td><b>最大</b></td><td>大</td><td>大</td><td>增长中</td></tr>
-  </table>
-  <div class="tip"><b>💡 一句话：</b><span><b>业务建模 + 快速开发选 GORM（新代码上泛型接口）；要强类型保障看 ent；SQL 为主、ORM 为辅的团队用 sqlx/sqlc。</b></span></div>
-  <p style="font-size:12.5px;color:var(--muted)">参考：gorm.io 官方文档（gorm.io/zh_CN/docs/）· 泛型用法指南（the_generics_way）· 官方测试场 github.com/go-gorm/playground</p>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2><div class="tip"><b>💡 一句话：</b><span><b>业务建模 + 快速开发选 GORM（新代码上泛型接口）；要强类型保障看 ent；SQL 为主、ORM 为辅的团队用 sqlx/sqlc。</b></span></div>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>GORM</th><th>ent（Facebook）</th><th>sqlx</th><th>sqlc</th></tr></thead><tbody><tr><td>定位</td><td>全功能 ORM</td><td>实体框架（代码生成）</td><td>sql 增强库</td><td>SQL→代码生成</td></tr><tr><td>类型安全</td><td>运行时（v1.30 泛型改善）</td><td><strong>编译期最强</strong></td><td>手写扫描</td><td><strong>编译期</strong></td></tr><tr><td>迁移/关联</td><td>内置</td><td>内置（图式）</td><td>无</td><td>无</td></tr><tr><td>学习曲线</td><td>低-中</td><td>中（schema DSL）</td><td>低</td><td>低（要会 SQL）</td></tr><tr><td>复杂 SQL</td><td>链式绕，可 Raw</td><td>一般</td><td><strong>直接</strong></td><td><strong>原生</strong></td></tr><tr><td>生态</td><td><strong>最大</strong></td><td>大</td><td>大</td><td>增长中</td></tr></tbody></table></div>
+<p>一句话：<strong>业务建模 + 快速开发选 GORM（新代码上泛型接口）；要强类型保障看 ent；SQL 为主、ORM 为辅的团队用 sqlx/sqlc</strong>。</p>
+<p>参考：<a href="https://gorm.io/zh_CN/docs/">官方文档 gorm.io</a>、<a href="https://gorm.io/zh_CN/docs/the_generics_way.html">泛型用法指南</a>、<a href="https://github.com/go-gorm/playground">官方测试场 playground</a>。</p>
 </section>
-
-<footer>GORM 技术指南 · 内容整理自 gorm.io 官方文档与 go-gorm/gorm 仓库（v1.31）· 2026-09</footer>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
 </main>
 </div>
-
 <script>
-document.querySelectorAll('pre code.lang-go').forEach(function(block){
-  var src = block.textContent;
-  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  var master = /(\/\/[^\n]*)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(gorm|sql|clause|dbresolver|uuid|errors|time|G|DB|Config|Session|Dialector|Logger|Statement|DeletedAt|Expr|Locking|OnConflict|Column|PreloadBuilder|NamedArg|Product|User|Company|CreditCard|Pet|Language|Order|Stock|Article|error|string|int|int64|uint|uint64|bool|byte|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
-  var out = src.replace(master, function(m, c, s, kw, typ, num, fn){
-    if (c) return '<span class="cmt">'+m+'</span>';
-    if (s) return '<span class="str">'+m+'</span>';
-    if (kw) return '<span class="kw">'+m+'</span>';
-    if (typ) return '<span class="typ">'+m+'</span>';
-    if (num) return '<span class="num">'+m+'</span>';
-    if (fn) return '<span class="fn">'+m+'</span>';
-    return m;
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
   });
-  block.innerHTML = out;
-});
-document.querySelectorAll('pre code.lang-bash').forEach(function(block){
-  var src = block.textContent;
-  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  var master = /(#[^\n]*)|("(?:\\.|[^"\\\n])*")|(--?[a-zA-Z][a-zA-Z0-9-]*)|\b(go|cd)\b|\b(get|install|mod|tidy|build|test|generate|run)\b|\b(\d+)\b/g;
-  var out = src.replace(master, function(m, c, s, flag, cmd, sub, num){
-    if (c) return '<span class="cmt">'+m+'</span>';
-    if (s) return '<span class="str">'+m+'</span>';
-    if (flag) return '<span class="typ">'+m+'</span>';
-    if (cmd) return '<span class="kw">'+m+'</span>';
-    if (sub) return '<span class="fn">'+m+'</span>';
-    if (num) return '<span class="num">'+m+'</span>';
-    return m;
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
   });
-  block.innerHTML = out;
-});
-document.querySelectorAll('pre code').forEach(function(b){
-  var m = (b.className || '').match(/lang-(\w+)/);
-  if (!m) return;
-  var map = {go:'Go', bash:'Shell'};
-  var label = map[m[1]];
-  if (!label) return;
-  var s = document.createElement('span');
-  s.className = 'codelabel';
-  s.textContent = label;
-  b.closest('pre').appendChild(s);
-});
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
 </script>
 </body>
 </html>

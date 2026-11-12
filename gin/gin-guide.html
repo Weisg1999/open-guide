@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gin 技术指南</title>
+<title>Gin · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
 <style>
   :root{
     --accent:#65a30d; --accent-light:#ecfccb; --accent-dark:#3f6212;
@@ -24,122 +25,119 @@
   nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
   nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
   nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
   main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
-  .hero{background:linear-gradient(135deg,#365314 0%,#65a30d 55%,#84cc16 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(101,163,13,.28)}
+  .hero{background:linear-gradient(135deg,#3f6212 0%,#65a30d 58%,#3f6212 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
   .hero h1{font-size:30px;margin-bottom:10px}
-  .hero p{opacity:.92;font-size:15px;max-width:680px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
   .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
   .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
   section{margin-bottom:46px}
   h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
   h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
-  h4{font-size:15px;margin:16px 0 8px;color:#365314}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
   p{margin-bottom:12px}
   ul,ol{padding-left:24px;margin-bottom:12px}
   li{margin-bottom:6px}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin-bottom:18px;box-shadow:0 1px 3px rgba(59,86,9,.06)}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
   pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
-  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#9db86a;background:#22300a;padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
   code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
-  p code,li code,td code{background:#f0f7dc;color:#4d7c0f;border:1px solid #dfeed0;padding:1px 6px;border-radius:6px;font-size:.88em}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
   .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
-  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(59,86,9,.06)}
-  th{background:#e8f3c8;color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
   td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
-  tr:nth-child(even) td{background:#f8fbe9}
-  .tip,.warn,.danger{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px;display:flex;gap:10px;align-items:flex-start}
-  .tip{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
-  .warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
-  .danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
-  .tip b,.warn b,.danger b{flex-shrink:0}
-  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0;box-shadow:0 1px 3px rgba(59,86,9,.06)}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
   .figure svg{width:100%;height:auto;display:block}
   .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
   .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
-  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:0 1px 3px rgba(59,86,9,.06)}
-  .feature .ft{font-weight:700;font-size:14px;color:var(--accent-dark);margin-bottom:6px}
-  .feature .fd{font-size:12.5px;color:var(--muted);line-height:1.65}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
   footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
   @media (max-width:900px){
     nav.sidebar{display:none}
     main{padding:24px 18px 60px}
     .hero{padding:28px 22px}
-    .features{grid-template-columns:1fr}
   }
 </style>
 </head>
 <body>
 <div class="layout">
-
 <nav class="sidebar">
   <div class="logo">Gin<span class="ver">v1.12</span></div>
   <div class="sub">Go HTTP Web 框架指南</div>
-  <a href="#intro">1. 项目简介</a>
-  <a class="sub-link" href="#intro-why">1.1 定位与核心卖点</a>
-  <a class="sub-link" href="#intro-fit">1.2 适用与不适合</a>
-  <a class="sub-link" href="#intro-install">1.3 安装与快速开始</a>
-  <a href="#features">2. 功能特性总览</a>
-  <a href="#concepts">3. 核心概念与原理</a>
-  <a class="sub-link" href="#c-objects">3.1 三大核心对象</a>
-  <a class="sub-link" href="#c-tree">3.2 基数树路由</a>
-  <a class="sub-link" href="#c-middleware">3.3 中间件链式调用</a>
-  <a class="sub-link" href="#c-binding">3.4 绑定与校验</a>
-  <a class="sub-link" href="#c-lifecycle">3.5 Context 生命周期</a>
-  <a href="#practice">4. 使用实战</a>
-  <a class="sub-link" href="#p-structure">4.1 项目组织</a>
-  <a class="sub-link" href="#p-router">4.2 路由与路由组</a>
-  <a class="sub-link" href="#p-handler">4.3 绑定校验与统一响应</a>
-  <a class="sub-link" href="#p-middleware">4.4 自定义中间件</a>
-  <a class="sub-link" href="#p-file">4.5 文件上传下载</a>
-  <a class="sub-link" href="#p-shutdown">4.6 优雅关闭</a>
-  <a class="sub-link" href="#p-test">4.7 测试</a>
-  <a href="#versions">5. 版本演进速览</a>
-  <a href="#pitfalls">6. 常见坑与最佳实践</a>
-  <a href="#compare">7. 选型对比</a>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#安装">安装</a>
+  <a class="sub-link" href="#最小可运行示例">最小可运行示例</a>
+  <a href="#2-功能特性总览">2. 功能特性总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-三大核心对象">3.1 三大核心对象</a>
+  <a class="sub-link" href="#32-路由基数树匹配">3.2 路由：基数树匹配</a>
+  <a class="sub-link" href="#33-中间件链式调用模型">3.3 中间件：链式调用模型</a>
+  <a class="sub-link" href="#34-绑定与校验一次-struct-搞定">3.4 绑定与校验：一次 struct 搞定</a>
+  <a class="sub-link" href="#35-context-的生命周期最重要的心智模型">3.5 Context 的生命周期（最重要的心智模型）</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-项目组织社区惯例">4.1 项目组织（社区惯例）</a>
+  <a class="sub-link" href="#42-路由与路由组">4.2 路由与路由组</a>
+  <a class="sub-link" href="#43-绑定-校验-统一响应标准-handler-范式">4.3 绑定 + 校验 + 统一响应（标准 handler 范式）</a>
+  <a class="sub-link" href="#44-自定义中间件鉴权-耗时日志">4.4 自定义中间件：鉴权 + 耗时日志</a>
+  <a class="sub-link" href="#45-文件上传-下载">4.5 文件上传 / 下载</a>
+  <a class="sub-link" href="#46-优雅关闭生产必抄">4.6 优雅关闭（生产必抄）</a>
+  <a class="sub-link" href="#47-测试">4.7 测试</a>
+  <a href="#5-版本演进速览v110-v112">5. 版本演进速览（v1.10 → v1.12）</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
 </nav>
-
 <main>
-
 <div class="hero">
-  <h1>Gin</h1>
-  <p><b>Go 最流行的 HTTP Web 框架</b>：基于 httprouter 思想的<b>基数树路由</b>、经典洋葱<b>中间件链</b>、高性能低内存——API 风格类似 Martini 但快约 40 倍。</p>
-  <div class="meta">
-    <span>v1.12.0 · 2026.2.28 发布</span>
-    <span>MIT License</span>
-    <span>80k+ Stars</span>
-    <span>Go 1.25+</span>
-    <span>基数树路由 O(路径长度)</span>
-    <span>中间件生态最丰富</span>
-  </div>
+  <h1>Gin 技术介绍与使用指南</h1>
+<p>Go 最流行的 HTTP Web 框架：基于 httprouter 思想的基数树路由、经典洋葱中间件链、高性能低内存——API 风格类似 Martini 但快约 40 倍。</p>
+<p style="opacity:.8;font-size:13.5px">Go HTTP Web 框架指南</p>
+<div class="meta"><span>v1.12.0 · 2026.2.28 发布</span><span>MIT License</span><span>80k+ Stars</span><span>Go 1.25+</span><span>基数树路由 O(路径长度)</span><span>中间件生态最丰富</span></div>
 </div>
-
-<!-- ============ 1 项目简介 ============ -->
-<section id="intro">
-  <h2>1. 项目简介</h2>
-
-  <p>Gin 是 Go 世界使用最广的 Web 框架（GitHub 80k+ star），定位是<b>高性能 HTTP Web 框架</b>：路由、中间件、请求绑定、响应渲染——不多不少，恰好覆盖一个 API 服务的全部骨架需求。仓库：<a href="https://github.com/gin-gonic/gin">github.com/gin-gonic/gin</a>，当前主线 <b>v1.12.0</b>（2026.2.28 发布，MIT 协议）。</p>
-
-  <h3 id="intro-why">1.1 定位与核心卖点</h3>
-  <ul>
-    <li><b>快</b>：路由基于基数树（radix tree / patricia trie），路径匹配 O(路径长度)；配合 <code>sync.Pool</code> 复用 Context 对象，零内存分配热路径；</li>
-    <li><b>路由表达力</b>：<code>:param</code> 参数、<code>*wildcard</code> 通配、路由组前缀复用中间件；</li>
-    <li><b>中间件链</b>：经典洋葱模型，<code>c.Next()</code>/<code>c.Abort()</code> 控制，社区中间件生态极其丰富（jwt/cors/sessions/ratelimit…）；</li>
-    <li><b>绑定与校验一体</b>：<code>ShouldBind</code> 系列 + struct tag（<code>binding:"required"</code>），内置 go-playground/validator；</li>
-    <li><b>多格式渲染</b>：JSON/XML/YAML/protobuf/bson/Stringer/HTML 模板/重定向/文件；</li>
-    <li><b>工程成熟</b>：错误管理（<code>c.Error</code>）、<code>gin.H</code> 快捷 map、优雅关闭、<code>RunTLS</code>、HTTP/3（实验）、多国语言文档。</li>
-  </ul>
-
-  <h3 id="intro-fit">1.2 适用与不适合</h3>
-  <p><b>适用场景</b>：REST API、BFF/网关层、单体 Web 后端、微服务的 HTTP 接入层。</p>
-  <div class="warn"><b>⚠️ 不适合的场景：</b><span>需要完整微服务治理（注册发现/RPC/熔断）的场景——那是 go-zero/Kratos 的领域，Gin 常作为其中的 HTTP 层被使用。</span></div>
-
-  <h3 id="intro-install">1.3 安装与快速开始</h3>
-  <pre><code class="lang-bash">go get -u github.com/gin-gonic/gin
+<blockquote><p>Go 生态使用最广的 HTTP Web 框架：基于 httprouter 思想的基数树路由、中间件链、高性能低内存，API 风格类似 Martini 但快约 40 倍。 仓库：<a href="https://github.com/gin-gonic/gin">https://github.com/gin-gonic/gin</a>　|　当前主线：<strong>v1.12.0</strong>（2026.2.28 发布，MIT 协议）</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p>Gin 是 Go 世界最流行的 Web 框架（GitHub 80k+ star），定位是<strong>高性能 HTTP Web 框架</strong>：路由、中间件、请求绑定、响应渲染——不多不少，恰好覆盖一个 API 服务的全部骨架需求。</p>
+<p>核心卖点：</p>
+<ul><li><strong>快</strong>：路由基于基数树（radix tree / patricia trie），路径匹配 O(路径长度)；配合 <code>sync.Pool</code> 复用 Context 对象，零内存分配热路径；</li><li><strong>路由表达力</strong>：<code>:param</code> 参数、<code>*wildcard</code> 通配、路由组前缀复用中间件；</li><li><strong>中间件链</strong>：经典洋葱模型，<code>c.Next()</code>/<code>c.Abort()</code> 控制，社区中间件生态极其丰富（jwt/cors/sessions/ratelimit…）；</li><li><strong>绑定与校验一体</strong>：<code>ShouldBind</code> 系列 + struct tag（<code>binding:"required"</code>），内置 go-playground/validator；</li><li><strong>多格式渲染</strong>：JSON/XML/YAML/protobuf/bson/Stringer/HTML 模板/重定向/文件；</li><li><strong>工程成熟</strong>：错误管理（<code>c.Error</code>）、<code>gin.H</code> 快捷 map、优雅关闭、<code>RunTLS</code>、HTTP/3（实验）、多国语言文档。</li></ul>
+<p>适用场景：REST API、BFF/网关层、单体 Web 后端、微服务的 HTTP 接入层。<strong>不适合</strong>：需要完整微服务治理（注册发现/RPC/熔断）的场景——那是 go-zero/Kratos 的领域，Gin 常作为其中的 HTTP 层被使用。</p>
+<h3 id="安装">安装</h3>
+<pre><code class="lang-bash">go get -u github.com/gin-gonic/gin
 
 # 精简安装（不含 net/http 之外的扩展，如需 vendor 瘦身）
 go get github.com/gin-gonic/gin@v1.12.0</code></pre>
-  <p>代码中引入 <code>import "github.com/gin-gonic/gin"</code> 即可。最小可运行示例：</p>
-  <pre><code class="lang-go">package main
+<pre><code class="lang-go">import "github.com/gin-gonic/gin"</code></pre>
+<h3 id="最小可运行示例">最小可运行示例</h3>
+<pre><code class="lang-go">package main
 
 import "github.com/gin-gonic/gin"
 
@@ -150,13 +148,13 @@ func main() {
     })
     r.Run(":8080")                 // 默认 :8080，监听并阻塞
 }</code></pre>
-  <div class="tip"><b>💡 三行核心：</b><span><code>gin.Default()</code> = <code>gin.New()</code> + Logger + Recovery；<code>r.GET("/ping", handler)</code> 注册路由；<code>r.Run(":8080")</code> 监听并阻塞——一个最简 API 服务的骨架就这么多，访问 <code>http://localhost:8080/ping</code> 即得到 <code>{"message":"pong"}</code>。</span></div>
-</section>
+<hr>
 
-<!-- ============ 2 功能特性 ============ -->
-<section id="features">
-  <h2>2. 功能特性总览</h2>
-  <div class="features">
+<div class="warn"><b>⚠️ 不适合的场景：</b><span>需要完整微服务治理（注册发现/RPC/熔断）的场景——那是 go-zero/Kratos 的领域，Gin 常作为其中的 HTTP 层被使用。</span></div>
+<div class="tip"><b>💡 三行核心：</b><span><code>gin.Default()</code> = <code>gin.New()</code> + Logger + Recovery；<code>r.GET("/ping", handler)</code> 注册路由；<code>r.Run(":8080")</code> 监听并阻塞——一个最简 API 服务的骨架就这么多，访问 <code>http://localhost:8080/ping</code> 即得到 <code>{"message":"pong"}</code>。</span></div>
+</section>
+<section data-anchor="2-功能特性总览">
+<h2 id="2-功能特性总览">2. 功能特性总览<span class="lvl b">速览</span></h2><div class="features">
     <div class="feature"><div class="ft">🌳 基数树路由</div><div class="fd"><code>:name</code> 参数、<code>*filepath</code> 通配、<code>Handle(method,...)</code> 任意方法、<code>Any</code>、<code>NoRoute</code>/<code>NoMethod</code> 兜底。</div></div>
     <div class="feature"><div class="ft">🗂️ 路由组</div><div class="fd"><code>Group("/api/v1")</code> 前缀 + 组级中间件，嵌套复用，中大项目路由治理利器。</div></div>
     <div class="feature"><div class="ft">🧅 中间件链</div><div class="fd">全局/组/路由级挂载；<code>c.Next()</code> 前后夹逻辑、<code>c.Abort()</code> 短路、<code>c.Set/Get</code> 传值。</div></div>
@@ -170,93 +168,23 @@ func main() {
     <div class="feature"><div class="ft">🚀 HTTP/3</div><div class="fd">v1.11 起实验性支持（quic-go），<code>RunQUIC</code> 启动 QUIC 监听。</div></div>
     <div class="feature"><div class="ft">🧪 测试与优雅关闭</div><div class="fd"><code>gin.SetMode(gin.TestMode)</code> + <code>httptest.NewRecorder()</code>；与 <code>http.Server.Shutdown</code> 配合有官方标准范式。</div></div>
   </div>
-  <div class="tip"><b>💡 此外：</b><span><code>gin.H</code> 快捷 map、<code>RunTLS</code>、多国语言文档齐备——Gin 的哲学是「恰好覆盖 API 服务骨架，其余交给社区生态」，这也是它生态最大的原因。</span></div>
+<div class="tip"><b>💡 此外：</b><span><code>gin.H</code> 快捷 map、<code>RunTLS</code>、多国语言文档齐备——Gin 的哲学是「恰好覆盖 API 服务骨架，其余交给社区生态」，这也是它生态最大的原因。</span></div>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>路由</td><td>基数树：<code>:name</code> 参数、<code>*filepath</code> 通配、<code>Handle(method, ...)</code> 任意方法、<code>Any</code>、<code>NoRoute</code>/<code>NoMethod</code> 兜底</td></tr><tr><td>路由组</td><td><code>Group("/api/v1")</code> 前缀 + 组级中间件，嵌套复用</td></tr><tr><td>中间件</td><td>全局/组/路由级挂载；<code>c.Next()</code> 前后夹逻辑、<code>c.Abort()</code> 短路、<code>c.Set/Get</code> 传值</td></tr><tr><td>请求绑定</td><td><code>ShouldBindJSON/Form/URI/Header/Query</code> 等；tag：<code>json/form/uri/header/binding</code> 校验规则</td></tr><tr><td>数据校验</td><td>内嵌 validator：required/minmax/oneof/email…，<code>binding</code> tag 声明</td></tr><tr><td>响应渲染</td><td>JSON/XML/YAML/protobuf/bson（v1.12 新增）/Stringer/HTML（html/template）/IndentedJSON/SSE</td></tr><tr><td>Context</td><td>请求生命周期对象：参数/Query/Header/Cookie/文件上传/Keys/Errors/ClientIP/复用</td></tr><tr><td>错误管理</td><td><code>c.Error(err)</code> 收集错误，统一在中间件里取出处理（v1.12 新增 GetError/GetErrorSlice）</td></tr><tr><td>静态文件</td><td><code>Static/StaticFS/StaticFile</code>，支持 <code>embed.FS</code>（OnlyFilesFS 防目录列举）</td></tr><tr><td>安全</td><td>TrustedProxies（X-Forwarded-For 白名单）、SSL 重定向中间件、secure headers 社区件</td></tr><tr><td>HTTP/3</td><td>v1.11 起实验性支持（quic-go），<code>RunQUIC</code></td></tr><tr><td>优雅关闭</td><td>与 <code>http.Server.Shutdown</code> 配合，官方文档有标准范式</td></tr><tr><td>测试</td><td><code>gin.SetMode(gin.TestMode)</code> + <code>httptest.NewRecorder()</code>，响应即普通 <code>*httptest.ResponseRecorder</code></td></tr></tbody></table></div>
+<hr>
+
 </section>
-
-<!-- ============ 3 核心概念 ============ -->
-<section id="concepts">
-  <h2>3. 核心概念与原理</h2>
-
-  <h3 id="c-objects">3.1 三大核心对象：Engine / RouterGroup / Context</h3>
-  <p>Gin 的运行时骨架由三个对象构成，理解它们的关系就理解了 Gin 的一半：</p>
-  <ul>
-    <li><b>Engine</b>：框架引擎，包装了 <code>http.Handler</code>（<code>ServeHTTP</code>）；持有路由树（每个 HTTP 方法一棵基数树）与全局中间件；</li>
-    <li><b>RouterGroup</b>：路由分组（前缀 + 中间件集合），<code>Engine</code> 本身就是根组；路由注册本质是「前缀拼接 + 合并中间件链 + 挂到树」；</li>
-    <li><b>Context</b>：单请求上下文（Request、Writer、Params、Keys、Errors）。每请求从 <code>sync.Pool</code> 取出、用完归还——<b>这就是不能把 Context 存到 goroutine 里长期使用的原因</b>（会被下一个请求复用污染）。</li>
-  </ul>
-
-  <div class="figure">
-    <svg viewBox="0 0 880 404" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
-      <defs>
-        <marker id="g1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#65a30d"/></marker>
-        <marker id="g1d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3f6212"/></marker>
-      </defs>
-      <!-- Engine -->
-      <rect x="26" y="22" width="410" height="170" rx="14" fill="#365314"/>
-      <text x="231" y="46" text-anchor="middle" font-size="13.5" font-weight="800" fill="#ffffff">Engine · 框架引擎</text>
-      <text x="231" y="64" text-anchor="middle" font-size="10.5" fill="#d9f99d">实现 http.Handler（ServeHTTP）· 持有路由树与全局中间件</text>
-      <rect x="44" y="78" width="182" height="96" rx="10" fill="#ecfccb" stroke="#a3e635" stroke-width="1.5"/>
-      <text x="135" y="98" text-anchor="middle" font-size="12" font-weight="700" fill="#3f6212">路由树</text>
-      <rect x="56" y="106" width="46" height="20" rx="5" fill="#f7fee7" stroke="#bef264" stroke-width="1.2"/>
-      <text x="79" y="120" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#4d7c0f">GET</text>
-      <rect x="108" y="106" width="46" height="20" rx="5" fill="#f7fee7" stroke="#bef264" stroke-width="1.2"/>
-      <text x="131" y="120" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#4d7c0f">POST</text>
-      <rect x="160" y="106" width="46" height="20" rx="5" fill="#f7fee7" stroke="#bef264" stroke-width="1.2"/>
-      <text x="183" y="120" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#4d7c0f">PUT</text>
-      <text x="135" y="148" text-anchor="middle" font-size="10.5" fill="#4d7c0f">每 HTTP method 一棵</text>
-      <text x="135" y="164" text-anchor="middle" font-size="10.5" fill="#4d7c0f">基数树（radix tree）</text>
-      <rect x="240" y="78" width="180" height="96" rx="10" fill="#ecfccb" stroke="#a3e635" stroke-width="1.5"/>
-      <text x="330" y="98" text-anchor="middle" font-size="12" font-weight="700" fill="#3f6212">全局中间件</text>
-      <text x="330" y="124" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#4d7c0f">r.Use(...)</text>
-      <text x="330" y="150" text-anchor="middle" font-size="10.5" fill="#4d7c0f">Engine 本身就是</text>
-      <text x="330" y="166" text-anchor="middle" font-size="10.5" fill="#4d7c0f">根 RouterGroup</text>
-      <!-- RouterGroup → Engine -->
-      <line x1="231" y1="236" x2="231" y2="198" stroke="#3f6212" stroke-width="2" marker-end="url(#g1d)"/>
-      <text x="243" y="222" font-size="10.5" fill="#3f6212">注册 = 前缀拼接 + 合并中间件链 + 挂树</text>
-      <!-- RouterGroup -->
-      <rect x="26" y="240" width="410" height="88" rx="12" fill="#ffffff" stroke="#65a30d" stroke-width="1.8"/>
-      <text x="46" y="264" font-size="12.5" font-weight="700" fill="#3f6212">RouterGroup · 路由分组</text>
-      <text x="46" y="288" font-size="10.5" fill="#475569">basePath 前缀（如 /api/v1）+ 组级中间件 []HandlerFunc</text>
-      <text x="46" y="310" font-size="10.5" fill="#475569">嵌套 Group 自动继承父组前缀与中间件</text>
-      <!-- sync.Pool -->
-      <rect x="560" y="22" width="290" height="58" rx="12" fill="#ecfccb" stroke="#65a30d" stroke-width="1.8"/>
-      <text x="705" y="44" text-anchor="middle" font-size="12" font-weight="700" fill="#3f6212">sync.Pool · Context 对象池</text>
-      <text x="705" y="64" text-anchor="middle" font-size="10.5" fill="#4d7c0f">复用 Context，热路径零分配</text>
-      <!-- Get -->
-      <line x1="650" y1="80" x2="650" y2="114" stroke="#65a30d" stroke-width="2" marker-end="url(#g1a)"/>
-      <text x="658" y="102" font-family="Consolas,monospace" font-size="10.5" fill="#3f6212">pool.Get()</text>
-      <!-- Engine → Context -->
-      <line x1="436" y1="107" x2="516" y2="150" stroke="#65a30d" stroke-width="1.8" marker-end="url(#g1a)"/>
-      <text x="470" y="100" text-anchor="middle" font-size="10.5" fill="#4d7c0f">每请求</text>
-      <!-- Context -->
-      <rect x="520" y="118" width="330" height="112" rx="12" fill="#ffffff" stroke="#65a30d" stroke-width="1.8"/>
-      <text x="685" y="140" text-anchor="middle" font-size="12.5" font-weight="700" fill="#3f6212">gin.Context · 单请求上下文</text>
-      <text x="685" y="162" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#475569">Request · Writer · Params</text>
-      <text x="685" y="180" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#475569">Keys（Set/Get）· Errors</text>
-      <text x="685" y="202" text-anchor="middle" font-size="10.5" fill="#475569">路由匹配结果与中间件链在此执行</text>
-      <!-- Put -->
-      <path d="M 700 230 L 700 252 L 575 252 L 575 82" fill="none" stroke="#3f6212" stroke-width="1.8" marker-end="url(#g1d)"/>
-      <text x="637" y="272" text-anchor="middle" font-size="10.5" fill="#3f6212">pool.Put：用完归还（重置后复用）</text>
-      <!-- warn -->
-      <rect x="26" y="340" width="824" height="48" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
-      <text x="438" y="361" text-anchor="middle" font-size="11" font-weight="700" fill="#92400e">⚠ Context 生命周期 = 单个请求：用完即归还 pool、被下一个请求复用——不可跨 goroutine 长期持有</text>
-      <text x="438" y="380" text-anchor="middle" font-size="10.5" fill="#92400e">正确姿势：异步任务用 c.Copy() 深拷贝，或提取出具体值再并发（详见 3.5）</text>
-    </svg>
-    <figcaption>图 1 · 三大核心对象关系：Engine 持有路由树（每 method 一棵基数树）与全局中间件；RouterGroup 组合前缀与中间件后挂树；每请求从 sync.Pool 取出 Context、用完归还——因此 Context 不可跨 goroutine 持有</figcaption>
-  </div>
-
-  <div class="tip"><b>💡 为什么 Engine 本身就是根组：</b><span><code>gin.Engine</code> 直接内嵌了 <code>RouterGroup</code>——所以 <code>r.GET()</code>、<code>r.Use()</code> 这些「引擎方法」其实都是根组行为，全局路由与分组路由走的是同一套注册逻辑。</span></div>
-
-  <h3 id="c-tree">3.2 路由：基数树匹配</h3>
-  <p>Gin 把每个 HTTP method 的路由组织成一棵<b>基数树</b>（radix tree，改进自 httprouter）：</p>
-  <ul>
-    <li>注册 <code>/user/:name</code> 与 <code>/user/list</code> 可共存（v1.5+ 解决了早期 httprouter 的冲突限制）；</li>
-    <li>匹配时间与路由数量无关，只与<b>路径长度</b>相关——上万条路由依然是 O(k)；</li>
-    <li><code>*filepath</code> 只能出现在路径末尾，捕获剩余全部段；</li>
-    <li>常见 405：同路径不同 method 未注册时由 <code>NoMethod</code>/<code>HandleMethodNotAllowed</code> 控制。</li>
-  </ul>
-
-  <div class="figure">
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-三大核心对象">3.1 三大核心对象</h3>
+<pre><code class="lang-text">Engine ──持有──► 路由树（每 HTTP 方法一棵基数树）
+   │                 │ 匹配
+   ▼                 ▼
+RouterGroup ──组合──► handlers []HandlerFunc（中间件 + 业务 handler）
+   │
+   ▼ 每个请求
+gin.Context（sync.Pool 复用）：Request、Writer、Params、Keys、Errors</code></pre>
+<ul><li><strong>Engine</strong>：框架引擎，包装了 <code>http.Handler</code>（<code>ServeHTTP</code>）；持有路由树与全局中间件；</li><li><strong>RouterGroup</strong>：路由分组（前缀 + 中间件集合），<code>Engine</code> 本身就是根组；路由注册本质是「前缀拼接 + 合并中间件链 + 挂到树」；</li><li><strong>Context</strong>：单请求上下文。每请求从 <code>sync.Pool</code> 取出、用完归还——<strong>这就是不能把 Context 存到 goroutine 里长期使用的原因</strong>（会被下一个请求复用污染）。</li></ul>
+<h3 id="32-路由基数树匹配">3.2 路由：基数树匹配</h3><div class="figure">
     <svg viewBox="0 0 880 446" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs>
         <marker id="g2m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#65a30d"/></marker>
@@ -313,26 +241,10 @@ func main() {
     </svg>
     <figcaption>图 2 · 基数树路由示意图：公共前缀压缩存储（user/ 只存一份），<code>/user/:name</code> 与 <code>/user/list</code> 共存；加粗路径为 <code>GET /user/tom</code> 的匹配过程——匹配耗时 O(路径长度)，与路由数无关</figcaption>
   </div>
-
-  <div class="tip"><b>💡 常见 405：</b><span>同一路径只注册了 GET 而收到 POST 时，默认返回 404；开启 <code>HandleMethodNotAllowed = true</code> 后返回 405 并走 <code>NoMethod</code> 兜底 handler。</span></div>
-
-  <h3 id="c-middleware">3.3 中间件：链式调用模型</h3>
-  <pre><code class="lang-go">func Logger() gin.HandlerFunc {
-    return func(c *gin.Context) {
-        start := time.Now()
-        c.Next()                          // 执行后续中间件 + handler（洋葱的"下钻"）
-        latency := time.Since(start)      // 回到本层：响应已写出
-        log.Printf("%s %s %v", c.Request.Method, c.Path, latency)
-    }
-}</code></pre>
-  <ul>
-    <li><code>handlers</code> 是一个切片，<code>c.Next()</code> 就是<b>手动递归推进索引</b>——不是隐式调用链，因此能精确控制「前/后」逻辑；</li>
-    <li><code>c.Abort()</code> 设置 aborted 标记，<code>Next()</code> 不再推进（鉴权失败短路的标准姿势）；</li>
-    <li><code>c.Set("user", u)</code> / <code>c.Get("user")</code> 在中间件与 handler 间传值（Keys map）；</li>
-    <li>挂载级别：<code>r.Use()</code>（全局）、<code>g := r.Group("/api", Auth())</code>（组级）、<code>r.GET("/x", Auth(), h)</code>（路由级）。</li>
-  </ul>
-
-  <div class="figure">
+<div class="tip"><b>💡 常见 405：</b><span>同一路径只注册了 GET 而收到 POST 时，默认返回 404；开启 <code>HandleMethodNotAllowed = true</code> 后返回 405 并走 <code>NoMethod</code> 兜底 handler。</span></div>
+<p>Gin 把每个 HTTP method 的路由组织成一棵基数树（改进自 httprouter）：</p>
+<ul><li>注册 <code>/user/:name</code> 与 <code>/user/list</code> 可共存（v1.5+ 解决了早期 httprouter 的冲突限制）；</li><li>匹配时间与路由数量无关，只与<strong>路径长度</strong>相关——上万条路由依然是 O(k)；</li><li><code>*filepath</code> 只能出现在路径末尾，捕获剩余全部段；</li><li>常见 405：同路径不同 method 未注册时由 <code>NoMethod</code>/<code>HandleMethodNotAllowed</code> 控制。</li></ul>
+<h3 id="33-中间件链式调用模型">3.3 中间件：链式调用模型</h3><div class="figure">
     <svg viewBox="0 0 880 404" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs>
         <marker id="g3a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#65a30d"/></marker>
@@ -385,21 +297,16 @@ func main() {
     </svg>
     <figcaption>图 3 · 中间件洋葱模型：handlers 是一个切片，<code>c.Next()</code> 手动递归推进索引实现「下钻」，返回后逆序执行各层后半段逻辑；<code>c.Abort()</code> 设置标记后不再推进——鉴权失败短路的标准姿势</figcaption>
   </div>
-
-  <h3 id="c-binding">3.4 绑定与校验：一次 struct 搞定</h3>
-  <pre><code class="lang-go">type LoginReq struct {
-    User     string `json:"user" binding:"required,min=3"`
-    Password string `json:"password" binding:"required,min=8"`
-    Age      int    `form:"age" binding:"gte=0,lte=150"`
+<pre><code class="lang-go">func Logger() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        start := time.Now()
+        c.Next()                          // 执行后续中间件 + handler（洋葱的"下钻"）
+        latency := time.Since(start)      // 回到本层：响应已写出
+        log.Printf("%s %s %v", c.Request.Method, c.Path, latency)
+    }
 }</code></pre>
-  <ul>
-    <li><code>json/form/uri/header</code> tag 决定各来源的字段名；<code>binding</code> tag 是 validator 规则；</li>
-    <li><b>ShouldBind vs Bind</b>：Bind 失败自动回 400；<b>ShouldBind 不写响应</b>，把控制权留给调用方——生产代码统一用 Should 系；</li>
-    <li>Content-Type 自动分发：<code>ShouldBind</code> 依据 <code>application/json</code>/<code>form</code> 等选择绑定器；</li>
-    <li>v1.11+ 增强：form 数组集合格式、集合默认值、<code>BindPlain</code>、unixMilli/unixMicro 时间格式、<code>encoding.UnmarshalText</code> 自定义类型（uri/query）。</li>
-  </ul>
-
-  <div class="figure">
+<ul><li><code>handlers</code> 是一个切片，<code>c.Next()</code> 就是<strong>手动递归推进索引</strong>——不是隐式调用链，因此能精确控制"前/后"逻辑；</li><li><code>c.Abort()</code> 设置 aborted 标记，<code>Next()</code> 不再推进（鉴权失败短路的标准姿势）；</li><li><code>c.Set("user", u)</code> / <code>c.Get("user")</code> 在中间件与 handler 间传值（Keys map）；</li><li>挂载级别：<code>r.Use()</code>（全局）、<code>g := r.Group("/api", Auth())</code>（组级）、<code>r.GET("/x", Auth(), h)</code>（路由级）。</li></ul>
+<h3 id="34-绑定与校验一次-struct-搞定">3.4 绑定与校验：一次 struct 搞定</h3><div class="figure">
     <svg viewBox="0 0 880 372" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs>
         <marker id="g4a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#65a30d"/></marker>
@@ -478,16 +385,13 @@ func main() {
     </svg>
     <figcaption>图 4 · 绑定与校验数据流：<code>ShouldBind</code> 依据 Content-Type 选择绑定器、按 <code>json/form/uri</code> 等 tag 映射字段、交给内嵌 validator 执行 binding 规则；校验失败时 Bind 自动回 400（控制权被抢）vs ShouldBind 只返回 err（控制权在调用方）</figcaption>
   </div>
-
-  <h3 id="c-lifecycle">3.5 Context 的生命周期（最重要的心智模型）</h3>
-  <p>每个请求的处理流程是一条严格的闭环：<code>请求到达 → pool.Get(Context) → 路由匹配 → 中间件链 → handler → 请求结束 → Context 归还 pool</code>。由此可以推出三条工程铁律：</p>
-  <ol>
-    <li><b>异步任务别带 Context</b>：<code>go func() { ... c ... }()</code> 里用旧 Context 是数据竞争——正确做法是 <code>c.Copy()</code>（深拷贝）或只传需要的值；</li>
-    <li><b>响应只能写一次</b>：<code>c.JSON</code> 后再写会 panic（<code>http: superfluous response.WriteHeader</code>）；</li>
-    <li>长轮询/SSE 场景用 <code>c.Writer.Flush()</code> 主动推。</li>
-  </ol>
-
-  <div class="figure">
+<pre><code class="lang-go">type LoginReq struct {
+    User     string `json:"user" binding:"required,min=3"`
+    Password string `json:"password" binding:"required,min=8"`
+    Age      int    `form:"age" binding:"gte=0,lte=150"`
+}</code></pre>
+<ul><li><code>json/form/uri/header</code> tag 决定各来源的字段名；<code>binding</code> tag 是 validator 规则；</li><li><strong>ShouldBind vs Bind</strong>：Bind 失败自动回 400；<strong>ShouldBind 不写响应</strong>，把控制权留给调用方——生产代码统一用 Should 系；</li><li>Content-Type 自动分发：<code>ShouldBind</code> 依据 <code>application/json</code>/<code>form</code> 等选择绑定器；</li><li>v1.11+ 增强：form 数组集合格式、集合默认值、<code>BindPlain</code>、unixMilli/unixMicro 时间格式、<code>encoding.UnmarshalText</code> 自定义类型（uri/query）。</li></ul>
+<h3 id="35-context-的生命周期最重要的心智模型">3.5 Context 的生命周期（最重要的心智模型）</h3><div class="figure">
     <svg viewBox="0 0 880 368" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs>
         <marker id="g5a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#65a30d"/></marker>
@@ -548,24 +452,85 @@ func main() {
     </svg>
     <figcaption>图 5 · 请求生命周期与 Context 复用循环：从 pool.Get 到 pool.Put 的闭环——每请求取出、用完归还；由此推出三条工程铁律：异步要 <code>c.Copy()</code>、响应只写一次、SSE 用 <code>Flush()</code></figcaption>
   </div>
+<pre><code class="lang-text">请求到达 → pool.Get(Context) → 路由匹配 → 中间件链 → handler
+       → 请求结束 → Context 归还 pool</code></pre>
+<p>推论：</p>
+<ol><li><strong>异步任务别带 Context</strong>：<code>go func() { ... c ... }()</code> 里用旧 Context 是数据竞争——正确做法是 <code>c.Copy()</code>（深拷贝）或只传需要的值；</li><li><strong>响应只能写一次</strong>：<code>c.JSON</code> 后再写会 panic（<code>http: superfluous response.WriteHeader</code>）；</li><li>长轮询/SSE 场景用 <code>c.Writer.Flush()</code> 主动推。</li></ol>
+<hr>
+
+<div class="figure">
+    <svg viewBox="0 0 880 404" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+      <defs>
+        <marker id="g1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#65a30d"/></marker>
+        <marker id="g1d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3f6212"/></marker>
+      </defs>
+      <!-- Engine -->
+      <rect x="26" y="22" width="410" height="170" rx="14" fill="#365314"/>
+      <text x="231" y="46" text-anchor="middle" font-size="13.5" font-weight="800" fill="#ffffff">Engine · 框架引擎</text>
+      <text x="231" y="64" text-anchor="middle" font-size="10.5" fill="#d9f99d">实现 http.Handler（ServeHTTP）· 持有路由树与全局中间件</text>
+      <rect x="44" y="78" width="182" height="96" rx="10" fill="#ecfccb" stroke="#a3e635" stroke-width="1.5"/>
+      <text x="135" y="98" text-anchor="middle" font-size="12" font-weight="700" fill="#3f6212">路由树</text>
+      <rect x="56" y="106" width="46" height="20" rx="5" fill="#f7fee7" stroke="#bef264" stroke-width="1.2"/>
+      <text x="79" y="120" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#4d7c0f">GET</text>
+      <rect x="108" y="106" width="46" height="20" rx="5" fill="#f7fee7" stroke="#bef264" stroke-width="1.2"/>
+      <text x="131" y="120" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#4d7c0f">POST</text>
+      <rect x="160" y="106" width="46" height="20" rx="5" fill="#f7fee7" stroke="#bef264" stroke-width="1.2"/>
+      <text x="183" y="120" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#4d7c0f">PUT</text>
+      <text x="135" y="148" text-anchor="middle" font-size="10.5" fill="#4d7c0f">每 HTTP method 一棵</text>
+      <text x="135" y="164" text-anchor="middle" font-size="10.5" fill="#4d7c0f">基数树（radix tree）</text>
+      <rect x="240" y="78" width="180" height="96" rx="10" fill="#ecfccb" stroke="#a3e635" stroke-width="1.5"/>
+      <text x="330" y="98" text-anchor="middle" font-size="12" font-weight="700" fill="#3f6212">全局中间件</text>
+      <text x="330" y="124" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#4d7c0f">r.Use(...)</text>
+      <text x="330" y="150" text-anchor="middle" font-size="10.5" fill="#4d7c0f">Engine 本身就是</text>
+      <text x="330" y="166" text-anchor="middle" font-size="10.5" fill="#4d7c0f">根 RouterGroup</text>
+      <!-- RouterGroup → Engine -->
+      <line x1="231" y1="236" x2="231" y2="198" stroke="#3f6212" stroke-width="2" marker-end="url(#g1d)"/>
+      <text x="243" y="222" font-size="10.5" fill="#3f6212">注册 = 前缀拼接 + 合并中间件链 + 挂树</text>
+      <!-- RouterGroup -->
+      <rect x="26" y="240" width="410" height="88" rx="12" fill="#ffffff" stroke="#65a30d" stroke-width="1.8"/>
+      <text x="46" y="264" font-size="12.5" font-weight="700" fill="#3f6212">RouterGroup · 路由分组</text>
+      <text x="46" y="288" font-size="10.5" fill="#475569">basePath 前缀（如 /api/v1）+ 组级中间件 []HandlerFunc</text>
+      <text x="46" y="310" font-size="10.5" fill="#475569">嵌套 Group 自动继承父组前缀与中间件</text>
+      <!-- sync.Pool -->
+      <rect x="560" y="22" width="290" height="58" rx="12" fill="#ecfccb" stroke="#65a30d" stroke-width="1.8"/>
+      <text x="705" y="44" text-anchor="middle" font-size="12" font-weight="700" fill="#3f6212">sync.Pool · Context 对象池</text>
+      <text x="705" y="64" text-anchor="middle" font-size="10.5" fill="#4d7c0f">复用 Context，热路径零分配</text>
+      <!-- Get -->
+      <line x1="650" y1="80" x2="650" y2="114" stroke="#65a30d" stroke-width="2" marker-end="url(#g1a)"/>
+      <text x="658" y="102" font-family="Consolas,monospace" font-size="10.5" fill="#3f6212">pool.Get()</text>
+      <!-- Engine → Context -->
+      <line x1="436" y1="107" x2="516" y2="150" stroke="#65a30d" stroke-width="1.8" marker-end="url(#g1a)"/>
+      <text x="470" y="100" text-anchor="middle" font-size="10.5" fill="#4d7c0f">每请求</text>
+      <!-- Context -->
+      <rect x="520" y="118" width="330" height="112" rx="12" fill="#ffffff" stroke="#65a30d" stroke-width="1.8"/>
+      <text x="685" y="140" text-anchor="middle" font-size="12.5" font-weight="700" fill="#3f6212">gin.Context · 单请求上下文</text>
+      <text x="685" y="162" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#475569">Request · Writer · Params</text>
+      <text x="685" y="180" text-anchor="middle" font-family="Consolas,monospace" font-size="10.5" fill="#475569">Keys（Set/Get）· Errors</text>
+      <text x="685" y="202" text-anchor="middle" font-size="10.5" fill="#475569">路由匹配结果与中间件链在此执行</text>
+      <!-- Put -->
+      <path d="M 700 230 L 700 252 L 575 252 L 575 82" fill="none" stroke="#3f6212" stroke-width="1.8" marker-end="url(#g1d)"/>
+      <text x="637" y="272" text-anchor="middle" font-size="10.5" fill="#3f6212">pool.Put：用完归还（重置后复用）</text>
+      <!-- warn -->
+      <rect x="26" y="340" width="824" height="48" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="438" y="361" text-anchor="middle" font-size="11" font-weight="700" fill="#92400e">⚠ Context 生命周期 = 单个请求：用完即归还 pool、被下一个请求复用——不可跨 goroutine 长期持有</text>
+      <text x="438" y="380" text-anchor="middle" font-size="10.5" fill="#92400e">正确姿势：异步任务用 c.Copy() 深拷贝，或提取出具体值再并发（详见 3.5）</text>
+    </svg>
+    <figcaption>图 1 · 三大核心对象关系：Engine 持有路由树（每 method 一棵基数树）与全局中间件；RouterGroup 组合前缀与中间件后挂树；每请求从 sync.Pool 取出 Context、用完归还——因此 Context 不可跨 goroutine 持有</figcaption>
+  </div>
+<div class="tip"><b>💡 为什么 Engine 本身就是根组：</b><span><code>gin.Engine</code> 直接内嵌了 <code>RouterGroup</code>——所以 <code>r.GET()</code>、<code>r.Use()</code> 这些「引擎方法」其实都是根组行为，全局路由与分组路由走的是同一套注册逻辑。</span></div>
 </section>
-
-<!-- ============ 4 使用实战 ============ -->
-<section id="practice">
-  <h2>4. 使用实战</h2>
-
-  <h3 id="p-structure">4.1 项目组织（社区惯例）</h3>
-  <pre><code class="lang-txt"><span class="kw">myapp/</span>
-<span class="typ">├── main.go</span>              <span class="cmt"># 装配：engine、中间件、路由</span>
-<span class="typ">├── router/router.go</span>     <span class="cmt"># 路由注册集中管理</span>
-<span class="typ">├── middleware/</span>          <span class="cmt"># auth.go / cors.go / logger.go</span>
-<span class="typ">├── handler/</span>             <span class="cmt"># HTTP 层：绑定→调 service→渲染</span>
-<span class="typ">├── service/</span>             <span class="cmt"># 业务逻辑</span>
-<span class="typ">└── model/</span>               <span class="cmt"># 数据结构（含 binding tag）</span></code></pre>
-  <p>装配集中在 <code>main.go</code> 与 <code>router</code>；handler 只做「绑定 → 调 service → 渲染」三件事；binding tag 统一定义在 <code>model</code>——分层清晰后，单元测试与替换都容易。</p>
-
-  <h3 id="p-router">4.2 路由与路由组</h3>
-  <pre><code class="lang-go">r := gin.New()
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-项目组织社区惯例">4.1 项目组织（社区惯例）</h3>
+<pre><code class="lang-text">myapp/
+├── main.go              # 装配：engine、中间件、路由
+├── router/router.go     # 路由注册集中管理
+├── middleware/          # auth.go / cors.go / logger.go
+├── handler/             # HTTP 层：绑定→调 service→渲染
+├── service/             # 业务逻辑
+└── model/               # 数据结构（含 binding tag）</code></pre>
+<h3 id="42-路由与路由组">4.2 路由与路由组</h3>
+<pre><code class="lang-go">r := gin.New()
 r.Use(gin.Recovery())                    // 生产建议手选中间件而非 Default
 
 api := r.Group("/api/v1")
@@ -580,17 +545,16 @@ api := r.Group("/api/v1")
 }
 
 r.NoRoute(func(c *gin.Context) { c.JSON(404, gin.H{"code": "NOT_FOUND"}) })</code></pre>
-  <p>读取参数：</p>
-  <pre><code class="lang-go">func GetOrder(c *gin.Context) {
+<p>读取参数：</p>
+<pre><code class="lang-go">func GetOrder(c *gin.Context) {
     id := c.Param("id")                       // 路径参数
     page := c.DefaultQuery("page", "1")       // ?page=2 带默认值
     status := c.Query("status")
     ua := c.GetHeader("User-Agent")
     token, err := c.Cookie("session")
 }</code></pre>
-
-  <h3 id="p-handler">4.3 绑定 + 校验 + 统一响应（标准 handler 范式）</h3>
-  <pre><code class="lang-go">type CreateOrderReq struct {
+<h3 id="43-绑定-校验-统一响应标准-handler-范式">4.3 绑定 + 校验 + 统一响应（标准 handler 范式）</h3><div class="tip"><b>💡 范式要点：</b><span>handler 内部只有两条出口——校验失败回 4xx、业务失败经 <code>c.Error</code> 记录后回 5xx；日志与告警统一在 ErrorCollector 一处收口，避免每个 handler 各写各的。</span></div>
+<pre><code class="lang-go">type CreateOrderReq struct {
     Sku     string  `json:"sku" uri:"sku" binding:"required"`
     Amount  int     `json:"amount" binding:"required,gt=0"`
     Coupon  string  `json:"coupon" binding:"omitempty,len=8"`
@@ -610,8 +574,8 @@ func CreateOrder(c *gin.Context) {
     }
     c.JSON(200, gin.H{"code": 0, "data": order})
 }</code></pre>
-  <p>统一错误处理中间件（收口所有 <code>c.Error</code>）：</p>
-  <pre><code class="lang-go">func ErrorCollector() gin.HandlerFunc {
+<p>统一错误处理中间件（收口所有 <code>c.Error</code>）：</p>
+<pre><code class="lang-go">func ErrorCollector() gin.HandlerFunc {
     return func(c *gin.Context) {
         c.Next()
         for _, e := range c.Errors {           // v1.12 也可用 c.GetErrorSlice()
@@ -619,10 +583,8 @@ func CreateOrder(c *gin.Context) {
         }
     }
 }</code></pre>
-  <div class="tip"><b>💡 范式要点：</b><span>handler 内部只有两条出口——校验失败回 4xx、业务失败经 <code>c.Error</code> 记录后回 5xx；日志与告警统一在 ErrorCollector 一处收口，避免每个 handler 各写各的。</span></div>
-
-  <h3 id="p-middleware">4.4 自定义中间件：鉴权 + 耗时日志</h3>
-  <pre><code class="lang-go">func Auth() gin.HandlerFunc {
+<h3 id="44-自定义中间件鉴权-耗时日志">4.4 自定义中间件：鉴权 + 耗时日志</h3><div class="warn"><b>⚠️ Abort 后记得 return：</b><span><code>c.AbortWithStatusJSON()</code> 只设置标记并写响应，<b>不会中断当前函数执行流</b>——紧跟着 <code>return</code> 才不会让本层后续逻辑继续跑。</span></div>
+<pre><code class="lang-go">func Auth() gin.HandlerFunc {
     return func(c *gin.Context) {
         token := c.GetHeader("Authorization")
         user, err := verifyToken(token)
@@ -644,10 +606,8 @@ func Latency() gin.HandlerFunc {
         }
     }
 }</code></pre>
-  <div class="warn"><b>⚠️ Abort 后记得 return：</b><span><code>c.AbortWithStatusJSON()</code> 只设置标记并写响应，<b>不会中断当前函数执行流</b>——紧跟着 <code>return</code> 才不会让本层后续逻辑继续跑。</span></div>
-
-  <h3 id="p-file">4.5 文件上传 / 下载</h3>
-  <pre><code class="lang-go">// 上传（multipart）
+<h3 id="45-文件上传-下载">4.5 文件上传 / 下载</h3><div class="warn"><b>⚠️ 上传安全：</b><span>校验 <code>file.Filename</code>（客户端可控）：过滤路径分隔符、限制大小与扩展名白名单，再落到磁盘——否则可能被路径穿越写入任意位置。</span></div>
+<pre><code class="lang-go">// 上传（multipart）
 func Upload(c *gin.Context) {
     file, err := c.FormFile("file")
     if err != nil { c.JSON(400, gin.H{"msg": err.Error()}); return }
@@ -658,30 +618,7 @@ func Upload(c *gin.Context) {
 
 // 静态目录（防目录列举用 OnlyFilesFS 包 embed.FS）
 r.Static("/assets", "./assets")</code></pre>
-  <div class="warn"><b>⚠️ 上传安全：</b><span>校验 <code>file.Filename</code>（客户端可控）：过滤路径分隔符、限制大小与扩展名白名单，再落到磁盘——否则可能被路径穿越写入任意位置。</span></div>
-
-  <h3 id="p-shutdown">4.6 优雅关闭（生产必抄）</h3>
-  <pre><code class="lang-go">func main() {
-    r := gin.Default()
-    srv := &amp;http.Server{Addr: ":8080", Handler: r}
-
-    go func() {
-        if err := srv.ListenAndServe(); err != nil &amp;&amp; err != http.ErrServerClosed {
-            log.Fatalf("listen: %v", err)
-        }
-    }()
-
-    quit := make(chan os.Signal, 1)
-    signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-    &lt;-quit                                          // 等待退出信号
-    ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-    defer cancel()
-    if err := srv.Shutdown(ctx); err != nil {       // 停止接新请求，等存量完成
-        log.Fatal("shutdown:", err)
-    }
-}</code></pre>
-
-  <div class="figure">
+<h3 id="46-优雅关闭生产必抄">4.6 优雅关闭（生产必抄）</h3><div class="figure">
     <svg viewBox="0 0 880 312" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs>
         <marker id="g6a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#65a30d"/></marker>
@@ -723,9 +660,27 @@ r.Static("/assets", "./assets")</code></pre>
     </svg>
     <figcaption>图 6 · 优雅关闭时序：SIGTERM → <code>srv.Shutdown(ctx)</code>：关闭监听停止接新请求 → 等待存量请求完成（10s 超时）→ 进程退出；<code>ListenAndServe</code> 返回 <code>http.ErrServerClosed</code> 属预期行为</figcaption>
   </div>
+<pre><code class="lang-go">func main() {
+    r := gin.Default()
+    srv := &amp;http.Server{Addr: ":8080", Handler: r}
 
-  <h3 id="p-test">4.7 测试</h3>
-  <pre><code class="lang-go">func TestPing(t *testing.T) {
+    go func() {
+        if err := srv.ListenAndServe(); err != nil &amp;&amp; err != http.ErrServerClosed {
+            log.Fatalf("listen: %v", err)
+        }
+    }()
+
+    quit := make(chan os.Signal, 1)
+    signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+    &lt;-quit                                          // 等待退出信号
+    ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+    defer cancel()
+    if err := srv.Shutdown(ctx); err != nil {       // 停止接新请求，等存量完成
+        log.Fatal("shutdown:", err)
+    }
+}</code></pre>
+<h3 id="47-测试">4.7 测试</h3><div class="tip"><b>💡 测试要点：</b><span><code>gin.SetMode(gin.TestMode)</code> 关掉调试输出；响应就是普通的 <code>*httptest.ResponseRecorder</code>，断言直接读 <code>w.Code</code> 与 <code>w.Body</code>——不真实监听端口，单测毫秒级完成。</span></div>
+<pre><code class="lang-go">func TestPing(t *testing.T) {
     gin.SetMode(gin.TestMode)
     r := gin.New()
     r.GET("/ping", func(c *gin.Context) { c.JSON(200, gin.H{"message": "pong"}) })
@@ -737,108 +692,83 @@ r.Static("/assets", "./assets")</code></pre>
     assert.Equal(t, 200, w.Code)
     assert.Contains(t, w.Body.String(), "pong")
 }</code></pre>
-  <div class="tip"><b>💡 测试要点：</b><span><code>gin.SetMode(gin.TestMode)</code> 关掉调试输出；响应就是普通的 <code>*httptest.ResponseRecorder</code>，断言直接读 <code>w.Code</code> 与 <code>w.Body</code>——不真实监听端口，单测毫秒级完成。</span></div>
+<hr>
+
 </section>
+<section data-anchor="5-版本演进速览v110-v112">
+<h2 id="5-版本演进速览v110-v112">5. 版本演进速览（v1.10 → v1.12）<span class="lvl b">版本</span></h2><div class="tip"><b>💡 兼容性策略：</b><span>Gin 的 v1 API 多年稳定、兼容性策略极其保守——升级基本无痛，小版本跟进安全修复即可。</span></div>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>时间</th><th>要点</th></tr></thead><tbody><tr><td>v1.10.x</td><td>2024</td><td>安全加固（header 注入类修复）、绑定增强</td></tr><tr><td>v1.11.0</td><td>2025.9</td><td><strong>HTTP/3 实验支持（quic-go）</strong>、form 数组集合与默认值、BindPlain、unixMilli/unixMicro、OnlyFilesFS、Go 1.25 CI</td></tr><tr><td>v1.12.0</td><td>2026.2</td><td><strong>bson 渲染协议</strong>（mongo-driver v2）、Context GetError/GetErrorSlice、Protobuf 内容协商、escaped path 选项、Context.Delete、彩色延迟日志、路由树多处性能优化（findCaseInsensitivePath 减分配等）</td></tr></tbody></table></div>
+<p>兼容性策略极其保守（v1 API 多年稳定），升级基本无痛。</p>
+<hr>
 
-<!-- ============ 5 版本演进 ============ -->
-<section id="versions">
-  <h2>5. 版本演进速览（v1.10 → v1.12）</h2>
-  <table>
-    <tr><th style="width:110px">版本</th><th style="width:90px">时间</th><th>要点</th></tr>
-    <tr><td><b>v1.10.x</b></td><td>2024</td><td>安全加固（header 注入类修复）、绑定增强。</td></tr>
-    <tr><td><b>v1.11.0</b></td><td>2025.9</td><td><b>HTTP/3 实验支持（quic-go）</b>、form 数组集合与默认值、<code>BindPlain</code>、unixMilli/unixMicro 时间格式、<code>OnlyFilesFS</code>（防目录列举）、Go 1.25 CI。</td></tr>
-    <tr><td><b>v1.12.0</b></td><td>2026.2</td><td><b>bson 渲染协议</b>（mongo-driver v2）、Context <code>GetError/GetErrorSlice</code>、Protobuf 内容协商、escaped path 选项、<code>Context.Delete</code>、彩色延迟日志、路由树多处性能优化（findCaseInsensitivePath 减分配等）。</td></tr>
-  </table>
-  <div class="tip"><b>💡 兼容性策略：</b><span>Gin 的 v1 API 多年稳定、兼容性策略极其保守——升级基本无痛，小版本跟进安全修复即可。</span></div>
 </section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2><div class="danger"><b>🚫 Context 不能跨 goroutine：</b><span>异步任务用 <code>c.Copy()</code> 或提取具体值后再并发；旧 Context 在请求结束后会被复用，持有它是数据竞争——这是 Gin 最高频的事故来源。</span></div>
+<div class="danger"><b>⚠️ Bind vs ShouldBind：</b><span><code>Bind</code> 系失败会自动写 400 响应，接着再 <code>c.JSON</code> 会二次写响应——统一用 Should 系自己控制错误出口。</span></div>
+<div class="warn"><b>🧰 默认 gin.Default() 不够也不一定全要：</b><span>生产常见组合是 <code>gin.New() + Recovery + 自定义结构化日志</code>；默认 Logger 是人读格式，接采集系统（ELK/Loki）要自定义。</span></div>
+<div class="danger"><b>🛡️ TrustedProxies 必须配置：</b><span>默认信任所有代理，<code>c.ClientIP()</code> 可被伪造；用 <code>r.SetTrustedProxies([]*net.IP{...})</code> 设置白名单，或传 <code>nil</code> 显式关闭。</span></div>
+<div class="warn"><b>🔀 路由参数冲突：</b><span>同一位置 <code>/user/:name</code> 与 <code>/user/list</code> 可共存，但 <code>:a</code> 与 <code>:b</code> 两个不同参数名在同一位置会 panic（启动期就炸，需留意注册顺序与命名统一）。</span></div>
+<div class="warn"><b>📄 中间件里读 body 只能一次：</b><span>Request.Body 是流，日志中间件要读 body 必须 <code>io.ReadAll</code> 后再 <code>c.Request.Body = io.NopCloser(bytes.NewBuffer(b))</code> 回填，否则后续 handler 读到空。</span></div>
+<div class="danger"><b>💥 panic 恢复靠 Recovery：</b><span>handler panic 不装 Recovery 会拖垮整个连接处理（http.Server 会断连接）；<b>Recovery 必须是第一个中间件</b>，否则它之前的层 panic 无人兜底。</span></div>
+<div class="warn"><b>🔢 JSON 里的数字精度：</b><span><code>c.JSON</code> 走 encoding/json，int64 大数给 JS 前端会丢精度——用字符串序列化或自定义 <code>MarshalJSON</code>。</span></div>
+<div class="warn"><b>🗺️ Map 响应顺序：</b><span><code>gin.H</code> 是 map，键序随机；需要稳定输出（快照测试、缓存 key）时用结构体序列化。</span></div>
+<div class="warn"><b>🏎️ 热路径避免反射：</b><span>ShouldBind 每次反射创建 validator 实例有开销，超高 QPS 接口可手写解析；常规业务无需在意——先测，再优化。</span></div>
+<ol><li><strong>Context 不能跨 goroutine</strong>：异步任务用 <code>c.Copy()</code> 或提取具体值后再并发；旧 Context 在请求结束后会被复用，持有它是数据竞争；</li><li><strong>Bind vs ShouldBind</strong>：<code>Bind</code> 系失败会自动写 400 响应，接着再 <code>c.JSON</code> 会二次写响应——统一用 Should 系自己控制；</li><li><strong>默认 gin.Default() 不够也不一定全要</strong>：生产常见组合是 <code>gin.New() + Recovery + 自定义结构化日志</code>；默认 Logger 是人读格式，接采集系统要自定义；</li><li><strong>TrustedProxies 必须配置</strong>：默认信任所有代理，<code>c.ClientIP()</code> 可被伪造；<code>r.SetTrustedProxies([]*net.IP{...})</code> 或 <code>nil</code> 显式关闭；</li><li><strong>路由参数 <code>:id</code> 与静态段冲突</strong>：同一位置 <code>/user/:name</code> 与 <code>/user/list</code> 可共存，但 <code>:a</code> 与 <code>:b</code> 两个不同参数名在同一位置会 panic；</li><li><strong>中间件里读 body 只能一次</strong>：Request.Body 是流，日志中间件要读 body 必须 <code>io.ReadAll</code> 后再 <code>c.Request.Body = io.NopCloser(bytes.NewBuffer(b))</code> 回填；</li><li><strong>panic 恢复靠 Recovery</strong>：handler panic 不装 Recovery 会拖垮整个连接处理（http.Server 会断连接）；Recovery 必须是第一个中间件；</li><li><strong>JSON 里的数字精度</strong>：<code>c.JSON</code> 走 encoding/json，int64 大数给 JS 前端会丢精度——用字符串序列化或自定义 MarshalJSON；</li><li><strong>Map 响应顺序</strong>：<code>gin.H</code> 是 map，键序随机；需要稳定输出（快照测试）用结构体；</li><li><strong>热路径避免反射</strong>：ShouldBind 每次反射创建 validator 实例有开销，超高 QPS 接口可手写解析；常规业务无需在意。</li></ol>
+<hr>
 
-<!-- ============ 6 常见坑 ============ -->
-<section id="pitfalls">
-  <h2>6. 常见坑与最佳实践</h2>
-  <p>以下 10 条按踩坑频率与严重程度整理（danger 比 warn 更需要优先处理）：</p>
-
-  <div class="danger"><b>🚫 Context 不能跨 goroutine：</b><span>异步任务用 <code>c.Copy()</code> 或提取具体值后再并发；旧 Context 在请求结束后会被复用，持有它是数据竞争——这是 Gin 最高频的事故来源。</span></div>
-
-  <div class="danger"><b>⚠️ Bind vs ShouldBind：</b><span><code>Bind</code> 系失败会自动写 400 响应，接着再 <code>c.JSON</code> 会二次写响应——统一用 Should 系自己控制错误出口。</span></div>
-
-  <div class="warn"><b>🧰 默认 gin.Default() 不够也不一定全要：</b><span>生产常见组合是 <code>gin.New() + Recovery + 自定义结构化日志</code>；默认 Logger 是人读格式，接采集系统（ELK/Loki）要自定义。</span></div>
-
-  <div class="danger"><b>🛡️ TrustedProxies 必须配置：</b><span>默认信任所有代理，<code>c.ClientIP()</code> 可被伪造；用 <code>r.SetTrustedProxies([]*net.IP{...})</code> 设置白名单，或传 <code>nil</code> 显式关闭。</span></div>
-
-  <div class="warn"><b>🔀 路由参数冲突：</b><span>同一位置 <code>/user/:name</code> 与 <code>/user/list</code> 可共存，但 <code>:a</code> 与 <code>:b</code> 两个不同参数名在同一位置会 panic（启动期就炸，需留意注册顺序与命名统一）。</span></div>
-
-  <div class="warn"><b>📄 中间件里读 body 只能一次：</b><span>Request.Body 是流，日志中间件要读 body 必须 <code>io.ReadAll</code> 后再 <code>c.Request.Body = io.NopCloser(bytes.NewBuffer(b))</code> 回填，否则后续 handler 读到空。</span></div>
-
-  <div class="danger"><b>💥 panic 恢复靠 Recovery：</b><span>handler panic 不装 Recovery 会拖垮整个连接处理（http.Server 会断连接）；<b>Recovery 必须是第一个中间件</b>，否则它之前的层 panic 无人兜底。</span></div>
-
-  <div class="warn"><b>🔢 JSON 里的数字精度：</b><span><code>c.JSON</code> 走 encoding/json，int64 大数给 JS 前端会丢精度——用字符串序列化或自定义 <code>MarshalJSON</code>。</span></div>
-
-  <div class="warn"><b>🗺️ Map 响应顺序：</b><span><code>gin.H</code> 是 map，键序随机；需要稳定输出（快照测试、缓存 key）时用结构体序列化。</span></div>
-
-  <div class="warn"><b>🏎️ 热路径避免反射：</b><span>ShouldBind 每次反射创建 validator 实例有开销，超高 QPS 接口可手写解析；常规业务无需在意——先测，再优化。</span></div>
 </section>
-
-<!-- ============ 7 选型对比 ============ -->
-<section id="compare">
-  <h2>7. 选型对比</h2>
-  <table>
-    <tr><th style="width:130px">维度</th><th>Gin</th><th>Echo</th><th>Fiber</th><th>go-zero/Kratos</th></tr>
-    <tr><td>定位</td><td>HTTP 框架</td><td>HTTP 框架</td><td>HTTP 框架（fasthttp）</td><td>微服务全家桶</td></tr>
-    <tr><td>路由</td><td><b>基数树</b></td><td>基数树</td><td>前缀树</td><td>各自封装</td></tr>
-    <tr><td>生态</td><td><b>最大</b>（中间件/文档/案例）</td><td>大</td><td>中（fasthttp 系不兼容 net/http）</td><td>含 RPC/治理</td></tr>
-    <tr><td>net/http 兼容</td><td>✅ 原生</td><td>✅</td><td>❌（fasthttp）</td><td>✅</td></tr>
-    <tr><td>适合</td><td><b>绝大多数 Web/API</b></td><td>同 Gin，风格略异</td><td>极致吞吐、无生态包袱</td><td>需要完整微服务设施</td></tr>
-  </table>
-  <div class="tip"><b>💡 一句话：</b><span><b>默认选 Gin——生态最大、文档最全、坑都被前人踩过；吞吐极端敏感再看 Fiber；要做微服务治理选 go-zero/Kratos。</b></span></div>
-  <p style="font-size:12.5px;color:var(--muted)">参考：gin-gonic.com/docs/ 官方文档 · github.com/gin-gonic/examples 官方示例库 · github.com/gin-gonic/gin CHANGELOG</p>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2><div class="tip"><b>💡 一句话：</b><span><b>默认选 Gin——生态最大、文档最全、坑都被前人踩过；吞吐极端敏感再看 Fiber；要做微服务治理选 go-zero/Kratos。</b></span></div>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>Gin</th><th>Echo</th><th>Fiber</th><th>go-zero/Kratos</th></tr></thead><tbody><tr><td>定位</td><td>HTTP 框架</td><td>HTTP 框架</td><td>HTTP 框架（fasthttp）</td><td>微服务全家桶</td></tr><tr><td>路由</td><td>基数树</td><td>基数树</td><td>前缀树</td><td>各自封装</td></tr><tr><td>生态</td><td><strong>最大</strong>（中间件/文档/案例）</td><td>大</td><td>中（fasthttp 系不兼容 net/http）</td><td>含 RPC/治理</td></tr><tr><td>net/http 兼容</td><td>✅ 原生</td><td>✅</td><td>❌（fasthttp）</td><td>✅</td></tr><tr><td>适合</td><td>绝大多数 Web/API</td><td>同 Gin，风格略异</td><td>极致吞吐、无生态包袱</td><td>需要完整微服务设施</td></tr></tbody></table></div>
+<p>一句话：<strong>默认选 Gin——生态最大、文档最全、坑都被前人踩过；吞吐极端敏感再看 Fiber；要做微服务治理选 go-zero/Kratos</strong>。</p>
+<p>参考：<a href="https://gin-gonic.com/docs/">官方文档 gin-gonic.com</a>、<a href="https://github.com/gin-gonic/examples">官方示例库</a>、<a href="https://github.com/gin-gonic/gin/blob/master/CHANGELOG.md">CHANGELOG</a>。</p>
 </section>
-
-<footer>Gin 技术指南 · 内容整理自 gin-gonic.com 官方文档与 gin-gonic/gin 仓库（v1.12.0）· 2026-09</footer>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
 </main>
 </div>
-
 <script>
-document.querySelectorAll('pre code.lang-go').forEach(function(block){
-  var src = block.textContent;
-  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  var master = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any|gin|Context|Engine|RouterGroup|HandlerFunc|LoginReq|CreateOrderReq|H|Server|Request|ResponseRecorder|Recorder)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
-  var out = src.replace(master, function(m, c1, c2, s, kw, typ, num, fn){
-    if (c1 || c2) return '<span class="cmt">'+m+'</span>';
-    if (s) return '<span class="str">'+m+'</span>';
-    if (kw) return '<span class="kw">'+m+'</span>';
-    if (typ) return '<span class="typ">'+m+'</span>';
-    if (num) return '<span class="num">'+m+'</span>';
-    if (fn) return '<span class="fn">'+m+'</span>';
-    return m;
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
   });
-  block.innerHTML = out;
-});
-document.querySelectorAll('pre code.lang-bash').forEach(function(block){
-  var src = block.textContent;
-  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  var master = /(#[^\n]*)|('(?:[^']|'')*'|"(?:\\.|[^"\\\n])*")|(--?[a-zA-Z][a-zA-Z0-9-]*)|\b(go|cd|curl)\b|\b(get|install|run|build|test|tidy|mod|generate|version)\b|\b(\d+)\b/g;
-  var out = src.replace(master, function(m, c, s, flag, cmd, sub, num){
-    if (c) return '<span class="cmt">'+m+'</span>';
-    if (s) return '<span class="str">'+m+'</span>';
-    if (flag) return '<span class="typ">'+m+'</span>';
-    if (cmd) return '<span class="kw">'+m+'</span>';
-    if (sub) return '<span class="fn">'+m+'</span>';
-    if (num) return '<span class="num">'+m+'</span>';
-    return m;
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
   });
-  block.innerHTML = out;
-});
-document.querySelectorAll('pre code').forEach(function(b){
-  var m = (b.className || '').match(/lang-(\w+)/);
-  if (!m) return;
-  var map = {go:'Go', bash:'Shell', txt:'目录结构'};
-  var label = map[m[1]];
-  if (!label) return;
-  var s = document.createElement('span');
-  s.className = 'codelabel';
-  s.textContent = label;
-  b.closest('pre').appendChild(s);
-});
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
 </script>
 </body>
 </html>

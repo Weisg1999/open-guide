@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>InfluxDB 3（Core / Enterprise）技术指南</title>
+<title>InfluxDB 3 · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
 <style>
   :root{
     --accent:#0891b2; --accent-light:#cffafe; --accent-dark:#155e75;
@@ -24,125 +25,116 @@
   nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
   nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
   nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
   main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
-  .hero{background:linear-gradient(135deg,#164e63 0%,#0891b2 55%,#06b6d4 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(8,145,178,.28)}
+  .hero{background:linear-gradient(135deg,#155e75 0%,#0891b2 58%,#155e75 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
   .hero h1{font-size:30px;margin-bottom:10px}
-  .hero p{opacity:.92;font-size:15px;max-width:680px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
   .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
   .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
   section{margin-bottom:46px}
   h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
-  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark)}
-  h4{font-size:15px;margin:16px 0 8px;color:#0f172a}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
   p{margin-bottom:12px}
   ul,ol{padding-left:24px;margin-bottom:12px}
   li{margin-bottom:6px}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin-bottom:18px;box-shadow:0 1px 3px rgba(21,94,117,.06)}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
   pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
-  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fd0dc;background:#0a3d49;padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
   code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
-  p code,li code,td code{background:#eef8fb;color:#0e7490;border:1px solid #d5edf3;padding:1px 6px;border-radius:6px;font-size:.88em}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
   .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
-  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(21,94,117,.06)}
-  th{background:#e6f7fc;color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
   td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
-  tr:nth-child(even) td{background:#f8fcfd}
-  .tip,.warn,.danger{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px;display:flex;gap:10px;align-items:flex-start}
-  .tip{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
-  .warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
-  .danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
-  .tip b,.warn b,.danger b{flex-shrink:0}
-  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0;box-shadow:0 1px 3px rgba(21,94,117,.06)}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
   .figure svg{width:100%;height:auto;display:block}
   .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
-  .pill{display:inline-block;background:var(--accent-light);color:var(--accent-dark);border-radius:16px;padding:2px 12px;font-size:12px;margin:2px 4px 2px 0}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
   .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
-  .lvl.b{background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
   .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
   .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
-  .feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin:16px 0}
-  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:0 1px 3px rgba(21,94,117,.06)}
-  .feature .f-icon{font-size:22px;display:block;margin-bottom:8px}
-  .feature b{display:block;color:var(--accent-dark);font-size:14.5px;margin-bottom:6px}
-  .feature p{font-size:13px;color:#475569;margin:0;line-height:1.65}
-  ul.timeline{list-style:none;padding:0;margin:18px 0 6px;position:relative}
-  ul.timeline::before{content:"";position:absolute;left:9.5px;top:8px;bottom:8px;width:2px;background:linear-gradient(180deg,#0891b2,#67e8f9)}
-  ul.timeline li{position:relative;padding:0 0 20px 36px;font-size:14px;color:#334155}
-  ul.timeline li:last-child{padding-bottom:2px}
-  ul.timeline li::before{content:"";position:absolute;left:4px;top:5px;width:13px;height:13px;border-radius:50%;background:#fff;border:3px solid var(--accent)}
-  .t-date{display:inline-block;font-weight:800;color:var(--accent-dark);font-size:12.5px;background:var(--accent-light);border:1px solid #a5f3fc;border-radius:9px;padding:1px 10px;margin-right:8px}
-  .timeline b{color:#0f172a}
-  .pit-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin:16px 0}
-  .pit{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--warn);border-radius:12px;padding:13px 16px;box-shadow:0 1px 3px rgba(21,94,117,.05)}
-  .pit.bad{border-left-color:var(--danger)}
-  .pit.good{border-left-color:var(--ok)}
-  .pit .no{display:inline-block;min-width:22px;height:22px;border-radius:50%;background:#fffbeb;border:1px solid #fde68a;color:#b45309;font-weight:800;font-size:11.5px;text-align:center;line-height:20px;margin-right:8px}
-  .pit.bad .no{background:#fef2f2;border-color:#fca5a5;color:#991b1b}
-  .pit.good .no{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}
-  .pit b{color:#0f172a}
-  .pit p{margin:7px 0 0;font-size:13px;color:#475569;line-height:1.65}
   footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
   @media (max-width:900px){
     nav.sidebar{display:none}
     main{padding:24px 18px 60px}
     .hero{padding:28px 22px}
-    .pit-grid{grid-template-columns:1fr}
   }
 </style>
 </head>
 <body>
 <div class="layout">
-
 <nav class="sidebar">
   <div class="logo">InfluxDB 3<span class="ver">GA 2025</span></div>
   <div class="sub">Core / Enterprise · 时序数据库</div>
-  <a href="#intro">1. 项目简介</a>
-  <a class="sub-link" href="#m-why">1.1 三大动机</a>
-  <a class="sub-link" href="#m-line">1.2 产品线与场景</a>
-  <a class="sub-link" href="#m-run">1.3 快速启动</a>
-  <a href="#arch">2. 核心架构：FDAP 栈</a>
-  <a class="sub-link" href="#a-write">2.1 写入路径 diskless</a>
-  <a class="sub-link" href="#a-query">2.2 查询路径</a>
-  <a class="sub-link" href="#a-model">2.3 数据模型 v2→v3</a>
-  <a class="sub-link" href="#a-pe">2.4 Processing Engine</a>
-  <a href="#practice">3. 使用实战（Go）</a>
-  <a class="sub-link" href="#p-go">3.1 写入与查询</a>
-  <a class="sub-link" href="#p-http">3.2 HTTP API</a>
-  <a class="sub-link" href="#p-cli">3.3 管理命令</a>
-  <a href="#cve">4. Core vs Enterprise</a>
-  <a class="sub-link" href="#cve-limit">4.1 432 限制的本质</a>
-  <a href="#timeline">5. 版本演进</a>
-  <a href="#pitfalls">6. 常见坑与最佳实践</a>
-  <a href="#summary">7. 选型小结</a>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#启动">启动</a>
+  <a href="#2-核心架构fdap-栈">2. 核心架构：FDAP 栈</a>
+  <a class="sub-link" href="#21-写入路径diskless-架构">2.1 写入路径（diskless 架构）</a>
+  <a class="sub-link" href="#22-查询路径">2.2 查询路径</a>
+  <a class="sub-link" href="#23-数据模型与-v2-的对照">2.3 数据模型：与 v2 的对照</a>
+  <a class="sub-link" href="#24-processing-engine嵌入式-python-vm">2.4 Processing Engine：嵌入式 Python VM</a>
+  <a href="#3-使用实战go">3. 使用实战（Go）</a>
+  <a class="sub-link" href="#31-写入与查询influxdb3-go">3.1 写入与查询（influxdb3-go）</a>
+  <a class="sub-link" href="#32-http-api任何语言零依赖接入">3.2 HTTP API（任何语言零依赖接入）</a>
+  <a class="sub-link" href="#33-管理">3.3 管理</a>
+  <a href="#4-core-vs-enterprise选型必读">4. Core vs Enterprise：选型必读</a>
+  <a href="#5-版本演进速览">5. 版本演进速览</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型小结">7. 选型小结</a>
 </nav>
-
 <main>
-
 <div class="hero">
-  <h1>InfluxDB 3（Core / Enterprise）</h1>
-  <p><b>Rust 重写 · FDAP 架构 · SQL 查询 · 对象存储优先</b> —— InfluxData 历时四年从零重写的新世代时序平台：近乎无限的基数支持、开放列式格式与标准 SQL 查询。</p>
-  <div class="meta">
-    <span>Core 开源 · MIT/Apache-2</span>
-    <span>Parquet + DataFusion</span>
-    <span>无限基数</span>
-    <span>Processing Engine</span>
-    <span>GA 2025.4</span>
-  </div>
+  <h1>InfluxDB 3（Core / Enterprise）技术介绍与使用指南</h1>
+<p>Rust 重写 · FDAP 架构 · SQL 查询 · 对象存储优先 —— InfluxData 历时四年从零重写的新世代时序平台：近乎无限的基数支持、开放列式格式与标准 SQL 查询。</p>
+<p style="opacity:.8;font-size:13.5px">Core / Enterprise · 时序数据库</p>
+<div class="meta"><span>Core 开源 · MIT/Apache-2</span><span>Parquet + DataFusion</span><span>无限基数</span><span>Processing Engine</span><span>GA 2025.4</span></div>
 </div>
+<blockquote><p>Rust 重写的新世代时序平台：FDAP 架构（Flight + DataFusion + Arrow + Parquet）、SQL 查询、对象存储优先、近乎无限的基数支持。 仓库：<a href="https://github.com/influxdata/influxdb">https://github.com/influxdata/influxdb</a>　|　GA：2025.4（Core 开源，MIT/Apache-2）</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p>InfluxDB 3 是 InfluxData 历时四年多从零重写的产品，动机来自用户呼声最高的三个能力：</p>
+<ol><li><strong>无限基数（Infinite Cardinality）</strong>：v2 的 TSI 索引在高基数下内存爆炸；v3 列式架构让 tag 组合数不再是性能枷锁；</li><li><strong>历史数据放对象存储</strong>：冷数据沉到 S3 等廉价存储，同时保持可查询；</li><li><strong>标准 SQL</strong>：弃用自研 Flux，查询语言回归工业标准。</li></ol>
+<p>两条产品线（同一内核）：</p>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>定位</th><th>关键差异</th></tr></thead><tbody><tr><td><strong>Core（开源）</strong></td><td>高速"近期数据引擎"</td><td>单进程；内存中保留近期数据 + last cache；历史查询受 Parquet 文件数限制（默认 432 个文件 ≈ 72 小时 @ 默认 10 分钟文件粒度）；MIT/Apache-2 许可</td></tr><tr><td><strong>Enterprise（商业）</strong></td><td>完整平台</td><td>Compactor 后台压缩、长期历史查询、HA、多节点、增强安全</td></tr></tbody></table></div>
+<p>典型场景：DevOps/IoT 监控、AI Agent 可观测、高频传感数据、需要 SQL 直接分析时序的场景。</p>
+<h3 id="启动">启动</h3>
+<pre><code class="lang-bash"># 下载 influxdb3 二进制（或 docker run influxdb:3-core）
+influxdb3 serve --node-id local01 \
+  --object-store file \
+  --data-dir ~/.influxdb3
+# 默认 HTTP :8181；写入 /api/v3/write_lp，查询走 SQL</code></pre>
+<p>Go 客户端：<code>go get github.com/InfluxCommunity/influxdb3-go/v2</code></p>
+<hr>
 
-<!-- ============ 1 简介 ============ -->
-<section id="intro">
-  <h2>1. 项目简介<span class="lvl b">入门</span></h2>
-  <p>InfluxDB 3 是 InfluxData 历时四年多、用 Rust 从零重写的时序数据库（仓库 <code>github.com/influxdata/influxdb</code>，2025.4 GA）。它没有延续 v2 的「TSM 引擎 + Flux 语言 + TSI 索引」自研路线，而是整体迁移到 Apache 开放分析生态——动机来自用户呼声最高的三个能力：</p>
-
-  <h3 id="m-why">1.1 三大动机</h3>
-  <div class="feature-grid">
-    <div class="feature"><span class="f-icon">♾️</span><b>无限基数</b><p>v2 的 TSI 索引在高基数下内存爆炸；v3 列式架构让 tag 组合数不再是性能枷锁。</p></div>
-    <div class="feature"><span class="f-icon">🪣</span><b>历史数据放对象存储</b><p>冷数据沉到 S3 等廉价存储，同时保持可查询——成本与查询能力兼得。</p></div>
-    <div class="feature"><span class="f-icon">📜</span><b>标准 SQL</b><p>弃用自研 Flux，查询语言回归工业标准，BI / 分析工具直接对接。</p></div>
-  </div>
-
-  <div class="figure">
+<div class="figure">
     <svg viewBox="0 0 880 424" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs><marker id="f0a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0891b2"/></marker></defs>
       <rect x="25" y="28" width="330" height="336" rx="14" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.6"/>
@@ -189,33 +181,9 @@
     </svg>
     <figcaption>图 1 · v2 → v3 架构跃迁：三大动机——无限基数、历史沉对象存储、标准 SQL</figcaption>
   </div>
-
-  <h3 id="m-line">1.2 两条产品线（同一内核）</h3>
-  <table>
-    <tr><th style="width:150px">版本</th><th style="width:170px">定位</th><th>关键差异</th></tr>
-    <tr><td><b>Core（开源）</b></td><td>高速「近期数据引擎」</td><td>单进程；内存中保留近期数据 + last cache；历史查询受 Parquet 文件数限制（默认 432 个文件 ≈ 72 小时 @ 默认 10 分钟文件粒度）；MIT / Apache-2 许可</td></tr>
-    <tr><td><b>Enterprise（商业）</b></td><td>完整平台</td><td>Compactor 后台压缩、长期历史查询、HA、多节点、增强安全</td></tr>
-  </table>
-  <p>典型场景：<span class="pill">DevOps / IoT 监控</span><span class="pill">AI Agent 可观测</span><span class="pill">高频传感数据</span><span class="pill">需要 SQL 直接分析时序</span></p>
-
-  <h3 id="m-run">1.3 快速启动</h3>
-  <pre><code class="lang-bash"># 下载 influxdb3 二进制（或 docker run influxdb:3-core）
-influxdb3 serve --node-id local01 \
-  --object-store file \
-  --data-dir ~/.influxdb3
-
-# 默认 HTTP :8181；写入 /api/v3/write_lp，查询走 SQL
-
-# Go 客户端
-go get github.com/InfluxCommunity/influxdb3-go/v2</code></pre>
 </section>
-
-<!-- ============ 2 核心架构 ============ -->
-<section id="arch">
-  <h2>2. 核心架构：FDAP 栈<span class="lvl m">中级</span></h2>
-  <p>v2 是「自研一切」（TSM 引擎 + Flux 语言），v3 是「站在开源分析生态上」：SQL、Flight SQL、与 pandas / Polars / DuckDB 的互操作几乎免费获得。四个 Apache 项目的首字母，自上而下拼成 <b>FDAP</b>：</p>
-
-  <div class="figure">
+<section data-anchor="2-核心架构fdap-栈">
+<h2 id="2-核心架构fdap-栈">2. 核心架构：FDAP 栈<span class="lvl b">速览</span></h2><div class="figure">
     <svg viewBox="0 0 880 400" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs><marker id="f1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
       <line x1="100" y1="48" x2="100" y2="340" stroke="#94a3b8" stroke-width="2" marker-end="url(#f1a)"/>
@@ -249,9 +217,12 @@ go get github.com/InfluxCommunity/influxdb3-go/v2</code></pre>
     </svg>
     <figcaption>图 2 · FDAP 栈分层：Flight 传输 → DataFusion 查询 → Arrow 内存 → Parquet 存储，全部构建在 Apache 开放生态之上</figcaption>
   </div>
-
-  <h3 id="a-write">2.1 写入路径（diskless 架构）</h3>
-  <div class="figure">
+<pre><code class="lang-text">F light      Apache Flight / Flight SQL —— 高性能列式传输协议（gRPC）
+D ataFusion  Apache DataFusion —— Rust SQL 查询引擎（向量化执行）
+A rrow       Apache Arrow —— 内存列式格式，组件间零拷贝共享
+P arquet     Apache Parquet —— 磁盘/对象存储列式文件格式</code></pre>
+<p>v2 是"自研一切"（TSM 引擎 + Flux 语言），v3 是"站在开源分析生态上"：SQL、Flight SQL、与 pandas/Polars/DuckDB 的互操作几乎免费获得。</p>
+<h3 id="21-写入路径diskless-架构">2.1 写入路径（diskless 架构）</h3><div class="figure">
     <svg viewBox="0 0 880 474" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs>
         <marker id="f2a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker>
@@ -302,17 +273,15 @@ go get github.com/InfluxCommunity/influxdb3-go/v2</code></pre>
     </svg>
     <figcaption>图 3 · 写入路径（diskless）：WAL + 内存缓冲承接近期数据，每 10 分钟整块转成 Parquet 落对象存储；Enterprise 的 Compactor 再合并出 gen2 / gen3</figcaption>
   </div>
-
-  <ul>
-    <li><b>近期数据</b>在 WAL 与内存 buffer 中，查询「最近几分钟」不碰对象存储——低延迟；</li>
-    <li>每 10 分钟把内存数据<b>整块转成 Parquet</b>（gen1 文件）写入对象存储；Catalog 记录「哪段时间在哪个文件」；</li>
-    <li><b>Enterprise 的 Compactor</b> 把小 gen1 文件合并成更大的 gen2 / gen3 层——历史查询性能与成本的关键（Core 没有后台 Compactor，所以查询触碰的文件数受限）；</li>
-    <li><b>diskless</b>：持久状态可全部放对象存储，进程本身无状态化。</li>
-  </ul>
-  <div class="tip"><b>💡 K8s 友好：</b><span>diskless 架构下进程挂了重启即恢复——持久状态全在对象存储（+ 本地 WAL），天然适合容器编排。</span></div>
-
-  <h3 id="a-query">2.2 查询路径</h3>
-  <div class="figure">
+<div class="tip"><b>💡 K8s 友好：</b><span>diskless 架构下进程挂了重启即恢复——持久状态全在对象存储（+ 本地 WAL），天然适合容器编排。</span></div>
+<pre><code class="lang-text">Line Protocol 写入 → Router/Server
+   → WAL（预写日志，本地盘，近实时查询可见）
+   → 内存 write buffer（按时间分桶）
+        │ 每 gen1 周期（默认 10 分钟）
+        ▼
+   Parquet 文件（对象存储 S3 / 本地 file）  ←→  Catalog（元数据：库表/文件清单）</code></pre>
+<ul><li><strong>近期数据</strong>在 WAL 与内存 buffer 中，查询"最近几分钟"不碰对象存储——低延迟；</li><li>每 10 分钟把内存数据<strong>整块转成 Parquet</strong>（gen1 文件）写入对象存储；Catalog 记录"哪段时间在哪个文件"；</li><li><strong>Enterprise 的 Compactor</strong> 把小 gen1 文件合并成更大的 gen2/gen3 层，历史查询性能与成本的关键（Core 没有后台 Compactor，所以查询触碰的文件数受限）；</li><li>"diskless"：持久状态可全部放对象存储，进程本身无状态化——K8s 友好（挂了重启即恢复）。</li></ul>
+<h3 id="22-查询路径">2.2 查询路径</h3><div class="figure">
     <svg viewBox="0 0 880 426" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs>
         <marker id="f3a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker>
@@ -357,63 +326,28 @@ go get github.com/InfluxCommunity/influxdb3-go/v2</code></pre>
     </svg>
     <figcaption>图 4 · 查询路径：DataFusion 经 Catalog 定位文件；近期数据直接命中内存 / WAL，向量化扫描后以 Arrow 批返回</figcaption>
   </div>
-
-  <ul>
-    <li>SQL 完整语法：JOIN、窗口函数、CTE——v2 Flux 里费劲的 join 现在是一句 SQL；</li>
-    <li>兼容 <b>InfluxQL</b>（v1 语法子集）帮助迁移；</li>
-    <li>多个查询引擎可经 Arrow Flight 直连 InfluxDB 3 的 Parquet 生态——DuckDB 查 S3 上的 InfluxDB Parquet 是官方演示场景。</li>
-  </ul>
-
-  <pre><code class="lang-sql">-- 窗口聚合：v2 Flux 里费劲的 join / 分窗，v3 是一句 SQL
-SELECT host,
-       DATE_BIN(INTERVAL '5 minutes', time, TIMESTAMP '1970-01-01T00:00:00Z') AS window,
-       AVG(usage_idle) AS idle
-FROM cpu
-WHERE time &gt; NOW() - INTERVAL '1 hour'
-GROUP BY host, window
-ORDER BY window;</code></pre>
-
-  <div class="warn"><b>⚠️ Flux 不支持：</b><span>v3 无法运行 Flux 查询，官方迁移工具负责转换常见查询——存量 Flux 资产要提前评估（见第 5、6 节）。</span></div>
-
-  <h3 id="a-model">2.3 数据模型：与 v2 的对照</h3>
-  <table>
-    <tr><th style="width:190px">v2</th><th style="width:170px">v3</th><th>说明</th></tr>
-    <tr><td>Organization</td><td>（服务级配置）</td><td>v3 简化</td></tr>
-    <tr><td>Bucket</td><td><b>Database</b></td><td>概念合并：一个 database 即一个库</td></tr>
-    <tr><td>Measurement</td><td><b>Table</b></td><td>表；tags / fields 即列</td></tr>
-    <tr><td>Series / TSI 索引</td><td>（无 Series 概念）</td><td>列式 + Catalog，基数不再是索引负担</td></tr>
-  </table>
-
-  <p>Line Protocol 仍是写入协议：<code>cpu,host=node1 usage_idle=91.2 1735689600000000000</code>，各片段落到 v3 的形态：</p>
-  <table>
-    <tr><th style="width:230px">Line Protocol 片段</th><th>落到 v3 的形态</th></tr>
-    <tr><td><code>cpu</code></td><td>Table 名</td></tr>
-    <tr><td><code>host=node1</code></td><td>普通字符串列（tag）</td></tr>
-    <tr><td><code>usage_idle=91.2</code></td><td>类型化数值列（field）</td></tr>
-    <tr><td><code>1735689600000000000</code></td><td><code>time</code> 列</td></tr>
-  </table>
-  <p>schema 可动态演化：新的 tag / field 以新列形式出现（宽稀疏表），无需 DDL。</p>
-
-  <h3 id="a-pe">2.4 Processing Engine：嵌入式 Python VM</h3>
-  <p>v3 内嵌 Python 虚拟机，<b>插件在数据写入路径上对 Arrow 批零拷贝执行</b>——这是 v2 Tasks 的官方继任者：</p>
-  <ul>
-    <li>触发器：WAL flush 事件 / 定时（cron）；</li>
-    <li>用途：降采样（替代 v2 Task）、异常检测、告警转发（webhook / PagerDuty）、数据清洗；</li>
-    <li>插件就是 Python 文件（官方标准插件库 + 自定义）。</li>
-  </ul>
-  <pre><code class="lang-python"># 处理引擎插件形态示意：对写入路径上的 Arrow 批直接处理
+<div class="warn"><b>⚠️ Flux 不支持：</b><span>v3 无法运行 Flux 查询，官方迁移工具负责转换常见查询——存量 Flux 资产要提前评估（见第 5、6 节）。</span></div>
+<pre><code class="lang-text">SQL（Flight SQL / HTTP）→ DataFusion 生成计划
+   → Catalog 定位涉及的 Parquet 文件 + 内存/WAL 近期数据
+   → 向量化扫描（谓词下推、只读所需列）→ 聚合 → Arrow 结果返回</code></pre>
+<ul><li>SQL 完整语法：JOIN、窗口函数、CTE——v2 Flux 里费劲的 join 现在是一句 SQL；</li><li>兼容 <strong>InfluxQL</strong>（v1 语法子集）帮助迁移；<strong>Flux 不支持</strong>（迁移工具负责转换常见查询）；</li><li>多个查询引擎可经 Arrow Flight 直连 InfluxDB 3 的 Parquet 生态（DuckDB 查 S3 上的 InfluxDB Parquet 是官方演示场景）。</li></ul>
+<h3 id="23-数据模型与-v2-的对照">2.3 数据模型：与 v2 的对照</h3>
+<div class="table-wrap"><table><thead><tr><th>v2</th><th>v3</th><th>说明</th></tr></thead><tbody><tr><td>Organization</td><td>（服务级配置）</td><td>v3 简化</td></tr><tr><td>Bucket</td><td><strong>Database</strong></td><td>概念合并：一个 database 即一个库</td></tr><tr><td>Measurement</td><td><strong>Table</strong></td><td>表；tags/fields 即列</td></tr><tr><td>Series/TSI 索引</td><td>（无 Series 概念）</td><td>列式 + Catalog，基数不再是索引负担</td></tr></tbody></table></div>
+<p>Line Protocol 仍是写入协议：<code>cpu,host=node1 usage_idle=91.2 1735689600000000000</code>，tag→普通字符串列、field→类型化数值列、timestamp→time 列。schema 可动态演化（宽稀疏表）。</p>
+<h3 id="24-processing-engine嵌入式-python-vm">2.4 Processing Engine：嵌入式 Python VM</h3>
+<p>v3 内嵌 Python 虚拟机，<strong>插件在数据写入路径上零拷贝执行</strong>（对 Arrow 批直接处理）：</p>
+<ul><li>触发器：WAL flush 事件 / 定时（cron）；</li><li>用途：降采样（替代 v2 的 Task）、异常检测、告警转发（ webhook/PagerDuty）、数据清洗；</li><li>插件就是 Python 文件（标准插件库 + 自定义），是 v2 Tasks 的官方继任者。</li></ul>
+<pre><code class="lang-python"># 处理引擎插件形态示意
 def process_batch(batch, context):
     if batch["cpu"].mean() &gt; 90:
         context.alert("cpu high")</code></pre>
+<hr>
+
 </section>
-
-<!-- ============ 3 Go 实战 ============ -->
-<section id="practice">
-  <h2>3. 使用实战（Go）<span class="lvl b">初级</span></h2>
-  <p>以下示例基于官方 Go 客户端 <code>influxdb3-go/v2</code>；HTTP API 部分任何语言都能零依赖接入。</p>
-
-  <h3 id="p-go">3.1 写入与查询（influxdb3-go）</h3>
-  <pre><code class="lang-go">client, err := influxdb3.New(influxdb3.ClientConfig{
+<section data-anchor="3-使用实战go">
+<h2 id="3-使用实战go">3. 使用实战（Go）<span class="lvl m">核心</span></h2>
+<h3 id="31-写入与查询influxdb3-go">3.1 写入与查询（influxdb3-go）</h3>
+<pre><code class="lang-go">client, err := influxdb3.New(influxdb3.ClientConfig{
     Host:       "http://localhost:8181",
     Token:      "my-token",
     Database:   "metrics",
@@ -427,7 +361,7 @@ points := []string{
 }
 err = client.Write(context.Background(), points)
 
-// SQL 查询：DATE_BIN 按 5 分钟分窗聚合
+// SQL 查询
 query := `SELECT host, DATE_BIN(INTERVAL '5 minutes', time, TIMESTAMP '1970-01-01T00:00:00Z')
                  AS window, AVG(usage_idle) AS idle
           FROM cpu WHERE time &gt; NOW() - INTERVAL '1 hour'
@@ -437,43 +371,30 @@ for it.Next() {
     row := it.Value()
     fmt.Println(row["host"], row["window"], row["idle"])
 }</code></pre>
-
-  <h3 id="p-http">3.2 HTTP API（任何语言零依赖接入）</h3>
-  <pre><code class="lang-bash"># 写入（Line Protocol）
+<h3 id="32-http-api任何语言零依赖接入">3.2 HTTP API（任何语言零依赖接入）</h3>
+<pre><code class="lang-bash"># 写入
 curl -X POST "http://localhost:8181/api/v3/write_lp?db=metrics&amp;precision=nanosecond" \
   -H "Authorization: Bearer $TOKEN" \
   --data-binary 'cpu,host=node1 usage_idle=91.2'
 
-# SQL 查询（可返回 JSON / Arrow / CSV / Parquet 格式）
+# SQL 查询（JSON / Arrow / CSV / Parquet 格式）
 curl -X POST "http://localhost:8181/api/v3/query_sql" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"db":"metrics","q":"SELECT host, AVG(usage_idle) FROM cpu WHERE time &gt; NOW() - INTERVAL 1 HOUR GROUP BY host"}'</code></pre>
-
-  <h3 id="p-cli">3.3 管理命令</h3>
-  <pre><code class="lang-bash"># 建库 / 令牌 / 查询
+<h3 id="33-管理">3.3 管理</h3>
+<pre><code class="lang-bash"># CLI
 influxdb3 create database iot --retention-period 30d
 influxdb3 create token --all-databases
 influxdb3 query "SELECT * FROM cpu LIMIT 5" --database metrics
 
-# 启用处理引擎插件（WAL flush / cron 定时触发）
+# 处理引擎插件
 influxdb3 enable --plugin downsample.py --trigger tables --database metrics
 influxdb3 plugin list</code></pre>
+<hr>
+
 </section>
-
-<!-- ============ 4 Core vs Enterprise ============ -->
-<section id="cve">
-  <h2>4. Core vs Enterprise：选型必读<span class="lvl m">中级</span></h2>
-  <p>同一内核、两条产品线，最大的分界在<b>历史查询与集群能力</b>：</p>
-  <table>
-    <tr><th style="width:220px">能力</th><th>Core（开源）</th><th>Enterprise</th></tr>
-    <tr><td>近期数据查询（WAL / 内存 / last cache）</td><td>✅ 低延迟</td><td>✅</td></tr>
-    <tr><td>历史查询范围</td><td>受 <code>--query-file-limit</code> 限制（默认 432 个 Parquet 文件 ≈ 3 天 @10min 粒度，可调大但吃内存）</td><td>✅ Compactor 合并 + 完整历史</td></tr>
-    <tr><td>高可用 / 多节点</td><td>❌ 单进程</td><td>✅</td></tr>
-    <tr><td>后台 Compaction</td><td>❌</td><td>✅</td></tr>
-    <tr><td>安全增强（审计等）</td><td>基础</td><td>✅</td></tr>
-  </table>
-
-  <div class="figure">
+<section data-anchor="4-core-vs-enterprise选型必读">
+<h2 id="4-core-vs-enterprise选型必读">4. Core vs Enterprise：选型必读<span class="lvl m">实战</span></h2><div class="figure">
     <svg viewBox="0 0 880 392" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs><marker id="f5am" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d97706"/></marker></defs>
       <rect x="25" y="25" width="830" height="305" rx="16" fill="#fffbeb" stroke="#d97706" stroke-width="1.8" stroke-dasharray="8 5"/>
@@ -512,123 +433,75 @@ influxdb3 plugin list</code></pre>
     </svg>
     <figcaption>图 5 · Core 与 Enterprise 的边界：Core 是「近期数据引擎」，Enterprise 在其上增加 Compactor、完整历史、HA 与安全增强</figcaption>
   </div>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>Core（开源）</th><th>Enterprise</th></tr></thead><tbody><tr><td>近期数据查询（WAL/内存/last cache）</td><td>✅ 低延迟</td><td>✅</td></tr><tr><td>历史查询范围</td><td>受 <code>--query-file-limit</code>（默认 432 个 Parquet 文件，约 3 天@10min 粒度，可调大但吃内存）</td><td>✅ Compactor 合并 + 完整历史</td></tr><tr><td>高可用 / 多节点</td><td>❌ 单进程</td><td>✅</td></tr><tr><td>后台 Compaction</td><td>❌</td><td>✅</td></tr><tr><td>安全增强（审计等）</td><td>基础</td><td>✅</td></tr></tbody></table></div>
+<blockquote><p>Core 的"72 小时"限制本质是<strong>单次查询可触碰的 Parquet 文件数</strong>（432），不是时间硬编码；写入持续、查询范围小的时候存得远不止 72h 的数据，只是查询受限。需要长期廉价保留 + 全量历史查询 → Enterprise 或自行把 Parquet 交给 DuckDB/Spark 生态。</p></blockquote>
+<hr>
 
-  <h3 id="cve-limit">4.1 「72 小时」限制的本质</h3>
-  <div class="tip"><b>💡 别被「72 小时」误导：</b><span>Core 的限制本质是<b>单次查询可触碰的 Parquet 文件数</b>（432），不是时间硬编码——432 × 10 分钟 ≈ 72 小时只是默认文件粒度下的换算。写入持续、查询范围小的时候，Core 存得远不止 72 小时的数据，只是查询受限。需要「长期廉价保留 + 全量历史查询」→ Enterprise，或自行把 Parquet 交给 DuckDB / Spark 生态。</span></div>
+<div class="tip"><b>💡 别被「72 小时」误导：</b><span>Core 的限制本质是<b>单次查询可触碰的 Parquet 文件数</b>（432），不是时间硬编码——432 × 10 分钟 ≈ 72 小时只是默认文件粒度下的换算。写入持续、查询范围小的时候，Core 存得远不止 72 小时的数据，只是查询受限。需要「长期廉价保留 + 全量历史查询」→ Enterprise，或自行把 Parquet 交给 DuckDB / Spark 生态。</span></div>
 </section>
+<section data-anchor="5-版本演进速览">
+<h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
+<ul><li><strong>2020–2024</strong>：IOx 项目验证 Arrow/Parquet 路线；</li><li><strong>2025.1</strong> Alpha、<strong>2025.3</strong> Beta、<strong>2025.4 GA</strong>（Core + Enterprise）；</li><li>2025 内核迭代：last cache 优化、InfluxQL 兼容扩展、处理引擎插件丰富；</li><li><strong>2026（Enterprise）</strong>：新一代升级存储引擎（<code>.pt</code> 文件格式、column families、Gorilla/delta-delta 压缩回归时序特化路线，<code>--upgrade-pacha-tree</code> 平滑迁移）——解决 Parquet 通用格式在单序列高频查询上的短板；</li><li><strong>Flux 于 3.x 正式终止</strong>；v2→v3 迁移以 bucket→database 重写为主（官方迁移工具覆盖常见 Flux 查询）。</li></ul>
+<hr>
 
-<!-- ============ 5 版本演进 ============ -->
-<section id="timeline">
-  <h2>5. 版本演进速览<span class="lvl b">了解</span></h2>
-  <ul class="timeline">
-    <li><span class="t-date">2020–2024</span><b>IOx 项目</b>：验证 Arrow / Parquet 列式路线（v3 的技术前身）</li>
-    <li><span class="t-date">2025.1 → 2025.3</span><b>Alpha → Beta</b>：Rust 重写内核逐步开放试用</li>
-    <li><span class="t-date">2025.4</span><b>GA</b>：Core（开源）与 Enterprise 同时正式发布</li>
-    <li><span class="t-date">2025 全年</span><b>内核快速迭代</b>：last cache 优化、InfluxQL 兼容扩展、Processing Engine 插件生态丰富</li>
-    <li><span class="t-date">2026</span><b>Enterprise 新一代存储引擎</b>：<code>.pt</code> 文件格式、column families、Gorilla / delta-delta 压缩回归时序特化路线，<code>--upgrade-pacha-tree</code> 平滑迁移——解决 Parquet 通用格式在单序列高频查询上的短板</li>
-    <li><span class="t-date">3.x</span><b>Flux 正式终止</b>：v2→v3 迁移以 bucket→database 重写为主（官方迁移工具覆盖常见 Flux 查询）</li>
-  </ul>
 </section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>Core 别当长期库用</strong>：Core 定位是"最近数据引擎"，把 90 天查询需求压给 Core 必然撞文件数限制——要么 Enterprise，要么 Parquet 出湖给分析引擎；</li><li><strong>tag/field 选型习惯保留</strong>：过滤列（tag）仍决定谓词下推效率；高基数不再是禁区但会放大存储；</li><li><strong>写入仍走 Line Protocol 批量化</strong>：单点 HTTP 写入的性能浪费与 v2 时代相同；</li><li><strong>时间谓词必须带</strong>：无 time 过滤的查询会扫全部文件——SQL 方言没变，代价还在；</li><li><strong>对象存储选型</strong>：S3/R2/MinIO 均可（file 模式仅适合试验）；MinIO 是自托管常见组合；</li><li><strong>内存管理</strong>：write buffer 与 last cache 常驻内存，容量规划按写入速率 × gen1 周期估算；</li><li><strong>Arrow 生态红利</strong>：分析场景直接 DuckDB 查 Parquet、Python 用 Flight SQL 拿 Arrow 批——比 REST JSON 快一个量级；</li><li><strong>迁移策略</strong>：双写并行（v2 + v3）观察查询等价性，Flux 查询用官方转换工具过一遍再人工修；</li><li><strong>版本跟进</strong>：3.x 迭代快，升级前读 changelog（Core 的配置项偶有更名）。</li></ol>
+<hr>
 
-<!-- ============ 6 常见坑 ============ -->
-<section id="pitfalls">
-  <h2>6. 常见坑与最佳实践<span class="lvl m">中级</span></h2>
-  <div class="pit-grid">
-    <div class="pit bad"><span class="no">1</span><b>Core 别当长期库用</b><p>Core 定位是「最近数据引擎」，把 90 天查询需求压给 Core 必然撞文件数限制——要么 Enterprise，要么把 Parquet 出湖给 DuckDB / Spark 等分析引擎。</p></div>
-    <div class="pit"><span class="no">2</span><b>tag / field 选型习惯保留</b><p>过滤列（tag）仍决定谓词下推效率；高基数不再是禁区，但会放大存储成本。</p></div>
-    <div class="pit"><span class="no">3</span><b>写入仍走 Line Protocol 批量化</b><p>单点 HTTP 写入的性能浪费与 v2 时代相同——攒批再写。</p></div>
-    <div class="pit"><span class="no">4</span><b>时间谓词必须带</b><p>无 time 过滤的查询会扫全部文件——SQL 方言没变，代价还在。</p></div>
-    <div class="pit good"><span class="no">5</span><b>对象存储选型</b><p>S3 / R2 / MinIO 均可（file 模式仅适合试验）；MinIO 是自托管常见组合。</p></div>
-    <div class="pit"><span class="no">6</span><b>内存管理</b><p>write buffer 与 last cache 常驻内存，容量规划按「写入速率 × gen1 周期」估算。</p></div>
-    <div class="pit good"><span class="no">7</span><b>吃足 Arrow 生态红利</b><p>分析场景直接用 DuckDB 查 Parquet、Python 走 Flight SQL 拿 Arrow 批——比 REST JSON 快一个量级。</p></div>
-    <div class="pit good"><span class="no">8</span><b>迁移策略</b><p>双写并行（v2 + v3）观察查询等价性；Flux 查询先用官方转换工具过一遍再人工修。</p></div>
-    <div class="pit good"><span class="no">9</span><b>版本跟进</b><p>3.x 迭代快，升级前读 changelog（Core 的配置项偶有更名）。</p></div>
-  </div>
 </section>
-
-<!-- ============ 7 选型小结 ============ -->
-<section id="summary">
-  <h2>7. 选型小结<span class="lvl b">决策</span></h2>
-  <table>
-    <tr><th style="width:300px">场景</th><th>建议</th></tr>
-    <tr><td>新监控 / 可观测项目、想用 SQL</td><td>InfluxDB 3 Core 起步</td></tr>
-    <tr><td>高基数（成千上万维度组合）事件数据</td><td>v3（v2 请直接跳过）</td></tr>
-    <tr><td>长保留 + 全量历史 + HA</td><td>InfluxDB 3 Enterprise；或 Core + Parquet 外部分析</td></tr>
-    <tr><td>已有大量 Flux 资产</td><td>先评估迁移成本；v2.7 维护期内规划</td></tr>
-    <tr><td>纯指标采集 + PromQL</td><td>Prometheus / VictoriaMetrics 更对口（v3 不是 PromQL 替代品）</td></tr>
-  </table>
-  <div class="tip"><b>💬 一句话：</b><span><b>v3 用「开放格式 + 标准 SQL」换掉了 v2 的「自研孤岛」</b>，代价是近期 / 历史的分层架构需要你理解 Core 与 Enterprise 的边界。</span></div>
+<section data-anchor="7-选型小结">
+<h2 id="7-选型小结">7. 选型小结<span class="lvl a">决策</span></h2><div class="tip"><b>💬 一句话：</b><span><b>v3 用「开放格式 + 标准 SQL」换掉了 v2 的「自研孤岛」</b>，代价是近期 / 历史的分层架构需要你理解 Core 与 Enterprise 的边界。</span></div>
+<div class="table-wrap"><table><thead><tr><th>场景</th><th>建议</th></tr></thead><tbody><tr><td>新监控/可观测项目、想用 SQL</td><td>InfluxDB 3 Core 起步</td></tr><tr><td>高基数（成千上万维度组合）事件数据</td><td>v3（v2 请直接跳过）</td></tr><tr><td>长保留 + 全量历史 + HA</td><td>InfluxDB 3 Enterprise；或 Core + Parquet 外部分析</td></tr><tr><td>已有大量 Flux 资产</td><td>先评估迁移成本；v2.7 维护期内规划</td></tr><tr><td>纯指标采集 + PromQL</td><td>Prometheus/VictoriaMetrics 更对口（v3 不是 PromQL 替代品）</td></tr></tbody></table></div>
+<p>一句话：<strong>v3 用"开放格式 + 标准SQL"换掉了 v2 的"自研孤岛"，代价是近期/历史的分层架构需要你理解 Core 与 Enterprise 的边界</strong>。</p>
 </section>
-
-<footer>InfluxDB 3（Core / Enterprise）技术指南 · 依据 influxdata/influxdb 官方资料整理 · 2026-09</footer>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
 </main>
 </div>
-
 <script>
-function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-
-document.querySelectorAll('pre code.lang-go').forEach(function(block){
-  var src = esc(block.textContent);
-  var re = /(\/\/[^\n]*)|(`[^`]*`|"(?:\\.|[^"\\\n])*")|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any|ClientConfig|Client|context|fmt|influxdb3)\b|\b(\d[\d_]*(?:\.\d+)?)\b|([a-zA-Z_]\w*)(?=\()/g;
-  block.innerHTML = src.replace(re, function(m, c, s, kw, typ, num, fn){
-    if (c) return '<span class="cmt">'+m+'</span>';
-    if (s) return '<span class="str">'+m+'</span>';
-    if (kw) return '<span class="kw">'+m+'</span>';
-    if (typ) return '<span class="typ">'+m+'</span>';
-    if (num) return '<span class="num">'+m+'</span>';
-    if (fn) return '<span class="fn">'+m+'</span>';
-    return m;
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
   });
-});
-
-document.querySelectorAll('pre code.lang-bash').forEach(function(block){
-  var src = esc(block.textContent);
-  var re = /(#[^\n]*)|('(?:[^'\\\n]|\\.)*'|"(?:\\.|[^"\\\n])*")|(--[a-zA-Z][\w-]*|\s-\w+)|(\$\{?[A-Za-z_]\w*\}?)|(\b(?:curl|docker|influxdb3)(?![\w-]))|\b(\d+(?:\.\d+)?)\b/g;
-  block.innerHTML = src.replace(re, function(m, c, s, fl, v, cmd, num){
-    if (c) return '<span class="cmt">'+m+'</span>';
-    if (s) return '<span class="str">'+m+'</span>';
-    if (fl) return '<span class="typ">'+m+'</span>';
-    if (v) return '<span class="num">'+m+'</span>';
-    if (cmd) return '<span class="fn">'+m+'</span>';
-    if (num) return '<span class="num">'+m+'</span>';
-    return m;
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
   });
-});
-
-document.querySelectorAll('pre code.lang-sql').forEach(function(block){
-  var src = esc(block.textContent);
-  var re = /(--[^\n]*)|('(?:[^']|'')*')|\b(SELECT|FROM|WHERE|GROUP\s+BY|ORDER\s+BY|AS|AND|OR|NOT|NULL|JOIN|LEFT|RIGHT|INNER|OUTER|ON|WITH|LIMIT|OFFSET|HAVING|CASE|WHEN|THEN|ELSE|END|DISTINCT|INTERVAL|TIMESTAMP|DESC|ASC)\b|\b(DATE_BIN|AVG|COUNT|SUM|MIN|MAX|NOW)\b|\b(\d+(?:\.\d+)?)\b/g;
-  block.innerHTML = src.replace(re, function(m, c, s, kw, fn, num){
-    if (c) return '<span class="cmt">'+m+'</span>';
-    if (s) return '<span class="str">'+m+'</span>';
-    if (kw) return '<span class="kw">'+m+'</span>';
-    if (fn) return '<span class="fn">'+m+'</span>';
-    if (num) return '<span class="num">'+m+'</span>';
-    return m;
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
   });
-});
-
-document.querySelectorAll('pre code.lang-python').forEach(function(block){
-  var src = esc(block.textContent);
-  var re = /(#[^\n]*)|("(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*')|\b(def|return|if|else|elif|for|while|import|from|as|class|pass|break|continue|True|False|None|lambda|with|try|except|raise|in|not|and|or)\b|\b(\d+(?:\.\d+)?)\b|([a-zA-Z_]\w*)(?=\()/g;
-  block.innerHTML = src.replace(re, function(m, c, s, kw, num, fn){
-    if (c) return '<span class="cmt">'+m+'</span>';
-    if (s) return '<span class="str">'+m+'</span>';
-    if (kw) return '<span class="kw">'+m+'</span>';
-    if (num) return '<span class="num">'+m+'</span>';
-    if (fn) return '<span class="fn">'+m+'</span>';
-    return m;
-  });
-});
-
-[['lang-go','Go'],['lang-bash','Shell'],['lang-sql','SQL'],['lang-python','Python']].forEach(function(p){
-  document.querySelectorAll('pre code.'+p[0]).forEach(function(b){
-    var label = document.createElement('span');
-    label.className = 'codelabel';
-    label.textContent = p[1];
-    b.closest('pre').appendChild(label);
-  });
-});
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
 </script>
 </body>
 </html>

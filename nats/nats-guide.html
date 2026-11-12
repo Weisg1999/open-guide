@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NATS 与 JetStream 技术指南</title>
+<title>NATS · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
 <style>
   :root{
     --accent:#4f46e5; --accent-light:#e0e7ff; --accent-dark:#3730a3;
@@ -24,126 +25,111 @@
   nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
   nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
   nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
   main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
-  .hero{background:linear-gradient(135deg,#312e81 0%,#4f46e5 55%,#6366f1 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(79,70,229,.25)}
+  .hero{background:linear-gradient(135deg,#3730a3 0%,#4f46e5 58%,#3730a3 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
   .hero h1{font-size:30px;margin-bottom:10px}
-  .hero p{opacity:.92;font-size:15px;max-width:680px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
   .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
   .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
   section{margin-bottom:46px}
   h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
-  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark)}
-  h4{font-size:15px;margin:16px 0 8px;color:#1e1b4b}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
   p{margin-bottom:12px}
   ul,ol{padding-left:24px;margin-bottom:12px}
   li{margin-bottom:6px}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin-bottom:18px;box-shadow:0 1px 3px rgba(49,46,129,.06)}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
   pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
-  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#9d9cc0;background:#1c1947;padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
   code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
-  p code,li code,td code{background:#eef0fe;color:#4f46e5;border:1px solid #dfe3fc;padding:1px 6px;border-radius:6px;font-size:.88em}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
   .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
-  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(49,46,129,.06)}
-  th{background:#e8eafd;color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
   td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
-  tr:nth-child(even) td{background:#fafbff}
-  .tip,.warn,.danger{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px;display:flex;gap:10px;align-items:flex-start}
-  .tip{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
-  .warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
-  .danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
-  .tip b,.warn b,.danger b{flex-shrink:0}
-  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0;box-shadow:0 1px 3px rgba(49,46,129,.06)}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
   .figure svg{width:100%;height:auto;display:block}
   .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
   .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
-  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:0 1px 3px rgba(49,46,129,.06)}
-  .feature .ft{font-weight:700;font-size:14px;color:var(--accent-dark);margin-bottom:6px}
-  .feature .fd{font-size:12.5px;color:var(--muted);line-height:1.65}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
   footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
   @media (max-width:900px){
     nav.sidebar{display:none}
     main{padding:24px 18px 60px}
     .hero{padding:28px 22px}
-    .features{grid-template-columns:1fr}
   }
 </style>
 </head>
 <body>
 <div class="layout">
-
 <nav class="sidebar">
   <div class="logo">NATS<span class="ver">v2.11</span></div>
   <div class="sub">JetStream 消息系统指南</div>
-  <a href="#intro">1. 项目简介</a>
-  <a class="sub-link" href="#f-overview">1.1 功能总览</a>
-  <a class="sub-link" href="#f-start">1.2 快速启动</a>
-  <a href="#concepts">2. 核心概念</a>
-  <a class="sub-link" href="#c-subject">2.1 Subject 寻址</a>
-  <a class="sub-link" href="#c-modes">2.2 三种通信模式</a>
-  <a class="sub-link" href="#c-jetstream">2.3 JetStream 流与消费者</a>
-  <a class="sub-link" href="#c-retention">2.4 Retention 保留策略</a>
-  <a class="sub-link" href="#c-kv">2.5 KV 与 Object Store</a>
-  <a class="sub-link" href="#c-cluster">2.6 集群与边缘</a>
-  <a href="#impl">3. 原理速览</a>
-  <a href="#practice">4. 使用实战（Go）</a>
-  <a class="sub-link" href="#p-core">4.1 Core NATS</a>
-  <a class="sub-link" href="#p-jspub">4.2 JetStream 发布</a>
-  <a class="sub-link" href="#p-consumer">4.3 持久消费者</a>
-  <a class="sub-link" href="#p-kv">4.4 KV 配置中心</a>
-  <a class="sub-link" href="#p-cli">4.5 CLI 常用命令</a>
-  <a href="#v211">5. v2.11 版本要点</a>
-  <a href="#pitfalls">6. 常见坑与最佳实践</a>
-  <a href="#compare">7. 选型对比</a>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#启动">启动</a>
+  <a href="#2-核心概念">2. 核心概念</a>
+  <a class="sub-link" href="#21-subject消息的地址">2.1 Subject：消息的地址</a>
+  <a class="sub-link" href="#22-core-nats-三种通信模式">2.2 Core NATS 三种通信模式</a>
+  <a class="sub-link" href="#23-jetstream流与消费者">2.3 JetStream：流与消费者</a>
+  <a class="sub-link" href="#24-jetstream-之上的高层-api">2.4 JetStream 之上的高层 API</a>
+  <a class="sub-link" href="#25-集群与超大集群">2.5 集群与超大集群</a>
+  <a href="#3-原理速览">3. 原理速览</a>
+  <a href="#4-使用实战go">4. 使用实战（Go）</a>
+  <a class="sub-link" href="#41-core-natspubsub队列组请求响应">4.1 Core NATS：pub/sub、队列组、请求响应</a>
+  <a class="sub-link" href="#42-jetstream发布与流管理">4.2 JetStream：发布与流管理</a>
+  <a class="sub-link" href="#43-jetstream持久消费者生产范式">4.3 JetStream：持久消费者（生产范式）</a>
+  <a class="sub-link" href="#44-kv一行配置中心">4.4 KV：一行配置中心</a>
+  <a class="sub-link" href="#45-cli-常用命令">4.5 CLI 常用命令</a>
+  <a href="#5-nats-211-版本要点20253">5. NATS 2.11 版本要点（2025.3）</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
 </nav>
-
 <main>
-
 <div class="hero">
-  <h1>NATS 与 JetStream</h1>
-  <p>云原生时代的轻量级消息系统：<b>单二进制、Subject 寻址</b>，核心即双向消息总线，JetStream 补齐持久化——一套内核覆盖 RPC、事件流、KV 与对象存储。</p>
-  <div class="meta">
-    <span>单二进制 ~15MB</span>
-    <span>Subject 寻址</span>
-    <span>v2.11 · 2025.3</span>
-    <span>KV + Object Store</span>
-    <span>at-most-once → exactly-once</span>
-  </div>
+  <h1>NATS 与 JetStream 技术介绍与使用指南</h1>
+<p>云原生时代的轻量级消息系统：单二进制、Subject 寻址，核心即双向消息总线，JetStream 补齐持久化——一套内核覆盖 RPC、事件流、KV 与对象存储。</p>
+<p style="opacity:.8;font-size:13.5px">JetStream 消息系统指南</p>
+<div class="meta"><span>单二进制 ~15MB</span><span>Subject 寻址</span><span>v2.11 · 2025.3</span><span>KV + Object Store</span><span>at-most-once → exactly-once</span></div>
 </div>
-
-<!-- ============ 1 项目简介 ============ -->
-<section id="intro">
-  <h2>1. 项目简介</h2>
-
-  <p>NATS 起源于 2010 年（由 Apcera 捐赠，后成立 Synadia 维护），设计哲学是<b>极简与性能</b>：</p>
-  <ul>
-    <li><b>单二进制</b>约 15MB，<code>nats-server</code> 一条命令即启动，无外部依赖；</li>
-    <li><b>Subject 寻址</b>：<code>orders.new</code>、<code>orders.*</code>、<code>orders.&gt;</code>——发布订阅即开即用；</li>
-    <li><b>Core NATS</b>（核心模式）是 <b>at-most-once</b> 的极低延迟总线（进程内同级的开销）；</li>
-    <li><b>JetStream</b>（2.2+ 内置）在核心之上提供<b>持久化流存储</b>：at-least-once / exactly-once、重放、副本复制——对标 Kafka / RabbitMQ 的持久化能力。</li>
-  </ul>
-
-  <table>
-    <tr><th style="width:230px">模式</th><th>替代 / 对标</th></tr>
-    <tr><td>Core NATS 请求-响应</td><td>轻量 RPC（替代裸 HTTP / gRPC 内网调用）</td></tr>
-    <tr><td>Core NATS 发布订阅</td><td>事件总线</td></tr>
-    <tr><td>JetStream</td><td>轻量级 Kafka / RabbitMQ</td></tr>
-    <tr><td>KV / Object Store</td><td>分布式 KV / 小对象存储（建在 JetStream 上）</td></tr>
-  </table>
-
-  <div class="tip"><b>💡 与 Kafka 的取舍：</b><span>NATS 胜在<b>运维成本几乎为零、协议简单、延迟低</b>；Kafka 胜在<b>超大规模吞吐、生态连接器、流处理</b>。中小规模微服务 / AI Agent 总线，NATS 是当下热门选择。</span></div>
-
-  <h3 id="f-overview">1.1 功能总览</h3>
-  <div class="features">
-    <div class="feature"><div class="ft">发布订阅 · 广播</div><div class="fd">Subject 通配订阅，所有匹配者各得一份，at-most-once 极低延迟。</div></div>
-    <div class="feature"><div class="ft">队列组</div><div class="fd">同名组内自动负载均衡，工作队列语义，水平扩展 worker。</div></div>
-    <div class="feature"><div class="ft">请求-响应</div><div class="fd">内置 inbox 回环，微服务 RPC 开箱即用，支持超时与扇出。</div></div>
-    <div class="feature"><div class="ft">JetStream 流</div><div class="fd">持久化日志 + 重放 + Raft 副本，at-least-once / exactly-once。</div></div>
-    <div class="feature"><div class="ft">KV Store</div><div class="fd">最终一致的分布式 KV，Watch 秒级推送，天然配置中心。</div></div>
-    <div class="feature"><div class="ft">Object Store</div><div class="fd">小对象分片入流，建在 JetStream 之上的低成本对象存储。</div></div>
-  </div>
-
-  <h3 id="f-start">1.2 快速启动</h3>
-  <pre><code class="lang-bash"># 纯核心模式
+<blockquote><p>云原生时代的轻量级消息系统：单二进制、Subject 寻址、核心即双向消息总线，JetStream 补齐持久化。 仓库：<a href="https://github.com/nats-io/nats-server">https://github.com/nats-io/nats-server</a>　|　当前主线：v2.11（2025.3.19）</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2><div class="tip"><b>💡 与 Kafka 的取舍：</b><span>NATS 胜在<b>运维成本几乎为零、协议简单、延迟低</b>；Kafka 胜在<b>超大规模吞吐、生态连接器、流处理</b>。中小规模微服务 / AI Agent 总线，NATS 是当下热门选择。</span></div>
+<p>NATS 起源于 2010 年（被 Apcera 捐赠，后成立 Synadia 维护），设计哲学是<strong>极简与性能</strong>：</p>
+<ul><li><strong>单二进制</strong>约 15MB，<code>nats-server</code> 一条命令即启动，无外部依赖；</li><li><strong>Subject 寻址</strong>：<code>orders.new</code>、<code>orders.*</code>、<code>orders.&gt;</code>——发布订阅即开即用；</li><li><strong>Core NATS</strong>（核心模式）是 <strong>at-most-once</strong> 的极低延迟总线（进程内同级的开销）；</li><li><strong>JetStream</strong>（2.2+ 内置）在核心之上提供<strong>持久化流存储</strong>：at-least-once / exactly-once、重放、副本复制——对标 Kafka/RabbitMQ 的持久化能力。</li></ul>
+<p>常见定位：</p>
+<div class="table-wrap"><table><thead><tr><th>模式</th><th>替代/对标</th></tr></thead><tbody><tr><td>Core NATS 请求-响应</td><td>轻量 RPC（替代裸 HTTP/gRPC 内网调用）</td></tr><tr><td>Core NATS 发布订阅</td><td>事件总线</td></tr><tr><td>JetStream</td><td>轻量级 Kafka / RabbitMQ</td></tr><tr><td>KV / Object Store</td><td>分布式 KV / 小对象存储（建在 JetStream 上）</td></tr></tbody></table></div>
+<p>与 Kafka 的取舍：NATS 胜在<strong>运维成本几乎为零、协议简单、延迟低</strong>；Kafka 胜在<strong>超大规模吞吐、生态连接器、流处理</strong>。中小规模微服务/AI Agent 总线，NATS 是当下热门选择。</p>
+<h3 id="启动">启动</h3>
+<pre><code class="lang-bash"># 纯核心模式
 nats-server
 
 # 开启 JetStream（-js）+ 监控端口（-m 8222）
@@ -151,23 +137,21 @@ nats-server -js -m 8222
 
 # 安装 CLI（强烈推荐）
 # nats stream add / nats consumer add / nats pub / nats sub ...</code></pre>
-  <p>Go 客户端：<code>go get github.com/nats-io/nats.go</code></p>
+<p>Go 客户端：<code>go get github.com/nats-io/nats.go</code></p>
+<hr>
+
+<div class="features">
+    <div class="feature"><div class="ft">发布订阅 · 广播</div><div class="fd">Subject 通配订阅，所有匹配者各得一份，at-most-once 极低延迟。</div></div>
+    <div class="feature"><div class="ft">队列组</div><div class="fd">同名组内自动负载均衡，工作队列语义，水平扩展 worker。</div></div>
+    <div class="feature"><div class="ft">请求-响应</div><div class="fd">内置 inbox 回环，微服务 RPC 开箱即用，支持超时与扇出。</div></div>
+    <div class="feature"><div class="ft">JetStream 流</div><div class="fd">持久化日志 + 重放 + Raft 副本，at-least-once / exactly-once。</div></div>
+    <div class="feature"><div class="ft">KV Store</div><div class="fd">最终一致的分布式 KV，Watch 秒级推送，天然配置中心。</div></div>
+    <div class="feature"><div class="ft">Object Store</div><div class="fd">小对象分片入流，建在 JetStream 之上的低成本对象存储。</div></div>
+  </div>
 </section>
-
-<!-- ============ 2 核心概念 ============ -->
-<section id="concepts">
-  <h2>2. 核心概念</h2>
-
-  <h3 id="c-subject">2.1 Subject：消息的地址</h3>
-  <p>消息的地址不是队列名，而是 Subject——以 <code>.</code> 分隔的 token 串：</p>
-  <table>
-    <tr><th style="width:140px">订阅模式</th><th>匹配规则</th><th>示例</th></tr>
-    <tr><td><code>orders.new</code></td><td>精确匹配</td><td>只匹配 <code>orders.new</code></td></tr>
-    <tr><td><code>orders.*</code></td><td><code>*</code> 恰好匹配<b>一层</b> token</td><td><code>orders.new</code> ✓、<code>orders.paid</code> ✓；<code>orders.eu.new</code> ✗</td></tr>
-    <tr><td><code>orders.&gt;</code></td><td><code>&gt;</code> 匹配<b>一层或多层</b> token（只能出现在末位）</td><td><code>orders.eu.new</code> ✓</td></tr>
-  </table>
-
-  <div class="figure">
+<section data-anchor="2-核心概念">
+<h2 id="2-核心概念">2. 核心概念<span class="lvl b">速览</span></h2>
+<h3 id="21-subject消息的地址">2.1 Subject：消息的地址</h3><div class="figure">
     <svg viewBox="0 0 880 400" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <!-- Subject 树 -->
       <rect x="56" y="98" width="106" height="44" rx="10" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2"/>
@@ -239,15 +223,11 @@ nats-server -js -m 8222
     </svg>
     <figcaption>图 1 · Subject 通配符匹配树：<code>*</code> 恰好匹配一层 token（所以收不到 orders.eu.new），<code>&gt;</code> 匹配一层或多层 token 且只能作为最后一个 token</figcaption>
   </div>
-
-  <ul>
-    <li>以 <code>.</code> 分隔 token，<code>*</code> 与 <code>&gt;</code> 只能作为<b>整个 token</b> 出现；</li>
-    <li>无需预先声明 topic——发往没人订阅的 subject 就是"发了个寂寞"（Core NATS 直接丢弃）。</li>
-  </ul>
-
-  <h3 id="c-modes">2.2 Core NATS 三种通信模式</h3>
-
-  <div class="figure">
+<pre><code class="lang-text">orders.new          精确
+orders.*            * 匹配一个 token：orders.new / orders.paid（不匹配 orders.eu.new）
+orders.&gt;            &gt; 匹配多级 token：orders.eu.new 也可</code></pre>
+<ul><li>以 <code>.</code> 分隔 token，<code>*</code> 与 <code>&gt;</code> 只能作为<strong>整个 token</strong> 出现；</li><li>无需预先声明 topic——发往没人订阅的 subject 就是"发了个寂寞"（Core NATS 直接丢弃）。</li></ul>
+<h3 id="22-core-nats-三种通信模式">2.2 Core NATS 三种通信模式</h3><div class="figure">
     <svg viewBox="0 0 880 340" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs>
         <marker id="ar2i" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4f46e5"/></marker>
@@ -311,18 +291,17 @@ nats-server -js -m 8222
     </svg>
     <figcaption>图 2 · Core NATS 三种通信模式：发布订阅广播、队列组负载均衡、请求-响应 RPC（内置 inbox 回环）——全部开箱即用，无需部署任何额外组件</figcaption>
   </div>
-
-  <ul>
-    <li><b>发布订阅</b>：所有匹配订阅者各得一份（广播）；</li>
-    <li><b>队列组（Queue Group）</b>：同名组内只有一个成员收到（工作队列语义），自动负载均衡；</li>
-    <li><b>请求-响应</b>：内置 inbox 机制（<code>_INBOX.xxxx</code>），天然支持微服务 RPC，支持超时与多应答扇出。</li>
-  </ul>
-
-  <div class="warn"><b>⚠️ Core NATS 是 at-most-once：</b><span>无持久化、无 ack、订阅者断线期间的消息不保留——要可靠性请上 JetStream。</span></div>
-
-  <h3 id="c-jetstream">2.3 JetStream：流与消费者</h3>
-
-  <div class="figure">
+<div class="warn"><b>⚠️ Core NATS 是 at-most-once：</b><span>无持久化、无 ack、订阅者断线期间的消息不保留——要可靠性请上 JetStream。</span></div>
+<pre><code class="lang-text">① 发布订阅：           ② 队列组（负载均衡）：      ③ 请求-响应：
+   pub                  pub                    requester
+    │ msg                │ msg                    │ request("user.get", payload)
+    ├─► sub A            └─► queue group          ▼
+    ├─► sub B                  ├─► sub A      service: sub "user.get"
+    └─► sub C                  └─► sub B           │ reply msg
+                                                      └─► requester (m.Respond)</code></pre>
+<ul><li><strong>发布订阅</strong>：所有匹配订阅者各得一份（广播）；</li><li><strong>队列组（Queue Group）</strong>：同名组内只有一个成员收到（工作队列语义），自动负载均衡；</li><li><strong>请求-响应</strong>：内置 inbox 机制（<code>_INBOX.xxxx</code>），天然支持微服务 RPC，支持超时与多应答扇出。</li></ul>
+<p><strong>Core NATS 是 at-most-once</strong>：无持久化、无 ack、订阅者断线期间的消息不保留——要可靠性上 JetStream。</p>
+<h3 id="23-jetstream流与消费者">2.3 JetStream：流与消费者</h3><div class="figure">
     <svg viewBox="0 0 880 372" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs>
         <marker id="ar3i" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4f46e5"/></marker>
@@ -394,18 +373,19 @@ nats-server -js -m 8222
     </svg>
     <figcaption>图 3 · JetStream 架构：Stream 用 subject 通配符圈定收录范围，把消息持久化为全局递增的日志序列；Consumer 是各自独立进度（durable）的读取视图，ack 回执驱动删除与重投</figcaption>
   </div>
+<pre><code class="lang-text">Stream: ORDERS（subjects: orders.*）
+  [seq 1][seq 2][seq 3][seq 4]...   ← 全局递增序列，按保留策略持久化
+        ▲
+        └── Consumer: billing（filter: orders.paid，durable，ack explicit）
+        └── Consumer: audit（filter: orders.*，durable，ack all）</code></pre>
+<ul><li><strong>Stream</strong>：消息的持久化日志（类似 Kafka topic），用 <strong>subject 通配符</strong>圈定收录哪些消息（一条流可对应多个 subject——比 Kafka 灵活）；</li><li><strong>Retention（保留策略）</strong>：</li><ul><li><code>Limits</code>：按条数/大小/时间保留（Kafka 式）；</li><li><code>Interest</code>：所有（当前）消费者 ack 后即删；</li><li><code>WorkQueue</code>：一条消息被一个消费者 ack 即删（队列语义）；</li></ul><li><strong>Consumer（消费者）</strong>：从流中读的视图，两种交付方式：</li><ul><li><strong>Push</strong>：服务端推给客户端（旧主推，简单场景）；</li><li><strong>Pull</strong>：客户端主动拉（生产推荐，背压可控）；</li><li>持久化（durable）消费者记录自己的进度（类似 consumer group offset）；</li></ul><li><strong>Ack 策略</strong>：explicit（处理完逐条 ack）/ none / all（批量 ack）——<strong>ack explicit + durable = at-least-once</strong>；</li><li><strong>Exactly-once</strong>：发布去重（<code>Nats-Msg-Id</code> 头 + duplicate window）+ 双重确认窗口。</li></ul>
+<h3 id="24-jetstream-之上的高层-api">2.4 JetStream 之上的高层 API</h3>
+<ul><li><strong>KV Store</strong>：<code>nats.KV("config")</code>——最终一致的分布式 KV，<code>Watch</code> 监听变更（配置中心）；</li><li><strong>Object Store</strong>：小对象存储（分片进流）；</li><li><strong>两者本质都是特殊配置的 Stream</strong>——一套内核多种用法。</li></ul>
+<h3 id="25-集群与超大集群">2.5 集群与超大集群</h3>
+<ul><li><strong>Cluster</strong>：3/5 节点，流以 Raft 副本形式复制（<code>replay</code>/<code>R3</code>）；</li><li><strong>Supercluster / Gateways</strong>：跨地域联邦，客户端就近接入；</li><li><strong>Leaf Nodes</strong>：边缘节点桥接到中心集群——物联网/边缘场景利器，2.11 还支持 TLS-first 握手。</li></ul>
+<hr>
 
-  <ul>
-    <li><b>Stream</b>：消息的持久化日志（类似 Kafka topic），用 <b>subject 通配符</b>圈定收录哪些消息——一条流可对应多个 subject，比 Kafka 灵活；</li>
-    <li><b>Retention（保留策略）</b>：<code>Limits</code> / <code>Interest</code> / <code>WorkQueue</code> 三选一（见 <a href="#c-retention">2.4</a>）；</li>
-    <li><b>Consumer（消费者）</b>：从流中读的视图，两种交付方式——<b>Push</b> 服务端推给客户端（旧主推，简单场景）、<b>Pull</b> 客户端主动拉（生产推荐，背压可控）；持久化（durable）消费者记录自己的进度（类似 consumer group offset）；</li>
-    <li><b>Ack 策略</b>：explicit（处理完逐条 ack）/ none / all（批量 ack）——<b>ack explicit + durable = at-least-once</b>；</li>
-    <li><b>Exactly-once</b>：发布去重（<code>Nats-Msg-Id</code> 头 + duplicate window）+ 双重确认窗口。</li>
-  </ul>
-
-  <h3 id="c-retention">2.4 Retention：三种保留策略</h3>
-
-  <div class="figure">
+<div class="figure">
     <svg viewBox="0 0 880 350" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <!-- 面板 1：Limits -->
       <rect x="22" y="22" width="268" height="306" rx="16" fill="#ffffff" stroke="#dbe1f9" stroke-width="1.6"/>
@@ -477,25 +457,8 @@ nats-server -js -m 8222
     </svg>
     <figcaption>图 4 · Retention 三策略：Limits 与消费无关（Kafka 式）；Interest 等所有消费者确认；WorkQueue 被任一消费者确认即删——实心方块 = 保留，虚线方块 = 已删除</figcaption>
   </div>
-
-  <table>
-    <tr><th style="width:130px">策略</th><th>删除时机</th><th>适用</th></tr>
-    <tr><td><code>Limits</code></td><td>按条数 / 大小 / 时间上限，与消费无关</td><td>Kafka 式回放、审计留痕</td></tr>
-    <tr><td><code>Interest</code></td><td>所有（当前）消费者 ack 后</td><td>下游全部消费完即可释放空间</td></tr>
-    <tr><td><code>WorkQueue</code></td><td>任一消费者 ack 即删</td><td>任务分发 / 工作队列</td></tr>
-  </table>
-
-  <h3 id="c-kv">2.5 JetStream 之上的高层 API</h3>
-  <ul>
-    <li><b>KV Store</b>：<code>nats.KV("config")</code>——最终一致的分布式 KV，<code>Watch</code> 监听变更（配置中心）；</li>
-    <li><b>Object Store</b>：小对象存储（分片进流）；</li>
-    <li><b>两者本质都是特殊配置的 Stream</b>——一套内核多种用法。</li>
-  </ul>
-  <div class="tip"><b>💡 配置中心示例：</b><span>KV 的 Put / Get / Watch 完整代码见 <a href="#p-kv">4.4</a>。</span></div>
-
-  <h3 id="c-cluster">2.6 集群与超大集群</h3>
-
-  <div class="figure">
+<div class="tip"><b>💡 配置中心示例：</b><span>KV 的 Put / Get / Watch 完整代码见 <a href="#44-kv一行配置中心">4.4</a>。</span></div>
+<div class="figure">
     <svg viewBox="0 0 880 410" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs>
         <marker id="ar5v" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7c3aed"/></marker>
@@ -571,34 +534,17 @@ nats-server -js -m 8222
     </svg>
     <figcaption>图 5 · 集群与边缘拓扑：集群内 Raft 多数派复制（R3），Gateway 跨地域联邦组成 Supercluster，Leaf Node 把工厂 / 门店等边缘就近接入</figcaption>
   </div>
-
-  <ul>
-    <li><b>Cluster</b>：3 / 5 节点，流以 Raft 副本形式复制（R3）；</li>
-    <li><b>Supercluster / Gateways</b>：跨地域联邦，客户端就近接入；</li>
-    <li><b>Leaf Nodes</b>：边缘节点桥接到中心集群——物联网 / 边缘场景利器，2.11 还支持 TLS-first 握手。</li>
-  </ul>
 </section>
+<section data-anchor="3-原理速览">
+<h2 id="3-原理速览">3. 原理速览<span class="lvl m">核心</span></h2>
+<ul><li>通信基于自定义 TCP 文本协议（<code>PUB orders.new 5\r\nhello\r\n</code>），实现极简——这是低延迟的来源；</li><li>服务器间（cluster route）使用 gossip 同步订阅兴趣，消息按需转发（<strong>interest-driven</strong>），Core 模式不落盘；</li><li>JetStream 写入路径：请求 → leader 判断（subject 归属）→ Raft 复制到副本 → 文件存储（filestore，消息按块顺序写 + 索引）→ ack 应答；</li><li>每个 stream 在集群内有 leader 节点，写入需多数派确认（与 etcd 类似的 quorum 语义）。</li></ul>
+<hr>
 
-<!-- ============ 3 原理速览 ============ -->
-<section id="impl">
-  <h2>3. 原理速览</h2>
-  <ul>
-    <li><b>极简文本协议</b>：通信基于自定义 TCP 文本协议，实现极简——这是低延迟的来源：</li>
-  </ul>
-  <pre><code class="lang-txt"><span class="kw">PUB</span> orders.new <span class="num">5</span>\r\nhello\r\n</code></pre>
-  <ul>
-    <li><b>兴趣驱动转发</b>：服务器间（cluster route）使用 gossip 同步订阅兴趣，消息按需转发（<b>interest-driven</b>），Core 模式不落盘；</li>
-    <li><b>JetStream 写入路径</b>：请求 → leader 判断（subject 归属）→ Raft 复制到副本 → 文件存储（filestore：消息按块顺序写 + 索引）→ ack 应答；</li>
-    <li><b>Quorum 语义</b>：每个 stream 在集群内有 leader 节点，写入需多数派确认（与 etcd 类似）。</li>
-  </ul>
 </section>
-
-<!-- ============ 4 使用实战 ============ -->
-<section id="practice">
-  <h2>4. 使用实战（Go）</h2>
-
-  <h3 id="p-core">4.1 Core NATS：pub / sub、队列组、请求响应</h3>
-  <pre><code class="lang-go">nc, _ := nats.Connect(nats.DefaultURL) // nats://127.0.0.1:4222
+<section data-anchor="4-使用实战go">
+<h2 id="4-使用实战go">4. 使用实战（Go）<span class="lvl m">实战</span></h2>
+<h3 id="41-core-natspubsub队列组请求响应">4.1 Core NATS：pub/sub、队列组、请求响应</h3>
+<pre><code class="lang-go">nc, _ := nats.Connect(nats.DefaultURL) // nats://127.0.0.1:4222
 defer nc.Drain()
 
 // 订阅
@@ -616,9 +562,8 @@ nc.QueueSubscribe("jobs.email", "email-workers", func(m *nats.Msg) {
 
 // 请求-响应（超时 2s）
 msg, err := nc.Request("user.get", []byte(`{"id":42}`), 2*time.Second)</code></pre>
-
-  <h3 id="p-jspub">4.2 JetStream：发布与流管理</h3>
-  <pre><code class="lang-go">js, _ := jetstream.New(nc)
+<h3 id="42-jetstream发布与流管理">4.2 JetStream：发布与流管理</h3>
+<pre><code class="lang-go">js, _ := jetstream.New(nc)
 
 // 创建/更新流
 js.CreateStream(context.Background(), jetstream.StreamConfig{
@@ -634,9 +579,8 @@ js.Publish(context.Background(), "orders.paid", []byte(`{"id":1}`),
     jetstream.WithMsgID("order-1"),      // 服务端按 MsgID 去重
     jetstream.WithTTL(10*time.Minute),   // 单条消息 TTL（需流开启 per-message TTL）
 )</code></pre>
-
-  <h3 id="p-consumer">4.3 JetStream：持久消费者（生产范式）</h3>
-  <pre><code class="lang-go">// 创建持久 pull 消费者（相当于 Kafka 消费组 + 订阅过滤合体）
+<h3 id="43-jetstream持久消费者生产范式">4.3 JetStream：持久消费者（生产范式）</h3><div class="tip"><b>💡 at-least-once 的公式：</b><span><code>AckExplicitPolicy + Durable</code> —— 进度落在服务端，处理失败 <code>Nak()</code> 触发重投，成功 <code>Ack()</code> 推进位点。</span></div>
+<pre><code class="lang-go">// 创建持久 pull 消费者（相当于 Kafka 消费组 + 订阅过滤合体）
 cons, _ := js.CreateOrUpdateConsumer(context.Background(), "ORDERS",
     jetstream.ConsumerConfig{
         Durable:       "billing",
@@ -655,19 +599,16 @@ cc, _ := cons.Consume(func(msg jetstream.Msg) {
     msg.Ack()     // ack：确认
 })
 defer cc.Stop()</code></pre>
-  <div class="tip"><b>💡 at-least-once 的公式：</b><span><code>AckExplicitPolicy + Durable</code> —— 进度落在服务端，处理失败 <code>Nak()</code> 触发重投，成功 <code>Ack()</code> 推进位点。</span></div>
-
-  <h3 id="p-kv">4.4 KV：一行配置中心</h3>
-  <pre><code class="lang-go">kv, _ := js.CreateKeyValue(context.Background(), jetstream.KeyValueConfig{
+<h3 id="44-kv一行配置中心">4.4 KV：一行配置中心</h3>
+<pre><code class="lang-go">kv, _ := js.CreateKeyValue(context.Background(), jetstream.KeyValueConfig{
     Bucket: "app-config",
 })
 kv.Put(ctx, "db.host", []byte("mysql-1"))
 v, _ := kv.Get(ctx, "db.host")
 watch, _ := kv.Watch(ctx, "db.host")
 for upd := range watch.Updates() { /* 配置热更新 */ }</code></pre>
-
-  <h3 id="p-cli">4.5 CLI 常用命令</h3>
-  <pre><code class="lang-bash">nats pub orders.new '{"id":1}'
+<h3 id="45-cli-常用命令">4.5 CLI 常用命令</h3>
+<pre><code class="lang-bash">nats pub orders.new '{"id":1}'
 nats sub 'orders.*'
 nats request user.get '{"id":42}'
 
@@ -677,101 +618,72 @@ nats consumer add ORDERS billing --filter orders.paid --ack explicit --durable
 nats consumer report ORDERS            # 看 pending/ack 等状态
 nats server report jetstream           # 集群 JS 健康一览
 nats bench --pub 8 orders.test --size 1KB --msgs 100000   # 压测</code></pre>
-</section>
+<hr>
 
-<!-- ============ 5 v2.11 ============ -->
-<section id="v211">
-  <h2>5. NATS 2.11 版本要点（2025.3）</h2>
-  <p>v2.11（2025.3.19 发布）聚焦运维性与可观测性，代表特性：</p>
-  <table>
-    <tr><th style="width:190px">新特性</th><th>说明</th></tr>
-    <tr><td>按消息 TTL</td><td><code>Nats-TTL</code> 头让单条消息独立于流限制过期（ADR-43）</td></tr>
-    <tr><td>分布式消息追踪</td><td><code>Nats-Trace-Dest</code> 头开启消息级追踪，事件回报 ingress / 映射 / 路由全链路</td></tr>
-    <tr><td>Pull 消费者优先级组</td><td>主备消费者故障转移（pinning / overflow 策略）</td></tr>
-    <tr><td>消费者暂停</td><td><code>PauseUntil</code>——维护窗口挂起投递，到点自动恢复</td></tr>
-    <tr><td>流摄入限速</td><td><code>max_buffered_msgs / size</code> 防过载</td></tr>
-    <tr><td><code>cluster_traffic</code> 隔离</td><td>Raft 复制流量可隔离到资产所在 account，避免多租户头阻塞</td></tr>
-    <tr><td>其他</td><td>MQTT 3.1.1/5 支持、Windows TPM 密钥存储、配置摘要指纹（<code>-t</code>）</td></tr>
-  </table>
 </section>
+<section data-anchor="5-nats-211-版本要点20253">
+<h2 id="5-nats-211-版本要点20253">5. NATS 2.11 版本要点（2025.3）<span class="lvl b">版本</span></h2>
+<ul><li><strong>按消息 TTL</strong>：<code>Nats-TTL</code> 头让单条消息独立于流限制过期（ADR-43）；</li><li><strong>分布式消息追踪</strong>：<code>Nats-Trace-Dest</code> 头开启消息级追踪，事件回报 ingress/映射/路由全链路；</li><li><strong>Pull 消费者优先级组</strong>：主备消费者故障转移（pinning/overflow 策略）；</li><li><strong>消费者暂停</strong>：<code>PauseUntil</code>——维护窗口挂起投递，到点自动恢复；</li><li><strong>流摄入限速</strong>：<code>max_buffered_msgs/size</code> 防过载；</li><li><strong><code>cluster_traffic</code> 隔离</strong>：Raft 复制流量可隔离到资产所在 account，避免多租户头阻塞；</li><li>其他：MQTT 3.1.1/5 支持、Windows TPM 密钥存储、配置摘要指纹（<code>-t</code>）。</li></ul>
+<hr>
 
-<!-- ============ 6 常见坑 ============ -->
-<section id="pitfalls">
-  <h2>6. 常见坑与最佳实践</h2>
-  <ol>
-    <li><b>Core NATS 无持久化</b>：直接用 <code>nc.Publish</code> 发关键业务消息而没接 JetStream，订阅者一掉线消息就没了——可靠性需求一律 <code>js.Publish</code>；</li>
-    <li><b>消费者忘配 durable</b>：非持久消费者断线即丢进度，重连从头 / 最新开始，可能漏消息；</li>
-    <li><b>FilterSubject 别省</b>：消费者不配过滤会吃进整个流，挤占带宽与处理能力；</li>
-    <li><b>一个流装天下</b>：不同域（订单 / 工具调用 / 审计）分流建 stream——保留策略、副本数、TTL 需求不同；</li>
-    <li><b>ack 忘记调</b>：ack explicit 下不 ack 会触发 <code>MaxDeliver</code> 上限内的反复投递，处理失败要显式 <code>Nak()</code> / <code>Term()</code>；</li>
-    <li><b>重试与死信要自建</b>：<code>MaxDeliver</code> 超限后消息停止投递，标准做法是建 <code>DLQ.&lt;domain&gt;</code> 流 + republish / 转发；</li>
-    <li><b>流副本数</b>：单节点（R1）磁盘坏 = 数据丢，生产 R3；</li>
-    <li><b>监控</b>：<code>/healthz</code>（带 <code>js=true</code> 检查 JetStream）、Prometheus 指标（<code>-m 8222</code> 或专用 7777 端口导出）。</li>
-  </ol>
-  <div class="danger"><b>🚫 事故率最高的一条：</b><span>把 Core NATS 当可靠队列用（<code>nc.Publish</code> 发关键消息）。Core 是 at-most-once 的总线，任何"不能丢"的消息都必须走 <code>js.Publish</code>。</span></div>
 </section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2><div class="danger"><b>🚫 事故率最高的一条：</b><span>把 Core NATS 当可靠队列用（<code>nc.Publish</code> 发关键消息）。Core 是 at-most-once 的总线，任何"不能丢"的消息都必须走 <code>js.Publish</code>。</span></div>
+<ol><li><strong>Core NATS 无持久化</strong>：直接用 <code>nc.Publish</code> 发关键业务消息而没接 JetStream，订阅者一掉线消息就没了——可靠性需求一律 <code>js.Publish</code>；</li><li><strong>消费者忘配 durable</strong>：非持久消费者断线即丢进度，重连从头/最新开始，可能漏消息；</li><li><strong>FilterSubject 别省</strong>：消费者不配过滤会吃进整个流，挤占带宽与处理能力；</li><li><strong>一个流装天下</strong>：不同域（订单/工具调用/审计）分流建 stream——保留策略、副本数、TTL 需求不同；</li><li><strong>ack 忘记调</strong>：ack explicit 下不 ack 会触发 <code>MaxDeliver</code> 上限内的反复投递，处理失败要显式 <code>Nak()</code>/<code>Term()</code>；</li><li><strong>重试与死信要自建</strong>：<code>MaxDeliver</code> 超限后消息停止投递，标准做法是建 <code>DLQ.&lt;domain&gt;</code> 流 + republish/转发；</li><li><strong>流副本数</strong>：单节点（R1）磁盘坏 = 数据丢，生产 R3；</li><li><strong>监控</strong>：<code>/healthz</code>（带 <code>js=true</code> 检查 JetStream）、Prometheus 指标（<code>-m 8222</code> 或专用 7777 端口导出）。</li></ol>
+<hr>
 
-<!-- ============ 7 选型对比 ============ -->
-<section id="compare">
-  <h2>7. 选型对比</h2>
-  <table>
-    <tr><th style="width:150px">维度</th><th>NATS (Core)</th><th>NATS JetStream</th><th>Kafka</th><th>RabbitMQ</th></tr>
-    <tr><td>交付语义</td><td>at-most-once</td><td>at-least / exactly-once</td><td>at-least / exactly-once</td><td>at-least-once</td></tr>
-    <tr><td>持久化 / 回放</td><td>无</td><td>有（文件 / Raft 副本）</td><td>有（强项）</td><td>弱</td></tr>
-    <tr><td>运维成本</td><td>极低</td><td>低</td><td>中</td><td>低</td></tr>
-    <tr><td>请求响应 / RPC</td><td>原生</td><td>—</td><td>不适合</td><td>RPC 模式</td></tr>
-    <tr><td>吞吐天花板</td><td>极高（无落盘）</td><td>高</td><td>极高</td><td>中</td></tr>
-    <tr><td>生态（连接器 / 流处理）</td><td>少</td><td>少</td><td>极丰富</td><td>中</td></tr>
-  </table>
-  <div class="tip"><b>💡 一句话：</b><span><b>内网总线 / RPC / 轻量持久化选 NATS；大数据管道与流处理生态选 Kafka</b>。两者也可共存（边缘 NATS 汇聚到中心 Kafka）。</span></div>
 </section>
-
-<footer>NATS 与 JetStream 技术指南 · 参考 nats.io 官方文档与 nats-server 仓库 · 2026-09</footer>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2><div class="tip"><b>💡 一句话：</b><span><b>内网总线 / RPC / 轻量持久化选 NATS；大数据管道与流处理生态选 Kafka</b>。两者也可共存（边缘 NATS 汇聚到中心 Kafka）。</span></div>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>NATS (Core)</th><th>NATS JetStream</th><th>Kafka</th><th>RabbitMQ</th></tr></thead><tbody><tr><td>交付语义</td><td>at-most-once</td><td>at-least/exactly-once</td><td>at-least/exactly-once</td><td>at-least-once</td></tr><tr><td>持久化/回放</td><td>无</td><td>有（文件/Raft 副本）</td><td>有（强项）</td><td>弱</td></tr><tr><td>运维成本</td><td>极低</td><td>低</td><td>中</td><td>低</td></tr><tr><td>请求响应/RPC</td><td>原生</td><td>—</td><td>不适合</td><td>RPC 模式</td></tr><tr><td>吞吐天花板</td><td>极高（无落盘）</td><td>高</td><td>极高</td><td>中</td></tr><tr><td>生态（连接器/流处理）</td><td>少</td><td>少</td><td>极丰富</td><td>中</td></tr></tbody></table></div>
+<p>一句话：<strong>内网总线/RPC/轻量持久化选 NATS；大数据管道与流处理生态选 Kafka</strong>。两者也可共存（边缘 NATS 汇聚到中心 Kafka）。</p>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
 </main>
 </div>
-
 <script>
-document.querySelectorAll('pre code.lang-go').forEach(function(block){
-  var src = block.textContent;
-  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  var master = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any|Duration|Msg|StreamConfig|ConsumerConfig|KeyValueConfig|FileStorage|MemoryStorage|AckExplicitPolicy|ConsumeContext)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
-  var out = src.replace(master, function(m, c1, c2, s, kw, typ, num, fn){
-    if (c1 || c2) return '<span class="cmt">'+m+'</span>';
-    if (s) return '<span class="str">'+m+'</span>';
-    if (kw) return '<span class="kw">'+m+'</span>';
-    if (typ) return '<span class="typ">'+m+'</span>';
-    if (num) return '<span class="num">'+m+'</span>';
-    if (fn) return '<span class="fn">'+m+'</span>';
-    return m;
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
   });
-  block.innerHTML = out;
-});
-document.querySelectorAll('pre code.lang-bash').forEach(function(block){
-  var src = block.textContent;
-  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  var master = /(#[^\n]*)|('(?:[^']|'')*'|"(?:\\.|[^"\\\n])*")|(--?[a-zA-Z][a-zA-Z0-9-]*)|\b(nats-server|nats|go)\b|\b(pub|sub|request|stream|consumer|server|bench|report|add|ls|info|get)\b|\b(\d+)\b/g;
-  var out = src.replace(master, function(m, c, s, flag, cmd, sub, num){
-    if (c) return '<span class="cmt">'+m+'</span>';
-    if (s) return '<span class="str">'+m+'</span>';
-    if (flag) return '<span class="typ">'+m+'</span>';
-    if (cmd) return '<span class="kw">'+m+'</span>';
-    if (sub) return '<span class="fn">'+m+'</span>';
-    if (num) return '<span class="num">'+m+'</span>';
-    return m;
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
   });
-  block.innerHTML = out;
-});
-document.querySelectorAll('pre code').forEach(function(b){
-  var m = (b.className || '').match(/lang-(\w+)/);
-  if (!m) return;
-  var map = {go:'Go', bash:'Shell', txt:'Wire'};
-  var label = map[m[1]];
-  if (!label) return;
-  var s = document.createElement('span');
-  s.className = 'codelabel';
-  s.textContent = label;
-  b.closest('pre').appendChild(s);
-});
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
 </script>
 </body>
 </html>

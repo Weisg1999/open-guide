@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MinIO 技术介绍与使用指南</title>
+<title>MinIO · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
 <style>
   :root{
     --accent:#e11d48; --accent-light:#ffe4e6; --accent-dark:#9f1239;
@@ -24,99 +25,104 @@
   nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
   nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
   nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
   main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
-  .hero{background:linear-gradient(135deg,#881337 0%,#e11d48 55%,#f43f5e 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(225,29,72,.22)}
+  .hero{background:linear-gradient(135deg,#9f1239 0%,#e11d48 58%,#9f1239 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
   .hero h1{font-size:30px;margin-bottom:10px}
-  .hero p{opacity:.92;font-size:15px;max-width:680px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
   .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
   .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
   section{margin-bottom:46px}
   h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
-  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark)}
-  h4{font-size:15px;margin:16px 0 8px;color:#0f172a}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
   p{margin-bottom:12px}
   ul,ol{padding-left:24px;margin-bottom:12px}
   li{margin-bottom:6px}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin-bottom:18px;box-shadow:0 1px 3px rgba(136,19,55,.06)}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
   pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
-  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#d9a0b0;background:#471527;padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
   code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
-  p code,li code,td code{background:#ffe9ec;color:#be123c;border:1px solid #fbd0d9;padding:1px 6px;border-radius:6px;font-size:.88em}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
   .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
-  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(136,19,55,.06)}
-  th{background:#fde8ec;color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
   td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
-  tr:nth-child(even) td{background:#fdf8f9}
-  .tip,.warn,.danger{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px;display:flex;gap:10px;align-items:flex-start}
-  .tip{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
-  .warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
-  .danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
-  .tip b,.warn b,.danger b{flex-shrink:0}
-  .tip ul,.warn ul{margin:6px 0 0;padding-left:20px}
-  .tip li,.warn li{margin-bottom:4px}
-  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0;box-shadow:0 1px 3px rgba(136,19,55,.06)}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
   .figure svg{width:100%;height:auto;display:block}
   .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
-  .features{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:16px 0}
-  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:15px 18px;box-shadow:0 1px 3px rgba(136,19,55,.06);font-size:13.5px;line-height:1.6}
-  .feature b{display:block;color:var(--accent-dark);margin-bottom:5px;font-size:14.5px}
-  .pill{display:inline-block;background:var(--accent-light);color:var(--accent-dark);border-radius:16px;padding:2px 12px;font-size:12px;margin:2px 4px 2px 0}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
   footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
   @media (max-width:900px){
     nav.sidebar{display:none}
     main{padding:24px 18px 60px}
     .hero{padding:28px 22px}
-    .features{grid-template-columns:1fr}
   }
 </style>
 </head>
 <body>
 <div class="layout">
-
 <nav class="sidebar">
   <div class="logo">MinIO<span class="ver">2025</span></div>
   <div class="sub">S3 兼容高性能对象存储</div>
-  <a href="#intro">1. 项目简介</a>
-  <a class="sub-link" href="#i-forms">1.1 部署形态（决定性选择）</a>
-  <a href="#concepts">2. 核心概念</a>
-  <a class="sub-link" href="#c-obj">2.1 对象存储模型</a>
-  <a class="sub-link" href="#c-ec">2.2 纠删码（灵魂）</a>
-  <a class="sub-link" href="#c-meta">2.3 元数据内联</a>
-  <a class="sub-link" href="#c-iam">2.4 IAM 与安全</a>
-  <a class="sub-link" href="#c-lifecycle">2.5 数据生命周期能力</a>
-  <a href="#arch">3. 架构与数据路径</a>
-  <a href="#usage">4. 使用实战</a>
-  <a class="sub-link" href="#u-mc">4.1 启动与 mc</a>
-  <a class="sub-link" href="#u-go">4.2 Go SDK</a>
-  <a class="sub-link" href="#u-presign">4.3 Presigned URL</a>
-  <a class="sub-link" href="#u-ver">4.4 版本控制与事件通知</a>
-  <a href="#compat">5. 与 S3 的兼容性</a>
-  <a href="#versions">6. 版本与产品线（2025）</a>
-  <a href="#pitfalls">7. 常见坑与最佳实践</a>
-  <a href="#summary">8. 选型小结</a>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#部署形态决定性选择">部署形态（决定性选择）</a>
+  <a href="#2-核心概念">2. 核心概念</a>
+  <a class="sub-link" href="#21-对象存储模型">2.1 对象存储模型</a>
+  <a class="sub-link" href="#22-纠删码erasure-codingminio-的灵魂">2.2 纠删码（Erasure Coding）：MinIO 的灵魂</a>
+  <a class="sub-link" href="#23-元数据内联">2.3 元数据内联</a>
+  <a class="sub-link" href="#24-iam-与安全">2.4 IAM 与安全</a>
+  <a class="sub-link" href="#25-数据生命周期能力">2.5 数据生命周期能力</a>
+  <a href="#3-架构与数据路径">3. 架构与数据路径</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-启动与-mc">4.1 启动与 mc</a>
+  <a class="sub-link" href="#42-go-sdkminio-gos3-风格">4.2 Go SDK（minio-go，S3 风格）</a>
+  <a class="sub-link" href="#43-presigned-url最常见的集成模式">4.3 Presigned URL（最常见的集成模式）</a>
+  <a class="sub-link" href="#44-版本控制-事件通知">4.4 版本控制 + 事件通知</a>
+  <a href="#5-与-s3-的兼容性说明">5. 与 S3 的兼容性说明</a>
+  <a href="#6-版本与产品线2025-起重要变化">6. 版本与产品线（2025 起重要变化）</a>
+  <a href="#7-常见坑与最佳实践">7. 常见坑与最佳实践</a>
+  <a href="#8-选型小结">8. 选型小结</a>
 </nav>
-
 <main>
-
 <div class="hero">
-  <h1>MinIO</h1>
-  <p>用 Go 编写的<b>软件定义对象存储</b>，100% 兼容 AWS S3 API。单二进制、纠删码数据保护、云原生与 AI 数据湖首选的自托管对象存储——任何有磁盘的机器跑一个 <code style="background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3);color:#fff">minio server</code> 就是生产级对象存储。</p>
-  <div class="meta">
-    <span>S3 100% 兼容</span>
-    <span>纠删码 + bit-rot 防护</span>
-    <span>Go 实现 · 单二进制</span>
-    <span>云原生 · K8s Operator</span>
-    <span>社区版 AGPLv3</span>
-  </div>
+  <h1>MinIO 技术介绍与使用指南</h1>
+<p>用 Go 编写的软件定义对象存储，100% 兼容 AWS S3 API。单二进制、纠删码数据保护、云原生与 AI 数据湖首选的自托管对象存储——任何有磁盘的机器跑一个 minio server 就是生产级对象存储。</p>
+<p style="opacity:.8;font-size:13.5px">S3 兼容高性能对象存储</p>
+<div class="meta"><span>S3 100% 兼容</span><span>纠删码 + bit-rot 防护</span><span>Go 实现 · 单二进制</span><span>云原生 · K8s Operator</span><span>社区版 AGPLv3</span></div>
 </div>
-
-<!-- ============ 1 项目简介 ============ -->
-<section id="intro">
-  <h2>1. 项目简介</h2>
-
-  <p>MinIO 把「对象存储」从专用硬件中解放出来：裸机、VM、K8s、边缘盒子，任何有磁盘的机器都能跑生产级 S3 存储。仓库 <a href="https://github.com/minio/minio">github.com/minio/minio</a>，社区版许可证 AGPLv3（2025 起双产品线，详见 §6）。</p>
-
-  <div class="features">
+<blockquote><p>高性能 S3 兼容对象存储：单二进制、纠删码数据保护、云原生与 AI 数据湖首选的自托管对象存储。 仓库：<a href="https://github.com/minio/minio">https://github.com/minio/minio</a>　|　社区版许可证：AGPLv3（2025 起双产品线，见 §6）</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2><div class="features">
     <div class="feature"><b>S3 100% 兼容</b>AWS SDK / aws-cli / S3 生态工具（Spark、Hive、Trino、S3 Select）即插即用——迁移成本近乎为零。</div>
     <div class="feature"><b>高性能</b>Go 原生实现纠删码与 HighwayHash 校验，实测吞吐可达数百 GB/s 级（JBOD + 万兆网即可）。</div>
     <div class="feature"><b>云原生</b>单二进制无依赖、K8s Operator 官方支持、原生 Prometheus 指标。</div>
@@ -124,33 +130,19 @@
     <div class="feature"><b>服务端加密</b>SSE-S3（KMS 托管）/ SSE-KMS / SSE-C（客户密钥），TLS 全链路。</div>
     <div class="feature"><b>企业特性</b>版本控制、站点 / 桶级复制、生命周期管理（ILM）、事件通知、对象锁定（WORM / 合规保留）、IAM。</div>
   </div>
+<p>MinIO 是用 Go 编写的<strong>软件定义对象存储</strong>，100% 兼容 AWS S3 API。它把"对象存储"从专用硬件解放出来：任何有磁盘的机器（裸机、VM、K8s、边缘盒子）跑一个 <code>minio server</code> 就是生产级对象存储。</p>
+<p>核心卖点：</p>
+<ul><li><strong>S3 兼容</strong>：AWS SDK / aws-cli / S3 生态工具（Spark、Hive、Trino、S3Select）即插即用——迁移成本近乎为零；</li><li><strong>高性能</strong>：Go 原生实现纠删码与 HighwayHash 校验，实测吞吐可达数百 GB/s 级（JBOD + 万兆网即可）；</li><li><strong>云原生</strong>：单二进制无依赖、K8s Operator 官方支持、原生 Prometheus 指标；</li><li><strong>数据保护</strong>：纠删码（Reed-Solomon）+ <strong>bit-rot（比特腐烂）防护</strong>（HighwayHash 每块校验）+ 服务端加密（SSE-S3/SSE-KMS/SSE-C）；</li><li><strong>企业特性</strong>：版本控制、站点/桶级复制、生命周期管理（ILM）、事件通知、对象锁定（WORM/合规保留）、IAM。</li></ul>
+<p>典型用途：云原生应用附件存储、数据湖底座（Parquet/Arrow 生态）、AI/ML 训练数据集、备份归档（Velero 后端）、Kafka tiered storage 目标、替代 S3 的私有云存储。</p>
+<h3 id="部署形态决定性选择">部署形态（决定性选择）</h3>
+<div class="table-wrap"><table><thead><tr><th>形态</th><th>命令形态</th><th>适用</th></tr></thead><tbody><tr><td>单机单盘 (SNDD)</td><td><code>minio server /data</code></td><td>开发</td></tr><tr><td>单机多盘 (SNMD)</td><td><code>minio server /d1 /d2 /d3 /d4</code></td><td>边缘/小规模</td></tr><tr><td>多机多盘 (MNMD)</td><td><code>minio server http://n{1...4}/d{1...16}</code></td><td>生产（分布式纠删码）</td></tr></tbody></table></div>
+<hr>
 
-  <p><b>典型用途：</b></p>
-  <p>
-    <span class="pill">云原生应用附件存储</span>
-    <span class="pill">数据湖底座（Parquet / Arrow 生态）</span>
-    <span class="pill">AI / ML 训练数据集</span>
-    <span class="pill">备份归档（Velero 后端）</span>
-    <span class="pill">Kafka tiered storage 目标</span>
-    <span class="pill">替代 S3 的私有云存储</span>
-  </p>
-
-  <h3 id="i-forms">1.1 部署形态（决定性选择）</h3>
-  <table>
-    <tr><th>形态</th><th>命令形态</th><th>适用</th></tr>
-    <tr><td>单机单盘（SNDD）</td><td><code>minio server /data</code></td><td>开发</td></tr>
-    <tr><td>单机多盘（SNMD）</td><td><code>minio server /d1 /d2 /d3 /d4</code></td><td>边缘 / 小规模</td></tr>
-    <tr><td>多机多盘（MNMD）</td><td><code>minio server http://n{1...4}/d{1...16}</code></td><td><b>生产</b>（分布式纠删码）</td></tr>
-  </table>
-  <div class="tip"><b>💡 选型起点：</b><span>部署形态在建集群时一次性确定，后期迁移成本高——开发用 SNDD、边缘用 SNMD、生产一律 MNMD（分布式纠删码 + 多故障域）。</span></div>
+<div class="tip"><b>💡 选型起点：</b><span>部署形态在建集群时一次性确定，后期迁移成本高——开发用 SNDD、边缘用 SNMD、生产一律 MNMD（分布式纠删码 + 多故障域）。</span></div>
 </section>
-
-<!-- ============ 2 核心概念 ============ -->
-<section id="concepts">
-  <h2>2. 核心概念</h2>
-
-  <h3 id="c-obj">2.1 对象存储模型</h3>
-  <div class="figure">
+<section data-anchor="2-核心概念">
+<h2 id="2-核心概念">2. 核心概念<span class="lvl b">速览</span></h2>
+<h3 id="21-对象存储模型">2.1 对象存储模型</h3><div class="figure">
     <svg viewBox="0 0 880 410" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs><marker id="m1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9f1239"/></marker></defs>
       <text x="32" y="34" font-size="11.5" fill="#be123c" font-family="Consolas,monospace">GET /my-bucket/photos/2026/alice.png</text>
@@ -200,10 +192,13 @@
     </svg>
     <figcaption>图 1 · 对象存储模型：Bucket 下是扁平的 Object 列表，每个对象 = key + data + meta 三要素；「路径」只是 key 的字符串形态</figcaption>
   </div>
-
-  <h3 id="c-ec">2.2 纠删码（Erasure Coding）：MinIO 的灵魂</h3>
-  <p>传统三副本存储存 1TB 要花 3TB；MinIO 用 <b>Reed-Solomon 纠删码</b>把对象切成 <b>N 个数据块 + M 个校验块</b>，分散到一组独立磁盘：</p>
-  <div class="figure">
+<pre><code class="lang-text">Bucket（桶，顶层命名空间）
+  └── Object（对象 = 数据 + 元数据）
+        ├── key:   photos/2026/alice.png   （"路径"只是 key 的字符串形态）
+        ├── data:  任意字节流（KB ~ TB 级）
+        └── meta:  Content-Type、ETag、自定义 x-amz-* 元数据</code></pre>
+<p>与传统文件系统的区别：<strong>没有真正的目录层级</strong>（key 是平面字符串）、<strong>不擅长修改</strong>（对象不可变，覆盖即新版本）、<strong>强项是海量 + 一次性读写</strong>。</p>
+<h3 id="22-纠删码erasure-codingminio-的灵魂">2.2 纠删码（Erasure Coding）：MinIO 的灵魂</h3><div class="figure">
     <svg viewBox="0 0 880 430" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs><marker id="m2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9f1239"/></marker></defs>
       <!-- 图例 -->
@@ -286,34 +281,16 @@
     </svg>
     <figcaption>图 2 · 纠删码原理：EC:4+2 把 1MB 对象切成 4 数据块 + 2 校验块分散 6 块盘，任意坏 2 块仍可完整还原；空间开销 1.5x，远低于三副本的 3x</figcaption>
   </div>
-
-  <p><b>读写比例可配</b>（N 越大吞吐越高，M 越大越抗坏）：</p>
-  <table>
-    <tr><th>EC 配置</th><th>空间开销</th><th>容忍坏盘数</th></tr>
-    <tr><td><code>EC:4+2</code></td><td>1.5x</td><td>2 盘</td></tr>
-    <tr><td><code>EC:8+4</code></td><td>1.5x</td><td>4 盘</td></tr>
-    <tr><td><code>EC:8+8</code></td><td>2x</td><td>8 盘（一半）</td></tr>
-  </table>
-  <ul>
-    <li><b>读写 quorum</b>：写需 ≥ N/2 块盘可用；读只需任意 N 块；</li>
-    <li>纠删集（EC set）= 一组独立磁盘（4 / 6 / 8 / 12 / 16 盘）；集群扩容按 server pool 横向加。</li>
-  </ul>
-  <div class="tip"><b>💡 bit-rot 防护：</b><span>每个数据块附 <b>HighwayHash 校验</b>——磁盘静默损坏（bit-rot）在读时被发现并<b>用其余块在线修复</b>，这是 MinIO 相比「rsync + 多副本」方案的本质优势。</span></div>
-
-  <h3 id="c-meta">2.3 元数据内联</h3>
-  <p>对象元数据（连同纠删配置、版本信息）<b>与数据块一起原子地写进纠删组</b>，不依赖外部元数据数据库——没有「元数据服务器」这个单点 / 瓶颈，这是 MinIO 能横向扩展到 EB 级的架构根基。</p>
-
-  <h3 id="c-iam">2.4 IAM 与安全</h3>
-  <table>
-    <tr><th>能力</th><th>说明</th></tr>
-    <tr><td>IAM 策略</td><td>策略语法兼容 AWS IAM：按 ARN / 动作授权，可细化到 bucket / prefix</td></tr>
-    <tr><td>身份体系</td><td>用户 / 组 / 服务账号；LDAP / OIDC 外部身份源（企业 / AIStor 能力）</td></tr>
-    <tr><td>STS</td><td>临时凭证：assume role、client certificate 等多种模式</td></tr>
-    <tr><td>加密</td><td>SSE-S3（KMS 托管）、SSE-C（客户密钥）、SSE-KMS；TLS 全链路</td></tr>
-  </table>
-
-  <h3 id="c-lifecycle">2.5 数据生命周期能力</h3>
-  <div class="figure">
+<div class="tip"><b>💡 bit-rot 防护：</b><span>每个数据块附 <b>HighwayHash 校验</b>——磁盘静默损坏（bit-rot）在读时被发现并<b>用其余块在线修复</b>，这是 MinIO 相比「rsync + 多副本」方案的本质优势。</span></div>
+<p>传统三副本存储存 1TB 要花 3TB；MinIO 用 Reed-Solomon 纠删码把对象切成 <strong>N 个数据块 + M 个校验块</strong>，分散到独立磁盘：</p>
+<pre><code class="lang-text">对象 (1MB) ──EC 编码──► [D1][D2][D3][D4] [P1][P2]   （EC:4+2，共 6 块 6 盘）
+                         └── 任意坏 2 块，仍可完整还原 ──┘</code></pre>
+<ul><li>读写比例可配：<code>EC:4+2</code>（1.5x 空间开销，容忍 2 盘坏）、<code>EC:8+4</code>（1.5x）、<code>EC:8+8</code>（2x，容忍一半盘坏）；</li><li><strong>读写 quorum</strong>：写需 ≥ N/2 块盘可用；读只需任意 N 块；</li><li>每个数据块附 HighwayHash 校验——磁盘静默损坏（bit-rot）在读时被发现并<strong>用其余块在线修复</strong>，这是 MinIO 相比"rsync + 多副本"方案的本质优势；</li><li>纠删集（EC set）= 一组独立磁盘（4/6/8/12/16 盘）；集群扩容按 server pool 横向加。</li></ul>
+<h3 id="23-元数据内联">2.3 元数据内联</h3>
+<p>对象元数据（连同纠删配置、版本信息）<strong>与数据块一起原子地写进纠删组</strong>，不依赖外部元数据数据库——没有"元数据服务器"这个单点/瓶颈，这是 MinIO 能横向扩展到 EB 级的架构根基。</p>
+<h3 id="24-iam-与安全">2.4 IAM 与安全</h3>
+<ul><li>策略语法兼容 AWS IAM（按 ARN/动作授权，可细化到 bucket/prefix）；</li><li>用户/组/服务账号；LDAP/OIDC 外部身份源（企业/AIStor 能力）；</li><li>STS 临时凭证（assume role、client certificate 等多种模式）；</li><li>加密：SSE-S3（KMS 托管）、SSE-C（客户密钥）、SSE-KMS；TLS 全链路。</li></ul>
+<h3 id="25-数据生命周期能力">2.5 数据生命周期能力</h3><div class="figure">
     <svg viewBox="0 0 880 530" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs><marker id="m4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#e11d48"/></marker></defs>
       <!-- 辐射线（先画，压在盒子下） -->
@@ -355,19 +332,12 @@
     </svg>
     <figcaption>图 3 · 数据生命周期能力辐射图：版本控制、ILM、复制、对象锁定（WORM）、事件通知全部围绕 bucket 配置，构成完整的数据治理平面</figcaption>
   </div>
-  <ul>
-    <li><b>版本控制</b>：bucket 开版本后，删除 / 覆盖产生 delete marker 与历史版本，可回滚；</li>
-    <li><b>ILM（生命周期）</b>：按天数 / 版本数 / 标签做过期、转 Tier（远程 S3 / Azure / GCS）；</li>
-    <li><b>复制（Replication）</b>：桶级 / 站点级（active-active），含元数据与删除同步；</li>
-    <li><b>对象锁定</b>：WORM 合规（金融留痕）、法定保留；</li>
-    <li><b>事件通知</b>：put / delete 等事件推到 Kafka / NATS / AMQP / Redis / Webhook——可作事件驱动架构的源头。</li>
-  </ul>
-</section>
+<ul><li><strong>版本控制</strong>：bucket 开版本后，删除/覆盖产生 delete marker 与历史版本，可回滚；</li><li><strong>ILM（生命周期）</strong>：按天数/版本数/标签做过期、转 Tier（远程 S3/Azure/GCS）；</li><li><strong>复制（Replication）</strong>：桶级/站点级（active-active），含元数据与删除同步；</li><li><strong>对象锁定</strong>：WORM 合规（金融留痕）、法定保留；</li><li><strong>事件通知</strong>：put/delete 等事件推到 Kafka/NATS/AMQP/Redis/Webhook——可作事件驱动架构的源头。</li></ul>
+<hr>
 
-<!-- ============ 3 架构 ============ -->
-<section id="arch">
-  <h2>3. 架构与数据路径</h2>
-  <div class="figure">
+</section>
+<section data-anchor="3-架构与数据路径">
+<h2 id="3-架构与数据路径">3. 架构与数据路径<span class="lvl m">核心</span></h2><div class="figure">
     <svg viewBox="0 0 880 460" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs>
         <marker id="m3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9f1239"/></marker>
@@ -442,20 +412,21 @@
     </svg>
     <figcaption>图 4 · 分布式架构：4 节点对等集群、无元数据服务器；PUT 并行写 N+M 块、GET 并行读最快返回的 N 块，坏块由 healing 在线重建</figcaption>
   </div>
-  <ul>
-    <li><b>对等集群</b>：任何节点接收任何请求，无元数据服务器、无 leader——节点数只受网络与运维约束；</li>
-    <li><b>写路径</b>：节点内并行地把数据 + 校验块写到 EC set 的各盘，多数成功即成功；</li>
-    <li><b>读路径</b>：并行读、先到先得（healing 读：发现坏块异步重建回写）；</li>
-    <li><b>负载</b>：网关与纠删计算都在用户进程空间，无上下文切换——配合 Go 运行时实现高吞吐。</li>
-  </ul>
+<pre><code class="lang-text">Client ──S3 API──► MinIO 节点（无主节点，对等）
+                      │ 对 key 一致性哈希定位到 EC set
+                      ▼
+                 ┌── 纠删集：D1..DN, P1..PM 分布在多机多盘 ──┐
+                 │  PUT：并行写 N+M 块（+HighwayHash）        │
+                 │  GET：并行读最快返回的 N 块               │
+                 └──────────────────────────────────────────┘</code></pre>
+<ul><li><strong>对等集群</strong>：任何节点接收任何请求，无元数据服务器、无 leader——节点数只受网络与运维约束；</li><li><strong>写路径</strong>：节点内并行地把数据+校验块写到 EC set 的各盘，多数成功即成功；</li><li><strong>读路径</strong>：并行读、先到先得（healing 读：发现坏块异步重建回写）；</li><li><strong>负载</strong>：网关与纠删计算都在用户进程空间，无上下文切换——配合 Go 运行时实现高吞吐。</li></ul>
+<hr>
+
 </section>
-
-<!-- ============ 4 使用实战 ============ -->
-<section id="usage">
-  <h2>4. 使用实战</h2>
-
-  <h3 id="u-mc">4.1 启动与 mc</h3>
-  <pre><code class="lang-bash"># 分布式 4 节点 × 4 盘
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-启动与-mc">4.1 启动与 mc</h3>
+<pre><code class="lang-bash"># 分布式 4 节点 × 4 盘
 minio server http://node{1...4}/data{1...4} --console-address ":9001"
 
 # mc（MinIO Client）
@@ -466,10 +437,9 @@ mc ls local/mybucket --recursive
 mc mirror local/mybucket ./backup-dir      # 目录/桶互相同步
 mc admin info local                        # 集群与磁盘状态
 mc ilm add --expiry-days 90 local/mybucket # 生命周期</code></pre>
-
-  <h3 id="u-go">4.2 Go SDK（minio-go，S3 风格）</h3>
-  <pre><code class="lang-bash">go get github.com/minio/minio-go/v7</code></pre>
-  <pre><code class="lang-go">package main
+<h3 id="42-go-sdkminio-gos3-风格">4.2 Go SDK（minio-go，S3 风格）</h3>
+<pre><code class="lang-bash">go get github.com/minio/minio-go/v7</code></pre>
+<pre><code class="lang-go">package main
 
 import (
     "context"
@@ -499,15 +469,7 @@ func main() {
     cli.PutObject(ctx, "photos", "stream.bin", reader, size,
         minio.PutObjectOptions{})
 }</code></pre>
-
-  <h3 id="u-presign">4.3 Presigned URL（最常见的集成模式）</h3>
-  <pre><code class="lang-go">// 生成 7 天有效的下载链接，应用不代理流量、客户端直连 MinIO
-url, _ := cli.PresignedGetObject(ctx, "photos", "2026/alice.png",
-    7*24*time.Hour, nil)
-
-// 生成上传链接（让客户端直传，如浏览器上传大文件）
-upURL, _ := cli.PresignedPutObject(ctx, "photos", "user-upload.bin", time.Hour)</code></pre>
-  <div class="figure">
+<h3 id="43-presigned-url最常见的集成模式">4.3 Presigned URL（最常见的集成模式）</h3><div class="figure">
     <svg viewBox="0 0 880 315" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs>
         <marker id="m5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#e11d48"/></marker>
@@ -540,116 +502,99 @@ upURL, _ := cli.PresignedPutObject(ctx, "photos", "user-upload.bin", time.Hour)<
     </svg>
     <figcaption>图 5 · Presigned URL 直传场景：浏览器先向应用请求预签名 URL，随后直连 MinIO 上传——应用只做授权，不代理数据流量</figcaption>
   </div>
+<pre><code class="lang-go">// 生成 7 天有效的下载链接，应用不代理流量、客户端直连 MinIO
+url, _ := cli.PresignedGetObject(ctx, "photos", "2026/alice.png",
+    7*24*time.Hour, nil)
 
-  <h3 id="u-ver">4.4 版本控制 + 事件通知</h3>
-  <pre><code class="lang-bash">mc version enable local/mybucket          # 开版本（防误删）
+// 生成上传链接（让客户端直传，如浏览器上传大文件）
+upURL, _ := cli.PresignedPutObject(ctx, "photos", "user-upload.bin", time.Hour)</code></pre>
+<h3 id="44-版本控制-事件通知">4.4 版本控制 + 事件通知</h3>
+<pre><code class="lang-bash">mc version enable local/mybucket          # 开版本（防误删）
 mc admin config set local notify_kafka:1 \
   brokers="kafka:9092" topic="minio-events"
 mc event add local/mybucket arn:minio:sqs::1:kafka \
   --event put,delete                       # 对象事件推 Kafka</code></pre>
-  <p>事件负载（JSON）包含 bucket / key / size / etag 等——配合 Kafka / NATS 即「对象落库 → 触发处理」的流水线。</p>
-</section>
+<p>事件负载（JSON）包含 bucket/key/size/etag 等——配合 Kafka/NATS 即"对象落库 → 触发处理"的流水线。</p>
+<hr>
 
-<!-- ============ 5 S3 兼容性 ============ -->
-<section id="compat">
-  <h2>5. 与 S3 的兼容性说明</h2>
-  <p>核心 API（bucket / object / acl / versioning / lifecycle / replication / encryption / STS / Select）<b>高度兼容</b>；受 S3 自身演进与 MinIO 商业策略影响，少数新 AWS 特性（如某些 S3 Express、Table 系特性）不在社区版。<b>AWS SDK（Java / Python / Go v2 等）与 aws cli 均可直接对 MinIO 使用</b>——只需改 endpoint。</p>
-  <div class="tip"><b>✅ 实操：</b><span>aws cli 加 <code>--endpoint-url http://minio:9000</code> 即可直连 MinIO；Java / Python SDK 修改 endpoint 配置同理。Spark、Hive、Trino 等 S3 生态工具把 s3a endpoint 指向 MinIO 即完成接入。</span></div>
 </section>
+<section data-anchor="5-与-s3-的兼容性说明">
+<h2 id="5-与-s3-的兼容性说明">5. 与 S3 的兼容性说明<span class="lvl b">版本</span></h2><div class="tip"><b>✅ 实操：</b><span>aws cli 加 <code>--endpoint-url http://minio:9000</code> 即可直连 MinIO；Java / Python SDK 修改 endpoint 配置同理。Spark、Hive、Trino 等 S3 生态工具把 s3a endpoint 指向 MinIO 即完成接入。</span></div>
+<p>核心 API（bucket/object/acl/versioning/lifecycle/replication/encryption/STS/Select）高度兼容；受 S3 自身演进与 MinIO 商业策略影响，少数新 AWS 特性（如某些 S3 Express、Table 系特性）不在社区版。<strong>AWS SDK（Java/Python/Go v2 等）与 aws cli 均可直接对 MinIO 使用</strong>——只需改 endpoint。</p>
+<hr>
 
-<!-- ============ 6 版本与产品线 ============ -->
-<section id="versions">
-  <h2>6. 版本与产品线（2025 起重要变化）</h2>
-  <table>
-    <tr><th>产品</th><th>许可证</th><th>定位</th></tr>
-    <tr><td><b>MinIO Object Store（社区版）</b></td><td>AGPLv3</td><td>开源主体，S3 兼容核心能力完整（EC、版本、复制、ILM、加密）</td></tr>
-    <tr><td><b>MinIO AIStor（商业）</b></td><td>商业许可</td><td>promptObject（LLM 问对象）、AIHub、S3-over-RDMA、Catalog / Firewall / KMS / Cache / 全局控制台等企业特性</td></tr>
-  </table>
-  <div class="warn"><b>⚠️ 社区版 2025 年的调整（务必知悉）：</b>
+</section>
+<section data-anchor="6-版本与产品线2025-起重要变化">
+<h2 id="6-版本与产品线2025-起重要变化">6. 版本与产品线（2025 起重要变化）<span class="lvl a">避坑</span></h2><div class="warn"><b>⚠️ 社区版 2025 年的调整（务必知悉）：</b>
     <ul>
       <li><b>内置 Web Console 收缩为只读 object-browser</b>：LDAP / OIDC 外部身份源登录移入商业版，社区版 UI 主要用于浏览与基础操作（IAM 等经 mc / API 管理）；</li>
       <li>功能迭代重心转向商业版；社区版继续接收<b>安全与缺陷修复</b>（例如 2025.10 修复的 service-account 权限提升 CVE，社区版同步可用）；</li>
       <li><b>AGPLv3 的含义</b>：网络服务化使用也需开源派生作品，商业集成前评估合规；S3 API 兼容使替换 / 共存容易。</li>
     </ul>
   </div>
-  <p><b>替代生态</b>（选型时对照）：</p>
-  <p>
-    <span class="pill">Ceph RGW（一体化平台 · 重）</span>
-    <span class="pill">SeaweedFS（轻量 · 性能好）</span>
-    <span class="pill">Garage（地理分布式 · 轻量）</span>
-    <span class="pill">OpenIO / Scality</span>
-  </p>
-</section>
+<div class="table-wrap"><table><thead><tr><th>产品</th><th>许可证</th><th>定位</th></tr></thead><tbody><tr><td><strong>MinIO Object Store（社区版）</strong></td><td>AGPLv3</td><td>开源主体，S3 兼容核心能力完整（EC、版本、复制、ILM、加密）</td></tr><tr><td><strong>MinIO AIStor（商业）</strong></td><td>商业许可</td><td>promptObject（LLM 问对象）、AIHub、S3-over-RDMA、Catalog/Firewall/KMS/Cache/全局控制台等企业特性</td></tr></tbody></table></div>
+<p>社区版 2025 年的调整（务必知悉）：</p>
+<ul><li><strong>内置 Web Console 收缩为只读 object-browser</strong>；LDAP/OIDC 外部身份源登录移入商业版，社区版 UI 主要用于浏览与基础操作（IAM 等经 mc/API 管理）；</li><li>功能迭代重心转向商业版；社区版继续接收安全与缺陷修复（例如 2025.10 修复的 service-account 权限提升 CVE，社区版同步可用）；</li><li><strong>AGPLv3 的含义</strong>：网络服务化使用也需开源派生作品，商业集成前评估合规；S3 API 兼容使替换/共存容易。</li></ul>
+<p>替代生态（选型时对照）：Ceph RGW（一体化存储平台、重）、SeaweedFS（轻量、性能好）、Garage（地理分布式轻量）、OpenIO/Scality 等。</p>
+<hr>
 
-<!-- ============ 7 常见坑 ============ -->
-<section id="pitfalls">
-  <h2>7. 常见坑与最佳实践</h2>
-  <div class="danger"><b>🚫 最常见事故：</b><span>生产用单节点 / 单盘——单盘模式<b>无冗余</b>，磁盘坏 = 数据丢。生产至少 4 块盘（一个最小 EC set），并跨主机 / 机架分布故障域。</span></div>
-  <table>
-    <tr><th style="width:42px">#</th><th>坑</th><th>说明与对策</th></tr>
-    <tr><td>1</td><td><b>生产别用单节点</b></td><td>EC 需要 ≥ 4 块盘；单盘模式无冗余，磁盘坏 = 数据丢</td></tr>
-    <tr><td>2</td><td><b>EC set 内磁盘要「独立」</b></td><td>同 EC set 的盘挂同一 HBA / 同一故障域，容错就是纸面数字——按机架 / 主机感知布局</td></tr>
-    <tr><td>3</td><td><b>扩容按 pool，别混盘</b></td><td>新 pool 建议整组节点加入；不同容量的盘混布会导致数据倾斜</td></tr>
-    <tr><td>4</td><td><b>时钟同步</b></td><td>分布式部署对时间敏感（证书与复制），NTP 必备</td></tr>
-    <tr><td>5</td><td><b>大文件分片并行</b></td><td>SDK 默认 part size 16MiB；超 GB 级对象调大 partSize / 并发，吞吐翻倍</td></tr>
-    <tr><td>6</td><td><b>别拿 MinIO 当文件系统</b></td><td>高频小文件随机改写是反模式；真正需要 POSIX 挂载时评估 S3-FS 网关的延迟代价</td></tr>
-    <tr><td>7</td><td><b>监控磁盘与 healing</b></td><td><code>mc admin heal</code>、Prometheus 指标（磁盘离线、healing 队列）告警必须有</td></tr>
-    <tr><td>8</td><td><b>升级前读 release note</b></td><td>社区版个别版本标记 Breaking（如 2025-05-24），滚动升级前备份数据目录元信息</td></tr>
-  </table>
 </section>
+<section data-anchor="7-常见坑与最佳实践">
+<h2 id="7-常见坑与最佳实践">7. 常见坑与最佳实践<span class="lvl a">决策</span></h2><div class="danger"><b>🚫 最常见事故：</b><span>生产用单节点 / 单盘——单盘模式<b>无冗余</b>，磁盘坏 = 数据丢。生产至少 4 块盘（一个最小 EC set），并跨主机 / 机架分布故障域。</span></div>
+<ol><li><strong>生产别用单节点</strong>：EC 需要 ≥4 块盘；单盘模式无冗余，磁盘坏=数据丢；</li><li><strong>EC set 内磁盘要"独立"</strong>：同 EC set 的盘挂同一 HBA/同一故障域，容错就是纸面数字——机架/主机感知布局；</li><li><strong>扩容按 pool，别混盘</strong>：新 pool 建议整组节点加入；不同容量的盘混布会倾斜；</li><li><strong>时钟同步</strong>：分布式部署对时间敏感（证书与复制），NTP 必备；</li><li><strong>大文件分片并行</strong>：SDK 默认 part size 16MiB；超 GB 级对象调大 partSize/并发，吞吐翻倍；</li><li><strong>别拿 MinIO 当文件系统</strong>：高频小文件随机改写是反模式；真正需要 POSIX 挂载时评估 S3-FS 网关的延迟代价；</li><li><strong>监控磁盘与 healing</strong>：<code>mc admin heal</code>、Prometheus 指标（磁盘离线、healing 队列）告警必须有；</li><li><strong>升级前读 release note</strong>：社区版个别版本标记 Breaking（如 2025-05-24），滚动升级前备份数据目录元信息。</li></ol>
+<hr>
 
-<!-- ============ 8 选型小结 ============ -->
-<section id="summary">
-  <h2>8. 选型小结</h2>
-  <table>
-    <tr><th>场景</th><th>建议</th></tr>
-    <tr><td>K8s / 云原生应用附件、备份（Velero）</td><td><b>MinIO 社区版</b>，几乎默认选择</td></tr>
-    <tr><td>数据湖 / Parquet / DuckDB-Trino 查询底座</td><td><b>MinIO</b>（S3 协议 + 高吞吐）</td></tr>
-    <tr><td>AI 训练数据集分发</td><td>MinIO / <b>AIStor</b>（看重 promptObject 等则商业版）</td></tr>
-    <tr><td>超大规模多协议（块 / 文件 / 对象一体）</td><td><b>Ceph</b></td></tr>
-    <tr><td>极轻量边缘</td><td><b>SeaweedFS / Garage</b></td></tr>
-  </table>
-  <div class="tip"><b>✅ 选型口诀：</b><span>K8s 附件与备份默认 MinIO 社区版；数据湖底座选 MinIO；要 promptObject 等 AI 能力看 AIStor；要多协议一体化选 Ceph；极轻量边缘选 SeaweedFS / Garage。记住 AGPLv3 的开源传染性，商业集成前先过合规。</span></div>
 </section>
-
-<footer>MinIO 技术介绍与使用指南 · 参考 MinIO 官方文档与 github.com/minio/minio · 2026-09</footer>
+<section data-anchor="8-选型小结">
+<h2 id="8-选型小结">8. 选型小结</h2><div class="tip"><b>✅ 选型口诀：</b><span>K8s 附件与备份默认 MinIO 社区版；数据湖底座选 MinIO；要 promptObject 等 AI 能力看 AIStor；要多协议一体化选 Ceph；极轻量边缘选 SeaweedFS / Garage。记住 AGPLv3 的开源传染性，商业集成前先过合规。</span></div>
+<div class="table-wrap"><table><thead><tr><th>场景</th><th>建议</th></tr></thead><tbody><tr><td>K8s/云原生应用附件、备份（Velero）</td><td>MinIO 社区版，几乎默认选择</td></tr><tr><td>数据湖 / Parquet / DuckDB-Trino 查询底座</td><td>MinIO（S3 协议 + 高吞吐）</td></tr><tr><td>AI 训练数据集分发</td><td>MinIO / AIStor（看重 promptObject 等则商业版）</td></tr><tr><td>超大规模多协议（块/文件/对象一体）</td><td>Ceph</td></tr><tr><td>极轻量边缘</td><td>SeaweedFS / Garage</td></tr></tbody></table></div>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
 </main>
 </div>
-
 <script>
-document.querySelectorAll('pre code.lang-go').forEach(function(block){
-  var src = block.textContent;
-  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  var master = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
-  var out = src.replace(master, function(m, c1, c2, s, kw, typ, num, fn){
-    if (c1 || c2) return '<span class="cmt">'+m+'</span>';
-    if (s) return '<span class="str">'+m+'</span>';
-    if (kw) return '<span class="kw">'+m+'</span>';
-    if (typ) return '<span class="typ">'+m+'</span>';
-    if (num) return '<span class="num">'+m+'</span>';
-    if (fn) return '<span class="fn">'+m+'</span>';
-    return m;
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
   });
-  block.innerHTML = out;
-});
-document.querySelectorAll('pre code.lang-bash').forEach(function(block){
-  var src = block.textContent;
-  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  var out = src.replace(/(#[^\n]*)|("(?:\\.|[^"\\\n])*")|(\b(?:minio|mc|go|curl|export)\b)|(--[a-zA-Z][\w-]*)|(\b\d[\d.]*\b)/g, function(m, cmt, s, kw, flag, num){
-    if (cmt) return '<span class="cmt">'+m+'</span>';
-    if (s) return '<span class="str">'+m+'</span>';
-    if (kw) return '<span class="kw">'+m+'</span>';
-    if (flag) return '<span class="typ">'+m+'</span>';
-    if (num) return '<span class="num">'+m+'</span>';
-    return m;
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
   });
-  block.innerHTML = out;
-});
-document.querySelectorAll('pre code').forEach(function(b){
-  var label=document.createElement('span');label.className='codelabel';
-  label.textContent = /lang-go/.test(b.className)?'Go':'Bash';
-  b.closest('pre').appendChild(label);
-});
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
 </script>
 </body>
 </html>

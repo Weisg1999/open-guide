@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Go 反射（Reflection）由浅入深教程</title>
+<title>Go 反射 · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
 <style>
   :root{
     --accent:#ea580c; --accent-light:#ffedd5; --accent-dark:#9a3412;
@@ -24,39 +25,60 @@
   nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
   nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
   nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
   main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
-  .hero{background:linear-gradient(135deg,#7c2d12 0%,#ea580c 55%,#f97316 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(234,88,12,.25)}
+  .hero{background:linear-gradient(135deg,#9a3412 0%,#ea580c 58%,#9a3412 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
   .hero h1{font-size:30px;margin-bottom:10px}
-  .hero p{opacity:.92;font-size:15px;max-width:660px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
   .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
   .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
   section{margin-bottom:46px}
   h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
-  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark)}
-  h4{font-size:15px;margin:16px 0 8px;color:#0f172a}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
   p{margin-bottom:12px}
   ul,ol{padding-left:24px;margin-bottom:12px}
   li{margin-bottom:6px}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin-bottom:18px;box-shadow:0 1px 3px rgba(124,45,18,.06)}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
   pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
-  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#c49a6f;background:#3b2410;padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
   code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
-  p code,li code,td code{background:#fdf1e7;color:#c2410c;border:1px solid #f5e2d0;padding:1px 6px;border-radius:6px;font-size:.88em}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
   .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
-  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(124,45,18,.06)}
-  th{background:#fdeede;color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
   td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
-  tr:nth-child(even) td{background:#fdfbf8}
-  .tip,.warn,.danger{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px;display:flex;gap:10px;align-items:flex-start}
-  .tip{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
-  .warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
-  .danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
-  .tip b,.warn b,.danger b{flex-shrink:0}
-  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0;box-shadow:0 1px 3px rgba(124,45,18,.06)}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
   .figure svg{width:100%;height:auto;display:block}
   .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
   .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
-  .lvl.b{background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
   .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
   .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
   footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
@@ -69,55 +91,61 @@
 </head>
 <body>
 <div class="layout">
-
 <nav class="sidebar">
   <div class="logo">Go 反射<span class="ver">reflect</span></div>
   <div class="sub">The Laws of Reflection</div>
-  <a href="#intro">1. 什么是反射</a>
-  <a class="sub-link" href="#i-iface">1.2 interface 的隐藏结构</a>
-  <a href="#laws">2. 反射三定律</a>
-  <a class="sub-link" href="#l3">2.3 第三定律：可设置性</a>
-  <a href="#type">3. reflect.Type</a>
-  <a class="sub-link" href="#t-tag">3.3 字段与 Tag</a>
-  <a href="#value">4. reflect.Value</a>
-  <a href="#dynamic">5. 动态调用与修改</a>
-  <a href="#tag">6. Tag 深入 + mini json</a>
-  <a href="#perf">7. 性能与最佳实践</a>
-  <a href="#vs">8. 反射 vs 泛型</a>
+  <a href="#1-什么是反射入门">1. 什么是反射（入门）</a>
+  <a class="sub-link" href="#11-从一个日常现象说起">1.1 从一个日常现象说起</a>
+  <a class="sub-link" href="#12-反射的入口interface-的隐藏结构">1.2 反射的入口：interface 的隐藏结构</a>
+  <a href="#2-反射三定律入门-初级">2. 反射三定律（入门 → 初级）</a>
+  <a class="sub-link" href="#21-第一定律interface-反射对象">2.1 第一定律：interface → 反射对象</a>
+  <a class="sub-link" href="#22-第二定律反射对象-interface">2.2 第二定律：反射对象 → interface</a>
+  <a class="sub-link" href="#23-第三定律可设置性最常见的坑">2.3 第三定律：可设置性（最常见的坑）</a>
+  <a href="#3-reflecttype类型的显微镜初级">3. reflect.Type：类型的显微镜（初级）</a>
+  <a class="sub-link" href="#31-type-与-kind-的区别">3.1 Type 与 Kind 的区别</a>
+  <a class="sub-link" href="#32-常用-type-方法速查">3.2 常用 Type 方法速查</a>
+  <a class="sub-link" href="#33-遍历结构体字段与-tag">3.3 遍历结构体字段与 Tag</a>
+  <a href="#4-reflectvalue值的操作台初级-中级">4. reflect.Value：值的操作台（初级 → 中级）</a>
+  <a class="sub-link" href="#41-读取各类值">4.1 读取各类值</a>
+  <a class="sub-link" href="#42-判断空值与有效性">4.2 判断空值与有效性</a>
+  <a class="sub-link" href="#43-创建新值reflectnew-与-makemapmakeslice">4.3 创建新值：reflect.New 与 MakeMap/MakeSlice</a>
+  <a href="#5-进阶动态调用与修改中级">5. 进阶：动态调用与修改（中级）</a>
+  <a class="sub-link" href="#51-动态调用函数">5.1 动态调用函数</a>
+  <a class="sub-link" href="#52-动态调用方法">5.2 动态调用方法</a>
+  <a class="sub-link" href="#53-通过反射修改结构体字段">5.3 通过反射修改结构体字段</a>
+  <a class="sub-link" href="#54-递归处理嵌套结构deepcopy-示例">5.4 递归处理嵌套结构（DeepCopy 示例）</a>
+  <a href="#6-结构体-tag-深入中级">6. 结构体 Tag 深入（中级）</a>
+  <a class="sub-link" href="#61-tag-的结构">6.1 Tag 的结构</a>
+  <a class="sub-link" href="#62-反射-tag-实现-mini-json-序列化实战">6.2 反射 + tag 实现 mini json 序列化（实战）</a>
+  <a href="#7-性能与最佳实践高级">7. 性能与最佳实践（高级）</a>
+  <a class="sub-link" href="#71-反射的性能代价">7.1 反射的性能代价</a>
+  <a class="sub-link" href="#72-缓解手段">7.2 缓解手段</a>
+  <a class="sub-link" href="#73-安全清单">7.3 安全清单</a>
+  <a href="#8-反射-vs-泛型如何选择高级">8. 反射 vs 泛型：如何选择（高级）</a>
+  <a href="#9-学习路线建议">9. 学习路线建议</a>
 </nav>
-
 <main>
-
 <div class="hero">
-  <h1>Go 反射（Reflection）</h1>
-  <p>Go 在运行时「审视类型结构与值」的能力，是 <b>encoding/json</b>、<b>fmt</b>、ORM、依赖注入框架的共同基石。本教程从三定律出发，由浅入深直到手写 mini-json 与性能优化。</p>
-  <div class="meta">
-    <span>reflect 包</span>
-    <span>Go 1.0+（稳定 API）</span>
-    <span>The Laws of Reflection</span>
-    <span>由浅入深 · 9 章</span>
-  </div>
+  <h1>Go 反射（Reflection）由浅入深教程</h1>
+<p>Go 在运行时「审视类型结构与值」的能力，是 encoding/json、fmt、ORM、依赖注入框架的共同基石。本教程从三定律出发，由浅入深直到手写 mini-json 与性能优化。</p>
+<div class="meta"><span>reflect 包</span><span>Go 1.0+（稳定 API）</span><span>The Laws of Reflection</span><span>由浅入深 · 9 章</span></div>
 </div>
-
-<!-- ============ 1 什么是反射 ============ -->
-<section id="intro">
-  <h2>1. 什么是反射<span class="lvl b">入门</span></h2>
-
-  <div class="card">
-    <p>你一定写过这样的代码，却没意识到背后是反射在工作：</p>
-    <pre><code class="lang-go"><span class="kw">type</span> <span class="typ">User</span> <span class="kw">struct</span> {
-    Name <span class="typ">string</span> <span class="str">`json:"name"`</span>
-    Age  <span class="typ">int</span>    <span class="str">`json:"age"`</span>
+<blockquote><p>反射是 Go 在运行时「审视类型结构与值」的能力，是 <code>encoding/json</code>、<code>fmt</code>、ORM、依赖注入框架的基石。 官方博客：<a href="https://go.dev/blog/laws-of-reflection">The Laws of Reflection</a>（2011，Rob Pike）</p></blockquote>
+<section data-anchor="1-什么是反射入门">
+<h2 id="1-什么是反射入门">1. 什么是反射（入门）<span class="lvl b">入门</span></h2>
+<h3 id="11-从一个日常现象说起">1.1 从一个日常现象说起</h3>
+<p>你一定写过这样的代码，却没意识到背后是反射在工作：</p>
+<pre><code class="lang-go">type User struct {
+    Name string `json:"name"`
+    Age  int    `json:"age"`
 }
 
-b, _ := json.<span class="fn">Marshal</span>(<span class="typ">User</span>{Name: <span class="str">"alice"</span>, Age: 20})
-<span class="cmt">// 输出：{"name":"alice","age":20}</span></code></pre>
-    <p><b>json.Marshal 如何知道结构体有哪些字段、tag 写了什么？</b>——答案：运行时用反射解析了这个结构体。</p>
-    <p>反射解决的根本问题：<b>编译期不知道类型长什么样，运行时才需要知道</b>。典型场景：序列化（json/yaml/protobuf）、ORM 字段映射、依赖注入、<code>fmt.Println</code> 万物皆可打印、框架「约定优于配置」。</p>
-  </div>
-
-  <h3 id="i-iface">1.2 反射的入口：interface 的隐藏结构</h3>
-  <div class="figure">
+b, _ := json.Marshal(User{Name: "alice", Age: 20})
+// 输出：{"name":"alice","age":20}</code></pre>
+<p><code>json.Marshal</code> 如何知道结构体有哪些字段、字段叫什么名字、tag 是什么？——<strong>答案是在运行时用反射解析了这个结构体</strong>。</p>
+<p>反射解决的根本问题：<strong>编译期不知道类型长什么样，运行时才需要知道</strong>。典型场景：</p>
+<ul><li>序列化/反序列化（json、yaml、protobuf）</li><li>ORM 字段映射（字段名 → 列名）</li><li>依赖注入（按类型装配）</li><li><code>fmt.Println</code> 万物皆可打印</li><li>框架做「约定优于配置」</li></ul>
+<h3 id="12-反射的入口interface-的隐藏结构">1.2 反射的入口：interface 的隐藏结构</h3><div class="figure">
     <svg viewBox="0 0 880 320" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9a3412"/></marker></defs>
       <!-- 左：interface 值 -->
@@ -149,13 +177,55 @@ b, _ := json.<span class="fn">Marshal</span>(<span class="typ">User</span>{Name:
     </svg>
     <figcaption>图 1 · 反射的本质：interface 值内部就是 (动态类型, 动态值) 二元组，反射把它掏出来包装成 Type / Value 两个对象</figcaption>
   </div>
+<p>Go 的 interface 值在运行时是一个两个字的结构：</p>
+<pre><code class="lang-text">interface{} = (动态类型 type, 动态值 value)</code></pre>
+<p>反射就是把这个隐藏结构"掏出来看"的能力。Go 把它包装成两个类型：</p>
+<ul><li><code>reflect.Type</code>：关于<strong>类型</strong>的元信息（叫什么、什么种类、有哪些字段方法）</li><li><code>reflect.Value</code>：关于<strong>值</strong>的运行时视图（可读、部分可写）</li></ul>
+<hr>
+
+<div class="card">
+    <p>你一定写过这样的代码，却没意识到背后是反射在工作：</p>
+    <pre><code class="lang-go"><span class="kw">type</span> <span class="typ">User</span> <span class="kw">struct</span> {
+    Name <span class="typ">string</span> <span class="str">`json:"name"`</span>
+    Age  <span class="typ">int</span>    <span class="str">`json:"age"`</span>
+}
+
+b, _ := json.<span class="fn">Marshal</span>(<span class="typ">User</span>{Name: <span class="str">"alice"</span>, Age: 20})
+<span class="cmt">// 输出：{"name":"alice","age":20}</span></code></pre>
+    <p><b>json.Marshal 如何知道结构体有哪些字段、tag 写了什么？</b>——答案：运行时用反射解析了这个结构体。</p>
+    <p>反射解决的根本问题：<b>编译期不知道类型长什么样，运行时才需要知道</b>。典型场景：序列化（json/yaml/protobuf）、ORM 字段映射、依赖注入、<code>fmt.Println</code> 万物皆可打印、框架「约定优于配置」。</p>
+  </div>
 </section>
+<section data-anchor="2-反射三定律入门-初级">
+<h2 id="2-反射三定律入门-初级">2. 反射三定律（入门 → 初级）<span class="lvl b">速览</span></h2>
+<p>Rob Pike 在官方博客总结的三条定律，是理解反射的纲领：</p>
+<div class="table-wrap"><table><thead><tr><th>定律</th><th>内容</th><th>对应 API</th></tr></thead><tbody><tr><td>1</td><td>反射从 interface 值转换为反射对象</td><td><code>reflect.TypeOf(i)</code>, <code>reflect.ValueOf(i)</code></td></tr><tr><td>2</td><td>反射从反射对象转换回 interface 值</td><td><code>v.Interface()</code></td></tr><tr><td>3</td><td>要修改反射对象，其值必须<strong>可设置</strong>（settable）</td><td><code>reflect.ValueOf(&amp;x).Elem().Set(...)</code></td></tr></tbody></table></div>
+<h3 id="21-第一定律interface-反射对象">2.1 第一定律：interface → 反射对象</h3>
+<pre><code class="lang-go">var x float64 = 3.4
 
-<!-- ============ 2 三定律 ============ -->
-<section id="laws">
-  <h2>2. 反射三定律<span class="lvl b">入门 → 初级</span></h2>
+t := reflect.TypeOf(x)   // float64 —— 携带类型元信息
+v := reflect.ValueOf(x)  // 3.4   —— 携带值的视图
 
-  <div class="figure">
+fmt.Println(t.Kind())    // float64（Kind 是"种类"，见 3.1）
+fmt.Println(v.Float())   // 3.4</code></pre>
+<p>注意：<code>TypeOf</code>/<code>ValueOf</code> 的参数是 <code>interface{}</code>——<strong>传进去的那一刻就发生了装箱</strong>，这也是反射性能成本的第一来源。</p>
+<h3 id="22-第二定律反射对象-interface">2.2 第二定律：反射对象 → interface</h3>
+<pre><code class="lang-go">v := reflect.ValueOf(3.4)
+y := v.Interface().(float64)   // 类型断言还原
+fmt.Println(y)                 // 3.4</code></pre>
+<p><code>v.Interface()</code> 拿回 <code>interface{}</code>，再断言成具体类型。一来一回，正好构成闭环。</p>
+<h3 id="23-第三定律可设置性最常见的坑">2.3 第三定律：可设置性（最常见的坑）</h3>
+<pre><code class="lang-go">var x float64 = 3.4
+v := reflect.ValueOf(x)
+v.SetFloat(7.1)   // ❌ panic: reflect.Value.SetFloat using unaddressable value</code></pre>
+<p>原因：<code>ValueOf(x)</code> 拷贝了 x 的<strong>副本</strong>，改副本没有意义，所以 Go 直接禁止。正确姿势——<strong>传指针，再 Elem() 取指针对象</strong>：</p>
+<pre><code class="lang-go">v := reflect.ValueOf(&amp;x).Elem()  // 解引用，得到"指向 x 的可设值视图"
+fmt.Println(v.CanSet())          // true
+v.SetFloat(7.1)                  // ✅ x 变为 7.1</code></pre>
+<p>口诀：<strong>想通过反射改值，必须传地址</strong>。<code>CanSet()</code> 可预先检查。</p>
+<hr>
+
+<div class="figure">
     <svg viewBox="0 0 880 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs><marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9a3412"/></marker></defs>
       <!-- interface 值 -->
@@ -183,20 +253,8 @@ b, _ := json.<span class="fn">Marshal</span>(<span class="typ">User</span>{Name:
     </svg>
     <figcaption>图 2 · 三定律全景：1）interface → 反射对象；2）反射对象 → interface；3）修改需要可设置性（传地址）</figcaption>
   </div>
-
-  <pre><code class="lang-go"><span class="cmt">// 定律 1：interface → 反射对象</span>
-<span class="kw">var</span> x <span class="typ">float64</span> = 3.4
-t := reflect.<span class="fn">TypeOf</span>(x)   <span class="cmt">// float64 —— 类型元信息</span>
-v := reflect.<span class="fn">ValueOf</span>(x)  <span class="cmt">// 3.4   —— 值的视图</span>
-fmt.<span class="fn">Println</span>(t.<span class="fn">Kind</span>())  <span class="cmt">// float64</span>
-fmt.<span class="fn">Println</span>(v.<span class="fn">Float</span>())  <span class="cmt">// 3.4</span>
-
-<span class="cmt">// 定律 2：反射对象 → interface</span>
-y := v.<span class="fn">Interface</span>().(<span class="typ">float64</span>)   <span class="cmt">// 类型断言还原</span></code></pre>
-  <div class="tip"><b>💡 性能第一课：</b><span><code>TypeOf</code>/<code>ValueOf</code> 的参数是 <code>interface{}</code>——传进去的那一刻就发生了<b>装箱</b>（值逃逸到堆），这是反射性能成本的第一来源。</span></div>
-
-  <h3 id="l3">2.3 第三定律：可设置性（最经典的坑）</h3>
-  <div class="figure">
+<div class="tip"><b>💡 性能第一课：</b><span><code>TypeOf</code>/<code>ValueOf</code> 的参数是 <code>interface{}</code>——传进去的那一刻就发生了<b>装箱</b>（值逃逸到堆），这是反射性能成本的第一来源。</span></div>
+<div class="figure">
     <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs><marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9a3412"/></marker></defs>
       <!-- 左：错误 -->
@@ -231,119 +289,206 @@ y := v.<span class="fn">Interface</span>().(<span class="typ">float64</span>)   
     <figcaption>图 3 · 可设置性：ValueOf 装箱的是参数副本；传指针再 Elem() 解引用，得到指向本体的可设值视图</figcaption>
   </div>
 </section>
+<section data-anchor="3-reflecttype类型的显微镜初级">
+<h2 id="3-reflecttype类型的显微镜初级">3. reflect.Type：类型的显微镜（初级）<span class="lvl b">初级</span></h2>
+<h3 id="31-type-与-kind-的区别">3.1 Type 与 Kind 的区别</h3>
+<pre><code class="lang-go">type MyInt int
+type User struct{ Name string }
 
-<!-- ============ 3 Type ============ -->
-<section id="type">
-  <h2>3. reflect.Type：类型的显微镜<span class="lvl b">初级</span></h2>
+reflect.TypeOf(MyInt(1)).Name()  // "MyInt" —— Type：声明的名字
+reflect.TypeOf(MyInt(1)).Kind()  // reflect.Int —— Kind：底层种类
 
-  <h3>3.1 Type 与 Kind 的区别（90% 的人会混淆）</h3>
-  <pre><code class="lang-go"><span class="kw">type</span> <span class="typ">MyInt</span> <span class="typ">int</span>
-<span class="kw">type</span> <span class="typ">User</span> <span class="kw">struct</span>{ Name <span class="typ">string</span> }
-
-reflect.<span class="fn">TypeOf</span>(<span class="typ">MyInt</span>(1)).<span class="fn">Name</span>()  <span class="cmt">// "MyInt"      ← Type：声明的名字</span>
-reflect.<span class="fn">TypeOf</span>(<span class="typ">MyInt</span>(1)).<span class="fn">Kind</span>()  <span class="cmt">// reflect.Int ← Kind：底层种类</span>
-
-reflect.<span class="fn">TypeOf</span>(<span class="typ">User</span>{}).<span class="fn">Name</span>()    <span class="cmt">// "User"</span>
-reflect.<span class="fn">TypeOf</span>(<span class="typ">User</span>{}).<span class="fn">Kind</span>()    <span class="cmt">// reflect.Struct</span></code></pre>
-  <p><b>Kind 是一个枚举</b>（Int / String / Slice / Struct / Ptr / Map / Func / Chan / Interface…），反射的分支逻辑几乎总是基于 Kind 而非 Type——因为「按种类处理」才可穷举。</p>
-
-  <h3>3.2 常用 Type 方法速查</h3>
-  <table>
-    <tr><th>方法</th><th>作用</th><th>方法</th><th>作用</th></tr>
-    <tr><td><code>Name()</code> / <code>String()</code></td><td>类型名</td><td><code>Kind()</code></td><td>种类枚举</td></tr>
-    <tr><td><code>NumField()</code> / <code>Field(i)</code></td><td>结构体字段</td><td><code>NumMethod()</code> / <code>Method(i)</code></td><td>方法列表</td></tr>
-    <tr><td><code>Elem()</code></td><td>指针/slice/map/chan 的元素类型</td><td><code>Key()</code></td><td>map 的 key 类型</td></tr>
-    <tr><td><code>In(i)</code> / <code>Out(i)</code></td><td>函数参数/返回类型</td><td><code>NumIn()</code> / <code>NumOut()</code></td><td>参数/返回个数</td></tr>
-    <tr><td><code>AssignableTo(u)</code></td><td>可赋值判断</td><td><code>Implements(u)</code></td><td>接口实现判断</td></tr>
-    <tr><td><code>PkgPath()</code></td><td>所在包路径</td><td><code>ConvertibleTo(u)</code></td><td>可转换判断</td></tr>
-  </table>
-
-  <h3 id="t-tag">3.3 遍历结构体字段与 Tag</h3>
-  <pre><code class="lang-go"><span class="kw">type</span> <span class="typ">User</span> <span class="kw">struct</span> {
-    Name <span class="typ">string</span> <span class="str">`json:"name" validate:"required"`</span>
-    Age  <span class="typ">int</span>    <span class="str">`json:"age" validate:"gte=0,lte=150"`</span>
+reflect.TypeOf(User{}).Name()    // "User"
+reflect.TypeOf(User{}).Kind()    // reflect.Struct</code></pre>
+<p><code>Kind</code> 是一个枚举（<code>reflect.Int</code>、<code>reflect.String</code>、<code>reflect.Slice</code>、<code>reflect.Struct</code>、<code>reflect.Ptr</code>、<code>reflect.Map</code>、<code>reflect.Func</code>、<code>reflect.Chan</code>、<code>reflect.Interface</code>…），反射分支逻辑几乎总基于 Kind 而非 Type。</p>
+<h3 id="32-常用-type-方法速查">3.2 常用 Type 方法速查</h3>
+<div class="table-wrap"><table><thead><tr><th>方法</th><th>作用</th></tr></thead><tbody><tr><td><code>Name()</code> / <code>String()</code></td><td>类型名</td></tr><tr><td><code>Kind()</code></td><td>种类枚举</td></tr><tr><td><code>NumField()</code> / <code>Field(i)</code></td><td>结构体字段（仅 Struct）</td></tr><tr><td><code>NumMethod()</code> / <code>Method(i)</code></td><td>方法列表</td></tr><tr><td><code>Elem()</code></td><td>容器/指针/chan 的元素类型</td></tr><tr><td><code>Key()</code></td><td>map 的 key 类型</td></tr><tr><td><code>In(i)</code> / <code>NumIn()</code> / <code>Out(i)</code> / <code>NumOut()</code></td><td>函数签名</td></tr><tr><td><code>AssignableTo(u)</code> / <code>ConvertibleTo(u)</code> / <code>Implements(u)</code></td><td>类型间关系判断</td></tr><tr><td><code>PkgPath()</code></td><td>所在包路径</td></tr></tbody></table></div>
+<h3 id="33-遍历结构体字段与-tag">3.3 遍历结构体字段与 Tag</h3>
+<pre><code class="lang-go">type User struct {
+    Name string `json:"name" validate:"required"`
+    Age  int    `json:"age" validate:"gte=0,lte=150"`
 }
 
-u := <span class="typ">User</span>{Name: <span class="str">"alice"</span>}
-t := reflect.<span class="fn">TypeOf</span>(u)
-<span class="kw">for</span> i := 0; i &lt; t.<span class="fn">NumField</span>(); i++ {
-    f := t.<span class="fn">Field</span>(i)
-    fmt.<span class="fn">Printf</span>(<span class="str">"字段:%-6s 类型:%-8s json:%-10s validate:%s\n"</span>,
-        f.Name, f.Type, f.Tag.<span class="fn">Get</span>(<span class="str">"json"</span>), f.Tag.<span class="fn">Get</span>(<span class="str">"validate"</span>))
+u := User{Name: "alice"}
+t := reflect.TypeOf(u)
+for i := 0; i &lt; t.NumField(); i++ {
+    f := t.Field(i)
+    fmt.Printf("字段:%-6s 类型:%-8s json tag:%-10s validate:%s\n",
+        f.Name, f.Type, f.Tag.Get("json"), f.Tag.Get("validate"))
 }
-<span class="cmt">// 字段:Name   类型:string  json:name        validate:required</span>
-<span class="cmt">// 字段:Age    类型:int     json:age         validate:gte=0,lte=150</span></code></pre>
-  <p><code>f.Tag.Get(key)</code> 就是 json 库做字段重命名、validator 库做校验的核心机制。另有 <code>Tag.Lookup(key)</code> 可区分「没有 tag」和「tag 为空」；<code>f.Index</code>（<code>[]int</code>）支持嵌套字段寻址。</p>
+// 字段:Name   类型:string  json tag:name       validate:required
+// 字段:Age    类型:int     json tag:age        validate:gte=0,lte=150</code></pre>
+<p><code>f.Tag.Get(key)</code> 就是 json 库做字段重命名、validator 库做校验的核心机制。<code>f.Index</code>（<code>[]int</code>）支持嵌套字段寻址，<code>f.Anonymous</code> 标记嵌入字段。</p>
+<hr>
+
 </section>
+<section data-anchor="4-reflectvalue值的操作台初级-中级">
+<h2 id="4-reflectvalue值的操作台初级-中级">4. reflect.Value：值的操作台（初级 → 中级）<span class="lvl m">实战</span></h2>
+<h3 id="41-读取各类值">4.1 读取各类值</h3>
+<pre><code class="lang-go">v := reflect.ValueOf(x)
+v.Int() / v.Uint() / v.Float() / v.Bool() / v.String()   // 按 Kind 取
+v.Len()            // slice/map/chan/array/string 长度
+v.Index(i)         // slice/array 元素 → reflect.Value
+v.MapIndex(key)    // map 取值
+v.Field(i)         // 结构体字段 → reflect.Value</code></pre>
+<p><strong>注意</strong>：<code>v.Int()</code> 返回 <code>int64</code>，赋回 int 需要 <code>int(v.Int())</code>——访问器一律返回最大宽度的类型。</p>
+<h3 id="42-判断空值与有效性">4.2 判断空值与有效性</h3>
+<pre><code class="lang-go">v := reflect.ValueOf(x)
+v.IsValid()   // 零值 Value（nil 返回值）为 false
+v.IsNil()     // 判断 nil（仅对 chan/func/interface/map/pointer/slice 有意义）
+v.IsZero()    // 是否零值（Go 1.13+）</code></pre>
+<p><code>IsValid</code> 很重要：<code>Field(i)</code> 越界、<code>MapIndex</code> 未命中等都会返回零值 <code>Value{}</code>，直接调用方法会 panic。</p>
+<h3 id="43-创建新值reflectnew-与-makemapmakeslice">4.3 创建新值：reflect.New 与 MakeMap/MakeSlice</h3>
+<pre><code class="lang-go">t := reflect.TypeOf(User{})
+pv := reflect.New(t)              // *User，指向新分配的零值 User
+u := pv.Elem().Interface().(User) // 取回
 
-<!-- ============ 4 Value ============ -->
-<section id="value">
-  <h2>4. reflect.Value：值的操作台<span class="lvl b">初级 → 中级</span></h2>
+m := reflect.MakeMap(reflect.TypeOf(map[string]int{}))
+m.SetMapIndex(reflect.ValueOf("k"), reflect.ValueOf(1))</code></pre>
+<p><code>reflect.New(T)</code> 等价于 <code>new(T)</code>，是<strong>在运行时按类型信息分配值</strong>的标准手段（json 反序列化的第一步就是把目标 <code>reflect.New</code> 出来）。</p>
+<hr>
 
-  <h4>读取 / 判空 / 创建</h4>
-  <pre><code class="lang-go">v := reflect.<span class="fn">ValueOf</span>(x)
-v.<span class="fn">Int</span>() / v.<span class="fn">Uint</span>() / v.<span class="fn">Float</span>() / v.<span class="fn">Bool</span>() / v.<span class="fn">String</span>()  <span class="cmt">// 按 Kind 取（返回最大宽度类型）</span>
-v.<span class="fn">Len</span>()            <span class="cmt">// slice/map/chan/array/string 长度</span>
-v.<span class="fn">Index</span>(i)         <span class="cmt">// slice/array 元素 → Value</span>
-v.<span class="fn">MapIndex</span>(key)    <span class="cmt">// map 取值 → Value</span>
-v.<span class="fn">Field</span>(i)         <span class="cmt">// 结构体字段 → Value</span>
-
-v.<span class="fn">IsValid</span>()   <span class="cmt">// 零值 Value 为 false（越界/未命中都返回零值 Value）</span>
-v.<span class="fn">IsNil</span>()      <span class="cmt">// 仅对 chan/func/interface/map/ptr/slice 有意义</span>
-v.<span class="fn">IsZero</span>()     <span class="cmt">// Go 1.13+</span>
-
-<span class="cmt">// 运行时按类型信息创建新值（json 反序列化的第一步）</span>
-t := reflect.<span class="fn">TypeOf</span>(<span class="typ">User</span>{})
-pv := reflect.<span class="fn">New</span>(t)              <span class="cmt">// *User，指向新分配的零值 User</span>
-m := reflect.<span class="fn">MakeMap</span>(reflect.<span class="fn">TypeOf</span>(<span class="kw">map</span>[<span class="typ">string</span>]<span class="typ">int</span>{}))</code></pre>
-  <div class="warn"><b>⚠️ 注意：</b><span><code>v.Int()</code> 返回 <code>int64</code>，赋回 int 需要 <code>int(v.Int())</code>——访问器一律返回最大宽度的类型。</span></div>
+<div class="warn"><b>⚠️ 注意：</b><span><code>v.Int()</code> 返回 <code>int64</code>，赋回 int 需要 <code>int(v.Int())</code>——访问器一律返回最大宽度的类型。</span></div>
 </section>
+<section data-anchor="5-进阶动态调用与修改中级">
+<h2 id="5-进阶动态调用与修改中级">5. 进阶：动态调用与修改（中级）<span class="lvl m">中级</span></h2>
+<h3 id="51-动态调用函数">5.1 动态调用函数</h3>
+<pre><code class="lang-go">func Add(a, b int) int { return a + b }
 
-<!-- ============ 5 动态 ============ -->
-<section id="dynamic">
-  <h2>5. 动态调用与修改<span class="lvl m">中级</span></h2>
+fv := reflect.ValueOf(Add)
+args := []reflect.Value{reflect.ValueOf(1), reflect.ValueOf(2)}
+out := fv.Call(args)               // []reflect.Value{3}
+fmt.Println(out[0].Int())          // 3</code></pre>
+<p>变长参数用 <code>CallSlice</code>；先用 <code>fv.Type().NumIn()</code> 检查参数个数可避免 panic。</p>
+<h3 id="52-动态调用方法">5.2 动态调用方法</h3>
+<pre><code class="lang-go">type Greeter struct{ Name string }
+func (g *Greeter) Hello(who string) string { return "hi " + who + ", I'm " + g.Name }
 
-  <h3>5.1 动态调用函数与方法</h3>
-  <pre><code class="lang-go"><span class="kw">func</span> <span class="fn">Add</span>(a, b <span class="typ">int</span>) <span class="typ">int</span> { <span class="kw">return</span> a + b }
+g := &amp;Greeter{Name: "alice"}
+v := reflect.ValueOf(g)
+m := v.MethodByName("Hello")        // 方法也要是"导出"的才能取到
+out := m.Call([]reflect.Value{reflect.ValueOf("bob")})
+fmt.Println(out[0].String())        // hi bob, I'm alice</code></pre>
+<h3 id="53-通过反射修改结构体字段">5.3 通过反射修改结构体字段</h3>
+<pre><code class="lang-go">type Config struct {
+    Host string
+    Port int
+}
 
-fv := reflect.<span class="fn">ValueOf</span>(Add)
-out := fv.<span class="fn">Call</span>([]reflect.<span class="typ">Value</span>{reflect.<span class="fn">ValueOf</span>(1), reflect.<span class="fn">ValueOf</span>(2)})
-fmt.<span class="fn">Println</span>(out[0].<span class="fn">Int</span>())   <span class="cmt">// 3</span>
-
-<span class="cmt">// 方法调用：方法名必须是导出的</span>
-<span class="kw">type</span> <span class="typ">Greeter</span> <span class="kw">struct</span>{ Name <span class="typ">string</span> }
-<span class="kw">func</span> (g *<span class="typ">Greeter</span>) <span class="fn">Hello</span>(who <span class="typ">string</span>) <span class="typ">string</span> { <span class="kw">return</span> <span class="str">"hi "</span> + who }
-
-g := &amp;<span class="typ">Greeter</span>{Name: <span class="str">"alice"</span>}
-m := reflect.<span class="fn">ValueOf</span>(g).<span class="fn">MethodByName</span>(<span class="str">"Hello"</span>)
-out = m.<span class="fn">Call</span>([]reflect.<span class="typ">Value</span>{reflect.<span class="fn">ValueOf</span>(<span class="str">"bob"</span>)})</code></pre>
-
-  <h3>5.2 通用 SetField：反射修改的标准骨架</h3>
-  <pre><code class="lang-go"><span class="kw">func</span> <span class="fn">SetField</span>(obj <span class="kw">any</span>, name <span class="typ">string</span>, value <span class="kw">any</span>) <span class="typ">error</span> {
-    v := reflect.<span class="fn">ValueOf</span>(obj).<span class="fn">Elem</span>()      <span class="cmt">// 传指针 + Elem 得到可设视图</span>
-    f := v.<span class="fn">FieldByName</span>(name)
-    <span class="kw">if</span> !f.<span class="fn">IsValid</span>() || !f.<span class="fn">CanSet</span>() {
-        <span class="kw">return</span> fmt.<span class="fn">Errorf</span>(<span class="str">"field %s not settable"</span>, name)
+func SetField(obj any, name string, value any) error {
+    v := reflect.ValueOf(obj).Elem()      // 传指针 + Elem 得到可设视图
+    f := v.FieldByName(name)
+    if !f.IsValid() || !f.CanSet() {
+        return fmt.Errorf("field %s not settable", name)
     }
-    fv := reflect.<span class="fn">ValueOf</span>(value)
-    <span class="kw">if</span> fv.<span class="fn">Type</span>().<span class="fn">AssignableTo</span>(f.<span class="fn">Type</span>()) {  <span class="cmt">// 类型必须可赋值</span>
-        f.<span class="fn">Set</span>(fv)
-        <span class="kw">return</span> <span class="kw">nil</span>
+    fv := reflect.ValueOf(value)
+    if fv.Type().AssignableTo(f.Type()) {  // 类型必须可赋值
+        f.Set(fv)
+        return nil
     }
-    <span class="kw">return</span> fmt.<span class="fn">Errorf</span>(<span class="str">"type mismatch: %s -> %s"</span>, fv.<span class="fn">Type</span>(), f.<span class="fn">Type</span>())
+    return fmt.Errorf("type mismatch: %s -&gt; %s", fv.Type(), f.Type())
 }
 
-c := &amp;<span class="typ">Config</span>{}
-_ = <span class="fn">SetField</span>(c, <span class="str">"Host"</span>, <span class="str">"localhost"</span>)
-_ = <span class="fn">SetField</span>(c, <span class="str">"Port"</span>, 8080)      <span class="cmt">// 配置热加载、ORM Update、依赖注入的通用骨架</span></code></pre>
+c := &amp;Config{}
+_ = SetField(c, "Host", "localhost")
+_ = SetField(c, "Port", 8080)
+// c = &amp;{localhost 8080}</code></pre>
+<p>这个模式是配置热加载、ORM <code>Update</code>、依赖注入的通用骨架。</p>
+<h3 id="54-递归处理嵌套结构deepcopy-示例">5.4 递归处理嵌套结构（DeepCopy 示例）</h3>
+<pre><code class="lang-go">func DeepCopy(src, dst any) error {
+    s := reflect.ValueOf(src).Elem()
+    d := reflect.ValueOf(dst).Elem()
+    return copyValue(s, d)
+}
+
+func copyValue(s, d reflect.Value) error {
+    if !d.CanSet() { return nil }
+    switch s.Kind() {
+    case reflect.Struct:                       // 结构体：逐字段递归
+        for i := 0; i &lt; s.NumField(); i++ {
+            if err := copyValue(s.Field(i), d.Field(i)); err != nil {
+                return err
+            }
+        }
+    case reflect.Slice:                        // 切片：重建后逐元素拷贝
+        nd := reflect.MakeSlice(s.Type(), s.Len(), s.Len())
+        for i := 0; i &lt; s.Len(); i++ {
+            copyValue(s.Index(i), nd.Index(i))
+        }
+        d.Set(nd)
+    default:
+        if s.Type().AssignableTo(d.Type()) {
+            d.Set(s)
+        }
+    }
+    return nil
+}</code></pre>
+<p>这是反射的典型复杂度形态：<strong>按 Kind 递归分派</strong>。读懂它，就读懂了 json.Marshal 的主干。</p>
+<hr>
+
 </section>
+<section data-anchor="6-结构体-tag-深入中级">
+<h2 id="6-结构体-tag-深入中级">6. 结构体 Tag 深入（中级）<span class="lvl m">中级</span></h2>
+<h3 id="61-tag-的结构">6.1 Tag 的结构</h3>
+<pre><code class="lang-go">`key1:"v1" key2:"v2,opt,opt2=v2.2" key3:"-" json:"omitempty"`</code></pre>
+<ul><li><code>Get(key)</code>：取第一个值（无则空串）</li><li><code>Lookup(key)</code>：带 ok 的版本，可区分「没有 tag」和「tag 为空」</li><li>值内的选项由库自行解析（如 json 的 <code>omitempty</code>、<code>-</code> 跳过）</li></ul>
+<h3 id="62-反射-tag-实现-mini-json-序列化实战">6.2 反射 + tag 实现 mini json 序列化（实战）</h3>
+<pre><code class="lang-go">func Marshal(v any) (string, error) {
+    rv := reflect.ValueOf(v)
+    var sb strings.Builder
+    if err := encodeValue(rv, &amp;sb); err != nil {
+        return "", err
+    }
+    return sb.String(), nil
+}
 
-<!-- ============ 6 Tag/mini-json ============ -->
-<section id="tag">
-  <h2>6. mini-json：反射的集大成实战<span class="lvl m">中级</span></h2>
-  <p>约 40 行实现 <code>json.Marshal</code> 的核心骨架——<b>按 Kind 递归分派</b>，这是所有序列化库的主干逻辑：</p>
+func encodeValue(rv reflect.Value, sb *strings.Builder) error {
+    switch rv.Kind() {
+    case reflect.Struct:
+        t := rv.Type()
+        sb.WriteByte('{')
+        first := true
+        for i := 0; i &lt; t.NumField(); i++ {
+            f := t.Field(i)
+            if f.Tag.Get("json") == "-" {          // "-" 表示跳过
+                continue
+            }
+            if !first {
+                sb.WriteByte(',')
+            }
+            first = false
+            name := f.Tag.Get("json")
+            if name == "" {
+                name = f.Name                       // 无 tag 用字段名
+            }
+            fmt.Fprintf(sb, "%q:", name)
+            if err := encodeValue(rv.Field(i), sb); err != nil {
+                return err
+            }
+        }
+        sb.WriteByte('}')
+    case reflect.Slice, reflect.Array:
+        sb.WriteByte('[')
+        for i := 0; i &lt; rv.Len(); i++ {
+            if i &gt; 0 { sb.WriteByte(',') }
+            encodeValue(rv.Index(i), sb)
+        }
+        sb.WriteByte(']')
+    case reflect.String:
+        fmt.Fprintf(sb, "%q", rv.String())
+    case reflect.Int, reflect.Int64:
+        fmt.Fprintf(sb, "%d", rv.Int())
+    case reflect.Bool:
+        fmt.Fprintf(sb, "%v", rv.Bool())
+    default:
+        return fmt.Errorf("unsupported kind: %s", rv.Kind())
+    }
+    return nil
+}</code></pre>
+<p>约 40 行实现了 <code>json.Marshal</code> 的核心骨架（真实标准库还要处理 map、指针、interface、浮点转义、方法 Marshaler…但骨架完全一致）。</p>
+<hr>
 
-  <div class="figure">
+<div class="figure">
     <svg viewBox="0 0 880 380" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs><marker id="arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9a3412"/></marker></defs>
       <!-- 入口 -->
@@ -383,126 +528,82 @@ _ = <span class="fn">SetField</span>(c, <span class="str">"Port"</span>, 8080)  
     </svg>
     <figcaption>图 4 · mini-json 的 Kind 分派树：Struct 逐字段递归、Slice 逐元素递归，读 tag 决定输出名——encoding/json 的骨架完全一致</figcaption>
   </div>
-
-  <pre><code class="lang-go"><span class="kw">func</span> <span class="fn">encodeValue</span>(rv reflect.<span class="typ">Value</span>, sb *strings.<span class="typ">Builder</span>) <span class="typ">error</span> {
-    <span class="kw">switch</span> rv.<span class="fn">Kind</span>() {
-    <span class="kw">case</span> reflect.<span class="typ">Struct</span>:
-        t := rv.<span class="fn">Type</span>()
-        sb.<span class="fn">WriteByte</span>(<span class="str">'{'</span>)
-        first := <span class="kw">true</span>
-        <span class="kw">for</span> i := 0; i &lt; t.<span class="fn">NumField</span>(); i++ {
-            f := t.<span class="fn">Field</span>(i)
-            <span class="kw">if</span> f.Tag.<span class="fn">Get</span>(<span class="str">"json"</span>) == <span class="str">"-"</span> {      <span class="cmt">// "-" 表示跳过</span>
-                <span class="kw">continue</span>
-            }
-            <span class="kw">if</span> !first { sb.<span class="fn">WriteByte</span>(<span class="str">','</span>) }
-            first = <span class="kw">false</span>
-            name := f.Tag.<span class="fn">Get</span>(<span class="str">"json"</span>)
-            <span class="kw">if</span> name == <span class="str">""</span> { name = f.Name }             <span class="cmt">// 无 tag 用字段名</span>
-            fmt.<span class="fn">Fprintf</span>(sb, <span class="str">"%q:"</span>, name)
-            <span class="kw">if</span> err := <span class="fn">encodeValue</span>(rv.<span class="fn">Field</span>(i), sb); err != <span class="kw">nil</span> {
-                <span class="kw">return</span> err
-            }
-        }
-        sb.<span class="fn">WriteByte</span>(<span class="str">'}'</span>)
-    <span class="kw">case</span> reflect.<span class="typ">Slice</span>, reflect.<span class="typ">Array</span>:
-        sb.<span class="fn">WriteByte</span>(<span class="str">'['</span>)
-        <span class="kw">for</span> i := 0; i &lt; rv.<span class="fn">Len</span>(); i++ {
-            <span class="kw">if</span> i &gt; 0 { sb.<span class="fn">WriteByte</span>(<span class="str">','</span>) }
-            <span class="fn">encodeValue</span>(rv.<span class="fn">Index</span>(i), sb)
-        }
-        sb.<span class="fn">WriteByte</span>(<span class="str">']'</span>)
-    <span class="kw">case</span> reflect.<span class="typ">String</span>:
-        fmt.<span class="fn">Fprintf</span>(sb, <span class="str">"%q"</span>, rv.<span class="fn">String</span>())
-    <span class="kw">case</span> reflect.<span class="typ">Int</span>, reflect.<span class="typ">Int64</span>:
-        fmt.<span class="fn">Fprintf</span>(sb, <span class="str">"%d"</span>, rv.<span class="fn">Int</span>())
-    <span class="kw">case</span> reflect.<span class="typ">Bool</span>:
-        fmt.<span class="fn">Fprintf</span>(sb, <span class="str">"%v"</span>, rv.<span class="fn">Bool</span>())
-    <span class="kw">default</span>:
-        <span class="kw">return</span> fmt.<span class="fn">Errorf</span>(<span class="str">"unsupported kind: %s"</span>, rv.<span class="fn">Kind</span>())
-    }
-    <span class="kw">return</span> <span class="kw">nil</span>
-}</code></pre>
-  <p>真实标准库还要处理 map、指针、interface、浮点转义、自定义 <code>Marshaler</code> 接口……但骨架完全一致。读懂这段代码，就读懂了 json.Marshal 的主干。</p>
 </section>
+<section data-anchor="7-性能与最佳实践高级">
+<h2 id="7-性能与最佳实践高级">7. 性能与最佳实践（高级）<span class="lvl a">高级</span></h2>
+<h3 id="71-反射的性能代价">7.1 反射的性能代价</h3>
+<div class="table-wrap"><table><thead><tr><th>成本来源</th><th>说明</th></tr></thead><tbody><tr><td>装箱</td><td>值 → interface{} 逃逸到堆</td></tr><tr><td>间接访问</td><td>每次读字段/调方法都要经过 Value 结构</td></tr><tr><td>无法内联</td><td>动态分发天然阻止编译器优化</td></tr><tr><td>运行时检查</td><td>AssignableTo、CanSet 等校验</td></tr></tbody></table></div>
+<p>典型量级：反射字段读取比直接访问慢 <strong>一个数量级以上</strong>（每次几十 ns vs 1~2 ns）。</p>
+<h3 id="72-缓解手段">7.2 缓解手段</h3>
+<ol><li><strong>缓存类型信息</strong>：<code>reflect.Type</code>/<code>Field</code> 元信息按类型缓存一次，别每帧每请求重算（<code>encoding/json</code> 内部就有类型缓存池）；</li><li><strong>预生成代码</strong>：极端性能场景用 codegen（easyjson、protobuf 早期方案）替代反射；</li><li><strong>泛型替代</strong>：Go 1.18+ 后，很多"对 []T 的操作"用泛型写可获得编译期绑定，零反射成本；</li><li><strong>反射只用在边界</strong>：框架边界（序列化、注入）用反射，核心热路径用具体类型。</li></ol>
+<h3 id="73-安全清单">7.3 安全清单</h3>
+<ul><li>修改值：必须 <code>ValueOf(&amp;x).Elem()</code>，先查 <code>CanSet()</code>；</li><li>取元素/字段：先查 <code>IsValid()</code> 或判 <code>Kind()</code>；</li><li>未导出字段：可读类型信息，<code>CanSet()</code> 为 false（除非用 <code>unsafe</code>，不推荐）；</li><li>panic 三大来源：Kind 不匹配的方法调用（对 int 调 <code>String()</code>）、不可设值的 Set、nil Value 的任何操作——<strong>边界处先检查再操作</strong>。</li></ul>
+<hr>
 
-<!-- ============ 7 性能 ============ -->
-<section id="perf">
-  <h2>7. 性能与最佳实践<span class="lvl a">高级</span></h2>
-
-  <table>
-    <tr><th>成本来源</th><th>说明</th></tr>
-    <tr><td>装箱</td><td>值 → interface{} 逃逸到堆（TypeOf/ValueOf 的参数就是接口）</td></tr>
-    <tr><td>间接访问</td><td>每次读字段/调方法都要经过 Value 结构中转</td></tr>
-    <tr><td>无法内联</td><td>动态分发天然阻止编译器优化</td></tr>
-    <tr><td>运行时检查</td><td>AssignableTo / CanSet 等校验开销</td></tr>
-  </table>
-  <div class="warn"><b>⚠️ 量级感知：</b><span>反射字段读取比直接访问慢<b>一个数量级以上</b>（每次几十 ns vs 1~2 ns）。对每秒百万级调用的热路径，这是架构级问题。</span></div>
-
-  <h3>四条缓解手段</h3>
-  <table>
-    <tr><th>手段</th><th>做法</th><th>使用者</th></tr>
-    <tr><td>缓存类型信息</td><td>Type/Field 元信息按类型缓存一次，别每请求重算</td><td>encoding/json 内部类型缓存池</td></tr>
-    <tr><td>预生成代码</td><td>codegen 替代反射</td><td>easyjson、protobuf 早期方案</td></tr>
-    <tr><td>泛型替代</td><td>「对 []T 的操作」用泛型获得编译期绑定，零反射</td><td>Go 1.18+ 标准库 slices/maps</td></tr>
-    <tr><td>反射只用在边界</td><td>框架边界（序列化/注入）用反射，核心热路径用具体类型</td><td>一切成熟的框架设计</td></tr>
-  </table>
-
-  <h3>安全清单（panic 三大来源）</h3>
-  <div class="danger"><b>🚫 源 1：</b><span>Kind 不匹配的方法调用——对 int 调 <code>v.String()</code>。先判 Kind 再操作。</span></div>
-  <div class="danger"><b>🚫 源 2：</b><span>不可设值的 Set——没传地址。先查 <code>CanSet()</code>。</span></div>
-  <div class="danger"><b>🚫 源 3：</b><span>零值 Value 的任何操作——Field 越界 / MapIndex 未命中返回 <code>Value{}</code>。先查 <code>IsValid()</code>。</span></div>
-  <div class="warn"><b>⚠️ 未导出字段：</b><span>类型信息可读，但 <code>CanSet()</code> 为 false（除非 unsafe，不推荐）。</span></div>
+<div class="warn"><b>⚠️ 量级感知：</b><span>反射字段读取比直接访问慢<b>一个数量级以上</b>（每次几十 ns vs 1~2 ns）。对每秒百万级调用的热路径，这是架构级问题。</span></div>
+<div class="danger"><b>🚫 源 1：</b><span>Kind 不匹配的方法调用——对 int 调 <code>v.String()</code>。先判 Kind 再操作。</span></div>
+<div class="danger"><b>🚫 源 2：</b><span>不可设值的 Set——没传地址。先查 <code>CanSet()</code>。</span></div>
+<div class="danger"><b>🚫 源 3：</b><span>零值 Value 的任何操作——Field 越界 / MapIndex 未命中返回 <code>Value{}</code>。先查 <code>IsValid()</code>。</span></div>
+<div class="warn"><b>⚠️ 未导出字段：</b><span>类型信息可读，但 <code>CanSet()</code> 为 false（除非 unsafe，不推荐）。</span></div>
 </section>
+<section data-anchor="8-反射-vs-泛型如何选择高级">
+<h2 id="8-反射-vs-泛型如何选择高级">8. 反射 vs 泛型：如何选择（高级）<span class="lvl a">高级</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>反射</th><th>泛型</th></tr></thead><tbody><tr><td>绑定时机</td><td>运行时</td><td>编译期</td></tr><tr><td>类型安全</td><td>无（运行时才炸）</td><td>完整</td></tr><tr><td>性能</td><td>慢（装箱+间接）</td><td>快（静态绑定）</td></tr><tr><td>能力上限</td><td><strong>任意</strong>类型结构（字段名、tag、动态调用）</td><td>只能用约束表达的操作</td></tr><tr><td>典型场景</td><td>序列化、ORM、DI、fmt</td><td>容器、算法、工具函数</td></tr></tbody></table></div>
+<p>组合套路：<strong>泛型定骨架 + 反射看内部</strong>。例如泛型缓存 <code>[K, V]</code> 编译期绑定类型，内部用反射解析 V 的 tag 实现 ORM 字段映射——两者是互补而非替代。</p>
 
-<!-- ============ 8 vs 泛型 ============ -->
-<section id="vs">
-  <h2>8. 反射 vs 泛型：如何选择<span class="lvl a">高级</span></h2>
-  <table>
-    <tr><th>维度</th><th>反射</th><th>泛型</th></tr>
-    <tr><td>绑定时机</td><td>运行时</td><td>编译期</td></tr>
-    <tr><td>类型安全</td><td>无（运行时才炸）</td><td>完整</td></tr>
-    <tr><td>性能</td><td>慢（装箱 + 间接）</td><td>快（静态绑定）</td></tr>
-    <tr><td>能力上限</td><td><b>任意</b>类型结构（字段名、tag、动态调用）</td><td>只能用约束表达的操作</td></tr>
-    <tr><td>典型场景</td><td>序列化、ORM、DI、fmt</td><td>容器、算法、工具函数</td></tr>
-  </table>
-  <div class="tip"><b>✅ 组合套路：</b><span><b>泛型定骨架 + 反射看内部</b>。例如泛型缓存 <code>[K, V]</code> 编译期绑定类型，内部用反射解析 V 的 tag 实现字段映射——两者互补而非替代。</span></div>
-
-  <h3>学习路线</h3>
-  <table>
-    <tr><th>步骤</th><th>目标</th></tr>
-    <tr><td>第 1 步</td><td>跑通三定律示例，理解「传地址才能改」</td></tr>
-    <tr><td>第 2 步</td><td>用 TypeOf + Field 写一个打印任意结构体的调试函数</td></tr>
-    <tr><td>第 3 步</td><td>手写 mini-json（第 6 章），对照标准库行为找差距</td></tr>
-    <tr><td>第 4 步</td><td>阅读 fmt 的 printValue、encoding/json 的 encode.go 源码</td></tr>
-    <tr><td>第 5 步</td><td>（选学）反射 + unsafe 挑战零拷贝优化</td></tr>
-  </table>
+<div class="tip"><b>✅ 组合套路：</b><span><b>泛型定骨架 + 反射看内部</b>。例如泛型缓存 <code>[K, V]</code> 编译期绑定类型，内部用反射解析 V 的 tag 实现字段映射——两者互补而非替代。</span></div>
 </section>
-
-<footer>Go 反射由浅入深教程 · 参考 The Laws of Reflection 与 reflect 包文档 · 2026-09</footer>
+<section data-anchor="9-学习路线建议">
+<h2 id="9-学习路线建议">9. 学习路线建议</h2>
+<ol><li><strong>第 1 步</strong>：跑通三定律示例，理解"传地址才能改"；</li><li><strong>第 2 步</strong>：用 <code>TypeOf</code> + <code>Field</code> 写一个打印任意结构体的调试函数；</li><li><strong>第 3 步</strong>：手写 mini-json（本文第 6 节），对照标准库行为找差距；</li><li><strong>第 4 步</strong>：阅读 <code>fmt</code> 包的 <code>printValue</code>、<code>encoding/json</code> 的 <code>encode.go</code> 源码；</li><li><strong>第 5 步</strong>：用反射 + unsafe 挑战一次零拷贝优化（选学）。</li></ol>
+<p>参考：<a href="https://go.dev/blog/laws-of-reflection">The Laws of Reflection</a>、<a href="https://pkg.go.dev/reflect">reflect 包文档</a>、<a href="https://draveness.me/golang/">Go 语言设计与实现：反射</a></p>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
 </main>
 </div>
-
 <script>
-document.querySelectorAll('pre code.lang-go').forEach(function(block){
-  var src = block.textContent;
-  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  var master = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
-  var out = src.replace(master, function(m, c1, c2, s, kw, typ, num, fn){
-    if (c1 || c2) return '<span class="cmt">'+m+'</span>';
-    if (s) return '<span class="str">'+m+'</span>';
-    if (kw) return '<span class="kw">'+m+'</span>';
-    if (typ) return '<span class="typ">'+m+'</span>';
-    if (num) return '<span class="num">'+m+'</span>';
-    if (fn) return '<span class="fn">'+m+'</span>';
-    return m;
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
   });
-  block.innerHTML = out;
-});
-document.querySelectorAll('pre code.lang-go').forEach(function(b){
-  var label=document.createElement('span');label.className='codelabel';label.textContent='Go';
-  b.closest('pre').appendChild(label);
-});
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
 </script>
 </body>
 </html>

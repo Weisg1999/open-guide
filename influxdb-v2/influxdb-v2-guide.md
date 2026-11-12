@@ -203,4 +203,31 @@ if result.Err() != nil { log.Fatal(result.Err()) }
 | 部署 | 单二进制（OSS 单节点） | 单进程 Core + 多节点 Enterprise，S3 优先 |
 | 定位 | 监控一体化平台 | 时序分析 + 事件数据平台 |
 
-一句话：**存量 2.x 继续运维、逐步治理 Flusux 资产；新时序项目从 v3 起步**。
+一句话：**存量 2.x 继续运维、逐步治理 Flux 资产；新时序项目从 v3 起步**。
+
+---
+
+## 8. 选型对比
+
+v2 与 v3 的取舍已在上一节给出，这里把视角放宽到整个时序/监控数据选型。关键判断不是「谁更快」，而是**查询形态（标签过滤 + 时间窗口聚合 vs 通用分析）、基数规模、以及是否已有 Flux 资产**。
+
+| 维度 | InfluxDB 2.7 OSS | InfluxDB 3 Core | Prometheus / VictoriaMetrics | TimescaleDB | ClickHouse |
+|---|---|---|---|---|---|
+| 数据模型 | Measurement + tag/field | Database + 列式表 | 指标 + label | 关系表 + hypertable | 列式大宽表 |
+| 查询语言 | **Flux**（+ InfluxQL） | **SQL**（+ InfluxQL） | PromQL / MetricsQL | 完整 SQL | 完整 SQL |
+| 写入协议 | Line Protocol / HTTP | Line Protocol v2 + Flight | 拉取（scrape）/ remote write | SQL INSERT | 批量 INSERT |
+| 高基数（tag/label） | 受 TSI 限制，易膨胀 | 设计目标「无限基数」 | 同样怕高基数 | 较好（B-tree 索引） | **强项** |
+| 长期存储 | 本地 TSM，单机 | Parquet + 对象存储 | 本地 + 可选远程 | 本地/分布式 | 本地/对象存储 |
+| 集群与高可用 | **OSS 单节点** | Core 单进程 / Enterprise 多节点 | Prometheus 单机，VM 可集群 | 依赖 PG 生态 | 原生分布式 |
+| 生态定位 | 监控一体化（含 Task/告警/UI） | 时序分析平台 | 云原生监控告警事实标准 | 已有 PG 栈的时序扩展 | 通用 OLAP / 日志分析 |
+| 学习成本 | Flux 较陡且已弃用 | SQL 低 | PromQL 中等 | SQL 低 | SQL 低 |
+
+一句话决策：
+
+- **已有 2.x 存量且 Flux 任务/看板很多** → 继续运维 2.7，但**停止新增 Flux 资产**，按第 7 节规划迁移；
+- **新项目、时序 + 高基数 + 对象存储优先** → [InfluxDB 3](../influxdb-v3/influxdb-v3-guide.md)；
+- **纯 K8s 指标监控与告警** → Prometheus / VictoriaMetrics，不要拿 InfluxDB 去替代 scrape 生态；
+- **团队已在 PostgreSQL 上、需要时序与业务表 JOIN** → TimescaleDB；
+- **日志、用户行为、超大规模即席分析** → ClickHouse（它是 OLAP，不是时序数据库，但常被拿来兜底）。
+
+> 选型时最容易踩的一条：把 InfluxDB 2.x 当「带 UI 的通用数据库」用。它是为「时间戳 + 标签过滤 + 窗口聚合」特化的；一旦出现多表 JOIN、事务、复杂关联查询，应尽早换关系型/OLAP 方案。

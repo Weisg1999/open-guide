@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zap · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#ca8a04; --accent-light:#fef9c3; --accent-dark:#854d0e;
+    --bg:#fdfbf4; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#241c05; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#854d0e 0%,#ca8a04 58%,#854d0e 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">Zap<span class="ver">v1.27</span></div>
+  <div class="sub">Uber 结构化日志 · 零分配热路径</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#安装">安装</a>
+  <a class="sub-link" href="#最小可运行示例">最小可运行示例</a>
+  <a href="#2-功能特性总览">2. 功能特性总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-zapcore-四层管线">3.1 zapcore 四层管线</a>
+  <a class="sub-link" href="#32-零分配是怎么做到的">3.2 零分配是怎么做到的</a>
+  <a class="sub-link" href="#33-结构化-vs-文本">3.3 结构化 vs 文本</a>
+  <a class="sub-link" href="#34-采样原理">3.4 采样原理</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-生产配置推荐起点">4.1 生产配置（推荐起点）</a>
+  <a class="sub-link" href="#42-开发期彩色-console">4.2 开发期彩色 Console</a>
+  <a class="sub-link" href="#43-多目的地分流tee">4.3 多目的地分流（Tee）</a>
+  <a class="sub-link" href="#44-上下文字段与-trace-串联">4.4 上下文字段与 trace 串联</a>
+  <a class="sub-link" href="#45-运行时动态调整级别">4.5 运行时动态调整级别</a>
+  <a class="sub-link" href="#46-单测断言">4.6 单测断言</a>
+  <a href="#5-版本演进速览">5. 版本演进速览</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>Zap 技术介绍与使用指南</h1>
+<p>Uber 开源的结构化日志库：强类型 Field、可组合的 zapcore 管线、采样与多目的地分流，兼顾极致性能与工程可控性。</p>
+<p style="opacity:.8;font-size:13.5px">Uber 结构化日志 · 零分配热路径</p>
+<div class="meta"><span>零分配热路径</span><span>Logger / SugaredLogger</span><span>zapcore Core + Tee</span><span>采样防日志风暴</span><span>AtomicLevel 动态调级</span><span>JSON 结构化输出</span></div>
+</div>
+<blockquote><p>Uber 开源的 Go 结构化日志库：零分配热路径、<code>Logger</code> / <code>SugaredLogger</code> 双 API、可组合的 <code>zapcore</code> 管线，兼顾极致性能与工程可控性。 仓库：<a href="https://github.com/uber-go/zap">https://github.com/uber-go/zap</a>　|　主线版本：<strong>v1.27.x</strong>（API 稳定；整理于 2026-11）　|　协议：MIT</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p>日志库看起来简单，难在<strong>高频路径上的分配与锁</strong>：一次请求打十几条日志，每条都 <code>fmt.Sprintf</code> 拼字符串，GC 压力和 CPU 占用会直接吃掉业务预算。Zap 的设计目标就是把这个成本压到接近零，同时不牺牲结构化输出。</p>
+<p>核心卖点：</p>
+<ul><li><strong>零分配热路径</strong>：用强类型 <code>Field</code>（<code>zap.String</code> / <code>zap.Int</code>）替代 <code>interface{}</code> 反射，<code>CheckedEntry</code> 先判级别再决定是否构造日志，禁用级别的日志几乎不产生分配；</li><li><strong>双 API</strong>：<code>Logger</code> 强类型、最快；<code>SugaredLogger</code> 支持 <code>Printf</code> / <code>w</code> 风格，牺牲一点性能换开发效率；</li><li><strong>结构化优先</strong>：默认输出 JSON，字段可被 Loki / ELK / Datadog 直接索引，而不是靠正则从文本里抠；</li><li><strong>可组合内核</strong>：<code>zapcore.Core</code> = Encoder + WriteSyncer + LevelEnabler，可 tee 到多目的地、采样、按级别分流；</li><li><strong>运维内建</strong>：<code>AtomicLevel</code> 运行时改级别、采样防日志风暴、Caller/Stacktrace、<code>zaptest/observer</code> 单测断言。</li></ul>
+<p>适用场景：QPS 较高的在线服务、需要集中式日志检索与告警的后端、库/框架里需要可注入 logger 的场景。<strong>不适合</strong>：CLI 小工具（标准库 <code>log/slog</code> 足够）、需要人类优先的极简彩色终端输出（开发期可切 Console encoder）。</p>
+<h3 id="安装">安装</h3>
+<pre><code class="lang-bash">go get go.uber.org/zap
+# 日志轮转（zap 不含切分，配合 lumberjack）
+go get gopkg.in/natefinch/lumberjack.v2</code></pre>
+<h3 id="最小可运行示例">最小可运行示例</h3>
+<pre><code class="lang-go">package main
+
+import (
+    "time"
+
+    "go.uber.org/zap"
+)
+
+func main() {
+    logger, _ := zap.NewProduction()
+    defer logger.Sync() // 进程退出前 flush，见 6.1
+
+    logger.Info("user login",
+        zap.String("user", "alice"),
+        zap.Int("attempt", 3),
+        zap.Duration("latency", 42*time.Millisecond),
+    )
+    // {"level":"info","ts":...,"caller":"main/main.go:10","msg":"user login","user":"alice","attempt":3,"latency":0.042}
+}</code></pre>
+<hr>
+
+</section>
+<section data-anchor="2-功能特性总览">
+<h2 id="2-功能特性总览">2. 功能特性总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>双 API</td><td><code>Logger</code>（强类型 Field）/ <code>SugaredLogger</code>（<code>Infow</code>/<code>Infof</code>/<code>Infoln</code>），可 <code>.Sugar()</code> / <code>.Desugar()</code> 互转</td></tr><tr><td>级别</td><td><code>Debug</code> / <code>Info</code> / <code>Warn</code> / <code>Error</code> / <code>DPanic</code> / <code>Panic</code> / <code>Fatal</code>；<code>AtomicLevel</code> 运行时动态调整</td></tr><tr><td>Encoder</td><td>JSON（生产）/ Console（开发）；时间格式、级别字段名、caller 格式均可配置</td></tr><tr><td>Core 管线</td><td><code>zapcore.NewCore</code> / <code>NewTee</code> / <code>WrapCore</code> / <code>RegisterHooks</code>，自由组合输出、编码、过滤</td></tr><tr><td>结构化字段</td><td><code>String</code> / <code>Int</code> / <code>Error</code> / <code>Any</code> / <code>Object</code> / <code>Array</code> / <code>Namespace</code> / <code>Inline</code>；<code>With</code> 绑定公共字段</td></tr><tr><td>上下文</td><td><code>logger.With(...)</code> 派生子 logger；<code>zap.Stringer</code> 延迟格式化；<code>zap.Inline</code> 展开对象</td></tr><tr><td>采样</td><td><code>zapcore.NewSamplerWithOptions</code>：同一消息在窗口内按 N 条/秒限流，防死循环刷爆磁盘</td></tr><tr><td>调用栈</td><td><code>AddCaller()</code> / <code>AddCallerSkip(n)</code> / <code>AddStacktrace(level)</code>，可配置到指定级别自动附栈</td></tr><tr><td>测试</td><td><code>zaptest/observer</code> 捕获日志做断言、<code>zaptest.NewLogger(t)</code> 输出到测试日志</td></tr><tr><td>输出目标</td><td><code>WriteSyncer</code> 可以是文件、stdout、<code>zapcore.AddSync</code> 包装的任意 <code>io.Writer</code>、网络 sink</td></tr><tr><td>错误语义</td><td><code>DPanic</code>：开发期 panic、生产期仅记日志；<code>Fatal</code> 会 <code>os.Exit(1)</code>，慎用</td></tr></tbody></table></div>
+<hr>
+
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-zapcore-四层管线">3.1 zapcore 四层管线</h3>
+<pre><code class="lang-text">Logger.Info(msg, fields...)
+   │ ① 级别检查（LevelEnabler）—— 不通过就直接返回，零分配
+   ▼
+CheckedEntry ──► Core.Write(entry, fields)
+                    │ ② Encoder：把 entry + []Field 编码成 []byte（JSON / Console）
+                    │ ③ WriteSyncer：写到 stdout / 文件 / 网络
+                    ▼
+                 缓冲与 Sync</code></pre>
+<p>这四层各自可替换，是 zap 与「一个 logger 打天下」的库最本质的区别：<strong>过滤、编码、输出解耦</strong>。例如「Error 以上单独写一份文件 + 全量写 stdout」用 <code>NewTee</code> 两个 Core 即可，不需要在业务代码里判断级别。</p>
+<h3 id="32-零分配是怎么做到的">3.2 零分配是怎么做到的</h3>
+<ul><li><code>zap.Field</code> 是带 <code>Type</code> 标签的结构体，内部用 <code>Integer</code>/<code>String</code>/<code>Interface</code> 联合体，避免 <code>map[string]interface{}</code> 的装箱与遍历；</li><li>级别过滤发生在<strong>构造字段之前</strong>：<code>logger.Debug(...)</code> 在 <code>Info</code> 级别下会走 <code>Check</code> 快速返回，参数甚至不会被完整求值（但注意参数里的函数调用仍会执行，见 6.5）；</li><li><code>CheckedEntry</code> 从 <code>sync.Pool</code> 复用；</li><li><code>SugaredLogger</code> 因为要处理 <code>...interface{}</code> 与反射，会有额外分配，但仍显著快于 logrus。</li></ul>
+<blockquote><p>粗略量级（仅作直觉参考，务必自行压测）：<code>Logger</code> 每条约 0.1~0.3µs / 0~1 次分配，<code>SugaredLogger</code> 约 2~5 倍，logrus 约 10 倍以上。业务里真正的大头通常是<strong>序列化大对象和同步写磁盘</strong>，而不是 logger 本身。</p></blockquote>
+<h3 id="33-结构化-vs-文本">3.3 结构化 vs 文本</h3>
+<pre><code class="lang-text">文本：  "user alice login failed after 42ms"           → 只能全文检索 / 正则
+结构化：{"msg":"login failed","user":"alice","ms":42}  → 可按 user 聚合、按 ms 排序告警</code></pre>
+<p>一旦日志要进集中式系统，<strong>结构化是刚需</strong>。因此字段命名要有规范（<code>user_id</code>、<code>trace_id</code>、<code>duration_ms</code>），不要同一含义在不同地方叫 <code>uid</code> / <code>userID</code> / <code>UserID</code>。</p>
+<h3 id="34-采样原理">3.4 采样原理</h3>
+<p><code>zapcore.NewSamplerWithOptions(core, tick, first, thereafter)</code>：在时间窗口 <code>tick</code> 内，同一条 <code>msg + 级别</code> 的前 <code>first</code> 条全记，之后每 <code>thereafter</code> 条记 1 条，并在被丢弃的日志上附带计数。它挡的是「依赖挂了，每个请求都打 Error」这类日志风暴，而不是替代限流。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-生产配置推荐起点">4.1 生产配置（推荐起点）</h3>
+<pre><code class="lang-go">package logging
+
+import (
+    "go.uber.org/zap"
+    "go.uber.org/zap/zapcore"
+)
+
+func New(level string) (*zap.Logger, zap.AtomicLevel, error) {
+    cfg := zap.NewProductionConfig()
+    cfg.Encoding = "json"
+    cfg.EncoderConfig.TimeKey = "ts"
+    cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+    cfg.EncoderConfig.EncodeLevel = zapcore.LowercaseLevelEncoder
+    cfg.OutputPaths = []string{"stdout"} // 容器环境交给采集 agent，别自己写文件
+    cfg.ErrorOutputPaths = []string{"stderr"}
+    cfg.Sampling = &amp;zap.SamplingConfig{Initial: 100, Thereafter: 100}
+
+    lvl, err := zap.ParseAtomicLevel(level) // "debug" / "info" ...
+    if err != nil { return nil, lvl, err }
+    cfg.Level = lvl
+
+    logger, err := cfg.Build(zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
+    return logger, lvl, err
+}</code></pre>
+<blockquote><p><strong>容器里优先 stdout</strong>：让 Kubernetes / Docker 的日志采集器负责落盘与轮转，应用内写文件容易踩到「日志卷打满」「sidecar 采不到」「多副本文件互相覆盖」三类坑。</p></blockquote>
+<h3 id="42-开发期彩色-console">4.2 开发期彩色 Console</h3>
+<pre><code class="lang-go">cfg := zap.NewDevelopmentConfig()
+cfg.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+logger, _ := cfg.Build()
+logger.Debug("cache miss", zap.String("key", "user:42"))</code></pre>
+<h3 id="43-多目的地分流tee">4.3 多目的地分流（Tee）</h3>
+<pre><code class="lang-go">encoderCfg := zap.NewProductionEncoderConfig()
+encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
+enc := zapcore.NewJSONEncoder(encoderCfg)
+
+// 全量 → stdout
+all := zapcore.NewCore(enc, zapcore.Lock(os.Stdout), zapcore.DebugLevel)
+// Error 以上 → 单独文件（便于告警系统只 tail 这一个文件）
+errFile := zapcore.AddSync(&amp;lumberjack.Logger{
+    Filename: "/var/log/app/error.log", MaxSize: 100, MaxBackups: 7, MaxAge: 30,
+})
+errs := zapcore.NewCore(enc, errFile, zapcore.ErrorLevel)
+
+logger := zap.New(zapcore.NewTee(all, errs), zap.AddCaller())</code></pre>
+<blockquote><p><code>zapcore.Lock</code> 是必要的：<code>os.Stdout</code> 不是并发安全的 writer，多 goroutine 直接写会产生行交错。</p></blockquote>
+<h3 id="44-上下文字段与-trace-串联">4.4 上下文字段与 trace 串联</h3>
+<pre><code class="lang-go">// 请求入口绑定一次，后续全链路自动带上
+reqLog := logger.With(
+    zap.String("trace_id", traceID),
+    zap.String("route", c.FullPath()),
+)
+reqLog.Info("request start")
+// ... 把 reqLog 放进 context 传递，而不是每次重新拼字段
+reqLog.Warn("slow query", zap.Duration("elapsed", d), zap.String("sql", sql))</code></pre>
+<pre><code class="lang-go">// 从 context 取 logger 的小工具
+type ctxKey struct{}
+func FromContext(ctx context.Context) *zap.Logger {
+    if l, ok := ctx.Value(ctxKey{}).(*zap.Logger); ok { return l }
+    return zap.L()
+}
+func WithContext(ctx context.Context, l *zap.Logger) context.Context {
+    return context.WithValue(ctx, ctxKey{}, l)
+}</code></pre>
+<h3 id="45-运行时动态调整级别">4.5 运行时动态调整级别</h3>
+<pre><code class="lang-go">var atom = zap.NewAtomicLevelAt(zap.InfoLevel)
+cfg := zap.NewProductionConfig()
+cfg.Level = atom
+logger, _ := cfg.Build()
+
+atom.SetLevel(zap.DebugLevel) // 排障时临时开 Debug，无需重启
+defer atom.SetLevel(zap.InfoLevel)</code></pre>
+<p>生产环境可把 <code>atom</code> 暴露到一个受控的 admin 接口（务必鉴权），或接配置中心，实现「出问题临时降级别、完事恢复」。</p>
+<h3 id="46-单测断言">4.6 单测断言</h3>
+<pre><code class="lang-go">func TestWarnOnRetry(t *testing.T) {
+    core, logs := observer.New(zap.WarnLevel)
+    svc := NewService(zap.New(core))
+
+    svc.Do()
+
+    entries := logs.FilterMessage("retrying").All()
+    require.Len(t, entries, 1)
+    require.Equal(t, "retrying", entries[0].Message)
+    require.Equal(t, int64(3), entries[0].ContextMap()["attempt"])
+}</code></pre>
+<hr>
+
+</section>
+<section data-anchor="5-版本演进速览">
+<h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>阶段</th><th>关键变化</th></tr></thead><tbody><tr><td>早期 v1.x</td><td><code>Logger</code> / <code>SugaredLogger</code> 双 API、<code>zapcore</code> 分层、JSON/Console encoder、<code>NewProduction</code> 预设</td></tr><tr><td>v1.1x~1.2x</td><td><code>AtomicLevel</code>、<code>zaptest/observer</code>、<code>RegisterHooks</code>、<code>zap.Inline</code> / <code>zap.Object</code> 等字段能力完善</td></tr><tr><td>v1.2x 起</td><td><code>DPanic</code>、<code>NewStdLog</code> 桥接标准库、Sinks（<code>zap.Open</code> 支持 URL 形式输出目标）、采样器选项化</td></tr><tr><td>近年 v1.26~1.27</td><td>依赖升级、<code>zapcore.NewSamplerWithOptions</code>、错误与 <code>Any</code> 字段行为细化；<strong>API 长期稳定，无破坏性变更</strong></td></tr></tbody></table></div>
+<p><strong>与标准库 <code>log/slog</code>（Go 1.21+）的关系</strong>：slog 已把结构化日志纳入标准库，通过 <code>zap.NewStdLog</code> 或 <code>slog.New(zapslog.NewHandler(core))</code>（<code>go.uber.org/zap/exp/zapslog</code>）可互操作。<strong>新项目若不想引第三方依赖，slog 是合理选择</strong>；已有 zap 生态、需要采样/Tee/极致性能的场景继续用 zap。</p>
+<blockquote class="warn"><p>zap 的 v1 已稳定多年，升级成本极低；锁 <code>go.mod</code> 版本即可，注意 <code>go.uber.org/multierr</code> 等间接依赖一起升。</p></blockquote>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>忘记 <code>Sync()</code></strong>：<code>NewProduction</code> 带缓冲，进程被 <code>SIGKILL</code> 或 <code>os.Exit</code> 时最后一批日志会丢。在 <code>main</code> 里 <code>defer logger.Sync()</code>；注意 <code>Fatal</code> 会直接 <code>os.Exit(1)</code>，<strong>defer 不会执行</strong>，关键场景先 <code>Sync</code> 再 <code>Fatal</code>，或改用 <code>Error</code> + 显式返回。</li><li><strong>热路径滥用 <code>SugaredLogger</code> 与 <code>fmt.Sprintf</code></strong>：<code>logger.Info(fmt.Sprintf("user %s cost %dms", u, ms))</code> 把结构化字段又压回字符串，既慢又不可索引。改成 <code>logger.Info("request done", zap.String("user", u), zap.Int64("ms", ms))</code>。</li><li><strong>日志里打敏感信息</strong>：密码、token、身份证、完整请求体。建一个字段白名单或在 encoder 层做脱敏 Hook，比靠 code review 可靠。</li><li><strong>不设采样</strong>：下游故障时的循环重试能在一分钟内写满磁盘。至少给 <code>Info/Warn</code> 配 <code>Sampling</code>，Error 单独分流并告警。</li><li><strong>以为「级别过滤」能省掉参数计算</strong>：<code>logger.Debug("x", zap.String("k", expensive()))</code> 里 <code>expensive()</code> <strong>仍会执行</strong>（Go 的函数参数先求值）。昂贵字段要自己先判 <code>logger.Core().Enabled(zap.DebugLevel)</code>。</li><li><strong>用 <code>zap.Any</code> 打大对象</strong>：<code>Any</code> 走反射，结构体大时开销陡增且可能输出海量字段。热路径用具体类型 Field，或只挑关键字段。</li><li><strong>Error 级别滥用</strong>：把「用户输入不合法」打成 <code>Error</code> 会让告警全是噪音。约定：<code>Error</code> = 需要人介入的系统故障，<code>Warn</code> = 可自愈/降级，<code>Info</code> = 关键业务事件。</li><li><strong><code>zap.Error(err)</code> 而不是 <code>zap.String("error", err.Error())</code></strong>：前者保留结构化 error 字段，且对 nil 安全；后者丢类型、易 panic。</li><li><strong>封装后 Caller 指错文件</strong>：自己包一层 <code>log.Info()</code> 会导致 <code>caller</code> 显示封装文件。用 <code>zap.AddCallerSkip(1)</code> 或 <code>logger.WithOptions(zap.AddCallerSkip(1))</code>。</li><li><strong>每次请求新建 Logger</strong>：<code>cfg.Build()</code> 很重。全局建一次，用 <code>logger.With(...)</code> 派生轻量子 logger（它只复制字段切片）。</li><li><strong>多 goroutine 写同一个 <code>os.File</code> 不加 Lock</strong>：日志行交错、JSON 被撕坏。用 <code>zapcore.Lock(os.Stdout)</code> 或让每个 Core 独占 writer。</li><li><strong>字段名不统一</strong>：同一含义出现 <code>userID</code> / <code>user_id</code> / <code>uid</code>，下游聚合要写三套查询。制定字段词典并写进 lint / code review 清单。</li><li><strong>把日志当指标/链路用</strong>：<code>duration_ms</code> 可以辅助排障，但 SLO 与 P99 应交给 <a href="https://prometheus.io/">Prometheus 类指标系统</a>，跨服务调用链交给 OpenTelemetry，三者不要互相替代。</li></ol>
+<hr>
+
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>zap</th><th>log/slog（标准库）</th><th>zerolog</th><th>logrus</th><th>apex/log</th></tr></thead><tbody><tr><td>依赖</td><td>第三方</td><td><strong>零依赖</strong>（Go 1.21+）</td><td>第三方</td><td>第三方（维护模式）</td><td>第三方</td></tr><tr><td>性能</td><td><strong>极高</strong>（零分配热路径）</td><td>中～高（视 Handler）</td><td><strong>极高</strong>（链式 API）</td><td>低（反射 + 锁）</td><td>中</td></tr><tr><td>API 风格</td><td>强类型 Field / Sugared</td><td><code>slog.Info(msg, attrs...)</code></td><td>链式 <code>log.Info().Str(...).Msg()</code></td><td><code>WithFields</code></td><td>类 logrus</td></tr><tr><td>结构化</td><td>JSON 原生</td><td>JSON/Text Handler</td><td>JSON 原生</td><td>JSON 需 formatter</td><td>有</td></tr><tr><td>采样</td><td><strong>内建</strong></td><td>需自定义 Handler</td><td>需自实现</td><td>无</td><td>无</td></tr><tr><td>多目的地 / 分流</td><td><strong>Core + Tee，最灵活</strong></td><td>多 Handler 包装</td><td>Writer 分级</td><td>Hook</td><td>Handler</td></tr><tr><td>动态级别</td><td><code>AtomicLevel</code></td><td><code>LevelVar</code></td><td>全局 Level</td><td>SetLevel</td><td>有</td></tr><tr><td>生态成熟度</td><td><strong>最成熟</strong>，大量库直接支持</td><td>官方，快速成长</td><td>活跃</td><td>存量项目多</td><td>小众</td></tr></tbody></table></div>
+<p>一句话决策：</p>
+<ul><li><strong>高性能在线服务、需要采样与多目的地分流、已有可观测体系</strong> → <strong>zap</strong>，热路径用 <code>Logger</code>，脚本/低频逻辑才用 <code>SugaredLogger</code>；</li><li><strong>新项目、想少一个依赖、性能不是瓶颈</strong> → <strong>标准库 <code>log/slog</code></strong>，配合自定义 Handler 也能覆盖大部分需求；</li><li><strong>追求极简链式写法与最小分配</strong> → zerolog，但生态与分流能力不如 zap；</li><li><strong>存量 logrus 项目</strong> → 不必强迁；若日志已成为 CPU 瓶颈，可用 <code>slog</code> Handler 做渐进替换；</li><li><strong>CLI / 小工具</strong> → 标准库 <code>log</code> 或 slog 的 TextHandler 就够，别引入 zap 的配置复杂度。</li></ul>
+<blockquote><p>真正影响可观测性的往往不是选哪个库，而是<strong>字段规范、trace_id 全链路透传、级别语义约定、以及日志/指标/链路三者的职责边界</strong>。库只解决「写得快」，规范才决定「查得到」。</p></blockquote>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

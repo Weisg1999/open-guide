@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>go-redis · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#dc2626; --accent-light:#fee2e2; --accent-dark:#991b1b;
+    --bg:#fdf7f7; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#2a0a0a; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#991b1b 0%,#dc2626 58%,#991b1b 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">go-redis<span class="ver">v9</span></div>
+  <div class="sub">Go Redis 客户端 · 缓存 / 锁 / Stream</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#安装">安装</a>
+  <a class="sub-link" href="#最小可运行示例">最小可运行示例</a>
+  <a href="#2-功能特性总览">2. 功能特性总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-client-就是连接池">3.1 Client 就是连接池</a>
+  <a class="sub-link" href="#32-resp-与命令构造">3.2 RESP 与命令构造</a>
+  <a class="sub-link" href="#33-pipeline-vs-txpipeline">3.3 Pipeline vs TxPipeline</a>
+  <a class="sub-link" href="#34-context-传播">3.4 Context 传播</a>
+  <a class="sub-link" href="#35-cluster-路由">3.5 Cluster 路由</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-生产级初始化">4.1 生产级初始化</a>
+  <a class="sub-link" href="#42-缓存读写redisnil-必须单独处理">4.2 缓存读写：redis.Nil 必须单独处理</a>
+  <a class="sub-link" href="#43-pipeline-批量写">4.3 Pipeline 批量写</a>
+  <a class="sub-link" href="#44-分布式锁setnx-lua-释放">4.4 分布式锁（SetNX + Lua 释放）</a>
+  <a class="sub-link" href="#45-stream-消费组">4.5 Stream 消费组</a>
+  <a class="sub-link" href="#46-运维速查">4.6 运维速查</a>
+  <a href="#5-版本演进速览">5. 版本演进速览</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>go-redis 技术介绍与使用指南</h1>
+<p>Go 生态事实标准的 Redis 客户端：命令全覆盖、连接池与 Pipeline 开箱即用，支持单机 / Sentinel / Cluster / Ring。</p>
+<p style="opacity:.8;font-size:13.5px">Go Redis 客户端 · 缓存 / 锁 / Stream</p>
+<div class="meta"><span>v9 · 模块路径 /v9</span><span>Context 强制首参</span><span>Pipeline / TxPipeline</span><span>Sentinel / Cluster / Ring</span><span>Stream 消费组</span><span>Hook 可观测</span></div>
+</div>
+<blockquote><p>Go 生态事实标准的 Redis 客户端：命令全覆盖、连接池与 Pipeline 开箱即用，同时支持单机 / Sentinel / Cluster / Ring。 仓库：<a href="https://github.com/redis/go-redis">https://github.com/redis/go-redis</a>　|　主线版本：<strong>v9</strong>（模块路径 <code>/v9</code>，整理于 2026-11）　|　协议：BSD-2-Clause 服务端基线：Redis 6.0+（推荐 7.x）；具体版本以上游最新 release 为准。</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p>需要先分清两件事：<strong>Redis 是服务端</strong>，<strong>go-redis 是 Go 语言的客户端库</strong>。本文讲后者——它把 Redis 的命令映射成类型安全的 Go 方法，并负责连接池、重试、超时、集群路由这些「不写就会踩坑」的工程细节。</p>
+<p>核心卖点：</p>
+<ul><li><strong>命令覆盖最全</strong>：String / Hash / List / Set / ZSet / Stream / Bitmap / HyperLogLog / Geo / Lua / Pub-Sub / 事务，几乎 1:1 对应 Redis 命令；</li><li><strong>连接管理内建</strong>：<code>Client</code> 本身就是一个并发安全的连接池，全局复用即可，无需自己包一层 pool；</li><li><strong>上下文原生</strong>：v9 起所有命令首参强制 <code>context.Context</code>，超时、取消、链路追踪可一路透传；</li><li><strong>拓扑透明</strong>：单机、Sentinel 故障转移、Cluster 分片、Ring（客户端分片）用同一套 <code>Cmdable</code> 接口；</li><li><strong>可观测</strong>：Hook 接口可挂 OpenTelemetry / Prometheus，逐命令埋点。</li></ul>
+<p>适用场景：缓存、分布式锁、限流计数、排行榜、会话存储、轻量消息（Stream）、幂等去重。<strong>不适合</strong>：把它当主数据库存关系型数据、用它做需要严格事务与持久化的任务队列（后者请看 <a href="../asynq/asynq技术文档与使用手册.html">asynq 篇</a>）、或在没有淘汰策略设计的情况下塞大对象。</p>
+<h3 id="安装">安装</h3>
+<pre><code class="lang-bash">go get github.com/redis/go-redis/v9
+# 注意模块路径带 /v9；老教程里的 github.com/go-redis/redis/v8 已归档</code></pre>
+<h3 id="最小可运行示例">最小可运行示例</h3>
+<pre><code class="lang-go">package main
+
+import (
+    "context"
+    "fmt"
+    "time"
+
+    "github.com/redis/go-redis/v9"
+)
+
+func main() {
+    rdb := redis.NewClient(&amp;redis.Options{
+        Addr:     "localhost:6379",
+        Password: "", // 无密码
+        DB:       0,
+    })
+    defer rdb.Close()
+
+    ctx := context.Background()
+    if err := rdb.Set(ctx, "greeting", "hello", 10*time.Minute).Err(); err != nil {
+        panic(err)
+    }
+    val, err := rdb.Get(ctx, "greeting").Result()
+    if err != nil {
+        panic(err)
+    }
+    fmt.Println(val) // hello
+}</code></pre>
+<hr>
+
+</section>
+<section data-anchor="2-功能特性总览">
+<h2 id="2-功能特性总览">2. 功能特性总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>数据结构命令</td><td>String / Hash / List / Set / ZSet / Stream / Bitmap / HLL / Geo，方法名与 Redis 命令同名</td></tr><tr><td>连接池</td><td><code>PoolSize</code> / <code>MinIdleConns</code> / <code>MaxIdleConns</code> / <code>PoolTimeout</code> / <code>ConnMaxLifetime</code>，<code>Client</code> 并发安全</td></tr><tr><td>批处理</td><td><code>Pipeline</code>（省 RTT）、<code>TxPipeline</code> / <code>TxPipelined</code>（MULTI/EXEC，原子）、<code>Pipelined</code> 回调式</td></tr><tr><td>事务与脚本</td><td><code>Watch</code> 乐观锁、<code>TxPipelined</code>；<code>redis.NewScript</code> 自动走 EVALSHA + NOSCRIPT 回退</td></tr><tr><td>发布订阅</td><td><code>Subscribe</code> / <code>PSubscribe</code> / <code>Publish</code>，<code>Channel()</code> 返回 Go channel</td></tr><tr><td>Stream</td><td><code>XAdd</code> / <code>XReadGroup</code> / <code>XGroupCreateMkStream</code> / <code>XAck</code> / <code>XPending</code>，消费组语义完整</td></tr><tr><td>分布式锁</td><td><code>SetNX</code> + 唯一 token + Lua 释放；也可用官方 <code>redislocking</code> 等封装</td></tr><tr><td>拓扑支持</td><td><code>NewClient</code> / <code>NewFailoverClient</code>（Sentinel）/ <code>NewClusterClient</code> / <code>NewRing</code></td></tr><tr><td>弹性</td><td><code>MaxRetries</code> + 指数退避、<code>DialTimeout</code> / <code>ReadTimeout</code> / <code>WriteTimeout</code>、<code>Context</code> 超时</td></tr><tr><td>可观测</td><td><code>AddHook</code> 挂 OpenTelemetry / 指标；<code>PoolStats()</code> 拿连接池命中率</td></tr><tr><td>调试</td><td><code>redis.Nil</code> 哨兵错误、<code>Do()</code> 执行任意命令、<code>Process</code> 自定义命令流程</td></tr></tbody></table></div>
+<hr>
+
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-client-就是连接池">3.1 Client 就是连接池</h3>
+<pre><code class="lang-text">业务 goroutine ──┐
+业务 goroutine ──┼──► redis.Client（Cmdable 接口）
+业务 goroutine ──┘          │ 借/还连接（sync.Pool 风格的连接池）
+                            ▼
+                   ┌────────┬────────┬────────┐
+                   │ conn 1 │ conn 2 │ conn N │  ── RESP 协议 ──► Redis Server
+                   └────────┴────────┴────────┘</code></pre>
+<ul><li><strong>一个 <code>Client</code> 应全局复用</strong>：每次 <code>NewClient</code> 都会新建一套连接池，在请求路径里创建会瞬间打满文件描述符并放大 TCP 握手开销；</li><li>每个命令从池里借一条连接、写完读回、归还；因此 <code>Client</code> 及其命令方法<strong>并发安全</strong>；</li><li><code>PoolSize</code> 默认约 <code>10 × GOMAXPROCS</code>，压测时按下游 Redis 的 <code>maxclients</code> 与业务并发反推，不是越大越好。</li></ul>
+<h3 id="32-resp-与命令构造">3.2 RESP 与命令构造</h3>
+<p>客户端把 <code>Set(ctx, k, v, ttl)</code> 序列化成 RESP 数组（<code>*5\r\n$3\r\nSET\r\n...</code>）发给服务端，再解析回复为 <code>*redis.StringCmd</code> 等命令对象。<strong>命令对象本身只是结果容器</strong>——必须调用 <code>.Result()</code> / <code>.Err()</code> / <code>.Val()</code> 才真正取值，漏掉 <code>.Err()</code> 是本库最高频的静默 bug。</p>
+<h3 id="33-pipeline-vs-txpipeline">3.3 Pipeline vs TxPipeline</h3>
+<div class="table-wrap"><table><thead><tr><th></th><th>Pipeline</th><th>TxPipeline</th></tr></thead><tbody><tr><td>网络</td><td>N 条命令打包成 1 次写 + 1 次读</td><td>同左</td></tr><tr><td>服务端执行</td><td>逐条执行，中间可能插入其他客户端命令</td><td><code>MULTI ... EXEC</code>，<strong>原子</strong>执行</td></tr><tr><td>原子性</td><td>无</td><td>有</td></tr><tr><td>返回值</td><td>每个命令各自的 result</td><td>同左，但 <code>EXEC</code> 失败时整体失败</td></tr></tbody></table></div>
+<p>一句话：<strong>只是为了省 RTT 用 Pipeline；需要「读-改-写」不被打断用 TxPipeline 或 Lua</strong>。注意 Pipeline 不减少服务端工作量，超大批量（万级）应分批，避免阻塞 Redis 单线程。</p>
+<h3 id="34-context-传播">3.4 Context 传播</h3>
+<p>v9 把 <code>ctx</code> 作为所有命令的首参，超时会主动关闭底层连接（Redis 服务端无法中途取消命令，客户端只能断连）。因此<strong>超时设得过短比不设更危险</strong>：会造成连接频繁重建与命令半执行。建议命令级超时略大于 P99 延迟，另用 <code>DialTimeout</code> 控制建连。</p>
+<h3 id="35-cluster-路由">3.5 Cluster 路由</h3>
+<p>Cluster 把键空间切成 16384 个 slot（<code>CRC16(key) mod 16384</code>）。客户端缓存 slot→节点映射，遇到 <code>MOVED</code> 刷新路由、遇到 <code>ASK</code> 临时转向。<strong>跨 slot 的多键操作（MGET、Lua 多 KEYS、事务）会直接报错</strong>，需要 hash tag（<code>{user42}:profile</code>）把相关键固定到同一 slot。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-生产级初始化">4.1 生产级初始化</h3>
+<pre><code class="lang-go">package cache
+
+import (
+    "context"
+    "time"
+
+    "github.com/redis/go-redis/v9"
+)
+
+func New(redisAddr, password string) (*redis.Client, error) {
+    rdb := redis.NewClient(&amp;redis.Options{
+        Addr:         redisAddr,
+        Password:     password,
+        DB:           0,
+        PoolSize:     50,               // 按并发量压测调整
+        MinIdleConns: 10,               // 预热长连接，削掉冷启动毛刺
+        DialTimeout:  3 * time.Second,
+        ReadTimeout:  500 * time.Millisecond,
+        WriteTimeout: 500 * time.Millisecond,
+        MaxRetries:   2,                // 只对幂等命令安全，见 6.9
+    })
+    ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+    defer cancel()
+    if err := rdb.Ping(ctx).Err(); err != nil {
+        _ = rdb.Close()
+        return nil, err
+    }
+    return rdb, nil
+}</code></pre>
+<h3 id="42-缓存读写redisnil-必须单独处理">4.2 缓存读写：<code>redis.Nil</code> 必须单独处理</h3>
+<pre><code class="lang-go">func GetUser(ctx context.Context, rdb *redis.Client, id string) (*User, error) {
+    key := "user:" + id
+    b, err := rdb.Get(ctx, key).Bytes()
+    switch {
+    case err == nil:
+        var u User
+        if e := json.Unmarshal(b, &amp;u); e != nil {
+            return nil, e
+        }
+        return &amp;u, nil
+
+    case errors.Is(err, redis.Nil): // 缓存未命中，不是故障
+        u, e := loadFromDB(ctx, id)
+        if e != nil {
+            return nil, e
+        }
+        // 空结果也缓存，防穿透；TTL 加随机抖动，防雪崩
+        ttl := 10*time.Minute + time.Duration(rand.Intn(300))*time.Second
+        _ = rdb.Set(ctx, key, mustJSON(u), ttl).Err()
+        return u, nil
+
+    default: // 真故障：不要让缓存挂掉拖垮 DB，按需降级
+        return loadFromDB(ctx, id)
+    }
+}</code></pre>
+<blockquote><p><code>redis.Nil</code> 表示「键不存在」，<strong>它是正常业务分支</strong>；把它当普通 error 上报会让监控全是假告警。</p></blockquote>
+<h3 id="43-pipeline-批量写">4.3 Pipeline 批量写</h3>
+<pre><code class="lang-go">pipe := rdb.Pipeline()
+cmds := make([]*redis.StatusCmd, 0, len(items))
+for _, it := range items {
+    cmds = append(cmds, pipe.Set(ctx, "item:"+it.ID, mustJSON(it), time.Hour))
+}
+if _, err := pipe.Exec(ctx); err != nil &amp;&amp; !errors.Is(err, redis.Nil) {
+    return err
+}
+for _, c := range cmds { // Exec 之后才能读各命令结果
+    if err := c.Err(); err != nil { /* 逐条处理 */ }
+}</code></pre>
+<h3 id="44-分布式锁setnx-lua-释放">4.4 分布式锁（SetNX + Lua 释放）</h3>
+<pre><code class="lang-go">var releaseLock = redis.NewScript(`
+if redis.call("get", KEYS[1]) == ARGV[1] then
+    return redis.call("del", KEYS[1])
+end
+return 0`)
+
+func TryLock(ctx context.Context, rdb *redis.Client, key string, ttl time.Duration) (string, bool, error) {
+    token := uuid.NewString() // 必须唯一，防止误删别人的锁
+    ok, err := rdb.SetNX(ctx, key, token, ttl).Result()
+    return token, ok, err
+}
+
+func Unlock(ctx context.Context, rdb *redis.Client, key, token string) error {
+    return releaseLock.Run(ctx, rdb, []string{key}, token).Err()
+}</code></pre>
+<blockquote><p>这是<strong>单实例</strong>锁。Redlock / 跨主从故障转移的锁语义有争议；强一致互斥请改用 <a href="../etcd/etcd-guide.html">etcd 篇</a> 的 Lease 锁。业务执行时间可能超过 TTL 时，还需要看门狗续期。</p></blockquote>
+<h3 id="45-stream-消费组">4.5 Stream 消费组</h3>
+<pre><code class="lang-go">// 生产
+_, _ = rdb.XAdd(ctx, &amp;redis.XAddArgs{
+    Stream: "orders", MaxLen: 10000, Approx: true,
+    Values: map[string]interface{}{"order_id": "A1001"},
+}).Result()
+
+// 建组（幂等：已存在会报 BUSYGROUP，忽略即可）
+_ = rdb.XGroupCreateMkStream(ctx, "orders", "workers", "$").Err()
+
+// 消费：&gt; 表示只取从未投递给本组的消息
+streams, err := rdb.XReadGroup(ctx, &amp;redis.XReadGroupArgs{
+    Group: "workers", Consumer: "worker-1",
+    Streams: []string{"orders", "&gt;"}, Count: 10, Block: 2 * time.Second,
+}).Result()
+for _, s := range streams {
+    for _, msg := range s.Messages {
+        handle(msg.Values)
+        _ = rdb.XAck(ctx, "orders", "workers", msg.ID).Err() // 别忘了 ACK
+    }
+}</code></pre>
+<blockquote><p>未 ACK 的消息进 PEL（Pending Entries List），需要定期 <code>XAutoClaim</code> 处理崩溃的消费者，否则会永久堆积。</p></blockquote>
+<h3 id="46-运维速查">4.6 运维速查</h3>
+<pre><code class="lang-bash">redis-cli INFO clients          # 连接数是否打满
+redis-cli SLOWLOG GET 10        # 慢命令
+redis-cli --bigkeys             # 找大 Key（用 --memkeys 更准）
+redis-cli --scan --pattern 'user:*' | head   # 遍历键，生产禁用 KEYS *</code></pre>
+<hr>
+
+</section>
+<section data-anchor="5-版本演进速览">
+<h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>关键变化</th></tr></thead><tbody><tr><td>v6 / v7</td><td><code>github.com/go-redis/redis</code>，无 Context 首参</td></tr><tr><td>v8</td><td>引入 <code>context.Context</code>，模块路径 <code>/v8</code></td></tr><tr><td><strong>v9</strong>（当前主线）</td><td>仓库迁移到 <code>github.com/redis/go-redis</code>，模块路径 <code>/v9</code>；<code>ctx</code> 成为<strong>强制</strong>首参；<code>Options</code> 字段调整、<code>NewFailoverClient</code> 统一；Hook 机制稳定</td></tr><tr><td>后续</td><td>持续适配 Redis 7.x 新命令（Functions、ACL、Sharded Pub/Sub 等）、OpenTelemetry 生态增强</td></tr></tbody></table></div>
+<p><strong>v8 → v9 迁移要点</strong>：改 import 路径、给每个命令补 <code>ctx</code>、检查 <code>redis.Options</code> 中重命名/废弃字段（如 <code>IdleTimeout</code> → <code>ConnMaxIdleTime</code>）。v9 是 API 稳定线，锁 <code>go.mod</code> 版本、升级前读 CHANGELOG 即可。</p>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>每请求 <code>NewClient</code></strong>：连接池泄漏、端口耗尽、延迟飙升。全局单例，进程退出时 <code>Close()</code>。</li><li><strong>忽略命令返回值</strong>：<code>rdb.Set(...)</code> 不接 <code>.Err()</code> 等于错误被吞掉；<code>Pipeline().Exec()</code> 之后还要逐条 <code>c.Err()</code>。</li><li><strong>把 <code>redis.Nil</code> 当故障</strong>：键不存在是正常分支，必须 <code>errors.Is(err, redis.Nil)</code> 单独判断。</li><li><strong>误以为 Pipeline 有原子性</strong>：它只是打包传输；需要原子用 <code>TxPipeline</code> / Lua，需要「读后写不被打断」用 <code>Watch</code> + <code>TxPipelined</code>。</li><li><strong>缓存三件套</strong>：穿透（空值缓存 / 布隆过滤）、击穿（热点用 singleflight 或互斥重建）、雪崩（TTL 加随机抖动）——三者是不同问题，别只加一个 TTL 就以为解决了。</li><li><strong>大 Key 与热 Key</strong>：一个 Hash 塞百万 field、<code>MGET</code> 千个键、或把整张表 JSON 塞进一个 String，都会卡住 Redis 单线程。拆片 + <code>HSCAN</code> 增量遍历。</li><li><strong>生产用 <code>KEYS *</code></strong>：O(N) 阻塞全实例，一律改 <code>SCAN</code> 游标遍历。</li><li><strong>Cluster 跨 slot</strong>：多键操作报 <code>CROSSSLOT</code>，用 <code>{hash_tag}</code> 把相关键绑到同一 slot；跨 slot 的 Lua 脚本无法执行。</li><li><strong><code>MaxRetries</code> 与幂等</strong>：客户端重试对 <code>INCR</code>、<code>LPUSH</code> 这类非幂等命令可能造成重复副作用。要么关掉自动重试，要么让命令本身幂等（带唯一 ID / <code>SET NX</code>）。</li><li><strong>锁的 TTL 与误删</strong>：<code>SetNX</code> 必须带唯一 token、用 Lua 比较后再删；直接 <code>DEL</code> 会在锁过期后删掉别人的锁。</li><li><strong>超时级联</strong>：命令 <code>ReadTimeout</code> 小于服务端 P99 时，客户端断连但服务端仍在执行，形成「幽灵写入」。超时应略大于 P99，并让命令幂等。</li><li><strong>序列化别用 <code>gob</code></strong>：跨语言/跨版本不可读，缓存值统一用 JSON（或 MessagePack），并预留版本号字段。</li><li><strong>连接池监控</strong>：定期看 <code>rdb.PoolStats()</code> 的 <code>Hits/Misses/Timeouts</code>，<code>Timeouts</code> 增长说明 <code>PoolSize</code> 不足或有慢命令占着连接。</li></ol>
+<hr>
+
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>go-redis v9</th><th>redigo</th><th>rueidis</th><th>进程内缓存（Ristretto / bigcache）</th><th>Memcached</th></tr></thead><tbody><tr><td>维护状态</td><td><strong>活跃、事实标准</strong></td><td>归档维护</td><td>活跃、新锐</td><td>活跃</td><td>稳定但功能少</td></tr><tr><td>API 风格</td><td>类型安全方法 + Context</td><td><code>Do(cmd, args...)</code> 原始命令</td><td>自动生成、客户端缓存</td><td>Go API</td><td>文本/binary 协议</td></tr><tr><td>拓扑</td><td>单机/Sentinel/Cluster/Ring</td><td>需自己接池与集群</td><td>Cluster 优先</td><td>无（单进程）</td><td>客户端分片</td></tr><tr><td>性能</td><td>高</td><td>中</td><td><strong>极高</strong>（自动 pipeline + 客户端缓存）</td><td><strong>极高</strong>（无网络）</td><td>高（多线程）</td></tr><tr><td>数据结构</td><td>全</td><td>全（手写）</td><td>全</td><td>仅 KV</td><td>仅 KV</td></tr><tr><td>持久化 / 共享</td><td>Redis 提供</td><td>同</td><td>同</td><td><strong>无，重启即失</strong></td><td>无持久化</td></tr><tr><td>适用</td><td>绝大多数 Go 服务</td><td>存量老项目</td><td>极致吞吐、可接受较新生态</td><td>本地热点、无共享需求</td><td>纯 KV 大集群</td></tr></tbody></table></div>
+<p>一句话决策：</p>
+<ul><li><strong>新项目默认 go-redis v9</strong>——生态、文档、Hook 与社区答案最全，性能对 99% 的业务足够；</li><li><strong>只有在压测证明客户端是瓶颈</strong>时才考虑 rueidis（它用客户端缓存与自动 pipeline 换复杂度，语义与 go-redis 有差异）；</li><li><strong>本机热点、允许各实例数据不一致</strong> → 进程内缓存，并与 Redis 组成「L1/L2」两级，注意失效广播；</li><li><strong>需要可靠异步任务（重试/死信/延时/优先级）</strong> → 别用 <code>BLPOP</code> 自己造轮子，用 <a href="../asynq/asynq技术文档与使用手册.html">asynq</a>；</li><li><strong>需要强一致协调（选主、分布式锁）</strong> → <a href="../etcd/etcd-guide.html">etcd</a>，而不是 Redis 主从。</li></ul>
+<blockquote><p>选 Redis 还是「不选 Redis」更值得先问：很多场景加一层缓存只是在掩盖慢查询与缺失索引，反而引入了双写一致性这个长期成本。</p></blockquote>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

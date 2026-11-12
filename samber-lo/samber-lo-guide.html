@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>samber/lo 技术指南 — Go 泛型 Lodash 风格工具库</title>
+<title>samber/lo · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
 <style>
   :root{
     --accent:#7c3aed; --accent-light:#ede9fe; --accent-dark:#5b21b6;
@@ -16,67 +17,71 @@
   body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
   a{color:var(--accent);text-decoration:none}
   a:hover{text-decoration:underline}
-
   .layout{display:flex;max-width:1280px;margin:0 auto}
-  nav.sidebar{width:250px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
-  nav.sidebar .logo{font-weight:800;font-size:20px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
   nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
   nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
   nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
   nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
   nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
   main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
-
-  .hero{background:linear-gradient(135deg,#4c1d95 0%,#7c3aed 55%,#a855f7 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(124,58,237,.28)}
+  .hero{background:linear-gradient(135deg,#5b21b6 0%,#7c3aed 58%,#5b21b6 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
   .hero h1{font-size:30px;margin-bottom:10px}
-  .hero p{opacity:.92;font-size:15px;max-width:660px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
   .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
   .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
-
   section{margin-bottom:46px}
   h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
-  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark)}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
   p{margin-bottom:12px}
   ul,ol{padding-left:24px;margin-bottom:12px}
   li{margin-bottom:6px}
-
-  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin-bottom:18px;box-shadow:0 1px 3px rgba(76,29,149,.06)}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:14px}
-  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
-  .feature .ic{font-size:22px;margin-bottom:6px}
-  .feature b{display:block;font-size:14.5px;margin-bottom:4px}
-  .feature span{font-size:12.8px;color:var(--muted);line-height:1.55}
-
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
   pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
-  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#a5a1c4;background:#2b1e52;padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
   code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
-  p code,li code,td code{background:#f3f0fa;color:#9333ea;border:1px solid #e8e5f0;padding:1px 6px;border-radius:6px;font-size:.88em}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
   .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
-
-  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(76,29,149,.06)}
-  th{background:#f1ecfb;color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
   td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
-  tr:nth-child(even) td{background:#fbfaff}
-
-  .tip,.warn,.danger{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px;display:flex;gap:10px;align-items:flex-start}
-  .tip{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
-  .warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
-  .danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
-  .tip b,.warn b,.danger b{flex-shrink:0}
-
-  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0;box-shadow:0 1px 3px rgba(76,29,149,.06)}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
   .figure svg{width:100%;height:auto;display:block}
   .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
-
-  .pill{display:inline-block;background:var(--accent-light);color:var(--accent-dark);border-radius:16px;padding:2px 12px;font-size:12px;margin:2px 4px 2px 0}
-  .badge{display:inline-block;font-size:11px;border-radius:6px;padding:1px 8px;margin-left:6px;vertical-align:1px}
-  .badge.new{background:#ecfdf5;color:#059669;border:1px solid #a7f3d0}
-  .badge.err{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
-
-  .chip{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:34px;border-radius:8px;font-family:Consolas,monospace;font-size:13px;font-weight:700;margin:2px}
-
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
   footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
-
   @media (max-width:900px){
     nav.sidebar{display:none}
     main{padding:24px 18px 60px}
@@ -86,45 +91,43 @@
 </head>
 <body>
 <div class="layout">
-
 <nav class="sidebar">
   <div class="logo">samber/lo<span class="ver">v1</span></div>
   <div class="sub">Go 泛型 Lodash 风格工具库</div>
-  <a href="#intro">1. 库简介</a>
-  <a href="#features">2. 功能全景</a>
-  <a href="#principle">3. 设计原理</a>
-  <a class="sub-link" href="#p-generic">泛型签名</a>
-  <a class="sub-link" href="#p-err">Err 变体</a>
-  <a class="sub-link" href="#p-sub">子包矩阵</a>
-  <a class="sub-link" href="#p-perf">性能画像</a>
-  <a href="#slice">4. Slice 实战</a>
-  <a href="#mapdict">5. Map / 查找 / 集合</a>
-  <a href="#types">6. Tuple / 条件 / 类型操作</a>
-  <a href="#errcon">7. 错误处理与并发</a>
-  <a href="#channel">8. Channel 工具箱</a>
-  <a href="#subpkg">9. parallel / mutable 子包</a>
-  <a href="#stdlib">10. 对比标准库</a>
-  <a href="#best">11. 最佳实践</a>
+  <a href="#1-库简介">1. 库简介</a>
+  <a class="sub-link" href="#安装与导入">安装与导入</a>
+  <a href="#2-设计原理">2. 设计原理</a>
+  <a class="sub-link" href="#21-泛型签名一套代码适配所有类型">2.1 泛型签名：一套代码适配所有类型</a>
+  <a class="sub-link" href="#22-err-变体错误传播的函数式方案">2.2 Err 变体：错误传播的函数式方案</a>
+  <a class="sub-link" href="#23-子包矩阵">2.3 子包矩阵</a>
+  <a class="sub-link" href="#24-性能画像">2.4 性能画像</a>
+  <a href="#3-功能分类详解代码实战">3. 功能分类详解（代码实战）</a>
+  <a class="sub-link" href="#31-slice切片最常用的一组">3.1 Slice（切片）——最常用的一组</a>
+  <a class="sub-link" href="#32-map字典">3.2 Map（字典）</a>
+  <a class="sub-link" href="#33-查找与集合运算">3.3 查找与集合运算</a>
+  <a class="sub-link" href="#34-tuple多元组多返回值的容器化">3.4 Tuple（多元组）：多返回值的容器化</a>
+  <a class="sub-link" href="#35-条件表达式让-go-拥有三元运算符">3.5 条件表达式：让 Go 拥有&quot;三元运算符&quot;</a>
+  <a class="sub-link" href="#36-类型与指针操作消灭-nil-判空样板">3.6 类型与指针操作：消灭 nil 判空样板</a>
+  <a class="sub-link" href="#37-错误处理与断言">3.7 错误处理与断言</a>
+  <a class="sub-link" href="#38-并发控制">3.8 并发控制</a>
+  <a class="sub-link" href="#39-channel-工具箱">3.9 Channel 工具箱</a>
+  <a class="sub-link" href="#310-数学与字符串">3.10 数学与字符串</a>
+  <a class="sub-link" href="#311-parallel-子包一行并发">3.11 parallel 子包：一行并发</a>
+  <a class="sub-link" href="#312-mutable-子包原地修改">3.12 mutable 子包：原地修改</a>
+  <a href="#4-与标准库-slicesmaps-的关系">4. 与标准库 slices/maps 的关系</a>
+  <a href="#5-最佳实践与注意事项">5. 最佳实践与注意事项</a>
+  <a href="#6-选型小结">6. 选型小结</a>
 </nav>
-
 <main>
-
 <div class="hero">
-  <h1>samber/lo</h1>
-  <p>基于 <b>Go 1.18+ 泛型</b>的 Lodash 风格工具库：200+ 帮助函数覆盖 slice、map、string、channel、并发与错误处理，把「写了几百遍的 for 循环样板」变成一行声明式代码。零第三方依赖，v1 严格遵循 SemVer。</p>
-  <div class="meta">
-    <span>github.com/samber/lo</span>
-    <span>Go ≥ 1.18</span>
-    <span>零依赖</span>
-    <span>MIT License</span>
-    <span>文档 lo.samber.dev</span>
-  </div>
+  <h1>samber/lo 技术介绍与使用指南</h1>
+<p>基于 Go 1.18+ 泛型的 Lodash 风格工具库：200+ 帮助函数覆盖 slice、map、string、channel、并发与错误处理，把「写了几百遍的 for 循环样板」变成一行声明式代码。零第三方依赖，v1 严格遵循 SemVer。</p>
+<p style="opacity:.8;font-size:13.5px">Go 泛型 Lodash 风格工具库</p>
+<div class="meta"><span>github.com/samber/lo</span><span>Go ≥ 1.18</span><span>零依赖</span><span>MIT License</span><span>文档 lo.samber.dev</span></div>
 </div>
-
-<!-- ================= 1 简介 ================= -->
-<section id="intro">
-  <h2>1. 库简介</h2>
-  <div class="card">
+<blockquote><p>基于 Go 1.18+ 泛型的 Lodash 风格工具库，让 slice / map / channel / string / function 的日常操作一行搞定。 仓库：<a href="https://github.com/samber/lo">https://github.com/samber/lo</a>　|　文档：<a href="https://lo.samber.dev">https://lo.samber.dev</a>　|　主线版本：v1（严格 SemVer）</p></blockquote>
+<section data-anchor="1-库简介">
+<h2 id="1-库简介">1. 库简介<span class="lvl b">入门</span></h2><div class="card">
     <p><b>samber/lo</b> 灵感来自 JavaScript 生态的 Lodash，只做一件事：<b>把日常编码中重复出现的集合操作样板代码，封装成可复用的泛型函数。</b>它不引入框架概念、不改变代码结构，即取即用。</p>
     <pre><code class="lang-go"><span class="cmt">// 没有 lo 的日子</span>
 names := <span class="fn">make</span>([]<span class="typ">string</span>, 0, <span class="fn">len</span>(users))
@@ -148,33 +151,310 @@ names := lo.<span class="fn">Map</span>(lo.<span class="fn">Filter</span>(users,
 )</code></pre>
     <p style="margin-top:6px">同系列生态：<code>mo</code>（Monad：Option/Result）、<code>do</code>（依赖注入）、<code>ro</code>（响应式/无限流）。定位区分：<b>lo 处理有限集合的同步计算，ro 处理无限事件流。</b></p>
   </div>
+<p><code>samber/lo</code> 是一个<strong>纯泛型工具函数库</strong>，灵感来自 JavaScript 生态的 Lodash。它不引入任何框架概念，只做一件事：把 Go 里那些"写了几百遍的 for 循环样板代码"封装成一个个可复用的泛型函数。</p>
+<pre><code class="lang-go">// 没有 lo 的日子
+names := make([]string, 0, len(users))
+for _, u := range users {
+    if u.Age &gt;= 18 {
+        names = append(names, u.Name)
+    }
+}
+
+// 有 lo 的日子
+names := lo.Map(lo.Filter(users, func(u User, _ int) bool {
+    return u.Age &gt;= 18
+}), func(u User, _ int) string {
+    return u.Name
+})</code></pre>
+<p>核心特征：</p>
+<ul><li><strong>零第三方依赖</strong>：只依赖 Go 标准库；</li><li><strong>Go 1.18+ 泛型</strong>：一套函数适配所有类型，无反射、无 <code>interface{}</code> 装箱（性能好于 reflect 方案）；</li><li><strong>函数式风格</strong>：Map / Filter / Reduce / GroupBy 等经典高阶函数；</li><li><strong>API 海量且按域分组</strong>：slice、map、string、tuple、channel、并发、错误处理、类型操作……200+ 帮助函数；</li><li>与标准库 <code>slices</code> / <code>maps</code> 有少量重叠（作者认为其余抽象仍有独特价值）。</li></ul>
+<h3 id="安装与导入">安装与导入</h3>
+<pre><code class="lang-bash">go get github.com/samber/lo@v1</code></pre>
+<pre><code class="lang-go">import (
+    "github.com/samber/lo"
+    lop "github.com/samber/lo/parallel" // 并行版本
+    lom "github.com/samber/lo/mutable"  // 原地修改版本
+)</code></pre>
+<p>同系列生态：<code>samber/mo</code>（Monad：Option/Result/Either）、<code>samber/do</code>（依赖注入）、<code>samber/ro</code>（响应式/无限流）。定位区分：<strong>lo 处理有限集合的同步计算，ro 处理无限事件流</strong>。</p>
+<hr>
+
 </section>
+<section data-anchor="2-设计原理">
+<h2 id="2-设计原理">2. 设计原理<span class="lvl b">速览</span></h2>
+<h3 id="21-泛型签名一套代码适配所有类型">2.1 泛型签名：一套代码适配所有类型</h3>
+<p>以 <code>Filter</code> 为例的典型签名：</p>
+<pre><code class="lang-go">func Filter[T any, R any](collection []T, predicate func(item T, index int) bool) []T</code></pre>
+<ul><li><code>T any</code> / <code>R any</code>：任意类型参数，编译期单态化，无运行时开销；</li><li>回调统一携带 <code>(item, index)</code> 两个参数，与 JS 的 <code>map((v, i) =&gt; ...)</code> 对齐；</li><li>返回<strong>新切片</strong>，不修改入参（<code>mutable</code> 子包才提供原地版本）。</li></ul>
+<h3 id="22-err-变体错误传播的函数式方案">2.2 Err 变体：错误传播的函数式方案</h3>
+<p>大部分转换函数都有 <code>XxxErr</code> 兄弟，回调多返回一个 <code>error</code>，遇到错误立即短路返回：</p>
+<pre><code class="lang-go">result, err := lo.MapErr([]int{1, 2, 3}, func(x int, _ int) (string, error) {
+    if x == 3 {
+        return "", fmt.Errorf("number 3 is not allowed")
+    }
+    return strconv.Itoa(x), nil
+})
+// result == nil, err == "number 3 is not allowed"</code></pre>
+<p>这把"循环里逐个 if err != nil"的模板也省掉了。</p>
+<h3 id="23-子包矩阵">2.3 子包矩阵</h3>
+<div class="table-wrap"><table><thead><tr><th>导入</th><th>定位</th><th>说明</th></tr></thead><tbody><tr><td><code>lo</code></td><td>同步、不可变</td><td>主包，返回新集合</td></tr><tr><td><code>lo/parallel</code></td><td>并发版 Map/ForEach</td><td>每个元素一个 goroutine，结果顺序保持</td></tr><tr><td><code>lo/mutable</code></td><td>原地修改</td><td>复用底层数组，减少分配（注意副作用）</td></tr><tr><td><code>lo/it</code></td><td>迭代器实验包</td><td>基于 Go 1.23 <code>iter.Seq</code> 的惰性版本（<code>exp</code> 精神）</td></tr></tbody></table></div>
+<h3 id="24-性能画像">2.4 性能画像</h3>
+<ul><li>所有函数都是<strong>急切求值（eager）</strong>：调用即完整遍历，中间会产生临时切片。链式 <code>Map(Filter(xs))</code> 会遍历两次、分配两次；</li><li>极热路径上手动 for 循环仍最快（省去回调开销），但绝大多数业务代码的收益是<strong>可读性与正确性</strong>；</li><li><code>mutable</code> 子包原地更新可省一次分配；<code>parallel</code> 子包适合单元素处理耗时（I/O 密集）的场景。</li></ul>
+<hr>
 
-<!-- ================= 2 功能全景 ================= -->
-<section id="features">
-  <h2>2. 功能全景</h2>
-  <div class="grid">
-    <div class="feature"><div class="ic">🧮</div><b>60+ Slice 函数</b><span>Map / Filter / Reduce / Uniq / GroupBy / Chunk / FlatMap / PartitionBy / KeyBy / Take / Drop …</span></div>
-    <div class="feature"><div class="ic">🗂️</div><b>20+ Map 函数</b><span>Keys / Values / PickBy / OmitBy / Entries / FromEntries / Invert / Assign / MapValues …</span></div>
-    <div class="feature"><div class="ic">🔍</div><b>查找与集合运算</b><span>Find / IndexOf / Contains / Every / Some / Intersect / Union / Difference / Min / Max …</span></div>
-    <div class="feature"><div class="ic">🧲</div><b>元组 Tuple</b><span>T2–T9 类型、Unpack、Zip2–Zip9、CrossJoin 笛卡尔积</span></div>
-    <div class="feature"><div class="ic">🔀</div><b>条件表达式</b><span>Ternary / TernaryF / If-ElseIf-Else 链 / Switch-Case-Default 链</span></div>
-    <div class="feature"><div class="ic">📦</div><b>类型与指针</b><span>ToPtr / FromPtr / ToSlicePtr / Coalesce / IsEmpty / ToAnySlice …</span></div>
-    <div class="feature"><div class="ic">🚦</div><b>并发控制</b><span>Attempt 重试 / Debounce 防抖 / Throttle 节流 / Synchronize / Async / WaitFor …</span></div>
-    <div class="feature"><div class="ic">📡</div><b>Channel 工具箱</b><span>Generator / Buffer / FanIn / FanOut / ChannelDispatcher / SliceToChannel …</span></div>
-    <div class="feature"><div class="ic">🧯</div><b>错误处理</b><span>Validate / Must / Try / TryCatch / ErrorsAs / Assert</span></div>
-    <div class="feature"><div class="ic">🧵</div><b>字符串与数学</b><span>RandomString / Substring / CamelCase / SnakeCase / Range / Clamp / Sum / Mean / Mode</span></div>
-    <div class="feature"><div class="ic">⚡</div><b>parallel 子包</b><span>一行并行的 Map / ForEach：每元素一个 goroutine，结果保序</span></div>
-    <div class="feature"><div class="ic">♻️</div><b>mutable 子包</b><span>原地修改版本：复用底层数组，减少内存分配</span></div>
-  </div>
 </section>
+<section data-anchor="3-功能分类详解代码实战">
+<h2 id="3-功能分类详解代码实战">3. 功能分类详解（代码实战）<span class="lvl m">核心</span></h2>
+<h3 id="31-slice切片最常用的一组">3.1 Slice（切片）——最常用的一组</h3>
+<pre><code class="lang-go">// Map：类型转换
+lo.Map([]int64{1, 2, 3, 4}, func(x int64, _ int) string {
+    return strconv.FormatInt(x, 10)
+}) // []string{"1", "2", "3", "4"}
 
-<!-- ================= 3 原理 ================= -->
-<section id="principle">
-  <h2>3. 设计原理</h2>
+// Filter：过滤偶数
+lo.Filter([]int{1, 2, 3, 4}, func(x int, _ int) bool { return x%2 == 0 })
+// []int{2, 4}
 
-  <h3 id="p-generic">3.1 泛型签名：一套代码适配所有类型</h3>
-  <div class="figure">
+// FilterMap：过滤 + 转换一步到位（回调返回 (结果, 是否保留)）
+lo.FilterMap([]string{"cpu", "gpu", "mouse"}, func(x string, _ int) (string, bool) {
+    if strings.HasSuffix(x, "pu") {
+        return "xpu", true
+    }
+    return "", false
+}) // []string{"xpu", "xpu"}
+
+// FlatMap：转换后拍平
+lo.FlatMap([]int64{0, 1, 2}, func(x int64, _ int) []string {
+    return []string{strconv.FormatInt(x, 10), strconv.FormatInt(x, 10)}
+}) // []string{"0","0","1","1","2","2"}
+
+// Reduce：聚合
+lo.Reduce([]int{1, 2, 3, 4}, func(agg, item int, _ int) int { return agg + item }, 0) // 10
+
+// ReduceRight：从右向左聚合
+lo.ReduceRight([][]int{{0, 1}, {2, 3}}, func(agg, item []int, _ int) []int {
+    return append(agg, item...)
+}, []int{}) // []int{2, 3, 0, 1}</code></pre>
+<p><strong>去重与分组</strong>：</p>
+<pre><code class="lang-go">// Uniq / UniqBy / IsUniq
+lo.Uniq([]int{1, 2, 2, 3})                       // []int{1, 2, 3}
+lo.UniqMap(users, func(u User, _ int) string { return u.Name })
+// Map + 去重一步完成：[]string{"Alex", "Bob", "Alice"}
+
+// GroupBy：按 key 分桶，返回 map[K][]T
+lo.GroupBy([]int{0, 1, 2, 3, 4, 5}, func(item int, _ int) int {
+    return item % 3
+}) // map[int][]int{0: [0,3], 1: [1,4], 2: [2,5]}
+
+// Chunk：切分固定大小子块（常用于分批处理）
+lo.Chunk([]int{0, 1, 2, 3, 4, 5}, 2) // [][]int{{0,1}, {2,3}, {4,5}}
+
+// PartitionBy：按连续 key 切段
+lo.PartitionBy([]int{1, 1, 2, 2, 3}, func(x int, _ int) string {
+    if x &lt; 2 { return "low" } else { return "high" }
+}) // [][]int{{1,1}, {2,2,3}}
+
+// Flatten / Concat
+lo.Flatten([][]int{{0, 1}, {2, 3, 4}}) // []int{0,1,2,3,4}
+lo.Concat([]int{1, 2}, []int{3}, []int{4}) // []int{1,2,3,4}
+
+// KeyBy / SliceToMap(Associate)：切片转 map
+lo.SliceToMap(users, func(u User, _ int) (string, int) {
+    return u.Name, u.Age
+}) // map[string]int{"Alex": 10, ...}</code></pre>
+<p><strong>取舍与统计</strong>：</p>
+<pre><code class="lang-go">lo.Take([]int{0, 1, 2, 3}, 2)         // []int{0, 1}   取前 n
+lo.Drop([]int{0, 1, 2, 3}, 2)         // []int{2, 3}   丢前 n
+lo.DropRight([]int{0, 1, 2, 3}, 2)    // []int{0, 1}
+lo.TakeWhile / lo.DropWhile           // 按谓词取/丢
+lo.Reject(xs, pred)                   // Filter 的反义
+lo.Count(xs, 1)                       // 元素出现次数
+lo.CountValues([]string{"a", "b", "a"}) // map[string]int{"a":2, "b":1}
+lo.Compact([]string{"a", "", "b"})    // 去零值 → []string{"a", "b"}
+lo.Reverse([]int{1, 2, 3})            // 注意：v1 新版 Reverse 不再修改原切片
+lo.Shuffle([]int{0, 1, 2, 3})         // 随机打乱（返回新切片）
+lo.Fill([]bool{false, false}, true)   // 填充
+lo.Repeat(5, "a")                     // 重复 n 份
+lo.Subset([]int{0, 1, 2, 3}, 1, 2)    // 区间取子集
+lo.Replace([]int{1, 2, 1}, 1, 0, 1)   // 替换前 n 个匹配；ReplaceAll 全换</code></pre>
+<h3 id="32-map字典">3.2 Map（字典）</h3>
+<pre><code class="lang-go">lo.Keys(m) / lo.Values(m)             // 键/值切片
+lo.PickBy(m, func(k string, v int) bool { return v &gt; 10 }) // 保留满足项
+lo.OmitBy(m, pred)                    // PickBy 反义（剔除）
+lo.PickByKeys / lo.OmitByKeys         // 按键名集合筛
+lo.Entries(map[string]int{"a": 1})    // []lo.Tuple2[string,int]{{"a",1}}
+lo.FromEntries([]lo.Tuple2[string,int]{...}) // 逆向：pairs → map
+lo.Invert(m)                          // 键值互换
+lo.Assign(m1, m2, m3)                 // 合并（后者覆盖前者）
+lo.MapKeys(m, fn) / lo.MapValues(m, fn) // 变换键/值
+lo.MapEntries(m, fn)                  // 同时变换键值
+lo.MapToSlice(m, fn)                  // map → slice
+lo.ValueOr(m, "k", 42)                // 带默认值取值（等价 m["k"] 不存在则 42）</code></pre>
+<h3 id="33-查找与集合运算">3.3 查找与集合运算</h3>
+<pre><code class="lang-go">lo.IndexOf([]int{5, 6, 7}, 6)         // 1（不存在返回 -1）
+lo.Find(xs, pred)                     // 返回 (值, 是否找到)
+lo.FindOrElse(xs, fallback, pred)     // 找不到给默认值
+lo.FindKey(m, 20)                     // 按值反查键
+lo.Contains(xs, 5)                    // 包含
+lo.Every / lo.Some / lo.None          // 全部/任一/都不满足（均有 By 变体）
+lo.Min / lo.Max / lo.MinBy / lo.MaxBy // 极值（Ordered 约束或自定义比较）
+lo.First / lo.Last / lo.Nth(xs, -1)   // 首尾与负索引
+lo.FirstOr(xs, def)                   // 空集合安全取首
+lo.Intersect(a, b) / lo.Difference(a, b) / lo.Union(a, b) // 交/差/并
+lo.Without(xs, 2, 3)                  // 剔除指定元素
+lo.FindUniques / lo.FindDuplicates    // 找只出现一次的 / 找重复的
+lo.Sample(xs) / lo.Samples(xs, 3)     // 随机取样</code></pre>
+<h3 id="34-tuple多元组多返回值的容器化">3.4 Tuple（多元组）：多返回值的容器化</h3>
+<pre><code class="lang-go">// Zip：把多个等长切片"拉链"成元组切片
+lo.Zip2([]string{"a", "b"}, []int{1, 2})
+// []lo.Tuple2[string,int]{{A:"a",B:1},{A:"b",B:2}}，最高支持 Zip9
+
+// Unpack：元组解包成多返回值
+a, b := lo.Unpack2(lo.Tuple2[string,int]{A: "x", B: 1})
+
+// CrossJoin：笛卡尔积
+lo.CrossJoin2([]string{"a"}, []int{1, 2})
+// []lo.Tuple2[string,int]{{"a",1},{"a",2}}</code></pre>
+<h3 id="35-条件表达式让-go-拥有三元运算符">3.5 条件表达式：让 Go 拥有"三元运算符"</h3>
+<pre><code class="lang-go">// Ternary：真·三元（注意两分支都会求值）
+lo.Ternary(true, "yes", "no") // "yes"
+
+// TernaryF：惰性求值版本（仅计算命中分支）
+lo.TernaryF(ok, func() T { return expensive() }, func() T { return cheap() })
+
+// 链式 if
+lo.If(ok, "a").ElseIf(ok2, "b").Else("c")
+
+// 链式 switch
+lo.Switch(value).
+    Case(1, "one").
+    Case(2, "two").
+    Default("many")</code></pre>
+<h3 id="36-类型与指针操作消灭-nil-判空样板">3.6 类型与指针操作：消灭 nil 判空样板</h3>
+<pre><code class="lang-go">lo.ToPtr(42)             // *int，字面量直接取地址
+lo.FromPtr(p)            // 解引用；nil → 零值
+lo.FromPtrOr(p, 99)      // 解引用；nil → 默认值
+lo.ToSlicePtr([]int{1,2})  // []*int
+lo.FromSlicePtr(ps)        // []T（遇 nil 元素报 panic）；FromSlicePtrOr 带默认
+lo.IsEmpty / lo.IsNotEmpty // 零值判断
+lo.Coalesce(0, 1, 2)       // 返回第一个非零值 → 1（默认值串联神器）
+lo.CoalesceOrEmpty(...)    // 全为零值时返回零值
+lo.IsNil / lo.IsNotNil     // 任意类型的 nil 判断（反射实现）</code></pre>
+<h3 id="37-错误处理与断言">3.7 错误处理与断言</h3>
+<pre><code class="lang-go">// Validate：条件不满足即返回错误（服务端参数校验常用）
+err := lo.Validate(user.Age &gt;= 18, "user must be adult, got %d", user.Age)
+
+// Must："我保证不出错"，出错 panic（初始化期使用）
+val := lo.Must(strconv.Atoi("42"))
+
+// Try / TryCatch：函数式 recover
+err := lo.Try(func() error { return doSomething() })
+err, val := lo.TryWithValue(...)
+lo.TryCatch(fn, catchFunc)
+
+// ErrorsAs：一行完成 errors.As
+if lo.ErrorsAs[*MyError](err) { ... }
+
+// Assert / Assertf：断言（内部用 panic）
+lo.Assert(condition, "message %d", 42)</code></pre>
+<h3 id="38-并发控制">3.8 并发控制</h3>
+<pre><code class="lang-go">// Attempt：带重试的执行（返回最终错误）
+err := lo.Attempt(3, func(index int) error {
+    return callFlakyAPI()
+})
+
+// AttemptWithDelay：带退避延迟的重试
+err := lo.AttemptWithDelay(5, 2*time.Second, func(i int, d time.Duration) error {
+    return retryableOp()
+})
+
+// Debounce / Throttle：防抖与节流
+debounced := lo.Debounce(200*time.Millisecond, func() { search() })
+debounced() // 200ms 内多次调用只执行最后一次
+
+throttled := lo.Throttle(1*time.Second, fn)
+throttled() // 1 秒内最多执行一次，其余被丢弃
+
+// Synchronize：把任意函数变成并发安全版本
+safeFn := lo.Synchronize(fn)
+
+// Async：立即起 goroutine 执行，返回 channel 收结果
+ch := lo.Async(func() int { return heavyCompute() })
+result := &lt;-ch
+// 还有 Async0~Async6 支持多参数
+
+// WaitFor：轮询等待条件成立
+err := lo.WaitFor(func() bool { return ready() }, 3*time.Second, 100*time.Millisecond)
+
+// Transaction：把多个函数打包成事务式顺序执行（遇错停止）
+err := lo.Transaction(fn1, fn2, fn3)</code></pre>
+<h3 id="39-channel-工具箱">3.9 Channel 工具箱</h3>
+<pre><code class="lang-go">// Generator：把切片生产为 channel（带缓冲）
+ch := lo.Generator(10, []int{1, 2, 3})
+
+// SliceToChannel / ChannelToSlice：切片⇄channel 互转
+ch := lo.SliceToChannel(10, []int{1, 2, 3})
+// for v := range ch { ... }
+xs := lo.ChannelToSlice(ch) // []int{1, 2, 3}
+
+// Buffer / BufferWithContext：攒批消费
+// 每 10 个元素或超时 1s 输出一批
+for batch := range lo.BufferWithTimeout(ctx, ch, 10, time.Second) { ... }
+
+// FanIn：多 channel 合一
+merged := lo.FanIn(ch1, ch2, ch3)
+
+// FanOut：一 channel 派发到多 channel（负载扇出）
+chs := lo.FanOut(ch, 5)
+
+// ChannelDispatcher：按策略（轮询/最少连接/哈希）把输入分发到多个输出 channel</code></pre>
+<h3 id="310-数学与字符串">3.10 数学与字符串</h3>
+<pre><code class="lang-go">// 数学
+lo.Range(5)                 // []int{0,1,2,3,4}
+lo.RangeFrom(1, 5)          // []int{1..5}
+lo.RangeWithSteps(0, 10, 3) // []int{0,3,6,9}
+lo.Clamp(42, 0, 100)        // 区间钳制
+lo.Sum(xs) / lo.SumBy(xs, fn)
+lo.Product / lo.Mean / lo.MeanBy
+lo.Mode([]int{1, 2, 2, 3})  // 众数 → 2
+
+// 字符串
+lo.RandomString(16, lo.LowerCaseLettersCharset) // 随机串（可定字符集）
+lo.Substring("hello", 0, 3)      // "hel"（支持负索引）
+lo.ChunkString("abcdefgh", 3)    // []string{"abc","def","gh"}
+lo.RuneLength("你好")            // 2（按 rune，非 byte）
+lo.Capitalize("hello")           // "Hello"
+lo.Ellipsis("abcdef", 3)         // "abc..."（截断加省略号）
+
+// 命名风格转换
+lo.PascalCase("hello_world") // "HelloWorld"
+lo.CamelCase("http_server")  // "httpServer"
+lo.KebabCase("HelloWorld")   // "hello-world"
+lo.SnakeCase("MyFunc")       // "my_func"
+lo.Words("camelCaseString")  // []string{"camel","Case","String"}</code></pre>
+<h3 id="311-parallel-子包一行并发">3.11 parallel 子包：一行并发</h3>
+<pre><code class="lang-go">import lop "github.com/samber/lo/parallel"
+
+// 每个元素一个 goroutine 并行处理，结果顺序与输入一致
+urls := []string{"https://a.com", "https://b.com", "https://c.com"}
+bodies := lop.Map(urls, func(url string, _ int) string {
+    resp, _ := http.Get(url)
+    defer resp.Body.Close()
+    b, _ := io.ReadAll(resp.Body)
+    return string(b)
+})
+
+lop.ForEach(xs, func(x T, _ int) { process(x) }) // 并行副作用</code></pre>
+<p>实现原理：为每个索引起 goroutine，结果按下标写入预分配切片——<strong>保序但非惰性</strong>，适合 I/O 密集而非 CPU 密集（Go GOMAXPROCS 限制下纯计算并行收益有限）。</p>
+<h3 id="312-mutable-子包原地修改">3.12 mutable 子包：原地修改</h3>
+<pre><code class="lang-go">import lom "github.com/samber/lo/mutable"
+
+list := []int{1, 2, 3, 4}
+newList := lom.Filter(list, func(x int) bool { return x%2 == 0 })
+// list 底层数组被改写（内容不再可信），newList == []int{2, 4}
+// 省一次内存分配，代价是共享底层数组的副作用</code></pre>
+<hr>
+
+<div class="figure">
     <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7c6f9c"/></marker></defs>
       <!-- 中间泛型函数 -->
@@ -208,36 +488,16 @@ names := lo.<span class="fn">Map</span>(lo.<span class="fn">Filter</span>(users,
     </svg>
     <figcaption>图 1 · 泛型原理：类型参数 T 在编译期被具体类型替换，性能等同手写专用版本，远优于 reflect / interface{} 方案</figcaption>
   </div>
-
-  <h3 id="p-err">3.2 Err 变体：函数式的错误传播</h3>
-  <p>大部分转换函数都有 <code>XxxErr</code> 兄弟：回调多返回一个 <code>error</code>，<b>遇到错误立即短路返回</b>，把「循环里逐个 if err != nil」的模板也省掉了。</p>
-  <pre><code class="lang-go">result, err := lo.<span class="fn">MapErr</span>([]<span class="typ">int</span>{1, 2, 3}, <span class="kw">func</span>(x <span class="typ">int</span>, _ <span class="typ">int</span>) (<span class="typ">string</span>, <span class="typ">error</span>) {
-    <span class="kw">if</span> x == 3 {
-        <span class="kw">return</span> <span class="str">""</span>, fmt.<span class="fn">Errorf</span>(<span class="str">"number 3 is not allowed"</span>)
-    }
-    <span class="kw">return</span> strconv.<span class="fn">Itoa</span>(x), <span class="kw">nil</span>
-})
-<span class="cmt">// result == nil, err == "number 3 is not allowed"</span></code></pre>
-  <p><span class="pill">FilterErr</span><span class="pill">MapErr</span><span class="pill">FlatMapErr</span><span class="pill">ReduceErr</span><span class="pill">ReduceRightErr</span><span class="pill">GroupByErr</span><span class="pill">…全家族覆盖</p>
-
-  <h3 id="p-sub">3.3 子包矩阵</h3>
-  <table>
-    <tr><th>导入</th><th>定位</th><th>说明</th></tr>
-    <tr><td><code>lo</code></td><td>同步 · 不可变</td><td>主包，所有函数返回<b>新集合</b>，不修改入参</td></tr>
-    <tr><td><code>lo/parallel</code></td><td>并发</td><td>Map / ForEach 的并行版：每元素一个 goroutine，<b>结果顺序与输入一致</b></td></tr>
-    <tr><td><code>lo/mutable</code></td><td>原地修改</td><td>复用底层数组、减少分配（注意副作用与数据竞争）</td></tr>
-    <tr><td><code>lo/it</code></td><td>惰性迭代</td><td>基于 Go 1.23 <code>iter.Seq</code> 的迭代器版本（实验性质）</td></tr>
-  </table>
-
-  <h3 id="p-perf">3.4 性能画像</h3>
-  <div class="warn"><b>⚠️ Eager 求值：</b><span>所有函数调用即完整遍历，中间产生临时切片。<code>Map(Filter(xs))</code> 会遍历两次、分配两次 —— 可用 <code>FilterMap</code> 合并；极热路径上手写 for 循环仍最快（省去回调开销）。lo 的核心收益是<b>可读性与正确性</b>，不是极致性能。</span></div>
+<div class="warn"><b>⚠️ Eager 求值：</b><span>所有函数调用即完整遍历，中间产生临时切片。<code>Map(Filter(xs))</code> 会遍历两次、分配两次 —— 可用 <code>FilterMap</code> 合并；极热路径上手写 for 循环仍最快（省去回调开销）。lo 的核心收益是<b>可读性与正确性</b>，不是极致性能。</span></div>
 </section>
+<section data-anchor="4-与标准库-slicesmaps-的关系">
+<h2 id="4-与标准库-slicesmaps-的关系">4. 与标准库 slices/maps 的关系<span class="lvl m">实战</span></h2>
+<p>Go 1.21 起 <code>slices</code> / <code>maps</code> 进入标准库，功能有交集：</p>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>标准库</th><th>samber/lo</th></tr></thead><tbody><tr><td>Contains / Index / Max / Min</td><td><code>slices</code></td><td>lo 均有，另有 By/Err 变体</td></tr><tr><td>Clone / Sort / BinarySearch</td><td><code>slices</code></td><td>lo 不做排序（保持不可变定位）</td></tr><tr><td>Map / Filter / Reduce</td><td>无</td><td><strong>lo 核心优势</strong></td></tr><tr><td>GroupBy / Chunk / KeyBy</td><td>无</td><td>lo 独有</td></tr><tr><td>Ternary / Coalesce / Attempt / Channel 系列</td><td>无</td><td>lo 独有</td></tr></tbody></table></div>
+<p>结论：排序查找优先标准库（编译器深度优化）；转换、分组、并发、错误处理类样板代码用 lo。两者可在同一项目共存。</p>
+<hr>
 
-<!-- ================= 4 Slice ================= -->
-<section id="slice">
-  <h2>4. Slice 实战：最常用的一组</h2>
-
-  <div class="figure">
+<div class="figure">
     <svg viewBox="0 0 880 340" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs><marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7c6f9c"/></marker></defs>
       <!-- 输入 -->
@@ -289,31 +549,7 @@ names := lo.<span class="fn">Map</span>(lo.<span class="fn">Filter</span>(users,
     </svg>
     <figcaption>图 2 · 三大高阶函数数据流：Filter 收窄 → Map 变换 → Reduce 聚合，每一步都返回新集合（不可变风格）</figcaption>
   </div>
-
-  <h3>转换与聚合</h3>
-  <pre><code class="lang-go"><span class="cmt">// Map：类型转换</span>
-lo.<span class="fn">Map</span>([]<span class="typ">int64</span>{1, 2, 3, 4}, <span class="kw">func</span>(x <span class="typ">int64</span>, _ <span class="typ">int</span>) <span class="typ">string</span> {
-    <span class="kw">return</span> strconv.<span class="fn">FormatInt</span>(x, 10)
-}) <span class="cmt">// []string{"1", "2", "3", "4"}</span>
-
-<span class="cmt">// FilterMap：过滤 + 转换一步到位（回调返回 (结果, 是否保留)）</span>
-lo.<span class="fn">FilterMap</span>([]<span class="typ">string</span>{<span class="str">"cpu"</span>, <span class="str">"gpu"</span>, <span class="str">"mouse"</span>}, <span class="kw">func</span>(x <span class="typ">string</span>, _ <span class="typ">int</span>) (<span class="typ">string</span>, <span class="typ">bool</span>) {
-    <span class="kw">if</span> strings.<span class="fn">HasSuffix</span>(x, <span class="str">"pu"</span>) {
-        <span class="kw">return</span> <span class="str">"xpu"</span>, <span class="kw">true</span>
-    }
-    <span class="kw">return</span> <span class="str">""</span>, <span class="kw">false</span>
-}) <span class="cmt">// []string{"xpu", "xpu"}</span>
-
-<span class="cmt">// FlatMap：转换后拍平（返回 nil 则不加元素）</span>
-lo.<span class="fn">FlatMap</span>([]<span class="typ">int64</span>{0, 1, 2}, <span class="kw">func</span>(x <span class="typ">int64</span>, _ <span class="typ">int</span>) []<span class="typ">string</span> {
-    <span class="kw">return</span> []<span class="typ">string</span>{strconv.<span class="fn">FormatInt</span>(x, 10), strconv.<span class="fn">FormatInt</span>(x, 10)}
-}) <span class="cmt">// []string{"0","0","1","1","2","2"}</span>
-
-<span class="cmt">// Reduce：聚合（ReduceRight 反向）</span>
-lo.<span class="fn">Reduce</span>([]<span class="typ">int</span>{1, 2, 3, 4}, <span class="kw">func</span>(agg, item <span class="typ">int</span>, _ <span class="typ">int</span>) <span class="typ">int</span> { <span class="kw">return</span> agg + item }, 0) <span class="cmt">// 10</span></code></pre>
-
-  <h3>去重与分组</h3>
-  <div class="figure">
+<div class="figure">
     <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs><marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7c6f9c"/></marker></defs>
       <text x="105" y="40" text-anchor="middle" font-size="12.5" fill="#64748b">输入 []int{0,1,2,3,4,5}</text>
@@ -347,185 +583,17 @@ lo.<span class="fn">Reduce</span>([]<span class="typ">int</span>{1, 2, 3, 4}, <s
     </svg>
     <figcaption>图 3 · GroupBy 分桶示意：谓词计算 key，元素按 key 聚成新切片</figcaption>
   </div>
-
-  <pre><code class="lang-go"><span class="cmt">// Uniq / UniqMap / IsUniq</span>
-lo.<span class="fn">Uniq</span>([]<span class="typ">int</span>{1, 2, 2, 3})              <span class="cmt">// []int{1, 2, 3}</span>
-lo.<span class="fn">UniqMap</span>(users, <span class="kw">func</span>(u <span class="typ">User</span>, _ <span class="typ">int</span>) <span class="typ">string</span> { <span class="kw">return</span> u.Name })
-<span class="cmt">// Map + 去重一步完成：[]string{"Alex", "Bob", "Alice"}</span>
-
-<span class="cmt">// GroupBy：按 key 分桶</span>
-lo.<span class="fn">GroupBy</span>([]<span class="typ">int</span>{0, 1, 2, 3, 4, 5}, <span class="kw">func</span>(item <span class="typ">int</span>, _ <span class="typ">int</span>) <span class="typ">int</span> {
-    <span class="kw">return</span> item % 3
-}) <span class="cmt">// map[int][]int{0: [0,3], 1: [1,4], 2: [2,5]}</span>
-
-<span class="cmt">// Chunk：切分固定大小子块（分批处理神器）</span>
-lo.<span class="fn">Chunk</span>([]<span class="typ">int</span>{0, 1, 2, 3, 4, 5}, 2) <span class="cmt">// [][]int{{0,1}, {2,3}, {4,5}}</span>
-
-<span class="cmt">// PartitionBy：按「连续」key 切段</span>
-lo.<span class="fn">PartitionBy</span>([]<span class="typ">int</span>{1, 1, 2, 2, 3}, <span class="kw">func</span>(x <span class="typ">int</span>, _ <span class="typ">int</span>) <span class="typ">string</span> {
-    <span class="kw">if</span> x &lt; 2 { <span class="kw">return</span> <span class="str">"low"</span> } <span class="kw">else</span> { <span class="kw">return</span> <span class="str">"high"</span> }
-}) <span class="cmt">// [][]int{{1,1}, {2,2,3}}</span>
-
-<span class="cmt">// KeyBy / SliceToMap(Associate)：切片转 map</span>
-lo.<span class="fn">SliceToMap</span>(users, <span class="kw">func</span>(u <span class="typ">User</span>, _ <span class="typ">int</span>) (<span class="typ">string</span>, <span class="typ">int</span>) {
-    <span class="kw">return</span> u.Name, u.Age
-}) <span class="cmt">// map[string]int{"Alex": 10, ...}</span></code></pre>
-
-  <h3>取舍与统计速查</h3>
-  <table>
-    <tr><th>函数</th><th>效果</th><th>函数</th><th>效果</th></tr>
-    <tr><td><code>Take(xs, 2)</code></td><td>取前 n</td><td><code>Drop(xs, 2)</code></td><td>丢前 n</td></tr>
-    <tr><td><code>TakeWhile / DropWhile</code></td><td>按谓词取/丢</td><td><code>DropRight</code></td><td>从尾部丢</td></tr>
-    <tr><td><code>Reject(xs, pred)</code></td><td>Filter 反义</td><td><code>Compact</code></td><td>去零值</td></tr>
-    <tr><td><code>Count(xs, 1)</code></td><td>元素计数</td><td><code>CountValues</code></td><td>直方图 map</td></tr>
-    <tr><td><code>Reverse</code></td><td>反转（新版返回新切片）</td><td><code>Shuffle</code></td><td>随机打乱</td></tr>
-    <tr><td><code>Fill / Repeat</code></td><td>填充 / 重复</td><td><code>Subset / Slice</code></td><td>取子集</td></tr>
-    <tr><td><code>Replace / ReplaceAll</code></td><td>替换前 n 个/全部</td><td><code>Flatten / Concat</code></td><td>拍平 / 拼接</td></tr>
-  </table>
 </section>
+<section data-anchor="5-最佳实践与注意事项">
+<h2 id="5-最佳实践与注意事项">5. 最佳实践与注意事项<span class="lvl b">版本</span></h2>
+<ol><li><strong>不要在超热路径滥用链式调用</strong>：<code>Map(Filter(Map(xs)))</code> 会多次遍历+分配，可用 <code>FilterMap</code> 合并，或回到手写 for；</li><li><strong>警惕 eager 求值</strong>：所有函数立即执行完毕，不存在惰性序列；需要惰性看 <code>lo/it</code> 或标准库 <code>iter</code>；</li><li><strong><code>lo.Reverse</code> 等函数历史上曾原地修改</strong>（v1.47 后改为返回新切片），升级版本前查 changelog，避免共享底层数组的坑；</li><li><strong><code>lo.Must</code> 只用于初始化期</strong>（配置解析、正则编译等"出错即致命"的场景），业务路径禁用；</li><li><strong><code>Ternary</code> 两分支都会求值</strong>：含副作用或高成本时改用 <code>TernaryF</code>；</li><li><strong><code>parallel.Map</code> 注意回调安全性</strong>：回调会被并发调用，闭包里的共享变量需自行加锁；</li><li><strong>团队约定 import 别名</strong>：<code>lop</code>/<code>lom</code> 与主包区分清楚，避免误用原地版本引发数据竞争；</li><li><strong>可读性优先</strong>：lo 的价值是让代码意图（"我在做映射/过滤/分组"）一目了然，而不是炫技——三层以上的嵌套回调不如拆成命名函数。</li></ol>
+<hr>
 
-<!-- ================= 5 Map/查找/集合 ================= -->
-<section id="mapdict">
-  <h2>5. Map / 查找 / 集合运算</h2>
-  <pre><code class="lang-go"><span class="cmt">//// Map 字典操作</span>
-lo.<span class="fn">Keys</span>(m) / lo.<span class="fn">Values</span>(m)              <span class="cmt">// 键/值切片</span>
-lo.<span class="fn">PickBy</span>(m, <span class="kw">func</span>(k <span class="typ">string</span>, v <span class="typ">int</span>) <span class="typ">bool</span> { <span class="kw">return</span> v &gt; 10 }) <span class="cmt">// 保留满足项</span>
-lo.<span class="fn">OmitBy</span>(m, pred)                          <span class="cmt">// PickBy 反义</span>
-lo.<span class="fn">Entries</span>(<span class="kw">map</span>[<span class="typ">string</span>]<span class="typ">int</span>{<span class="str">"a"</span>: 1})    <span class="cmt">// []Tuple2{{"a",1}}</span>
-lo.<span class="fn">FromEntries</span>(pairs)                      <span class="cmt">// pairs → map（逆向）</span>
-lo.<span class="fn">Invert</span>(m)                                <span class="cmt">// 键值互换</span>
-lo.<span class="fn">Assign</span>(m1, m2, m3)                      <span class="cmt">// 合并（后者覆盖）</span>
-lo.<span class="fn">MapKeys</span>(m, fn) / lo.<span class="fn">MapValues</span>(m, fn)   <span class="cmt">// 变换键/值</span>
-lo.<span class="fn">ValueOr</span>(m, <span class="str">"k"</span>, 42)                    <span class="cmt">// 带默认值取值</span>
-
-<span class="cmt">//// 查找与判断</span>
-lo.<span class="fn">IndexOf</span>([]<span class="typ">int</span>{5, 6, 7}, 6)             <span class="cmt">// 1（不存在返回 -1）</span>
-v, ok := lo.<span class="fn">Find</span>(xs, pred)                 <span class="cmt">// (值, 是否找到)</span>
-lo.<span class="fn">FindOrElse</span>(xs, fallback, pred)           <span class="cmt">// 找不到给默认值</span>
-lo.<span class="fn">FindKey</span>(m, 20)                          <span class="cmt">// 按值反查键</span>
-lo.<span class="fn">Contains</span>(xs, 5)                         <span class="cmt">// 包含</span>
-lo.<span class="fn">Every</span> / lo.<span class="fn">Some</span> / lo.<span class="fn">None</span>               <span class="cmt">// 全部/任一/都不满足（均有 By 变体）</span>
-
-<span class="cmt">//// 集合运算</span>
-lo.<span class="fn">Intersect</span>(a, b)                          <span class="cmt">// 交集</span>
-lo.<span class="fn">Difference</span>(a, b)                        <span class="cmt">// 差集</span>
-lo.<span class="fn">Union</span>(a, b)                             <span class="cmt">// 并集</span>
-lo.<span class="fn">Without</span>(xs, 2, 3)                       <span class="cmt">// 剔除指定元素</span>
-lo.<span class="fn">FindUniques</span> / lo.<span class="fn">FindDuplicates</span>        <span class="cmt">// 只出现一次的 / 重复的</span>
-
-<span class="cmt">//// 极值与取样</span>
-lo.<span class="fn">Min</span> / lo.<span class="fn">Max</span> / lo.<span class="fn">MinBy</span> / lo.<span class="fn">MaxBy</span> / lo.<span class="fn">MinIndexBy</span>
-lo.<span class="fn">First</span> / lo.<span class="fn">Last</span> / lo.<span class="fn">Nth</span>(xs, -1)            <span class="cmt">// 负索引支持</span>
-lo.<span class="fn">FirstOr</span>(xs, def)                         <span class="cmt">// 空集合安全取首</span>
-lo.<span class="fn">Sample</span>(xs) / lo.<span class="fn">Samples</span>(xs, 3)           <span class="cmt">// 随机取样</span></code></pre>
 </section>
-
-<!-- ================= 6 Tuple/条件/类型 ================= -->
-<section id="types">
-  <h2>6. Tuple / 条件表达式 / 类型操作</h2>
-
-  <h3>Tuple：多返回值的容器化（最高 9 元）</h3>
-  <pre><code class="lang-go"><span class="cmt">// Zip：多个等长切片「拉链」成元组切片</span>
-lo.<span class="fn">Zip2</span>([]<span class="typ">string</span>{<span class="str">"a"</span>, <span class="str">"b"</span>}, []<span class="typ">int</span>{1, 2})
-<span class="cmt">// []lo.Tuple2[string,int]{{A:"a",B:1},{A:"b",B:2}}，最高 Zip9</span>
-
-<span class="cmt">// Unpack：元组解包成多返回值</span>
-a, b := lo.<span class="fn">Unpack2</span>(lo.Tuple2[<span class="typ">string</span>, <span class="typ">int</span>]{A: <span class="str">"x"</span>, B: 1})
-
-<span class="cmt">// CrossJoin：笛卡尔积</span>
-lo.<span class="fn">CrossJoin2</span>([]<span class="typ">string</span>{<span class="str">"a"</span>}, []<span class="typ">int</span>{1, 2})
-<span class="cmt">// []Tuple2{{"a",1},{"a",2}}</span></code></pre>
-
-  <h3>条件表达式：让 Go 拥有「三元运算符」</h3>
-  <pre><code class="lang-go"><span class="cmt">// Ternary：注意两分支都会求值！</span>
-lo.<span class="fn">Ternary</span>(ok, <span class="str">"yes"</span>, <span class="str">"no"</span>)
-
-<span class="cmt">// TernaryF：惰性求值版本（仅计算命中分支）</span>
-lo.<span class="fn">TernaryF</span>(ok, <span class="kw">func</span>() <span class="typ">T</span> { <span class="kw">return</span> <span class="fn">expensive</span>() }, <span class="kw">func</span>() <span class="typ">T</span> { <span class="kw">return</span> <span class="fn">cheap</span>() })
-
-<span class="cmt">// 链式 if</span>
-lo.<span class="fn">If</span>(ok, <span class="str">"a"</span>).<span class="fn">ElseIf</span>(ok2, <span class="str">"b"</span>).<span class="fn">Else</span>(<span class="str">"c"</span>)
-
-<span class="cmt">// 链式 switch</span>
-lo.<span class="fn">Switch</span>(value).<span class="fn">Case</span>(1, <span class="str">"one"</span>).<span class="fn">Case</span>(2, <span class="str">"two"</span>).<span class="fn">Default</span>(<span class="str">"many"</span>)</code></pre>
-
-  <h3>类型与指针：消灭 nil 判空样板</h3>
-  <pre><code class="lang-go">lo.<span class="fn">ToPtr</span>(42)               <span class="cmt">// *int：字面量直接取地址</span>
-lo.<span class="fn">FromPtr</span>(p)              <span class="cmt">// 解引用；nil → 零值</span>
-lo.<span class="fn">FromPtrOr</span>(p, 99)        <span class="cmt">// 解引用；nil → 默认值</span>
-lo.<span class="fn">ToSlicePtr</span>([]<span class="typ">int</span>{1, 2})   <span class="cmt">// []*int</span>
-lo.<span class="fn">FromSlicePtrOr</span>(ps, 0)   <span class="cmt">// []*int → []T（nil 安全）</span>
-lo.<span class="fn">IsEmpty</span>(xs) / lo.<span class="fn">IsNotEmpty</span>(xs)
-lo.<span class="fn">Coalesce</span>(0, 1, 2)        <span class="cmt">// 返回第一个非零值 → 1（默认值串联神器）</span>
-lo.<span class="fn">IsNil</span>(x) / lo.<span class="fn">IsNotNil</span>(x)  <span class="cmt">// 任意类型的 nil 判断</span>
-
-<span class="cmt">// 字符串与数学（节选）</span>
-lo.<span class="fn">RandomString</span>(16, lo.LowerCaseLettersCharset)
-lo.<span class="fn">Substring</span>(<span class="str">"hello"</span>, 0, 3)    <span class="cmt">// "hel"（支持负索引）</span>
-lo.<span class="fn">RuneLength</span>(<span class="str">"你好"</span>)          <span class="cmt">// 2（按 rune 而非 byte）</span>
-lo.<span class="fn">SnakeCase</span>(<span class="str">"MyFunc"</span>)        <span class="cmt">// "my_func"</span>
-lo.<span class="fn">CamelCase</span>(<span class="str">"http_server"</span>)   <span class="cmt">// "httpServer"</span>
-lo.<span class="fn">KebabCase</span>(<span class="str">"HelloWorld"</span>)    <span class="cmt">// "hello-world"</span>
-lo.<span class="fn">Range</span>(5)                    <span class="cmt">// []int{0,1,2,3,4}</span>
-lo.<span class="fn">RangeWithSteps</span>(0, 10, 3)    <span class="cmt">// []int{0,3,6,9}</span>
-lo.<span class="fn">Clamp</span>(42, 0, 100)           <span class="cmt">// 区间钳制</span>
-lo.<span class="fn">Sum</span> / lo.<span class="fn">Mean</span> / lo.<span class="fn">Mode</span>       <span class="cmt">// 求和 / 均值 / 众数</span></code></pre>
-</section>
-
-<!-- ================= 7 错误/并发 ================= -->
-<section id="errcon">
-  <h2>7. 错误处理与并发控制</h2>
-  <pre><code class="lang-go"><span class="cmt">//// 错误处理</span>
-<span class="cmt">// Validate：条件不满足即返回错误（参数校验常用）</span>
-err := lo.<span class="fn">Validate</span>(user.Age &gt;= 18, <span class="str">"user must be adult, got %d"</span>, user.Age)
-
-<span class="cmt">// Must：「我保证不出错」，出错 panic（仅初始化期使用）</span>
-val := lo.<span class="fn">Must</span>(strconv.<span class="fn">Atoi</span>(<span class="str">"42"</span>))
-
-<span class="cmt">// Try：函数式 recover</span>
-err = lo.<span class="fn">Try</span>(<span class="kw">func</span>() <span class="typ">error</span> { <span class="kw">return</span> <span class="fn">doSomething</span>() })
-lo.<span class="fn">TryCatch</span>(fn, catchFn)                    <span class="cmt">// 捕获后交给 catch 处理</span>
-
-<span class="cmt">// ErrorsAs：一行完成 errors.As</span>
-<span class="kw">if</span> lo.<span class="fn">ErrorsAs</span>[*<span class="typ">MyError</span>](err) { ... }
-
-<span class="cmt">//// 并发控制</span>
-<span class="cmt">// Attempt：带重试的执行（返回最终错误）</span>
-err = lo.<span class="fn">Attempt</span>(3, <span class="kw">func</span>(index <span class="typ">int</span>) <span class="typ">error</span> {
-    <span class="kw">return</span> <span class="fn">callFlakyAPI</span>()
-})
-
-<span class="cmt">// AttemptWithDelay：带退避延迟的重试</span>
-err = lo.<span class="fn">AttemptWithDelay</span>(5, 2*time.Second, <span class="kw">func</span>(i <span class="typ">int</span>, d time.Duration) <span class="typ">error</span> {
-    <span class="kw">return</span> <span class="fn">retryableOp</span>()
-})
-
-<span class="cmt">// Debounce：防抖（200ms 内多次调用只执行最后一次）</span>
-debounced := lo.<span class="fn">Debounce</span>(200*time.Millisecond, <span class="kw">func</span>() { <span class="fn">search</span>() })
-debounced()
-
-<span class="cmt">// Throttle：节流（1 秒内最多执行一次，其余丢弃）</span>
-throttled := lo.<span class="fn">Throttle</span>(1*time.Second, fn)
-
-<span class="cmt">// Synchronize：把任意函数变成并发安全版本</span>
-safeFn := lo.<span class="fn">Synchronize</span>(fn)
-
-<span class="cmt">// Async：立即起 goroutine，返回 channel 收结果（另有 Async0~Async6）</span>
-ch := lo.<span class="fn">Async</span>(<span class="kw">func</span>() <span class="typ">int</span> { <span class="kw">return</span> <span class="fn">heavyCompute</span>() })
-result := &lt;-ch
-
-<span class="cmt">// WaitFor：轮询等待条件成立</span>
-err = lo.<span class="fn">WaitFor</span>(<span class="kw">func</span>() <span class="typ">bool</span> { <span class="kw">return</span> <span class="fn">ready</span>() }, 3*time.Second, 100*time.Millisecond)
-
-<span class="cmt">// Transaction：多个函数顺序执行，遇错即停（并回滚你自行编排的清理逻辑）</span>
-err = lo.<span class="fn">Transaction</span>(fn1, fn2, fn3)</code></pre>
-</section>
-
-<!-- ================= 8 Channel ================= -->
-<section id="channel">
-  <h2>8. Channel 工具箱</h2>
-
-  <div class="figure">
+<section data-anchor="6-选型小结">
+<h2 id="6-选型小结">6. 选型小结<span class="lvl a">避坑</span></h2>
+<div class="table-wrap"><table><thead><tr><th>场景</th><th>建议</th></tr></thead><tbody><tr><td>业务代码里的切片/字典转换、分组、去重</td><td>强烈推荐 lo</td></tr><tr><td>参数校验、重试、防抖节流</td><td>lo.Validate / Attempt / Debounce 一行解决</td></tr><tr><td>需要 channel 扇入扇出、攒批</td><td>lo 的 channel 工具箱</td></tr><tr><td>纯计算超大规模数据、排序</td><td>标准库 slices 或手写</td></tr><tr><td>无限流/响应式</td><td>换 samber/ro</td></tr><tr><td>Maybe/Result 等 Monad</td><td>换 samber/mo</td></tr></tbody></table></div>
+<div class="figure">
     <svg viewBox="0 0 880 380" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs><marker id="arr5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7c6f9c"/></marker></defs>
       <!-- FanIn -->
@@ -583,29 +651,7 @@ err = lo.<span class="fn">Transaction</span>(fn1, fn2, fn3)</code></pre>
     </svg>
     <figcaption>图 4 · Channel 工具箱三剑客：FanIn 聚合多源、FanOut 扇出负载、Buffer 攒批输出</figcaption>
   </div>
-
-  <pre><code class="lang-go"><span class="cmt">// Generator：把切片生产为 channel（带缓冲）</span>
-ch := lo.<span class="fn">Generator</span>(10, []<span class="typ">int</span>{1, 2, 3})
-
-<span class="cmt">// 切片 ⇄ channel 互转</span>
-ch = lo.<span class="fn">SliceToChannel</span>(10, []<span class="typ">int</span>{1, 2, 3})
-<span class="kw">for</span> v := <span class="kw">range</span> ch { ... }
-xs := lo.<span class="fn">ChannelToSlice</span>(ch) <span class="cmt">// []int{1, 2, 3}</span>
-
-<span class="cmt">// 每 10 个元素或超时 1s 输出一批</span>
-<span class="kw">for</span> batch := <span class="kw">range</span> lo.<span class="fn">BufferWithTimeout</span>(ctx, ch, 10, time.Second) {
-    <span class="fn">flushToDB</span>(batch)
-}
-
-merged := lo.<span class="fn">FanIn</span>(ch1, ch2, ch3)   <span class="cmt">// 多 channel 合一</span>
-chs := lo.<span class="fn">FanOut</span>(ch, 5)              <span class="cmt">// 一 channel 派发到 5 个</span></code></pre>
-</section>
-
-<!-- ================= 9 子包 ================= -->
-<section id="subpkg">
-  <h2>9. parallel / mutable 子包</h2>
-
-  <div class="figure">
+<div class="figure">
     <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
       <defs><marker id="arr6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7c6f9c"/></marker></defs>
       <!-- 输入 -->
@@ -645,96 +691,61 @@ chs := lo.<span class="fn">FanOut</span>(ch, 5)              <span class="cmt">/
     </svg>
     <figcaption>图 5 · parallel 子包实现原理：index → goroutine → out[index]，保序并行</figcaption>
   </div>
-
-  <pre><code class="lang-go"><span class="kw">import</span> lop <span class="str">"github.com/samber/lo/parallel"</span>
-
-<span class="cmt">// 并行抓取多个 URL，结果顺序与输入一致</span>
-urls := []<span class="typ">string</span>{<span class="str">"https://a.com"</span>, <span class="str">"https://b.com"</span>, <span class="str">"https://c.com"</span>}
-bodies := lop.<span class="fn">Map</span>(urls, <span class="kw">func</span>(url <span class="typ">string</span>, _ <span class="typ">int</span>) <span class="typ">string</span> {
-    resp, _ := http.<span class="fn">Get</span>(url)
-    <span class="kw">defer</span> resp.Body.<span class="fn">Close</span>()
-    b, _ := io.<span class="fn">ReadAll</span>(resp.Body)
-    <span class="kw">return</span> <span class="typ">string</span>(b)
-})
-
-lop.<span class="fn">ForEach</span>(xs, <span class="kw">func</span>(x <span class="typ">T</span>, _ <span class="typ">int</span>) { <span class="fn">process</span>(x) }) <span class="cmt">// 并行副作用</span></code></pre>
-
-  <h3>mutable：原地修改版</h3>
-  <pre><code class="lang-go"><span class="kw">import</span> lom <span class="str">"github.com/samber/lo/mutable"</span>
-
-list := []<span class="typ">int</span>{1, 2, 3, 4}
-newList := lom.<span class="fn">Filter</span>(list, <span class="kw">func</span>(x <span class="typ">int</span>) <span class="typ">bool</span> { <span class="kw">return</span> x%2 == 0 })
-<span class="cmt">// newList == []int{2, 4}；list 底层数组被改写（内容不再可信）</span>
-<span class="cmt">// 省一次内存分配，代价是共享底层数组的副作用</span></code></pre>
+<div class="tip"><b>✅ 共存策略：</b><span>排序查找优先标准库（性能最优）；转换、分组、并发、错误处理类样板代码用 lo。两者可在同一项目共存，互不冲突。</span></div>
+<div class="danger"><b>🚫 超热路径慎用链式调用：</b><span><code>Map(Filter(Map(xs)))</code> 多次遍历 + 分配。用 <code>FilterMap</code> 合并，或回到手写 for。</span></div>
+<div class="warn"><b>⚠️ Ternary 两分支都会求值：</b><span>含副作用或高成本计算时必须改用 <code>TernaryF</code>（惰性求值）。</span></div>
+<div class="warn"><b>⚠️ lo.Must 只用于初始化期：</b><span>配置解析、正则编译等「出错即致命」的场景；业务路径禁用。</span></div>
+<div class="warn"><b>⚠️ parallel 回调安全性：</b><span>回调被并发调用，闭包里的共享变量需自行加锁。</span></div>
+<div class="warn"><b>⚠️ 历史版本行为变化：</b><span><code>lo.Reverse</code> 等函数曾原地修改、新版改为返回新切片，升级版本前查 changelog，避免共享底层数组的坑。</span></div>
+<div class="warn"><b>⚠️ 区分子包别名：</b><span>团队约定 <code>lop</code> / <code>lom</code> 别名，避免误用原地版本引发数据竞争。</span></div>
+<div class="tip"><b>✅ 可读性优先：</b><span>lo 的价值是让代码意图（「我在做映射/过滤/分组」）一目了然。三层以上嵌套回调不如拆成命名函数 —— 一切以团队可维护性为准绳。</span></div>
 </section>
-
-<!-- ================= 10 对比 ================= -->
-<section id="stdlib">
-  <h2>10. 对比标准库 slices / maps</h2>
-  <p>Go 1.21 起 <code>slices</code> / <code>maps</code> 进入标准库，功能有交集：</p>
-  <table>
-    <tr><th>能力</th><th>标准库</th><th>samber/lo</th></tr>
-    <tr><td>Contains / Index / Max / Min</td><td>✅ <code>slices</code></td><td>✅ 均有，另有 By / Err 变体</td></tr>
-    <tr><td>Clone / Sort / BinarySearch</td><td>✅ <code>slices</code>（编译器深度优化）</td><td>➖ 不做排序，保持不可变定位</td></tr>
-    <tr><td>Map / Filter / Reduce</td><td>❌ 无</td><td>✅ <b>核心优势</b></td></tr>
-    <tr><td>GroupBy / Chunk / KeyBy / Uniq</td><td>❌ 无</td><td>✅ 独有</td></tr>
-    <tr><td>Ternary / Coalesce / Attempt / Channel 系列</td><td>❌ 无</td><td>✅ 独有</td></tr>
-  </table>
-  <div class="tip"><b>✅ 共存策略：</b><span>排序查找优先标准库（性能最优）；转换、分组、并发、错误处理类样板代码用 lo。两者可在同一项目共存，互不冲突。</span></div>
-</section>
-
-<!-- ================= 11 最佳实践 ================= -->
-<section id="best">
-  <h2>11. 最佳实践与注意事项</h2>
-  <div class="danger"><b>🚫 超热路径慎用链式调用：</b><span><code>Map(Filter(Map(xs)))</code> 多次遍历 + 分配。用 <code>FilterMap</code> 合并，或回到手写 for。</span></div>
-  <div class="warn"><b>⚠️ Ternary 两分支都会求值：</b><span>含副作用或高成本计算时必须改用 <code>TernaryF</code>（惰性求值）。</span></div>
-  <div class="warn"><b>⚠️ lo.Must 只用于初始化期：</b><span>配置解析、正则编译等「出错即致命」的场景；业务路径禁用。</span></div>
-  <div class="warn"><b>⚠️ parallel 回调安全性：</b><span>回调被并发调用，闭包里的共享变量需自行加锁。</span></div>
-  <div class="warn"><b>⚠️ 历史版本行为变化：</b><span><code>lo.Reverse</code> 等函数曾原地修改、新版改为返回新切片，升级版本前查 changelog，避免共享底层数组的坑。</span></div>
-  <div class="warn"><b>⚠️ 区分子包别名：</b><span>团队约定 <code>lop</code> / <code>lom</code> 别名，避免误用原地版本引发数据竞争。</span></div>
-  <div class="tip"><b>✅ 可读性优先：</b><span>lo 的价值是让代码意图（「我在做映射/过滤/分组」）一目了然。三层以上嵌套回调不如拆成命名函数 —— 一切以团队可维护性为准绳。</span></div>
-
-  <h3>选型小结</h3>
-  <table>
-    <tr><th>场景</th><th>建议</th></tr>
-    <tr><td>业务代码里的切片/字典转换、分组、去重</td><td>强烈推荐 lo</td></tr>
-    <tr><td>参数校验、重试、防抖节流</td><td>lo.Validate / Attempt / Debounce 一行解决</td></tr>
-    <tr><td>channel 扇入扇出、攒批</td><td>lo 的 channel 工具箱</td></tr>
-    <tr><td>纯计算超大规模数据、排序</td><td>标准库 slices 或手写</td></tr>
-    <tr><td>无限流 / 响应式</td><td>换 samber/ro</td></tr>
-    <tr><td>Maybe / Result 等 Monad</td><td>换 samber/mo</td></tr>
-  </table>
-</section>
-
-<footer>samber/lo 技术指南 · 基于官方 README 与文档整理 · 2026-09</footer>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
 </main>
 </div>
-
 <script>
-// 极简 Go 语法高亮（免外部依赖）
-document.querySelectorAll('pre code.lang-go').forEach(function(block){
-  var src = block.textContent;
-  src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  var master = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
-  var out = src.replace(master, function(m, c1, c2, s, kw, typ, num, fn){
-    if (c1 || c2) return '<span class="cmt">'+m+'</span>';
-    if (s) return '<span class="str">'+m+'</span>';
-    if (kw) return '<span class="kw">'+m+'</span>';
-    if (typ) return '<span class="typ">'+m+'</span>';
-    if (num) return '<span class="num">'+m+'</span>';
-    if (fn) return '<span class="fn">'+m+'</span>';
-    return m;
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
   });
-  block.innerHTML = out;
-});
-document.querySelectorAll('pre code.lang-go').forEach(function(b){
-  var label=document.createElement('span');label.className='codelabel';label.textContent='Go';
-  b.closest('pre').appendChild(label);
-});
-document.querySelectorAll('pre code.lang-bash').forEach(function(b){
-  var label=document.createElement('span');label.className='codelabel';label.textContent='Shell';
-  b.closest('pre').appendChild(label);
-});
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
 </script>
 </body>
 </html>
