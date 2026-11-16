@@ -1,19 +1,23 @@
-# open-guide
-
-[![Docs](https://img.shields.io/badge/docs-47%20guides-16a34a)](./README_EN.md)
-[![Language](https://img.shields.io/badge/topic-Go%20ecosystem-00ADD8?logo=go)](https://go.dev)
-[![Format](https://img.shields.io/badge/format-Markdown%20%2B%20HTML-orange)](./README_EN.md)
-[![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
-[![中文](https://img.shields.io/badge/README-中文-red)](./README.md)
-
-> **A collection of in-depth, hands-on guides for the Go backend ecosystem.**
-> Not another Hello World — these are manuals you can actually read, search, and copy working code from.
->
-> 47 long-form guides · ~18,300 lines of Markdown · each one ships as **Markdown** *and* a **single-file HTML** page (sidebar TOC + syntax highlighting, just open it in a browser).
-
 <div align="center">
 
-[中文说明](./README.md) · [Guide Index](#2-guide-index) · [Reading Paths](#3-suggested-reading-paths) · [How to Read](#4-two-ways-to-read) · [Writing Rules](#5-required-elements-of-every-guide) · [Contributing](#7-contributing)
+# open-guide
+
+**In-depth, hands-on guides for the Go backend ecosystem**
+
+Manuals you can read, search, and copy working code from — not another Hello World.
+
+[![Docs](https://img.shields.io/badge/docs-47%20guides-16a34a?style=for-the-badge)](./README_EN.md)
+[![Lines](https://img.shields.io/badge/text-18%2C400%20lines-0ea5e9?style=for-the-badge)](./README_EN.md)
+[![Format](https://img.shields.io/badge/format-Markdown%20%2B%20HTML-f59e0b?style=for-the-badge)](./README_EN.md)
+
+[![License](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square)](./LICENSE)
+[![Online](https://img.shields.io/badge/read-online-14b8a6?style=flat-square)](https://weisg1999.github.io/open-guide/)
+[![CI](https://img.shields.io/github/actions/workflow/status/Weisg1999/open-guide/check-html.yml?style=flat-square&label=CI)](./.github/workflows/check-html.yml)
+[![Last commit](https://img.shields.io/github/last-commit/Weisg1999/open-guide?style=flat-square)](https://github.com/Weisg1999/open-guide/commits/main)
+[![Go](https://img.shields.io/badge/Go-1.27.4-00ADD8?style=flat-square&logo=go)](https://go.dev)
+[![中文](https://img.shields.io/badge/README-中文-red?style=flat-square)](./README.md)
+
+[Read online](https://weisg1999.github.io/open-guide/) · [Guide Index](#2-guide-index) · [Reading Paths](#3-suggested-reading-paths) · [How to Read](#4-two-ways-to-read) · [Writing Rules](#5-required-elements-of-every-guide) · [Contributing](#7-contributing)
 
 </div>
 
@@ -25,7 +29,7 @@
 
 | 📚 Guides | 📝 Text | 📄 Offline manuals | 🖼️ Diagrams | ✅ Writing rules | ⚖️ License |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| **47** | **≈ 18,300 lines** | **47 pages** | **104 SVG** | **7 required elements** | **MIT** |
+| **47** | **≈ 18,400 lines** | **47 pages** | **104 SVG** | **7 required elements** | **MIT** |
 
 </div>
 
@@ -46,6 +50,15 @@
 | Official docs are scattered, dated, or just an API list | Reorganized as *internals → code → pitfalls → trade-offs*, so one sitting is enough to get productive |
 | Blog posts are version-blind and their conclusions feel risky | Every guide states the **exact upstream version and release date** it was written against |
 | You learn the API but never the "why" | Every feature comes with the mechanism behind it (etcd's Raft/MVCC, asynq's Redis data structures, generics' GC Shape, ClickHouse's MergeTree) |
+
+**Who it's for**
+
+| You are | What you get |
+| --- | --- |
+| New to Go, or filling gaps | The 9 language-core guides: generics → reflection → concurrency → profiling → testing → time zones, each with runnable code |
+| Choosing a stack | A head-to-head comparison at the end of every guide, plus cross-guide tables for messaging, data stores and observability |
+| Debugging production | Jump straight to "Pitfalls"; the 6 observability guides explain the logs / metrics / traces split |
+| Writing internal standards | The 7-element template plus the build script — fork it, swap the topics, get your own handbook |
 
 > This repo contains **no third-party source code** — only curated explanation. All copyright belongs to the respective upstream projects. See [LICENSE](./LICENSE) and Section 8 below.
 
@@ -149,6 +162,19 @@ Every guide ships as `MD` (searchable, copyable, PR-friendly) and `HTML` (a depe
 ---
 
 ## 3. Suggested Reading Paths
+
+The overall shape first: every direction builds on the Go core, and everything ends up in observability and deployment.
+
+```mermaid
+flowchart LR
+    BASE["Go core<br/>generics · reflection · concurrency · profiling · testing"] --> SVC["Services<br/>Gin · gRPC · Kratos / go-zero"]
+    BASE --> DATA["Data & IoT<br/>MySQL / PG · Redis · time-series · MQTT"]
+    BASE --> ASYNC["Async & scheduling<br/>cron · asynq · Kafka / NATS · Temporal"]
+    SVC --> OBS["Observability<br/>Zap / slog · Prometheus · OTel · Loki"]
+    DATA --> OBS
+    ASYNC --> OBS
+    OBS --> DEP["Deployment<br/>Docker / K8s · Operator"]
+```
 
 <div align="center">
 
@@ -348,6 +374,29 @@ git push origin feat/your-topic
 
 </details>
 
+<details>
+<summary><b>How this repo is maintained</b></summary>
+
+- **Version sweeps**: guides are re-checked against upstream releases (the latest pass covered etcd v3.7, Kafka 4.x, MySQL 9.7, K8s 1.37, Go 1.27.4). Outdated conclusions get rewritten, not patched with addenda.
+- **CI as the gate**: every push / PR runs `--check --audit`. Drifted HTML, a missing required element, or an out-of-date index/counter turns the pipeline red.
+- **Cost of one guide**: write the Markdown (7 elements) → `build_html.py --topic` → update the index and counters → open a PR.
+- **What we don't do**: no third-party source code, no machine-translated API dumps, no splitting one topic into filler pages.
+
+</details>
+
+<details>
+<summary><b>FAQ</b></summary>
+
+| Question | Answer |
+| --- | --- |
+| Why are the guides in Chinese? | They target Chinese-speaking Go developers; this English README covers navigation and structure. |
+| Is there a sample project? | No. Code lives inline and can be copied section by section; keeping the repo documentation-only avoids drift between samples and prose. |
+| Will the guides go stale? | Every guide states its upstream version, and CI keeps HTML in sync. PRs that bump versions are welcome. |
+| Can I reuse this for training? | Yes — MIT, just keep the copyright notice. Upstream projects' licenses are their own. |
+| The HTML page is blank or unstyled. | HTML is a build artifact: rerun `python tools/build_html.py`. Never hand-edit it. |
+
+</details>
+
 **Writing conventions** (consistency is what makes the collection readable):
 
 1. Open with a `>` blockquote: one-line positioning + upstream repo link + documented version & license.
@@ -381,8 +430,10 @@ You are free to use, copy, modify, merge, publish and distribute these documents
 
 <div align="center">
 
-If these guides helped you, a ⭐ would mean a lot — and feel free to share the repo with a teammate who writes Go.
+**If these guides helped you, a ⭐ would mean a lot — and feel free to share the repo with a teammate who writes Go.**
 
-<sub>Markdown is the single source of truth · HTML is a build artifact · © 2026 Weisg1999</sub>
+[Guide Index](#2-guide-index) · [Reading Paths](#3-suggested-reading-paths) · [Contributing](#7-contributing) · [中文](./README.md)
+
+<sub>Markdown is the single source of truth · HTML is a build artifact · 47 guides / 18,400 lines · © 2026 Weisg1999</sub>
 
 </div>

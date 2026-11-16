@@ -1,18 +1,23 @@
-# open-guide
-
-[![Docs](https://img.shields.io/badge/docs-47%20篇-16a34a)](./README.md)
-[![Language](https://img.shields.io/badge/topic-Go%20%E7%94%9F%E6%80%81-00ADD8?logo=go)](https://go.dev)
-[![Format](https://img.shields.io/badge/format-Markdown%20%2B%20HTML-orange)](./README.md)
-[![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
-[![English](https://img.shields.io/badge/README-English-blue)](./README_EN.md)
-
-> **Go 后端技术栈中文深度指南合集** —— 一份能读、能查、能直接抄代码的「技术手册」，而不是又一份 Hello World。
->
-> 47 篇长文 · 约 18,300 行 Markdown · 每篇同时提供 **Markdown** 与**单文件 HTML**（侧边栏导航 + 代码高亮，浏览器直接打开）。
-
 <div align="center">
 
-[English README](./README_EN.md) · [文档目录](#二文档目录) · [阅读路径](#三推荐的阅读路径) · [快速开始](#四两种阅读方式) · [写作规范](#五每篇文档的必备要素) · [贡献](#七贡献)
+# open-guide
+
+**Go 后端技术栈中文深度指南合集**
+
+能读、能查、能直接抄代码的「技术手册」，而不是又一份 Hello World。
+
+[![Docs](https://img.shields.io/badge/docs-47%20篇-16a34a?style=for-the-badge)](./README.md)
+[![Lines](https://img.shields.io/badge/正文-18%2C400%20行-0ea5e9?style=for-the-badge)](./README.md)
+[![Format](https://img.shields.io/badge/format-Markdown%20%2B%20HTML-f59e0b?style=for-the-badge)](./README.md)
+
+[![License](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square)](./LICENSE)
+[![Online](https://img.shields.io/badge/在线浏览-GitHub%20Pages-14b8a6?style=flat-square)](https://weisg1999.github.io/open-guide/)
+[![CI](https://img.shields.io/github/actions/workflow/status/Weisg1999/open-guide/check-html.yml?style=flat-square&label=CI)](./.github/workflows/check-html.yml)
+[![Last commit](https://img.shields.io/github/last-commit/Weisg1999/open-guide?style=flat-square)](https://github.com/Weisg1999/open-guide/commits/main)
+[![Go](https://img.shields.io/badge/Go-1.27.4-00ADD8?style=flat-square&logo=go)](https://go.dev)
+[![English](https://img.shields.io/badge/README-English-blue?style=flat-square)](./README_EN.md)
+
+[在线浏览](https://weisg1999.github.io/open-guide/) · [文档目录](#二文档目录) · [阅读路径](#三推荐的阅读路径) · [快速开始](#四两种阅读方式) · [写作规范](#五每篇文档的必备要素) · [贡献](#七贡献)
 
 </div>
 
@@ -22,7 +27,7 @@
 
 | 📚 指南 | 📝 正文 | 📄 离线手册 | 🖼️ 架构图 | ✅ 写作规范 | ⚖️ 许可 |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| **47 篇** | **≈ 18,300 行** | **47 份** | **104 张 SVG** | **7 个必备要素** | **MIT** |
+| **47 篇** | **≈ 18,400 行** | **47 份** | **104 张 SVG** | **7 个必备要素** | **MIT** |
 
 </div>
 
@@ -43,6 +48,15 @@
 | 官方文档散、旧、只有 API 列表 | 按「原理 → 代码 → 坑 → 选型」重组，一篇读完能上手 |
 | 博客文章版本过时、结论不敢用 | 每篇文首标注**对应的上游版本与发布时间**，结论可溯源 |
 | 只有用法，不知道为什么 | 每个特性都配原理说明（etcd 的 Raft/MVCC、asynq 的 Redis 数据结构、泛型 GC Shape、ClickHouse 的 MergeTree） |
+
+**这份仓库适合谁**
+
+| 你是 | 能拿到什么 |
+| --- | --- |
+| 刚转 Go、补语言基础 | 语言核心 9 篇：泛型 → 反射 → 并发 → 性能 → 测试 → 时区，每篇都有可运行代码 |
+| 正在做技术选型 | 每篇末尾的横向选型对比；消息、数据库、可观测三组还有跨篇对照 |
+| 线上排障、复盘 | 直接跳每篇的「常见坑」；可观测性 6 篇给出日志 / 指标 / 链路的分工 |
+| 要写团队内部规范 | 7 要素模板 + 构建脚本，fork 后替换主题即可得到自己的手册 |
 
 > 仓库中**不包含任何第三方源码**，只做整理、讲解与二次组织；所有版权归各自上游项目所有（详见 [声明](#八许可证与声明)）。
 
@@ -147,6 +161,19 @@
 
 ## 三、推荐的阅读路径
 
+先看整体形状：所有方向都建立在 Go 语言核心之上，最后都落到可观测性与部署。
+
+```mermaid
+flowchart LR
+    BASE["Go 语言核心<br/>泛型 · 反射 · 并发 · 性能 · 测试 · 时区"] --> SVC["服务开发<br/>Gin · gRPC · Kratos / go-zero"]
+    BASE --> DATA["数据与 IoT<br/>MySQL / PG · Redis · 时序库 · MQTT"]
+    BASE --> ASYNC["异步与调度<br/>cron · asynq · Kafka / NATS · Temporal"]
+    SVC --> OBS["可观测性<br/>Zap / slog · Prometheus · OTel · Loki"]
+    DATA --> OBS
+    ASYNC --> OBS
+    OBS --> DEP["部署<br/>Docker / K8s · Operator"]
+```
+
 <div align="center">
 
 | 🧱 服务开发方向 | 💾 数据 / IoT 方向 | ⚡ 异步与调度方向 |
@@ -222,6 +249,8 @@ python tools/build_html.py --stats         # 结构统计 + 内链锚点自检
 </details>
 
 > ⚠️ HTML 是**构建产物**，由 `tools/build_html.py` 从同名 Markdown 生成，**请勿直接编辑**；若发现不一致，一律以 **Markdown 为准**。
+
+> 🌐 **在线版**：<https://weisg1999.github.io/open-guide/> —— 带搜索与分类筛选的入口页，47 篇单文件 HTML 都可直接阅读。GitHub 网页上点 `.html` 文件只会显示源码，这是平台限制；要看渲染后的页面，用在线版或本地打开。
 
 生成脚本只用 Python 3 标准库，零第三方依赖。**正文 100% 来自 Markdown**；下面三份文件只承载展示层数据，全部纳入版本控制，因此 HTML 可完整复现：
 
@@ -345,6 +374,29 @@ git push origin feat/your-topic
 
 </details>
 
+<details>
+<summary><b>这个仓库是怎么维护的</b></summary>
+
+- **版本巡检**：跟随上游 release 定期核对（最近一轮覆盖 etcd v3.7、Kafka 4.x、MySQL 9.7、K8s 1.37、Go 1.27.4 等），过期结论直接修订，不追加「补丁说明」。
+- **构建即校验**：每次 push / PR 由 CI 跑 `--check --audit`，HTML 与 Markdown 不一致、缺 7 要素、目录或计数漏改都会让流水线变红。
+- **新增一篇的成本**：写 Markdown（7 要素）→ `build_html.py --topic` 生成 HTML → 同步 README 目录与计数 → 提 PR。
+- **不做的事**：不收录第三方源码、不做 API 机翻、不为凑数拆篇。
+
+</details>
+
+<details>
+<summary><b>常见问题</b></summary>
+
+| 问题 | 回答 |
+| --- | --- |
+| 为什么正文是中文？ | 面向中文 Go 开发者；英文 README 用于导航与结构说明。 |
+| 有配套示例项目吗？ | 没有。代码都在正文里，按节复制即可运行；仓库保持纯文档，避免示例工程与文档版本脱节。 |
+| 版本会不会很快过期？ | 每篇文首标注对应版本，CI 保证 HTML 同步；上游发布新版本后欢迎提 PR 更新。 |
+| 可以转载或用于内训吗？ | 可以，MIT 许可，保留版权声明即可；上游项目的协议以其仓库为准。 |
+| HTML 打开空白或样式错乱？ | HTML 是构建产物，重新跑 `python tools/build_html.py` 生成；不要手改 HTML。 |
+
+</details>
+
 **写作约定**（保持一致，读者才不会割裂）：
 
 1. 文首用 `>` 引用块写明：一句话定位 + 上游仓库链接 + 对应版本与协议。
@@ -378,8 +430,10 @@ Copyright (c) 2026 Weisg1999
 
 <div align="center">
 
-如果这些文档帮到了你，欢迎点个 ⭐ Star 支持一下，也欢迎分享给一起写 Go 的同事。
+**如果这些文档帮到了你，欢迎点个 ⭐ Star，也欢迎分享给一起写 Go 的同事。**
 
-<sub>Markdown 是唯一真源 · HTML 由构建脚本生成 · © 2026 Weisg1999</sub>
+[文档目录](#二文档目录) · [阅读路径](#三推荐的阅读路径) · [参与贡献](#七贡献) · [English](./README_EN.md)
+
+<sub>Markdown 是唯一真源 · HTML 由构建脚本生成 · 47 篇 / 18,400 行 · © 2026 Weisg1999</sub>
 
 </div>

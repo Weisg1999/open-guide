@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>open-guide · Go 后端技术栈中文深度指南</title>
+<meta name="description" content="47 篇 Go 后端技术栈中文深度指南：覆盖语言核心、服务治理、数据存储、消息调度、可观测性与部署，每篇含原理、实战、坑与选型。">
+<meta name="theme-color" content="#0f172a">
+<style>
+:root{
+  --bg:#f8fafc; --fg:#0f172a; --muted:#64748b; --line:#e2e8f0;
+  --card:#ffffff; --chip:#f1f5f9; --chip-fg:#334155; --shadow:rgba(2,6,23,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#0b1120; --fg:#e2e8f0; --muted:#94a3b8; --line:#1e293b;
+         --card:#111827; --chip:#1e293b; --chip-fg:#cbd5e1; --shadow:rgba(0,0,0,.5); }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+.hero{position:relative;overflow:hidden;color:#f8fafc;
+  background:radial-gradient(900px 500px at 15% -10%,#115e59 0%,transparent 60%),
+             radial-gradient(700px 420px at 85% 0%,#1e3a8a 0%,transparent 55%),
+             #0f172a;
+  padding:72px 0 56px}
+.hero:after{content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
+  background-size:44px 44px;mask-image:linear-gradient(180deg,#000,transparent 85%)}
+.hero .wrap{position:relative;z-index:1}
+.eyebrow{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#5eead4;margin:0 0 14px;font-weight:600}
+h1{margin:0;font-size:clamp(30px,5vw,52px);line-height:1.15;letter-spacing:-.02em;font-weight:800}
+h1 em{font-style:normal;color:#5eead4}
+.lede{margin:16px 0 0;max-width:620px;color:#cbd5e1;font-size:16px}
+.stats{display:flex;gap:40px;margin:32px 0 30px;flex-wrap:wrap}
+.stats div{display:flex;flex-direction:column}
+.stats b{font-size:30px;font-weight:800;letter-spacing:-.02em;color:#fff}
+.stats span{font-size:12.5px;color:#94a3b8;letter-spacing:.04em}
+.search{position:relative;max-width:520px}
+.search input{width:100%;padding:14px 16px 14px 44px;border-radius:12px;border:1px solid rgba(255,255,255,.18);
+  background:rgba(15,23,42,.55);color:#f8fafc;font-size:15px;outline:none;backdrop-filter:blur(6px)}
+.search input::placeholder{color:#94a3b8}
+.search input:focus{border-color:#2dd4bf;box-shadow:0 0 0 3px rgba(45,212,191,.18)}
+.search svg{position:absolute;left:15px;top:50%;transform:translateY(-50%);width:18px;height:18px;stroke:#94a3b8}
+
+.filters{display:flex;gap:10px;flex-wrap:wrap;padding:26px 24px 6px}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;
+  border:1px solid var(--line);background:var(--chip);color:var(--chip-fg);
+  font-size:13.5px;cursor:pointer;transition:.16s;font-family:inherit}
+.chip i{width:7px;height:7px;border-radius:50%;display:inline-block}
+.chip span{font-size:11.5px;color:var(--muted)}
+.chip:hover{border-color:#94a3b8}
+.chip.active{background:#0f172a;color:#f8fafc;border-color:#0f172a}
+.chip.active span{color:#94a3b8}
+@media (prefers-color-scheme: dark){.chip.active{background:#2dd4bf;color:#042f2e;border-color:#2dd4bf}
+  .chip.active span{color:#0f766e}}
+
+main{padding:18px 24px 64px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(288px,1fr));gap:16px}
+.card{display:flex;flex-direction:column;gap:9px;padding:18px 18px 16px;border-radius:14px;
+  border:1px solid var(--line);background:var(--card);transition:.18s;position:relative}
+.card:hover{transform:translateY(-2px);border-color:#2dd4bf;box-shadow:0 14px 34px -18px var(--shadow)}
+.card .top{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--muted);letter-spacing:.04em}
+.card .top i{width:7px;height:7px;border-radius:50%}
+.card h3{margin:0;font-size:16px;font-weight:700;letter-spacing:-.01em}
+.card p{margin:0;font-size:13px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;
+  -webkit-box-orient:vertical;overflow:hidden}
+.card .foot{display:flex;align-items:center;gap:12px;margin-top:auto;padding-top:6px;
+  font-size:12px;color:var(--muted)}
+.card .foot .go{margin-left:auto;color:#0d9488;font-weight:600}
+.empty{padding:60px 0;text-align:center;color:var(--muted)}
+
+footer{border-top:1px solid var(--line);padding:30px 0 44px;color:var(--muted);font-size:13px}
+footer .wrap{display:flex;gap:16px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+footer a{border-bottom:1px solid var(--line)}
+footer a:hover{border-color:#2dd4bf;color:#0d9488}
+kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:11px;
+  font-family:inherit;color:var(--muted);background:var(--chip)}
+@media (max-width:640px){
+  .hero{padding:52px 0 40px}
+  .stats{gap:24px;margin:26px 0 24px}
+  .stats b{font-size:26px}
+  .filters{padding:20px 20px 4px}
+  main{padding:14px 20px 48px}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">open-guide · Go backend handbook</p>
+    <h1>Go 后端技术栈<br><em>中文深度指南</em></h1>
+    <p class="lede">47 篇长文，覆盖语言核心、服务治理、数据存储、消息调度、可观测性与部署。每篇都按「原理 → 实战 → 版本 → 坑 → 选型」重写，不是 API 翻译。</p>
+    <div class="stats">
+      <div><b>47</b><span>篇指南</span></div>
+      <div><b>6</b><span>个分类</span></div>
+      <div><b>18,400</b><span>行正文</span></div>
+    </div>
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="搜索：etcd、限流、HNSW、时区…" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+</header>
+
+<nav class="filters wrap" id="filters">
+      <button class="chip active" data-c="all">全部<span>47</span></button>
+      <button class="chip" data-c="Go 语言核心"><i style="background:#0d9488"></i>🔤 Go 语言核心<span>9</span></button>
+      <button class="chip" data-c="Web、微服务与治理"><i style="background:#2563eb"></i>🌐 Web、微服务与治理<span>8</span></button>
+      <button class="chip" data-c="数据存储与检索"><i style="background:#7c3aed"></i>🗄️ 数据存储与检索<span>15</span></button>
+      <button class="chip" data-c="消息、任务与调度"><i style="background:#ea580c"></i>📨 消息、任务与调度<span>7</span></button>
+      <button class="chip" data-c="可观测性"><i style="background:#0891b2"></i>🔭 可观测性<span>6</span></button>
+      <button class="chip" data-c="部署与编排"><i style="background:#475569"></i>🐳 部署与编排<span>2</span></button>
+</nav>
+
+<main class="wrap">
+  <div class="grid" id="grid"></div>
+  <p class="empty" id="empty" hidden>没有匹配的条目，换个关键词试试。</p>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Markdown 是唯一真源 · HTML 由 <code>tools/build_html.py</code> 生成</span>
+    <span><a href="https://github.com/Weisg1999/open-guide">GitHub 仓库</a> · <kbd>/</kbd> 聚焦搜索</span>
+  </div>
+</footer>
+
+<script>
+const DATA = [
+{
+"t": "Go 泛型",
+"d": "类型参数、约束（constraint）、泛型类型与方法、GC Shape Stenciling 实现原理、泛型的能力边界与坑、实战：类型安全通用缓存",
+"c": "Go 语言核心",
+"e": "🔤",
+"u": "./go-generics/go-generics-tutorial.html",
+"m": "./go-generics/go-generics-tutorial.md"
+},
+{
+"t": "Go 反射",
+"d": "反射三定律、reflect.Type / reflect.Value、动态调用与修改、结构体 Tag 深入（encoding/json / ORM 原理）、性能代价、反射 vs 泛型怎么选",
+"c": "Go 语言核心",
+"e": "🔤",
+"u": "./go-reflection/go-reflection-tutorial.html",
+"m": "./go-reflection/go-reflection-tutorial.md"
+},
+{
+"t": "Go 并发与 Context",
+"d": "GMP 调度、channel 内部结构与 select、context 取消树、happens-before 与 atomic、errgroup / singleflight、goroutine 泄漏排查",
+"c": "Go 语言核心",
+"e": "🔤",
+"u": "./go-concurrency/go-concurrency-guide.html",
+"m": "./go-concurrency/go-concurrency-guide.md"
+},
+{
+"t": "Go 性能剖析",
+"d": "pprof 五类 profile、逃逸分析、GC 与 GOGC / GOMEMLIMIT、go tool trace、benchmark 与 benchstat、PGO",
+"c": "Go 语言核心",
+"e": "🔤",
+"u": "./go-perf/go-perf-guide.html",
+"m": "./go-perf/go-perf-guide.md"
+},
+{
+"t": "Go 测试与可测性",
+"d": "表驱动与 t.Run、t.Parallel 循环变量、httptest、fake / stub / mock、sqlmock、testcontainers、fuzz、race 与覆盖率口径",
+"c": "Go 语言核心",
+"e": "🔤",
+"u": "./go-testing/go-testing-guide.html",
+"m": "./go-testing/go-testing-guide.md"
+},
+{
+"t": "时区与时间处理",
+"d": "时刻 vs 墙上时间、time.Time 内部表示、IANA tzdata 与容器缺库、DST 不存在/重复的钟点、DB 时区语义、跨时区调度与日切统计",
+"c": "Go 语言核心",
+"e": "🔤",
+"u": "./go-time/go-time-guide.html",
+"m": "./go-time/go-time-guide.md"
+},
+{
+"t": "Go 1.2x 现代特性",
+"d": "1.22 循环变量语义、range-over-func 与 iter、泛型类型别名、unique / weak、slices / maps / slog、toolchain 与 PGO",
+"c": "Go 语言核心",
+"e": "🔤",
+"u": "./go-modern/go-modern-guide.html",
+"m": "./go-modern/go-modern-guide.md"
+},
+{
+"t": "samber/lo",
+"d": "基于泛型的 Lodash 风格工具库：slice / map / channel / string / 函数式helper 全量分类讲解，与标准库 slices/maps 的关系",
+"c": "Go 语言核心",
+"e": "🔤",
+"u": "./samber-lo/samber-lo-guide.html",
+"m": "./samber-lo/samber-lo-guide.md"
+},
+{
+"t": "Cobra / sqlc",
+"d": "命令树与 RunE、PersistentFlags vs LocalFlags、与 Viper 绑定、sqlc 编译模型与查询注解、NULL 类型映射、goose 迁移配合",
+"c": "Go 语言核心",
+"e": "🔤",
+"u": "./cobra-sqlc/cobra-sqlc-guide.html",
+"m": "./cobra-sqlc/cobra-sqlc-guide.md"
+},
+{
+"t": "Gin",
+"d": "基数树路由、中间件链、参数绑定与校验、响应渲染、优雅启停，v1.10 → v1.12 演进",
+"c": "Web、微服务与治理",
+"e": "🌐",
+"u": "./gin/gin-guide.html",
+"m": "./gin/gin-guide.md"
+},
+{
+"t": "Kratos（Bilibili）",
+"d": "API-first / Protobuf 驱动、HTTP + gRPC 双协议统一、可插拔组件（registry / config / log / middleware），v3.0 要点与 v2 迁移",
+"c": "Web、微服务与治理",
+"e": "🌐",
+"u": "./kratos/kratos-guide.html",
+"m": "./kratos/kratos-guide.md"
+},
+{
+"t": "go-zero（好未来）",
+"d": ".api DSL + goctl 代码生成、自适应熔断 / 限流 / 负载卸载、web 与 rpc 一体",
+"c": "Web、微服务与治理",
+"e": "🌐",
+"u": "./go-zero/go-zero-guide.html",
+"m": "./go-zero/go-zero-guide.md"
+},
+{
+"t": "gRPC-Go",
+"d": "HTTP/2 多路复用与 Protobuf 编码、.proto 契约与代码生成、四种流模式、拦截器链、deadline 跨进程传播、resolver/balancer",
+"c": "Web、微服务与治理",
+"e": "🌐",
+"u": "./grpc/grpc-guide.html",
+"m": "./grpc/grpc-guide.md"
+},
+{
+"t": "Viper",
+"d": "配置优先级链（Set / flag / env / 文件 / 远程 KV / 默认值）、AutomaticEnv 与 key replacer、Unmarshal + mapstructure、WatchConfig 热更新、并发与零值陷阱",
+"c": "Web、微服务与治理",
+"e": "🌐",
+"u": "./viper/viper-guide.html",
+"m": "./viper/viper-guide.md"
+},
+{
+"t": "Casbin",
+"d": "PERM 元模型与求值过程、ACL / RBAC / ABAC / RESTful、g 角色继承与多租户 domain、Adapter 与 Watcher 策略同步、Enforcer 并发与缓存、与 OPA 的边界",
+"c": "Web、微服务与治理",
+"e": "🌐",
+"u": "./casbin/casbin-guide.html",
+"m": "./casbin/casbin-guide.md"
+},
+{
+"t": "认证：JWT / OAuth2 / OIDC",
+"d": "JWT 结构与签名算法、校验清单（alg 白名单 / iss / aud / exp）、JWKS 轮换、OAuth2 四种模式与 PKCE、OIDC、refresh 轮换与撤销",
+"c": "Web、微服务与治理",
+"e": "🌐",
+"u": "./auth/auth-guide.html",
+"m": "./auth/auth-guide.md"
+},
+{
+"t": "服务治理",
+"d": "限流四算法、单机 vs 集群限流、熔断三态与滑动窗口、自适应限流、重试预算与幂等、舱壁隔离、降级形态",
+"c": "Web、微服务与治理",
+"e": "🌐",
+"u": "./service-governance/service-governance-guide.html",
+"m": "./service-governance/service-governance-guide.md"
+},
+{
+"t": "MySQL",
+"d": "B+ 树聚簇索引与回表、最左前缀与覆盖索引、MVCC / ReadView 与隔离级别、临键锁与死锁、EXPLAIN 慢查询、主从复制与延迟、database/sql 连接池",
+"c": "数据存储与检索",
+"e": "🗄️",
+"u": "./mysql/mysql-guide.html",
+"m": "./mysql/mysql-guide.md"
+},
+{
+"t": "PostgreSQL",
+"d": "元组多版本 MVCC 与 VACUUM、默认 READ COMMITTED 与 SSI、B-tree / GIN / GiST / BRIN 索引、jsonb 与 GIN、WAL 逻辑复制、pgx v5 连接池与 CopyFrom、SQLSTATE 重试",
+"c": "数据存储与检索",
+"e": "🗄️",
+"u": "./postgresql/postgresql-guide.html",
+"m": "./postgresql/postgresql-guide.md"
+},
+{
+"t": "分布式事务",
+"d": "2PC / XA 的代价、TCC 空回滚与悬挂、Saga 编排与补偿、Outbox 发件箱、事务消息、幂等与对账",
+"c": "数据存储与检索",
+"e": "🗄️",
+"u": "./distributed-transaction/distributed-transaction-guide.html",
+"m": "./distributed-transaction/distributed-transaction-guide.md"
+},
+{
+"t": "GORM",
+"d": "链式 API、关联与预加载、事务与 SavePoint、Hook、迁移器、软删除、读写分离插件、泛型接口",
+"c": "数据存储与检索",
+"e": "🗄️",
+"u": "./gorm/gorm-guide.html",
+"m": "./gorm/gorm-guide.md"
+},
+{
+"t": "go-redis",
+"d": "连接池与 Cmdable、Pipeline vs TxPipeline、redis.Nil 语义、Lua 与分布式锁、Stream 消费组、Cluster slot 与 hash tag、缓存三件套",
+"c": "数据存储与检索",
+"e": "🗄️",
+"u": "./redis/redis-guide.html",
+"m": "./redis/redis-guide.md"
+},
+{
+"t": "etcd",
+"d": "Raft 共识、MVCC 多版本、bbolt B+ 树、Lease / Watch / 分布式锁、clientv3 实战、v3.6 要点",
+"c": "数据存储与检索",
+"e": "🗄️",
+"u": "./etcd/etcd-guide.html",
+"m": "./etcd/etcd-guide.md"
+},
+{
+"t": "InfluxDB 2.x",
+"d": "Bucket / Token 模型、TSM 存储引擎、Flux 查询、任务与告警、Go 客户端写入查询",
+"c": "数据存储与检索",
+"e": "🗄️",
+"u": "./influxdb-v2/influxdb-v2-guide.html",
+"m": "./influxdb-v2/influxdb-v2-guide.md"
+},
+{
+"t": "InfluxDB 3",
+"d": "Rust 重写的 FDAP 栈（Flight + DataFusion + Arrow + Parquet）、SQL 查询、对象存储优先、无限基数、Core vs Enterprise 选型",
+"c": "数据存储与检索",
+"e": "🗄️",
+"u": "./influxdb-v3/influxdb-v3-guide.html",
+"m": "./influxdb-v3/influxdb-v3-guide.md"
+},
+{
+"t": "MinIO",
+"d": "S3 兼容对象存储、纠删码、Bucket / Object 模型、分片上传、预签名 URL、2025 起产品线变化",
+"c": "数据存储与检索",
+"e": "🗄️",
+"u": "./minio/minio-guide.html",
+"m": "./minio/minio-guide.md"
+},
+{
+"t": "Elasticsearch",
+"d": "倒排索引与 text/keyword、分析器与 IK 中文分词、NRT refresh 与 segment merge、分片路由与 BM25、Bool Query DSL 与聚合、search_after + PIT、Alias/Rollover/ILM 时序索引",
+"c": "数据存储与检索",
+"e": "🗄️",
+"u": "./elasticsearch/elasticsearch-guide.html",
+"m": "./elasticsearch/elasticsearch-guide.md"
+},
+{
+"t": "MongoDB",
+"d": "BSON 文档模型与 bson.D 顺序、WiredTiger 文档级并发、副本集与 oplog、片键三要素与分片路由、聚合管道与 ESR 索引、事务与 Change Streams",
+"c": "数据存储与检索",
+"e": "🗄️",
+"u": "./mongodb/mongodb-guide.html",
+"m": "./mongodb/mongodb-guide.md"
+},
+{
+"t": "ClickHouse",
+"d": "MergeTree part 与后台合并、稀疏主键索引与数据跳过索引、ORDER BY 设计、向量化执行、物化视图预聚合、PrepareBatch 批量写、ReplacingMergeTree 最终一致去重、与 InfluxDB 3 的 FDAP 对照",
+"c": "数据存储与检索",
+"e": "🗄️",
+"u": "./clickhouse/clickhouse-guide.html",
+"m": "./clickhouse/clickhouse-guide.md"
+},
+{
+"t": "OpenSearch",
+"d": "从 ES 7.10 分叉与 Apache-2.0 许可、Lucene 倒排与 NRT、分片路由、k-NN 向量检索、ISM 与 Data Streams、opensearch-go 客户端、与 ES 的兼容边界",
+"c": "数据存储与检索",
+"e": "🗄️",
+"u": "./opensearch/opensearch-guide.html",
+"m": "./opensearch/opensearch-guide.md"
+},
+{
+"t": "TimescaleDB",
+"d": "hypertable 与 chunk 自动分区、time_bucket、连续聚合、列式压缩与 segmentby / orderby、retention 与数据分层、唯一索引必须含时间列、与 InfluxDB / ClickHouse 的边界",
+"c": "数据存储与检索",
+"e": "🗄️",
+"u": "./timescaledb/timescaledb-guide.html",
+"m": "./timescaledb/timescaledb-guide.md"
+},
+{
+"t": "向量数据库",
+"d": "距离度量与归一化、HNSW 的 M / efConstruction / efSearch、IVF / PQ、pre-filter vs post-filter、RRF 混合检索、pgvector / Milvus / Qdrant 实战",
+"c": "数据存储与检索",
+"e": "🗄️",
+"u": "./vector-database/vector-database-guide.html",
+"m": "./vector-database/vector-database-guide.md"
+},
+{
+"t": "asynq ⭐",
+"d": "本仓库最完整的一篇（1300+ 行）。Redis 分布式任务队列：任务生命周期、延时/重试/死信、优先级与加权队列、任务去重、任务聚合、超时与截止、Prometheus 指标、Asynqmon Web UI 部署",
+"c": "消息、任务与调度",
+"e": "📨",
+"u": "./asynq/asynq技术文档与使用手册.html",
+"m": "./asynq/asynq技术文档与使用手册.md"
+},
+{
+"t": "Apache Kafka",
+"d": "分区与副本、消费者组与 offset、ISR 与 ACK 语义、Go 客户端（segmentio/kafka-go）实战、Kafka 4.x 移除 ZooKeeper",
+"c": "消息、任务与调度",
+"e": "📨",
+"u": "./kafka/kafka-guide.html",
+"m": "./kafka/kafka-guide.md"
+},
+{
+"t": "NATS / JetStream",
+"d": "Subject 寻址、发布订阅与请求响应、队列组、JetStream 持久化流与消费者、nats.go 实战",
+"c": "消息、任务与调度",
+"e": "📨",
+"u": "./nats/nats-guide.html",
+"m": "./nats/nats-guide.md"
+},
+{
+"t": "MQTT / EMQX",
+"d": "报文与连接生命周期、QoS 0/1/2 握手、会话与 Session Expiry、retained 与遗嘱、共享订阅、paho 实战、EMQX 6.x 与 BSL 许可",
+"c": "消息、任务与调度",
+"e": "📨",
+"u": "./mqtt/mqtt-guide.html",
+"m": "./mqtt/mqtt-guide.md"
+},
+{
+"t": "robfig/cron",
+"d": "标准 5 字段 / 6 字段 cron 表达式、标准解析器扩展（@every / @daily）、Job 包装器（SkipIfStillRunning 等）、时区与并发、自定义 Job",
+"c": "消息、任务与调度",
+"e": "📨",
+"u": "./robfig-cron/robfig-cron-guide.html",
+"m": "./robfig-cron/robfig-cron-guide.md"
+},
+{
+"t": "RabbitMQ / RocketMQ",
+"d": "Exchange/Queue 路由模型、Publisher Confirm 与手动 ACK、Quorum Queue 与 DLX、CommitLog 顺序写、顺序/事务/定时消息、at-least-once 幂等消费、与 Kafka / NATS / asynq 的边界",
+"c": "消息、任务与调度",
+"e": "📨",
+"u": "./rabbitmq/rabbitmq-guide.html",
+"m": "./rabbitmq/rabbitmq-guide.md"
+},
+{
+"t": "Temporal",
+"d": "Durable Execution 与事件历史重放、确定性约束、持久计时器、Activity 幂等与重试分层、Signal / Query / Update、Saga 补偿、GetVersion 与 Continue-As-New、WorkflowReplayer 测试",
+"c": "消息、任务与调度",
+"e": "📨",
+"u": "./temporal/temporal-guide.html",
+"m": "./temporal/temporal-guide.md"
+},
+{
+"t": "Zap",
+"d": "零分配热路径与强类型 Field、Logger vs SugaredLogger、zapcore 四层管线（Encoder / WriteSyncer / LevelEnabler）、Tee 多目的地分流、采样与 AtomicLevel、与标准库 log/slog 的关系",
+"c": "可观测性",
+"e": "🔭",
+"u": "./zap/zap-guide.html",
+"m": "./zap/zap-guide.md"
+},
+{
+"t": "log/slog",
+"d": "标准库结构化日志实践：Logger / Handler / Record / Attr 四层抽象、LevelVar 动态调级、自定义 ContextHandler 注入 trace_id、ReplaceAttr 脱敏、Fanout 多输出、与 Zap / OTel 桥接",
+"c": "可观测性",
+"e": "🔭",
+"u": "./slog/slog-guide.html",
+"m": "./slog/slog-guide.md"
+},
+{
+"t": "Prometheus",
+"d": "拉取模型与多维标签时序、四种指标类型与 rate()、TSDB 倒排索引、PromQL / 记录规则 / Alertmanager、高基数陷阱、与 InfluxDB 和 OTel Metrics 的边界",
+"c": "可观测性",
+"e": "🔭",
+"u": "./prometheus/prometheus-guide.html",
+"m": "./prometheus/prometheus-guide.md"
+},
+{
+"t": "OpenTelemetry",
+"d": "Trace/Span 模型与 W3C traceparent 传播、Sampler / BatchSpanProcessor / OTLP、Resource 与语义约定、Gin/gRPC/asynq 埋点、把 trace_id 写进 Zap 日志",
+"c": "可观测性",
+"e": "🔭",
+"u": "./opentelemetry/opentelemetry-guide.html",
+"m": "./opentelemetry/opentelemetry-guide.md"
+},
+{
+"t": "Grafana Loki",
+"d": "只索引标签、不索引正文的成本模型、chunk + TSDB 索引与对象存储、Distributor/Ingester/Querier 路径、LogQL 两段式与解析器、高基数禁忌、compactor 与 retention、Alloy 采集",
+"c": "可观测性",
+"e": "🔭",
+"u": "./loki/loki-guide.html",
+"m": "./loki/loki-guide.md"
+},
+{
+"t": "VictoriaMetrics / Thanos",
+"d": "Prometheus 本地 TSDB 的保留期与单机瓶颈、VM 单机与集群版（vminsert / vmselect / vmstorage）、MetricsQL、Thanos Sidecar / Store / Query / Compactor、对象存储降采样与副本去重、两条路线怎么选",
+"c": "可观测性",
+"e": "🔭",
+"u": "./victoriametrics/victoriametrics-guide.html",
+"m": "./victoriametrics/victoriametrics-guide.md"
+},
+{
+"t": "Docker / Kubernetes",
+"d": "镜像分层与多阶段构建、namespace/cgroups、声明式 Reconcile Loop、Pod/Deployment/Service、三类探针与 QoS、滚动发布与优雅下线、client-go 与 RBAC",
+"c": "部署与编排",
+"e": "🐳",
+"u": "./docker-k8s/docker-k8s-guide.html",
+"m": "./docker-k8s/docker-k8s-guide.md"
+},
+{
+"t": "Kubernetes Operator",
+"d": "声明式协调与 level-triggered、CRD / Scheme、Reconcile 幂等、resourceVersion 冲突、ownerReference 与 finalizer、envtest 与 e2e",
+"c": "部署与编排",
+"e": "🐳",
+"u": "./k8s-operator/k8s-operator-guide.html",
+"m": "./k8s-operator/k8s-operator-guide.md"
+}
+];
+const COLORS = {"Go 语言核心": "#0d9488", "Web、微服务与治理": "#2563eb", "数据存储与检索": "#7c3aed", "消息、任务与调度": "#ea580c", "可观测性": "#0891b2", "部署与编排": "#475569"};
+const grid = document.getElementById('grid');
+const empty = document.getElementById('empty');
+const input = document.getElementById('q');
+let cat = 'all';
+
+function esc(s){return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+function render(){
+  const kw = input.value.trim().toLowerCase();
+  const items = DATA.filter(d =>
+    (cat === 'all' || d.c === cat) &&
+    (!kw || (d.t + ' ' + d.d + ' ' + d.c).toLowerCase().includes(kw))
+  );
+  grid.innerHTML = items.map(d => `
+    <a class="card" href="${esc(d.u)}">
+      <div class="top"><i style="background:${COLORS[d.c] || '#0d9488'}"></i>${esc(d.e)} ${esc(d.c)}</div>
+      <h3>${esc(d.t)}</h3>
+      <p title="${esc(d.d)}">${esc(d.d)}</p>
+      <div class="foot"><span>Markdown</span><span>·</span><span>单文件 HTML</span><span class="go">阅读 →</span></div>
+    </a>`).join('');
+  empty.hidden = items.length > 0;
+}
+
+document.getElementById('filters').addEventListener('click', e => {
+  const btn = e.target.closest('.chip');
+  if (!btn) return;
+  document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c === btn));
+  cat = btn.dataset.c;
+  render();
+});
+
+input.addEventListener('input', render);
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && document.activeElement !== input) { e.preventDefault(); input.focus(); }
+});
+
+render();
+</script>
+</body>
+</html>
