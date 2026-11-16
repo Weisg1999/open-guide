@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>分布式事务 · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#6366f1; --accent-light:#e0e7ff; --accent-dark:#3730a3;
+    --bg:#f5f6fe; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#1e1b4b; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#3730a3 0%,#6366f1 58%,#3730a3 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">分布式事务<span class="ver">2PC · Saga</span></div>
+  <div class="sub">跨服务数据一致性</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a href="#2-能力总览">2. 能力总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-2pc-xa同步阻塞与协调者单点">3.1 2PC / XA：同步阻塞与协调者单点</a>
+  <a class="sub-link" href="#32-tcctry-confirm-cancel-与三大问题">3.2 TCC：Try / Confirm / Cancel 与三大问题</a>
+  <a class="sub-link" href="#33-saga编排与协同以及补偿的不可逆性">3.3 Saga：编排与协同，以及补偿的不可逆性</a>
+  <a class="sub-link" href="#34-本地消息表与-outbox同库事务-至少一次">3.4 本地消息表与 Outbox：同库事务 + 至少一次</a>
+  <a class="sub-link" href="#35-事务消息与-kafka-事务各自的边界">3.5 事务消息与 Kafka 事务：各自的边界</a>
+  <a class="sub-link" href="#36-幂等去重与对账最终一致的兜底">3.6 幂等、去重与对账：最终一致的兜底</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a href="#5-版本与生态">5. 版本与生态</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>分布式事务技术指南</h1>
+<p>跨服务写操作没有免费的原子性：要么用 2PC 换一致性，要么用 Saga/Outbox 换可用性，代价是补偿、幂等与对账。</p>
+<p style="opacity:.8;font-size:13.5px">跨服务数据一致性</p>
+<div class="meta"><span>2PC / XA</span><span>TCC 三大问题</span><span>Saga 补偿</span><span>Outbox 发件箱</span><span>事务消息</span><span>幂等与对账</span></div>
+</div>
+<blockquote><p>跨服务写操作没有免费的原子性：要么用 2PC 换一致性，要么用 Saga/Outbox 换可用性，代价是补偿、幂等与对账。 参考实现：Temporal <strong>1.3x</strong> · Kafka <strong>4.x</strong> · RocketMQ <strong>5.x</strong> · MySQL <strong>9.7 LTS</strong>　|　上游：<a href="https://github.com/temporalio/temporal">https://github.com/temporalio/temporal</a> · <a href="https://github.com/apache/rocketmq">https://github.com/apache/rocketmq</a>　|　协议：各自上游为准</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p><a href="../mysql/mysql-guide.html">MySQL 篇</a> 讲的是<strong>单机事务</strong>：<code>BEGIN</code> 到 <code>COMMIT</code> 之间，InnoDB 用 redo/undo 保证原子性与隔离性。但这条边界很窄——<strong>一个连接、一个 InnoDB 实例</strong>。业务一旦变成「订单库扣库存 + 支付服务记账 + 仓库服务出库」，ACID 就失效了：跨服务没有共享的 redo log，也没有能同时锁住两边的锁管理器。</p>
+<p><a href="../temporal/temporal-guide.html">Temporal 篇</a> 解决「长流程怎么可靠跑完」，本篇解决「多个服务各写各的库，数据怎么才能对上」。两者是<strong>引擎与模式</strong>的关系：Temporal 提供持久化执行与重试骨架，本篇给出一致性模式本身、存储层细节与失败边界。<a href="../rabbitmq/rabbitmq-guide.html">RabbitMQ 篇</a> 讲消息怎么可靠投递，本篇讲<strong>消息与本地事务怎么绑成一个整体</strong>。</p>
+<p>本文的立场不是「教你上框架」，而是先判断这里到底需不需要分布式事务：</p>
+<div class="table-wrap"><table><thead><tr><th>场景</th><th>是否跨事务边界</th><th>推荐做法</th></tr></thead><tbody><tr><td>同库同实例的多表写入</td><td>否</td><td>本地事务，直接 <code>BEGIN/COMMIT</code></td></tr><tr><td>同库写入 + 发一条 MQ 消息</td><td><strong>是</strong>（DB 与 MQ 两个系统）</td><td>本地消息表 / Outbox</td></tr><tr><td>两个服务各写自己的库</td><td><strong>是</strong></td><td>Saga，优先于 TCC</td></tr><tr><td>同机房两个库、短事务、强一致</td><td>是，但可控</td><td>XA / Seata AT</td></tr><tr><td>要求「要么都成功、要么立刻都失败」</td><td>是</td><td>只有 2PC 系，并接受其代价</td></tr></tbody></table></div>
+<p>判断标准只有一条：<strong>这次写操作的失败，能不能靠「重试 + 补偿 + 对账」在可接受时间内收敛</strong>。能，就是最终一致，别上 2PC；不能（钱、额度、库存的中间态不可见），才考虑强一致，并且优先想办法把两个写放回同一个库。</p>
+<hr>
+
+</section>
+<section data-anchor="2-能力总览">
+<h2 id="2-能力总览">2. 能力总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>方案</th><th>一致性</th><th>业务侵入</th><th>隔离性</th><th>依赖组件</th><th>典型落点</th></tr></thead><tbody><tr><td><strong>2PC / XA</strong></td><td>强一致（提交后必一致）</td><td>低（驱动层协议）</td><td>有（prepare 后持锁）</td><td>支持 XA 的 DB + TM</td><td>同机房跨库、遗留系统</td></tr><tr><td><strong>TCC</strong></td><td>最终一致（Confirm 后一致）</td><td><strong>高</strong>（3 个接口 + 控制表）</td><td>靠资源预留实现软隔离</td><td>事务协调器</td><td>支付、优惠券、额度</td></tr><tr><td><strong>Saga</strong></td><td>最终一致</td><td>中（每步要有补偿）</td><td><strong>无</strong>，中间态可见</td><td>编排引擎或自研状态机</td><td>订单履约、跨服务长流程</td></tr><tr><td><strong>本地消息表</strong></td><td>最终一致</td><td>中（多一张表 + 投递任务）</td><td>无</td><td>DB + 定时任务 + MQ</td><td>存量系统改造</td></tr><tr><td><strong>事务性发件箱（Outbox）</strong></td><td>最终一致</td><td>中（只写不投递）</td><td>无</td><td>DB + Relay（轮询/CDC）+ MQ</td><td>新系统默认选择</td></tr><tr><td><strong>事务消息</strong></td><td>最终一致</td><td>中（实现回查接口）</td><td>无</td><td>RocketMQ 5.x</td><td>已在用 RocketMQ 的团队</td></tr><tr><td><strong>CDC 订阅</strong></td><td>最终一致</td><td><strong>最低</strong>（不改业务代码）</td><td>无</td><td>Kafka Connect + 日志权限</td><td>存量库、跨团队同步</td></tr></tbody></table></div>
+<p>三条硬约束：<strong>没有免费的原子性</strong>（要么写时协调，要么写后补偿）；<strong>异步方案都是 at-least-once</strong>（「恰好一次」是幂等 + 去重的效果）；<strong>中间态一定会被看到</strong>（存在「钱扣了但券没发」的窗口，产品和前端必须显式表达）。</p>
+<hr>
+
+<div class="features">
+  <div class="feature"><div class="fh"><h4>一致性谱系</h4></div><p>2PC 强一致但阻塞；TCC 侵入业务；Saga 靠补偿；Outbox 最工程化</p></div>
+  <div class="feature"><div class="fh"><h4>补偿三难</h4></div><p>空回滚、悬挂、幂等是 TCC 的必答题；Saga 要接受补偿不可逆</p></div>
+  <div class="feature"><div class="fh"><h4>兜底手段</h4></div><p>幂等键、去重表、状态机、定时对账，缺一不可</p></div>
+</div>
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-2pc-xa同步阻塞与协调者单点">3.1 2PC / XA：同步阻塞与协调者单点</h3>
+<pre><code class="lang-text">协调者(TM)                  参与者 A (DB)         参与者 B (DB)
+   │── prepare ─────────────►│ 写 redo、持锁、投票 │
+   │── prepare ────────────────────────────────────►│
+   │◄───────── yes ──────────│                     │
+   │   ← 此刻起参与者都不能单方面放手
+   │── commit ──────────────►│ 提交、释放锁        │</code></pre>
+<p><strong>同步阻塞</strong>的本质在第二步：prepare 成功后参与者已把决定权交出去，必须<strong>持有行锁与连接</strong>等最终指令，其他事务碰到同一行只能等。等于把「单机事务的锁持有时间」放大成「跨服务的网络往返时间」。</p>
+<p>XA 在 MySQL 里的实际代价：</p>
+<ul><li><strong>两轮额外 RTT</strong>：<code>XA START</code> → 业务 SQL → <code>XA END</code> → <code>XA PREPARE</code> → <code>XA COMMIT</code>，跨可用区时单次 RTT 就到毫秒级。</li><li><strong>锁持有时间 = 业务耗时 + TM 决策时间</strong>：prepare 到 commit 的间隔由协调者决定，热点行上这是吞吐量的直接杀手。</li><li><strong>连接被 xid 绑定</strong>：从 <code>XA START</code> 到 <code>XA COMMIT</code> 必须用同一连接，无法归还池子，有效容量下降。</li><li><strong>崩溃后是 in-doubt 状态</strong>：TM 在 prepare 后挂掉，参与者一直挂在 prepared，只能靠 <code>XA RECOVER</code> 列出后由外部裁决——这就是<strong>协调者单点</strong>，也是 XA 最难运维的失败模式；加上它只对 InnoDB 生效、与 binlog 的两阶段提交叠加，恢复路径复杂、排查成本极高。</li></ul>
+<p>结论：XA 适合<strong>同机房、短事务、低并发、强一致</strong>的场景（账务日终、遗留系统对接）。高并发主交易链路不要用——悬挂锁比不一致更难处理。</p>
+<h3 id="32-tcctry-confirm-cancel-与三大问题">3.2 TCC：Try / Confirm / Cancel 与三大问题</h3>
+<div class="table-wrap"><table><thead><tr><th>阶段</th><th>做什么</th><th>失败时</th></tr></thead><tbody><tr><td><strong>Try</strong></td><td>检查并<strong>预留</strong>（冻结 100 元，不是扣 100 元）</td><td>预留失败 → 全局回滚</td></tr><tr><td><strong>Confirm</strong></td><td>使用预留，真正扣减（冻结 → 扣除）</td><td>必须成功，靠重试</td></tr><tr><td><strong>Cancel</strong></td><td>释放预留（解冻）</td><td>必须成功，靠重试</td></tr></tbody></table></div>
+<p>它比 2PC 好在<strong>不长期持锁</strong>（Try 结束即提交本地事务），代价是三套接口 + 三个必须处理的问题：</p>
+<div class="table-wrap"><table><thead><tr><th>问题</th><th>现象</th><th>根因</th><th>解法</th></tr></thead><tbody><tr><td><strong>空回滚</strong></td><td>Cancel 先于 Try 到达</td><td>Try 超时但实际未执行，TM 判定失败发起 Cancel</td><td>Cancel 发现无 Try 记录时，插入 <code>CANCELLED</code> 标记并正常返回</td></tr><tr><td><strong>悬挂</strong></td><td>Cancel 执行完，Try 又到了</td><td>Try 请求在网络里滞留后重放</td><td>Try 执行前先查控制表，有 <code>CANCELLED</code> 记录则拒绝</td></tr><tr><td><strong>幂等</strong></td><td>同一分支被重复 Confirm/Cancel</td><td>重试、超时重发</td><td>控制表 <code>(xid, branch_id)</code> 唯一 + 状态机 CAS</td></tr></tbody></table></div>
+<p>控制表就三列：<code>tcc_branch(xid, branch_id, status)</code>，<code>status</code> 取 <code>1=TRIED / 2=CONFIRMED / 3=CANCELLED</code>。规则写死：<strong>Try 只能「无记录」→ <code>TRIED</code></strong>；<strong>Cancel 只能「无记录/TRIED」→ <code>CANCELLED</code></strong>（无记录也插入，这就是空回滚标记）；<strong>Confirm 只能 <code>TRIED</code> → <code>CONFIRMED</code></strong>。三步全是带条件更新，重放天然幂等。真正的难点不在协议而在<strong>资源模型</strong>：券要能锁定、库存要能预占、余额要能冻结；没有预留语义（如第三方支付已划走钱），TCC 就退化成「直接扣 + 退款」，那就是 Saga。</p>
+<h3 id="33-saga编排与协同以及补偿的不可逆性">3.3 Saga：编排与协同，以及补偿的不可逆性</h3>
+<p>Saga 把长事务拆成一串本地事务，正向失败就反向执行已完成的步骤（<code>T1→T2→T3→T4</code>，T3 失败则执行 <code>C2、C1</code>）。<strong>编排（orchestration）</strong>有中心协调者（Temporal Workflow、自研状态机）显式定义顺序、超时、重试、补偿；<strong>协同（choreography）</strong>每个服务监听事件自己决定下一步，没有中心：</p>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>编排</th><th>协同</th></tr></thead><tbody><tr><td>全局可见性 / 排障</td><td><strong>强</strong>：一处代码看全，看编排实例状态</td><td>弱：散落在各服务消费者里，要串日志与消息轨迹</td></tr><tr><td>耦合 / 循环依赖</td><td>协调者知道所有参与者，循环风险低</td><td>只认事件、耦合低，但<strong>容易绕成环</strong></td></tr><tr><td>加一步的成本</td><td>改协调者</td><td>改多个服务 + 事件契约</td></tr><tr><td>适合</td><td>步骤固定、需人工介入、需补偿</td><td>步骤少、事件天然广播、团队边界清晰</td></tr></tbody></table></div>
+<p><strong>补偿的不可逆性</strong>是最容易被低估的地方：短信和推送收不回来；第三方支付已结算只能走退款（有手续费、到账延迟、还可能失败）；已发货只能退货；税控、银行、物流根本不提供反向接口。所以<strong>可补偿步骤要前置</strong>并承担主要逻辑，<strong>不可逆步骤后置</strong>到「所有可能失败的前置都成功之后」，并接受最后一步失败只能人工介入。补偿本身也要幂等 + 有重试 + 有告警，否则「补偿失败」就是没人知道的脏数据。另一个常被忽略的点：Saga <strong>没有隔离性</strong>，T1 提交后、T3 完成前，其他请求能看到「订单已创建但库存未扣」；标准解法是<strong>语义锁</strong>——给业务行加中间状态（<code>CREATED</code> 而非 <code>PAID</code>），让查询与后续操作显式处理它，而不是指望数据库锁。</p>
+<h3 id="34-本地消息表与-outbox同库事务-至少一次">3.4 本地消息表与 Outbox：同库事务 + 至少一次</h3><div class="figure">
+  <svg viewBox="0 0 880 268" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-distributed-transaction" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6366f1"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#3730a3">Outbox 的完整链路</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">业务表与 outbox 在同一个本地事务提交，投递失败可重试</text>
+    <rect x="36" y="82" width="175" height="80" rx="12" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+    <text x="124" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#3730a3">本地事务</text>
+    <text x="124" y="136" text-anchor="middle" font-size="11" fill="#3730a3">业务表 + outbox 同库提交</text>
+    <line x1="215" y1="122" x2="241" y2="122" stroke="#6366f1" stroke-width="2" marker-end="url(#m-distributed-transaction)"/>
+    <rect x="247" y="82" width="175" height="80" rx="12" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+    <text x="334" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#3730a3">投递器</text>
+    <text x="334" y="136" text-anchor="middle" font-size="11" fill="#3730a3">轮询或 CDC 读未发送记录</text>
+    <line x1="426" y1="122" x2="452" y2="122" stroke="#6366f1" stroke-width="2" marker-end="url(#m-distributed-transaction)"/>
+    <rect x="458" y="82" width="175" height="80" rx="12" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+    <text x="546" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#3730a3">MQ 投递</text>
+    <text x="546" y="136" text-anchor="middle" font-size="11" fill="#3730a3">至少一次，失败重试</text>
+    <line x1="637" y1="122" x2="663" y2="122" stroke="#6366f1" stroke-width="2" marker-end="url(#m-distributed-transaction)"/>
+    <rect x="669" y="82" width="175" height="80" rx="12" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+    <text x="756" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#3730a3">消费端</text>
+    <text x="756" y="136" text-anchor="middle" font-size="11" fill="#3730a3">幂等键去重 + 对账</text>
+    <rect x="40" y="186" width="800" height="58" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="210" font-size="12.5" fill="#1e293b">把「写库」和「发消息」放进同一个本地事务，用至少一次投递加消费端幂等，换取最终一致。</text>
+  </svg>
+  <figcaption>Outbox 的完整链路</figcaption>
+</div>
+<p>最朴素的「先写库再发 MQ」有两种必然失败：</p>
+<pre><code class="lang-text">写库成功 ──✗ 进程崩溃 ──► 消息永久丢失（下游不知道）
+发消息成功 ──✗ 写库回滚 ──► 下游收到一个不存在的订单</code></pre>
+<p>中间件的事务消息能解决第二种，但多数团队没有 RocketMQ。<strong>Outbox 的思路是：把「要发的消息」也当业务数据，写进同一个库、同一个事务。</strong></p>
+<pre><code class="lang-sql">INSERT INTO outbox (aggregate_id, event_type, payload)
+VALUES ('A1001', 'order.created', '{"order_no":"A1001"}');</code></pre>
+<p>事务提交 → 事件一定存在；事务回滚 → 事件一定不存在。双写不一致被消灭，剩下的是<strong>怎么把 outbox 行变成 MQ 消息</strong>：</p>
+<div class="table-wrap"><table><thead><tr><th>投递方式</th><th>延迟</th><th>成本</th><th>注意点</th></tr></thead><tbody><tr><td><strong>轮询（polling）</strong></td><td>100ms~数秒</td><td>低，一个 goroutine</td><td>多副本要 <code>FOR UPDATE SKIP LOCKED</code> 或 CAS 认领；扫表要控索引</td></tr><tr><td><strong>CDC（Debezium）</strong></td><td>100ms~1s</td><td>中，要 Kafka Connect + 日志权限</td><td>只认 INSERT，不需要 status 字段；位点丢失会重放</td></tr><tr><td><strong>事务消息</strong></td><td>低</td><td>中，绑定 RocketMQ</td><td>需回查接口，见 3.5</td></tr></tbody></table></div>
+<p>三个必须接受的事实：<strong>至少一次</strong>（投递成功但「标记 sent」失败，下轮重发，这是设计不是 bug）；<strong>顺序只在单聚合内保证</strong>（用 <code>aggregate_id</code> 作 Kafka key 落同一分区）；<strong>outbox 会一直长</strong>（必须有归档任务，否则索引膨胀拖慢投递扫描）。「本地消息表」是早期叫法（业务表 + message 表 + 定时投递），Outbox 更强调「只写不投递、由外部 relay 消费」，工程上是同一件事。</p>
+<h3 id="35-事务消息与-kafka-事务各自的边界">3.5 事务消息与 Kafka 事务：各自的边界</h3>
+<p><strong>RocketMQ 事务消息</strong>用回查把「本地事务」和「发消息」粘起来：</p>
+<pre><code class="lang-text">1. 发半消息（half message）→ Broker 存内部 Topic，消费者不可见
+2. Broker 返回成功 → Producer 执行本地事务（写订单库）
+3. 成功 → COMMIT，消息可见；失败 → ROLLBACK，丢弃半消息
+4. 第 3 步响应丢了 → Broker 定时回查 checkLocalTransaction
+   → 回查必须能明确回答「这条消息对应的本地事务到底提交了吗」</code></pre>
+<p>第 4 步是全部难点。回查<strong>不能</strong>靠「订单表里有没有这行」推断——本地事务可能还没提交，也可能被别的原因回滚。必须有<strong>事务状态表</strong>，在本地事务里同步写 <code>COMMIT/ROLLBACK</code>，回查只读它。回查有次数上限（默认 60s 一次、最多 15 次，以 broker 配置为准），超限后进死信/特殊 Topic 等人工处理。</p>
+<p><strong>Kafka 事务</strong>常被误解。它保证：producer 的一批写（可跨 topic/partition）原子可见；<code>sendOffsetsToTransaction</code> 让「消费 offset」与「生产消息」同事务；<code>read_committed</code> 的消费者看不到未提交/已 abort 的消息。它<strong>不保证</strong>「Kafka 写入 + 外部 DB 写入」的原子性——transaction coordinator 只裁决 Kafka 自己的分区。所以「消费 Kafka → 写 DB → 再发 Kafka」要么 DB 事务里写 outbox 再由 relay 发，要么把 offset 存进业务库与业务写入同事务，要么接受 at-least-once 用幂等表去重。Kafka 4.0 起 KIP-890 强化了服务端事务协议（防僵尸 producer 重复写），但边界没变。</p>
+<h3 id="36-幂等去重与对账最终一致的兜底">3.6 幂等、去重与对账：最终一致的兜底</h3>
+<p>三层缺一层，就会在某个深夜出现对不上的数据。<strong>幂等键</strong>用<strong>业务唯一号</strong>（订单号、支付流水号、<code>order-created-12345</code>），不要用 MQ 的 message id——重发时它变了，等于没有幂等。<strong>去重与状态机</strong>两种写法都可靠，选一种用到底：</p>
+<pre><code class="lang-sql">-- 去重表：与业务写入同事务，唯一键冲突即「已处理」
+INSERT INTO consumed_event (consumer, event_id) VALUES ('inventory', 'order-created-12345');
+-- 状态机 CAS：影响 0 行说明状态已变，天然幂等
+UPDATE orders SET status = 'PAID' WHERE order_no = 'A1001' AND status = 'PENDING';</code></pre>
+<p><strong>对账</strong>兜住前两层管不了的事（relay 挂三天、outbox 被误删、补偿写错）：</p>
+<div class="table-wrap"><table><thead><tr><th>档位</th><th>频率</th><th>比对内容</th><th>处理</th></tr></thead><tbody><tr><td>实时</td><td>分钟级</td><td>outbox 积压量、最老事件年龄</td><td>告警，人工看 relay</td></tr><tr><td>准实时</td><td>5~15 分钟</td><td>订单状态 vs 支付流水状态</td><td>自动补发/补偿</td></tr><tr><td>日终</td><td>T+1</td><td>全量按业务号比对金额与状态</td><td>落差异表，人工处理</td></tr></tbody></table></div>
+<p><strong>「最终一致」的时长要写进产品文档</strong>：同步双写约等于 RPC 耗时（几十 ms）；Outbox 轮询 100ms~5s；CDC 100ms~1s；人工兜底小时级。前端不要「转圈等一致」，而是<strong>乐观展示 + 明确中间态</strong>（「处理中，预计 10 秒内完成」）+ 可查询进度。用户能接受「稍后到账」，不能接受「页面显示成功但实际没有」。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<p>目标：下单写订单 + 写 outbox（同一事务），后台 relay 投递 Kafka，库存消费者幂等扣减。三张表同库：<code>orders</code>（业务）、<code>consumed_event(consumer, event_id)</code>（去重）、<code>outbox(id, aggregate_id, event_type, payload, status, retry_count, next_retry_at, claimed_at, created_at)</code>，其中 <code>status</code> 为 <code>0 待投递 / 1 投递中 / 2 已投递</code>，索引建在 <code>(status, next_retry_at, id)</code> 上。</p>
+<p><code>next_retry_at</code> 必须有默认值：relay 用 <code>next_retry_at &lt;= NOW(3)</code> 扫描，若该列为 NULL 且无默认，新插入的事件永远扫不到（<code>NULL &lt;= x</code> 恒为 UNKNOWN）。最小可用的 DDL：</p>
+<pre><code class="lang-sql">CREATE TABLE outbox (
+  id            BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  aggregate_id  VARCHAR(64)  NOT NULL,
+  event_type    VARCHAR(64)  NOT NULL,
+  payload       JSON         NOT NULL,
+  status        TINYINT      NOT NULL DEFAULT 0,          -- 0 待投递 / 1 投递中 / 2 已投递
+  retry_count   INT          NOT NULL DEFAULT 0,
+  next_retry_at DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  claimed_at    DATETIME(3)  NULL,
+  created_at    DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  KEY idx_pending (status, next_retry_at, id)
+) ENGINE=InnoDB;</code></pre>
+<p>写入侧（<code>internal/order/create.go</code>）——业务行与事件行同事务，没有第二种写法：</p>
+<pre><code class="lang-go">package order
+
+import (
+	"context"
+	"database/sql"
+	"encoding/json"
+	"fmt"
+)
+
+// Create：提交才有事件，回滚就没有事件。
+func Create(ctx context.Context, db *sql.DB, orderNo, sku string, qty, amount int64) error {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	res, err := tx.ExecContext(ctx,
+		`INSERT INTO orders (order_no, amount, status) VALUES (?, ?, 'PENDING')`, orderNo, amount)
+	if err != nil {
+		return err // 1062 唯一键冲突 = 重复下单
+	}
+	id, _ := res.LastInsertId()
+	payload, err := json.Marshal(map[string]any{
+		"event_id": fmt.Sprintf("order-created-%d", id), // 稳定可推导，重放不变
+		"order_no": orderNo, "sku": sku, "qty": qty,
+	})
+	if err != nil {
+		return err
+	}
+	if _, err := tx.ExecContext(ctx,
+		`INSERT INTO outbox (aggregate_id, event_type, payload)
+		 VALUES (?, 'order.created', ?)`, orderNo, payload); err != nil {
+		return err
+	}
+	return tx.Commit()
+}</code></pre>
+<p>投递侧（<code>internal/relay/relay.go</code>）——先 CAS 认领 <code>0→1</code>，抢到才发布；网络调用放在事务外，不持锁做 IO：</p>
+<pre><code class="lang-go">package relay
+
+import (
+	"context"
+	"database/sql"
+
+	"github.com/segmentio/kafka-go"
+)
+
+type pending struct {
+	id      int64
+	key     string
+	typ     string
+	payload []byte
+}
+
+// PublishOnce：CAS 认领让多副本天然不重复；换 FOR UPDATE SKIP LOCKED 也等价。
+func PublishOnce(ctx context.Context, db *sql.DB, w *kafka.Writer) error {
+	rows, err := db.QueryContext(ctx, `
+		SELECT id, aggregate_id, event_type, payload FROM outbox
+		WHERE status = 0 AND next_retry_at &lt;= NOW(3) ORDER BY id LIMIT 100`)
+	if err != nil {
+		return err
+	}
+	var recs []pending
+	for rows.Next() {
+		var p pending
+		if err := rows.Scan(&amp;p.id, &amp;p.key, &amp;p.typ, &amp;p.payload); err != nil { rows.Close(); return err }
+		recs = append(recs, p)
+	}
+	rows.Close()
+	for _, p := range recs {
+		res, err := db.ExecContext(ctx,
+			`UPDATE outbox SET status = 1, claimed_at = NOW(3) WHERE id = ? AND status = 0`, p.id)
+		if err != nil {
+			return err
+		}
+		if n, _ := res.RowsAffected(); n == 0 {
+			continue // 被别的副本抢走
+		}
+		msg := kafka.Message{Key: []byte(p.key), Value: p.payload,
+			Headers: []kafka.Header{{Key: "event_type", Value: []byte(p.typ)}}}
+		if err := w.WriteMessages(ctx, msg); err != nil {
+			// 退回待投递 + 指数退避；重复发布由消费端幂等兜住
+			_, _ = db.ExecContext(ctx, `UPDATE outbox SET status = 0,
+				retry_count = retry_count + 1,
+				next_retry_at = NOW(3) + INTERVAL LEAST(POW(2, retry_count), 300) SECOND
+				WHERE id = ?`, p.id)
+			continue
+		}
+		_, _ = db.ExecContext(ctx,
+			`UPDATE outbox SET status = 2, sent_at = NOW(3) WHERE id = ?`, p.id)
+	}
+	return nil
+}</code></pre>
+<p>后台用 <code>time.Ticker</code> 每 200ms 调一次 <code>PublishOnce</code>，每轮再顺手回收「认领后崩溃」的行：<code>UPDATE outbox SET status = 0 WHERE status = 1 AND claimed_at &lt; NOW(3) - INTERVAL 60 SECOND</code>。<code>kafka.Writer</code> 用 <code>&amp;kafka.Hash{}</code> 作 Balancer（同 key 落同一分区 → 单聚合保序）+ <code>RequiredAcks: kafka.RequireAll</code>。消费侧（<code>internal/consumer/inventory.go</code>）——去重表与业务写入同事务，唯一键冲突直接当成功：</p>
+<pre><code class="lang-go">package consumer
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+
+	"github.com/go-sql-driver/mysql"
+)
+
+// HandleOrderCreated：先写去重表，再改业务；两者同事务，重放安全。
+func HandleOrderCreated(ctx context.Context, db *sql.DB, eventID, sku string, qty int64) error {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	if _, err := tx.ExecContext(ctx,
+		`INSERT INTO consumed_event (consumer, event_id) VALUES ('inventory', ?)`,
+		eventID); err != nil {
+		if isDuplicate(err) { return nil } // 已处理过，直接 ACK
+		return err
+	}
+	res, err := tx.ExecContext(ctx,
+		`UPDATE stock SET available = available - ? WHERE sku = ? AND available &gt;= ?`,
+		qty, sku, qty)
+	if err != nil {
+		return err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		// 影响 0 行 = 库存不足。必须回滚：去重行不能提交，否则消息被当成已处理，库存永久少扣
+		return fmt.Errorf("inventory: insufficient stock for sku %s", sku)
+	}
+	return tx.Commit() // 提交后再 commit offset：宁可重放，不可丢
+}
+
+func isDuplicate(err error) bool {
+	var me *mysql.MySQLError
+	return errors.As(err, &amp;me) &amp;&amp; me.Number == 1062
+}</code></pre>
+<p>不想自研 relay 就用 CDC 等价替代：Debezium 的 Outbox Event Router 只认 INSERT，直接把 outbox 行转成 Kafka 消息，<code>aggregateid</code> 作 key、<code>id</code> 进 header（默认列 <code>id/aggregatetype/aggregateid/type/payload</code>，需按现有表结构配置映射）。生产上必须监控 <code>status IN (0,1)</code> 的行数与最老 <code>created_at</code> 的年龄，并对账「订单 = 支付流水 = 库存扣减」三方金额。</p>
+<hr>
+
+<div class="callout info"><p><b>实战要点：</b>Outbox 表要有 status、retry_count、next_retry_at 与索引；多实例投递用 SELECT ... FOR UPDATE SKIP LOCKED 抢占，避免重复发送。</p></div>
+</section>
+<section data-anchor="5-版本与生态">
+<h2 id="5-版本与生态">5. 版本与生态<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>组件</th><th>版本（截至 2026-11）</th><th>与本篇相关的要点</th></tr></thead><tbody><tr><td><strong>Seata（Java）</strong></td><td><strong>2.6.0</strong>（2026-01）；2.7.0 在发布投票中</td><td>AT 模式靠 <code>undo_log</code> + 全局锁自动补偿，支持 MySQL/Oracle/PostgreSQL/TiDB 等；TCC/Saga/XA 并存；Server 需独立部署 + DB/Redis 存储</td></tr><tr><td><strong>Seata-Go</strong></td><td><strong>2.1.0</strong>（2026-02）</td><td>覆盖 AT/TCC/SAGA/XA，要求 Server 2.5.0+；生态弱于 Java 版，Go 项目主流仍是 Outbox/Saga 自研</td></tr><tr><td><strong>RocketMQ</strong></td><td><strong>5.5.1</strong>（2026-08）</td><td>事务消息（半消息 + 回查）仍是核心能力；5.x 有 gRPC Proxy、任意精度定时消息；事务消息内部已改为队列化实现</td></tr><tr><td><strong>Kafka</strong></td><td><strong>4.3.1</strong>（2026-06）</td><td>4.0 起 KRaft-only（移除 ZooKeeper）；KIP-890 强化事务协议；EOS 边界仍只覆盖 Kafka 读写</td></tr><tr><td><strong>Debezium</strong></td><td><strong>3.7.1.Final</strong>（2026-11）</td><td>Outbox Event Router 默认列 <code>id/aggregatetype/aggregateid/type/payload</code>，<code>aggregateid</code> 作 key，只处理 INSERT</td></tr><tr><td><strong>Temporal</strong></td><td>Server <strong>1.3x</strong> / Go SDK v1.x</td><td>承担 Saga 的编排与持久化执行，补偿写在 Workflow 里；不提供 DB 层原子性</td></tr><tr><td><strong>MySQL</strong></td><td><strong>9.7 LTS</strong></td><td>XA 语法与语义未变（<code>XA START/END/PREPARE/COMMIT</code>），新项目直接用 LTS 线</td></tr></tbody></table></div>
+<p>生态判断：Java 团队已有 Seata 时 AT 上手最快，但要接受全局锁导致的吞吐下降与 <code>undo_log</code> 膨胀；Go 团队优先 <strong>Outbox + Kafka/RocketMQ</strong>，长流程交给 <a href="../temporal/temporal-guide.html">Temporal</a>，不要在 Go 里硬套 Seata AT；存量系统不能改代码时 CDC 是唯一现实选项；已用 RocketMQ 5.x 则事务消息是最短路径，但先把回查表和状态机设计对。</p>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>双写不做保护</strong>：<code>Commit()</code> 之后直接 <code>producer.Send()</code>，中间崩溃就永久丢事件；先发消息再写库，则通知一个不存在的订单。跨系统写必须收敛到 Outbox / 事务消息 / CDC。</li><li><strong>outbox 当业务表用</strong>：塞整张订单快照、图片 base64，表迅速膨胀、投递变慢。只放事件必要字段 + ID，详情让消费方回查。</li><li><strong>忘了归档</strong>：<code>status=2</code> 的行永不删除，半年后索引几千万行，投递扫描与主从延迟一起爆。按天分区或定时批量删除。</li><li><strong>relay 在事务里发网络请求</strong>：<code>BEGIN</code> → <code>FOR UPDATE</code> → 调 Kafka → <code>COMMIT</code>，一次抖动就让行锁持有多秒。先认领（短事务），再在事务外发布。</li><li><strong>多副本 relay 重复投同一批</strong>：没有 CAS 抢占也没有 <code>SKIP LOCKED</code>，两个实例会同时发同一行。认领必须是原子的。</li><li><strong>认领后崩溃，行卡在 <code>status=1</code></strong>：必须有不依赖业务进程的 sweeper（<code>claimed_at</code> 超时回置），否则这条事件再也不会被投递。</li><li><strong>用消息 ID 做幂等键</strong>：重发时 ID 变化，去重完全失效。幂等键必须是<strong>业务唯一号</strong>，且能由事件内容稳定推导。</li><li><strong>去重表与业务写入不同事务</strong>：先写去重表再写业务（或反过来），中间失败就出现「标记已处理但业务没做」。必须同库同事务。</li><li><strong>TCC 不做空回滚与悬挂防护</strong>：只写三个接口不建控制表，重试一多就出现「解冻了没冻结的钱」。控制表 + 状态机 CAS 是必需品。</li><li><strong>把不可逆操作放 Saga 中间</strong>：第 2 步发短信、第 3 步才扣款，扣款失败短信收不回。可补偿步骤前置，不可逆步骤后置 + 人工兜底。</li><li><strong>以为 Saga 有隔离性</strong>：中间态被读到，出现「库存显示已售但订单未支付」。用语义锁 + 查询侧显式过滤，别指望数据库隔离级别。</li><li><strong>补偿失败被 <code>_ =</code> 吞掉</strong>：正向成功、反向没做，数据永久不一致。补偿要与正向同等级的重试、幂等、告警。</li><li><strong>XA 事务里夹 RPC</strong>：<code>XA START</code> 之后调下游，prepare 前的锁持有时间被网络放大数倍。XA 事务内只放本地 SQL。</li><li><strong>Kafka 事务当跨库事务</strong>：开了 <code>transactional.id</code> 就以为「Kafka + MySQL」原子。它只管 Kafka 分区与 offset，DB 侧仍要 Outbox 或幂等表。</li><li><strong>先 commit offset 再处理</strong>：进程在两步之间崩溃，消息永久丢失。先提交业务事务，再提交 offset，重复靠幂等兜住。</li><li><strong>只监控服务存活</strong>：relay 活着但一直失败（权限、Topic 不存在、序列化错误），健康检查全绿而数据停更几小时。积压量与最老事件年龄必须告警。</li><li><strong>只信「消息一定会到」</strong>：至少一次投递也可能因误删、Topic 重建、消费组重置而丢数据。日终对账是最后防线，不是可选项。</li><li><strong>为两三个写操作上框架</strong>：先问「能否放进同一个库」「能否用一次同步调用 + 重试」「能否接受 5 秒最终一致」。多数场景的正确答案是<strong>改业务边界</strong>，而不是引入 TM/TC 集群。</li></ol>
+<hr>
+
+<div class="callout warning"><p><b>生产警示：</b>不要用「先写库再发 MQ」的两步操作假装事务：第二步失败就永久不一致；Kafka 事务只覆盖 Kafka 读写，不覆盖你的数据库。</p></div>
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>一致性要求</th><th>是否跨库/跨服务</th><th>补偿是否可逆</th><th>团队运维能力</th><th>推荐</th></tr></thead><tbody><tr><td>强一致，中间态不可见（钱、额度）</td><td>否（能放同库）</td><td>—</td><td>—</td><td><strong>本地事务</strong>，先改边界</td></tr><tr><td>强一致，中间态不可见</td><td>是，同机房、短事务、低并发</td><td>—</td><td>有中间件经验</td><td>XA / Seata AT</td></tr><tr><td>最终一致</td><td>是</td><td>可逆（预留、冻结、可退款）</td><td>中</td><td><strong>Saga</strong>（Temporal 编排）</td></tr><tr><td>最终一致</td><td>是</td><td>不可逆（已发货、已结算）</td><td>中</td><td>Saga + 不可逆步骤后置 + 人工兜底</td></tr><tr><td>只需「事件可靠送达」</td><td>是（DB → MQ）</td><td>不涉及</td><td>低</td><td><strong>Outbox + 轮询</strong></td></tr><tr><td>只需「事件可靠送达」</td><td>是，在 Kafka 生态内</td><td>不涉及</td><td>中（有 Kafka Connect）</td><td>Outbox + Debezium CDC</td></tr><tr><td>只需「事件可靠送达」</td><td>是，已用 RocketMQ</td><td>不涉及</td><td>中</td><td>事务消息 + 回查表</td></tr><tr><td>不能改业务代码 / 存量系统</td><td>是</td><td>—</td><td>有 DBA 与平台团队</td><td>CDC 订阅</td></tr></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>2PC / XA</th><th>TCC</th><th>Saga</th><th>本地消息表 / Outbox</th><th>事务消息</th><th>CDC</th></tr></thead><tbody><tr><td>一致性</td><td><strong>强</strong></td><td>最终</td><td>最终</td><td>最终</td><td>最终</td><td>最终</td></tr><tr><td>隔离性</td><td><strong>有</strong>（持锁）</td><td>软隔离（预留）</td><td>无</td><td>无</td><td>无</td><td>无</td></tr><tr><td>业务侵入</td><td>低</td><td><strong>最高</strong></td><td>中</td><td>中</td><td>中</td><td><strong>最低</strong></td></tr><tr><td>吞吐影响</td><td><strong>大</strong>（锁 + 2 RTT）</td><td>小</td><td>小</td><td>小</td><td>小</td><td>无（走外部链路）</td></tr><tr><td>典型延迟</td><td>提交即一致</td><td>秒级</td><td>秒~分钟</td><td>100ms~5s</td><td>百 ms</td><td>100ms~1s</td></tr><tr><td>运维复杂度</td><td>中（TM 单点）</td><td>中</td><td>中~高（编排引擎）</td><td><strong>低</strong></td><td>中</td><td>高（Connect + 日志）</td></tr><tr><td>主要失败模式</td><td>in-doubt 悬挂锁</td><td>空回滚 / 悬挂</td><td>补偿不可逆</td><td>重复投递</td><td>回查不准</td><td>位点丢失重放</td></tr><tr><td>适合团队</td><td>有 DBA 与中间件</td><td>金融核心</td><td>业务复杂度高</td><td><strong>大多数团队</strong></td><td>RocketMQ 用户</td><td>平台/数据团队</td></tr></tbody></table></div>
+<p>一句话决策：</p>
+<ul><li><strong>能不用就不用。</strong> 先把两个写塞进同一个库、同一个本地事务；做不到就把其中一个改成异步（先落本地，再补偿）。</li><li><strong>必须强一致且跨库</strong> → XA / Seata AT，接受吞吐下降与悬挂事务的运维成本，只放在同机房短事务上。</li><li><strong>跨服务、能补偿、流程会变长</strong> → Saga，用 <a href="../temporal/temporal-guide.html">Temporal</a> 编排，别自己写状态机 + 定时扫描。</li><li><strong>只是「写完库要通知别人」</strong> → Outbox；新系统首选轮询（简单可控），已有 Kafka Connect 就上 Debezium。</li><li><strong>钱和券要预留、不能直接扣</strong> → TCC，但先把控制表与三个幂等状态机写对。</li><li><strong>存量系统、不许改代码</strong> → CDC，用平台复杂度换零侵入。</li></ul>
+<blockquote><p>最后一条经验：分布式事务的复杂度不在「选哪个框架」，而在「补偿、幂等、对账」这三件没人愿意写的脏活。任何方案缺了这三样都会在半年后还债，而 2PC 只是把债换成了锁等待与悬挂事务。</p></blockquote>
+<p>参考：<a href="https://microservices.io/patterns/data/saga.html">https://microservices.io/patterns/data/saga.html</a> · <a href="https://microservices.io/patterns/data/transactional-outbox.html">https://microservices.io/patterns/data/transactional-outbox.html</a> · <a href="https://seata.apache.org">https://seata.apache.org</a> · <a href="https://debezium.io/documentation/reference/stable/transformations/outbox-event-router.html">https://debezium.io/documentation/reference/stable/transformations/outbox-event-router.html</a></p>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

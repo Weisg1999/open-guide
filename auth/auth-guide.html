@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>认证：JWT / OAuth2 / OIDC · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#1d4ed8; --accent-light:#dbeafe; --accent-dark:#1e3a8a;
+    --bg:#f5f8ff; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#0c1a3a; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#1e3a8a 0%,#1d4ed8 58%,#1e3a8a 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">认证：JWT / OAuth2 / OIDC<span class="ver">jwt v5</span></div>
+  <div class="sub">令牌 · 授权码 · 身份协议</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a href="#2-功能特性总览">2. 功能特性总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-三段结构与-claims">3.1 三段结构与 claims</a>
+  <a class="sub-link" href="#32-签名算法与密钥轮换">3.2 签名算法与密钥轮换</a>
+  <a class="sub-link" href="#33-校验清单少一项就是一个洞">3.3 校验清单：少一项就是一个洞</a>
+  <a class="sub-link" href="#34-oauth2-的四种模式与-pkce">3.4 OAuth2 的四种模式与 PKCE</a>
+  <a class="sub-link" href="#35-oidc-在-oauth2-之上补了什么">3.5 OIDC 在 OAuth2 之上补了什么</a>
+  <a class="sub-link" href="#36-生命周期撤销与传播">3.6 生命周期、撤销与传播</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-golang-jwt-v5签发与校验">4.1 golang-jwt v5：签发与校验</a>
+  <a class="sub-link" href="#42-jwks-端点缓存与轮换宽限">4.2 JWKS 端点、缓存与轮换宽限</a>
+  <a class="sub-link" href="#43-go-oidc-对接-keycloak">4.3 go-oidc 对接 Keycloak</a>
+  <a class="sub-link" href="#44-gin-认证中间件">4.4 Gin 认证中间件</a>
+  <a class="sub-link" href="#45-refresh-token-轮换与重放检测">4.5 refresh token 轮换与重放检测</a>
+  <a href="#5-版本演进">5. 版本演进</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>认证：JWT / OAuth2 / OIDC 技术指南</h1>
+<p>认证回答「你是谁」，授权回答「你能做什么」：JWT 是令牌格式而不是会话方案，OIDC 是在 OAuth2 之上补的一层身份协议。</p>
+<p style="opacity:.8;font-size:13.5px">令牌 · 授权码 · 身份协议</p>
+<div class="meta"><span>golang-jwt v5</span><span>go-oidc v3</span><span>alg 白名单</span><span>JWKS 轮换</span><span>PKCE</span><span>refresh 轮换</span></div>
+</div>
+<blockquote><p>认证回答「你是谁」，授权回答「你能做什么」：JWT 是令牌格式而不是会话方案，OIDC 是在 OAuth2 之上补的一层身份协议。 参考实现：<a href="https://github.com/golang-jwt/jwt">https://github.com/golang-jwt/jwt</a> v5 · <a href="https://github.com/coreos/go-oidc">https://github.com/coreos/go-oidc</a> v3 · <a href="https://pkg.go.dev/golang.org/x/oauth2">https://pkg.go.dev/golang.org/x/oauth2</a>　|　协议：RFC 7519 / RFC 6749 / OpenID Connect Core 1.0</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p>三者不是竞品，而是<strong>一条链路上的三层</strong>：</p>
+<ul><li><strong>golang-jwt/jwt v5</strong>（MIT）：只做令牌的编解码与签名验签。不定义怎么发令牌、不管用户目录、不管撤销，也没有任何 HTTP 语义——当「带签名的 JSON」用，别当「登录方案」用；</li><li><strong>golang.org/x/oauth2</strong>（BSD-3-Clause）：OAuth2 <strong>客户端</strong>侧实现——拼授权 URL、换 token、<code>TokenSource</code> 自动刷新。它既不是授权服务器（AS），也不校验 ID Token；</li><li><strong>coreos/go-oidc v3</strong>（Apache-2.0，<code>.../v3/oidc</code>）：在 x/oauth2 之上补 OIDC 客户端能力——发现文档、JWKS 缓存、ID Token 校验、UserInfo。</li></ul>
+<p>职责边界：<strong>x/oauth2 负责「拿到令牌」，go-oidc 负责「确认令牌代表谁」，golang-jwt 负责「自己签发/校验令牌时的字节级操作」</strong>。接第三方 IdP（Keycloak/Entra/Google）只写客户端；自己当 AS 对内发令牌，则用 golang-jwt 签发、资源服务侧用 JWKS 校验。适用：Web/移动端登录（Authorization Code + PKCE）、服务间 <code>client_credentials</code>、网关统一鉴权、多租户声明下发。<strong>不适用</strong>：集中式用户目录与 SSO（Keycloak 的领域）、细粒度资源授权（Casbin/OpenFGA 的领域）、要求「登出即失效」的强一致会话（服务端 session 更合适）。</p>
+<pre><code class="lang-bash">go get github.com/golang-jwt/jwt/v5 github.com/coreos/go-oidc/v3/oidc golang.org/x/oauth2</code></pre>
+<hr>
+
+</section>
+<section data-anchor="2-功能特性总览">
+<h2 id="2-功能特性总览">2. 功能特性总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>golang-jwt/jwt v5</th><th>x/oauth2</th><th>coreos/go-oidc v3</th></tr></thead><tbody><tr><td>令牌签发</td><td>✅ HS/RS/PS/ES/EdDSA</td><td>❌</td><td>❌</td></tr><tr><td>令牌校验</td><td>✅ 可插拔 <code>Keyfunc</code></td><td>❌</td><td>✅（仅 ID Token）</td></tr><tr><td>claims 校验</td><td>✅ <code>iss/aud/exp/nbf/iat</code> + leeway</td><td>❌</td><td>✅ <code>iss/aud/exp</code>，<code>nonce</code> 需自查</td></tr><tr><td>密钥来源</td><td>自己注入（文件/KMS/JWKS）</td><td>❌</td><td>✅ 自动拉取并缓存 JWKS</td></tr><tr><td>授权码流 + PKCE</td><td>❌</td><td>✅ <code>AuthCodeURL</code>/<code>Exchange</code>/<code>GenerateVerifier</code></td><td>✅ 与 <code>provider.Endpoint()</code> 组合</td></tr><tr><td>自动刷新</td><td>❌</td><td>✅ <code>TokenSource</code> / <code>ReuseTokenSource</code></td><td>复用 x/oauth2</td></tr><tr><td>发现文档</td><td>❌</td><td>⚠️ 需手填 <code>Endpoint</code></td><td>✅ <code>oidc.NewProvider</code> 自动解析</td></tr></tbody></table></div>
+<hr>
+
+<div class="features">
+  <div class="feature"><div class="fh"><h4>JWT 是格式</h4></div><p>不是会话方案；无状态意味着撤销要靠短过期加黑名单</p></div>
+  <div class="feature"><div class="fh"><h4>OAuth2 模式</h4></div><p>授权码 + PKCE 是默认；隐式已弃用，密码模式不适合第三方</p></div>
+  <div class="feature"><div class="fh"><h4>OIDC</h4></div><p>在 OAuth2 上补 ID Token、UserInfo 与发现文档</p></div>
+</div>
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-三段结构与-claims">3.1 三段结构与 claims</h3>
+<p><code>header.payload.signature</code>，三段各 base64url（无填充）后以 <code>.</code> 连接。签名覆盖 <code>base64url(header) + "." + base64url(payload)</code> 这串原始字节，改一字节即失效；但 <strong>payload 是明文</strong>，解码就能读。JWT 只保证完整性、不保证机密性。</p>
+<div class="table-wrap"><table><thead><tr><th>claim</th><th>含义</th><th>校验要点</th></tr></thead><tbody><tr><td><code>iss</code></td><td>签发者</td><td>与预期值<strong>全等</strong>比较（含 scheme 与路径，Keycloak 精确到 <code>/realms/{realm}</code>）</td></tr><tr><td><code>sub</code></td><td>主体</td><td>用户/工作负载的稳定标识；别当数据库外键（换 IdP 就失效）</td></tr><tr><td><code>aud</code></td><td>受众</td><td>必须是<strong>本服务</strong>的标识，单字符串或数组</td></tr><tr><td><code>exp</code></td><td>过期时间</td><td>必须存在且必须校验；缺失视为无效</td></tr><tr><td><code>nbf</code></td><td>生效时间</td><td>未来时间戳应拒绝</td></tr><tr><td><code>iat</code></td><td>签发时间</td><td>显著晚于本机时间说明时钟错乱或伪造</td></tr></tbody></table></div>
+<p>自定义 claims（<code>tid</code>、<code>roles</code>、<code>scope</code>）没有标准语义，别用它做授权决策的唯一依据——除非签名密钥只在你手里，且你接受「令牌有效期内权限不可变更」。</p>
+<h3 id="32-签名算法与密钥轮换">3.2 签名算法与密钥轮换</h3>
+<div class="table-wrap"><table><thead><tr><th>算法</th><th>密钥</th><th>谁能签发</th><th>适用</th></tr></thead><tbody><tr><td>HS256</td><td>共享密钥（≥32 字节）</td><td><strong>任何</strong>持有密钥者</td><td>单体、同一信任域的短链路</td></tr><tr><td>RS256</td><td>RSA 2048+ 私钥/公钥</td><td>仅私钥持有者</td><td>默认选择，JWKS 生态最成熟</td></tr><tr><td>PS256</td><td>RSA-PSS</td><td>同上</td><td>有 PSS 合规要求时</td></tr><tr><td>ES256</td><td>ECDSA P-256</td><td>同上</td><td>令牌更短、验签更快；老网关支持略差</td></tr></tbody></table></div>
+<p>对称算法的真正问题不是强度，而是<strong>信任扩散</strong>：校验方必须持有同一把密钥，也就等于拥有了签发权。20 个微服务共享一个 HS256 密钥，等于 20 个 AS。非对称下必须解决「用哪把公钥」，这就是 <code>kid</code>：写进 header，校验方拿它去 JWKS 挑。轮换固定四步：<strong>① 新密钥发布到 JWKS（旧密钥保留）→ ② 等过 ≥ 最大令牌寿命的宽限期 → ③ 切换签发密钥 → ④ 确认无旧令牌在途后移除旧公钥</strong>。宽限期取 <code>max(access TTL, ID Token TTL) + 时钟偏移</code>，通常 1–24 小时。同时必须防<strong>算法混淆</strong>：攻击者把 <code>alg</code> 从 <code>RS256</code> 改成 <code>HS256</code>，再用<strong>公开的 RSA 公钥</strong>当 HMAC 密钥重签；校验方若按 header 里的 <code>alg</code> 选算法就会中招，因此算法必须由校验方写死。</p>
+<h3 id="33-校验清单少一项就是一个洞">3.3 校验清单：少一项就是一个洞</h3><div class="figure">
+  <svg viewBox="0 0 880 268" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-auth" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1d4ed8"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#1e3a8a">一次 JWT 校验的完整清单</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">只验签名不校验 aud，令牌会在所有服务通用</text>
+    <rect x="36" y="82" width="175" height="80" rx="12" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+    <text x="124" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#1e3a8a">解析头部</text>
+    <text x="124" y="136" text-anchor="middle" font-size="11" fill="#1e3a8a">alg / kid，拒绝 none</text>
+    <line x1="215" y1="122" x2="241" y2="122" stroke="#1d4ed8" stroke-width="2" marker-end="url(#m-auth)"/>
+    <rect x="247" y="82" width="175" height="80" rx="12" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+    <text x="334" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#1e3a8a">验签</text>
+    <text x="334" y="136" text-anchor="middle" font-size="11" fill="#1e3a8a">公钥或 JWKS 缓存</text>
+    <line x1="426" y1="122" x2="452" y2="122" stroke="#1d4ed8" stroke-width="2" marker-end="url(#m-auth)"/>
+    <rect x="458" y="82" width="175" height="80" rx="12" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+    <text x="546" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#1e3a8a">校验 claims</text>
+    <text x="546" y="136" text-anchor="middle" font-size="11" fill="#1e3a8a">iss / aud / exp / nbf</text>
+    <line x1="637" y1="122" x2="663" y2="122" stroke="#1d4ed8" stroke-width="2" marker-end="url(#m-auth)"/>
+    <rect x="669" y="82" width="175" height="80" rx="12" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+    <text x="756" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#1e3a8a">放行或 401</text>
+    <text x="756" y="136" text-anchor="middle" font-size="11" fill="#1e3a8a">失败原因要可观测</text>
+    <rect x="40" y="186" width="800" height="58" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="210" font-size="12.5" fill="#1e293b">alg 必须走白名单；JWKS 缓存要接受 kid 变化，轮换期留重叠窗口。</text>
+  </svg>
+  <figcaption>一次 JWT 校验的完整清单</figcaption>
+</div>
+<ol><li><strong>签名</strong>：按 <code>kid</code> 定位密钥验签；<code>kid</code> 缺失或未知 → 拒绝（可能是轮换未生效，也可能是伪造）；</li><li><strong><code>alg</code> 白名单</strong>：<code>WithValidMethods([]string{"RS256"})</code>，同时挡住 <code>alg: none</code> 与 HS/RS 混淆；</li><li><strong><code>iss</code></strong>：全等比较。多 IdP 时必须按 issuer 路由到对应密钥集，否则 A 租户令牌能打 B 租户；</li><li><strong><code>aud</code></strong>：<strong>最常被漏掉的一项</strong>。只验签名和 <code>exp</code> 的话，同一 AS 发给「订单服务」的令牌能原样打「管理服务」——同 issuer、同密钥。每个资源服务必须校验 <code>aud</code> 含自己；</li><li><strong><code>exp</code> / <code>nbf</code> / <code>iat</code></strong>：<code>WithExpirationRequired()</code> 强制 <code>exp</code> 存在，leeway 30–60 秒；别用 5 分钟 leeway 当「容错」，那等于送给攻击者 5 分钟窗口；</li><li><strong><code>jti</code></strong>（可选）：需即时吊销时存 Redis 黑名单，TTL 设为令牌剩余寿命。</li></ol>
+<p><strong><code>alg: none</code> 攻击</strong>值得单独说：header 改成 <code>{"alg":"none"}</code>、签名段清空，早期库或手写解析器看到「无签名」就放行，等于任意伪造身份。golang-jwt v5 默认拒绝 <code>none</code>，但显式白名单仍不可省。时钟偏移是分布式常态（NTP 漂移、跨区延迟），leeway 30 秒是工程折中；若大量 <code>ErrTokenNotValidYet</code>，先查 NTP 而不是调大 leeway。</p>
+<h3 id="34-oauth2-的四种模式与-pkce">3.4 OAuth2 的四种模式与 PKCE</h3>
+<div class="table-wrap"><table><thead><tr><th>模式</th><th>谁用</th><th>状态</th><th>说明</th></tr></thead><tbody><tr><td><code>authorization_code</code> + PKCE</td><td>Web、SPA、移动端</td><td><strong>唯一推荐</strong></td><td>code 经前端回跳，token 由后端/BFF 换</td></tr><tr><td><code>client_credentials</code></td><td>服务间</td><td>可用</td><td>无用户上下文，<code>sub</code> 是客户端自身</td></tr><tr><td><code>implicit</code></td><td>纯前端</td><td><strong>已弃用</strong></td><td>token 直接放 URL fragment</td></tr><tr><td><code>password</code>（ROPC）</td><td>第一方迁移期</td><td><strong>已弃用</strong></td><td>客户端直接经手用户密码</td></tr></tbody></table></div>
+<p><strong>隐式模式为什么被弃用</strong>：token 出现在 <code>#fragment</code>，会进入浏览器历史、<code>Referer</code>、截图、前端日志；没有 code 交换环节因此<strong>无法使用 PKCE</strong>，也无法证明换 token 的就是发起请求的客户端；没有 refresh，access token 寿命被迫拉长，泄露窗口更大。RFC 9700 不建议，OAuth 2.1 草案直接删除。<strong>密码模式为什么不适合第三方</strong>：它要求客户端<strong>经手用户明文密码</strong>，等于让用户把凭证交给不受信任的 RP，一次泄露波及该用户在 AS 上的全部权限；MFA、SSO、联邦登录、风控全部失效。只有「自己是第一方客户端 + 正在迁移」才有短暂存在理由。</p>
+<p><strong>PKCE（RFC 7636）</strong>解决授权码被拦截：客户端生成随机 <code>code_verifier</code>（43–128 字符），<code>code_challenge = BASE64URL(SHA256(verifier))</code>；authorize 带 challenge，token 带 verifier，AS 比对哈希。攻击者截获 code 也换不到 token。public client 必选、confidential 也建议（OAuth 2.1 要求全覆盖）。配套还有 <code>state</code> 防 CSRF（一次一用、回调比对即删）与 <code>redirect_uri</code> <strong>精确字符串匹配</strong>（不做前缀匹配，防开放重定向）。</p>
+<h3 id="35-oidc-在-oauth2-之上补了什么">3.5 OIDC 在 OAuth2 之上补了什么</h3>
+<p>OAuth2 只解决「拿到能访问资源的令牌」，<strong>不告诉你用户是谁</strong>。OIDC 补了四样：</p>
+<ul><li><strong>ID Token</strong>：一个 JWT，声明本次登录的主体——<code>iss</code>/<code>sub</code>/<code>aud</code>(=client_id)/<code>exp</code>/<code>iat</code>/<code>nonce</code>/<code>auth_time</code>/<code>acr</code>/<code>amr</code>；</li><li><strong>UserInfo 端点</strong>：用 access token 换用户属性（<code>name</code>/<code>email</code>/<code>picture</code>），适合属性多或需实时的场景；</li><li><strong>发现文档</strong>：<code>{issuer}/.well-known/openid-configuration</code>，给出 authorize/token/jwks/end_session 各端点；</li><li><strong><code>nonce</code></strong>：授权请求带的一次性随机串，ID Token 里原样返回，绑定「这次登录」与「这次回调」。</li></ul>
+<p>三个必须记住的区别：① <strong>ID Token 的 <code>aud</code> 是 <code>client_id</code>，不是 API 标识</strong>，拿它调资源服务是典型错误；② <strong>access token 的格式 OIDC 不管</strong>，可以是不透明串（配 introspection），也可以是 JWT，它面向资源服务而非前端；③ <strong><code>nonce</code> 库不会替你比对</strong>，go-oidc 只校验签名、<code>iss</code>、<code>aud</code>、<code>exp</code>，<code>idToken.Nonce</code> 要自己和服务端会话比。OIDC 不改变重定向流程：scope 加 <code>openid</code>，token 响应多一个 <code>id_token</code>，仅此而已。</p>
+<h3 id="36-生命周期撤销与传播">3.6 生命周期、撤销与传播</h3>
+<p>access token 的典型寿命是 5–15 分钟，放内存或 BFF 的 <code>HttpOnly</code> Cookie，短到「泄露也只能用一会儿」；refresh token 7–30 天滑动，只存服务端、绝不给浏览器 JS，且一用一换。</p>
+<p><strong>refresh 轮换与重放检测</strong>：每次刷新签发新 refresh 并作废旧的（同一 <code>family_id</code>）。若某个<strong>已使用</strong>的 refresh 再次出现，说明两条链路都持有它——无法判断谁是攻击者，因此<strong>整条 family 全部撤销</strong>，强制重新登录（RFC 9700 §4.14.2）。不轮换的 refresh 一旦泄露可无限续期，且永远发现不了。<strong>无状态令牌的撤销难题</strong>：JWT 校验只依赖签名与时间，AS「拉黑」不会自动生效。四条路径：① access token 压到分钟级，靠 refresh 撤销间接生效（成本最低，首选）；② <code>jti</code> 黑名单（Redis <code>SETEX</code>，TTL = 剩余寿命），每请求一次 Redis；③ 用户级 <code>token_version</code>，改密码/强制登出时 +1，令牌带 <code>ver</code> 校验时比对；④ introspection（RFC 7662），每请求问 AS——等于退回有状态。<strong>登出</strong>要同时做：清本地会话、吊销 refresh、可选调用 <code>end_session_endpoint</code>。</p>
+<p><strong>JWT vs 服务端 session</strong>：前者无状态、天然横向扩展、跨域/移动端友好，但撤销难、体积大、权限变更要等令牌过期；后者每请求查存储、撤销即时、体积只有一个 id，但要集中式存储、跨域受 Cookie 限制。<strong>多服务传播</strong>两种范式：网关统一校验（边缘验签后注入 <code>X-User-Id</code>，内部信任网段，简单但内网被突破即失守）与每服务自校验（零信任，各自缓存 JWKS，需处理时钟与轮换）。折中做法是网关校验 + 内部 mTLS + 透传<strong>原始令牌</strong>让下游按需再验；无论哪种，令牌都<strong>不得写入日志、URL query 或透传给第三方</strong>。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-golang-jwt-v5签发与校验">4.1 golang-jwt v5：签发与校验</h3>
+<p><code>jwt.RegisteredClaims</code> 提供标准字段与内置校验，自定义字段直接嵌入。<code>WithValidMethods</code> 与 <code>WithAudience</code> 是两行不能省的代码。</p>
+<pre><code class="lang-go">package main
+
+import (
+	"crypto/rand"
+	"crypto/rsa"
+	"fmt"
+	"log"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
+)
+
+type AccessClaims struct {
+	TenantID string `json:"tid"`
+	jwt.RegisteredClaims
+}
+
+func issue(priv *rsa.PrivateKey, kid string) (string, error) {
+	now := time.Now()
+	t := jwt.NewWithClaims(jwt.SigningMethodRS256, AccessClaims{
+		TenantID: "t-42",
+		RegisteredClaims: jwt.RegisteredClaims{
+			Issuer: "https://auth.example.com", Subject: "user-1001",
+			Audience:  jwt.ClaimStrings{"orders-api"},
+			ExpiresAt: jwt.NewNumericDate(now.Add(15 * time.Minute)),
+			NotBefore: jwt.NewNumericDate(now), IssuedAt: jwt.NewNumericDate(now),
+			ID: fmt.Sprintf("%x", now.UnixNano()), // jti：生产用 UUID
+		},
+	})
+	t.Header["kid"] = kid // 校验方靠它选公钥，轮换的前提
+	return t.SignedString(priv)
+}
+
+func verify(pub *rsa.PublicKey, raw string) (*AccessClaims, error) {
+	c := &amp;AccessClaims{}
+	_, err := jwt.ParseWithClaims(raw, c, func(*jwt.Token) (any, error) { return pub, nil },
+		jwt.WithValidMethods([]string{"RS256"}), // 白名单：堵死 alg:none 与 HS/RS 混淆
+		jwt.WithIssuer("https://auth.example.com"),
+		jwt.WithAudience("orders-api"), // 不校验 aud → 令牌可跨服务通用
+		jwt.WithExpirationRequired(),
+		jwt.WithLeeway(30*time.Second), // 容忍节点间时钟偏移
+		jwt.WithIssuedAt(),
+	)
+	if err != nil { return nil, err }
+	return c, nil
+}
+
+func main() {
+	priv, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil { log.Fatal(err) }
+	raw, err := issue(priv, "k-2026-11")
+	if err != nil { log.Fatal(err) }
+	fmt.Println(verify(&amp;priv.PublicKey, raw)) // 返回 claims 与 error
+}</code></pre>
+<h3 id="42-jwks-端点缓存与轮换宽限">4.2 JWKS 端点、缓存与轮换宽限</h3>
+<p>AS 侧暴露 <code>GET /.well-known/jwks.json</code>：<code>{"keys":[{"kty":"RSA","kid":"k-2026-11","use":"sig","alg":"RS256","n":"...","e":"AQAB"}]}</code>。资源服务侧的关键设计是<strong>缓存 + 未知 <code>kid</code> 强制刷新一次 + 刷新失败降级用旧密钥</strong>：轮换期间新旧密钥并存，「<code>kid</code> 未命中」通常是正常过渡态，不该直接 401。</p>
+<pre><code class="lang-go">// 依赖：net/http、sync、crypto/rsa、encoding/base64、encoding/json、errors、fmt、math/big、time、jwt/v5
+type keyStore struct {
+	url  string
+	hc   *http.Client
+	mu   sync.RWMutex
+	keys map[string]*rsa.PublicKey
+	exp  time.Time
+}
+
+// Keyfunc：命中缓存直接用；未命中（可能是轮换中）刷新一次后重试。
+func (s *keyStore) Keyfunc(t *jwt.Token) (any, error) {
+	kid, _ := t.Header["kid"].(string)
+	if kid == "" { return nil, errors.New("missing kid") }
+	if k, ok := s.cached(kid, true); ok { return k, nil }
+	if err := s.reload(); err != nil {
+		if k, ok := s.cached(kid, false); ok { return k, nil } // 降级：旧密钥仍能验旧令牌
+		return nil, err
+	}
+	if k, ok := s.cached(kid, true); ok { return k, nil }
+	return nil, fmt.Errorf("unknown kid %q", kid)
+}
+
+func (s *keyStore) cached(kid string, requireFresh bool) (*rsa.PublicKey, bool) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	k, ok := s.keys[kid]
+	if !ok || (requireFresh &amp;&amp; time.Now().After(s.exp)) { return nil, false }
+	return k, true
+}
+
+func (s *keyStore) reload() error {
+	resp, err := s.hc.Get(s.url)
+	if err != nil { return err }
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK { return fmt.Errorf("jwks: %d", resp.StatusCode) }
+	var set struct{ Keys []struct{ Kty, Kid, Use, N, E string } `json:"keys"` }
+	if err = json.NewDecoder(resp.Body).Decode(&amp;set); err != nil { return err }
+	next := make(map[string]*rsa.PublicKey, len(set.Keys))
+	for _, k := range set.Keys {
+		if k.Kty != "RSA" || (k.Use != "" &amp;&amp; k.Use != "sig") { continue }
+		nb, errN := base64.RawURLEncoding.DecodeString(k.N)
+		eb, errE := base64.RawURLEncoding.DecodeString(k.E)
+		if errN != nil || errE != nil { return errors.New("bad jwk") }
+		next[k.Kid] = &amp;rsa.PublicKey{N: new(big.Int).SetBytes(nb), E: int(new(big.Int).SetBytes(eb).Int64())}
+	}
+	s.mu.Lock()
+	s.keys, s.exp = next, time.Now().Add(10*time.Minute) // TTL 别超过 1 小时
+	s.mu.Unlock()
+	return nil
+}</code></pre>
+<p><code>E</code> 的转换只适用于标准 65537，极端场景需读 <code>big.Int</code>。生产可直接用 <code>MicahParks/keyfunc</code> 或 <code>go-jose</code>，但<strong>缓存 TTL、<code>kid</code> 未命中重试、失败降级</strong>这三点必须自己想清楚；多副本高频拉取会被 IdP 限流，TTL 加抖动（10 分钟 ± 60 秒）即可。</p>
+<h3 id="43-go-oidc-对接-keycloak">4.3 go-oidc 对接 Keycloak</h3>
+<p>Keycloak 的 issuer 精确到 realm；发现文档、JWKS 地址、token 端点全由 <code>oidc.NewProvider</code> 解析，不要手抄 URL。</p>
+<pre><code class="lang-go">// 依赖：context、net/http、strings、go-oidc/v3/oidc、x/oauth2
+type idp struct {
+	cfg      *oauth2.Config
+	verifier *oidc.IDTokenVerifier
+}
+
+func newIDP(ctx context.Context) (*idp, error) {
+	p, err := oidc.NewProvider(ctx, "https://kc.example.com/realms/main")
+	if err != nil { return nil, err }
+	return &amp;idp{
+		cfg: &amp;oauth2.Config{
+			ClientID: "orders-web", ClientSecret: "change-me",
+			RedirectURL: "https://orders.example.com/callback",
+			Endpoint:    p.Endpoint(), // 端点全来自发现文档
+			Scopes:      []string{oidc.ScopeOpenID, "profile", "email"},
+		},
+		verifier: p.Verifier(&amp;oidc.Config{ClientID: "orders-web"}),
+	}, nil
+}
+
+func (i *idp) login(w http.ResponseWriter, r *http.Request) {
+	state, nonce, v := oauth2.GenerateVerifier(), oauth2.GenerateVerifier(), oauth2.GenerateVerifier()
+	// 最小实现：生产应加密签名后再进 Cookie，或放 Redis
+	http.SetCookie(w, &amp;http.Cookie{Name: "flow", Value: state + "|" + nonce + "|" + v, Path: "/",
+		HttpOnly: true, Secure: true, SameSite: http.SameSiteLaxMode, MaxAge: 600})
+	http.Redirect(w, r, i.cfg.AuthCodeURL(state, oauth2.SetAuthURLParam("nonce", nonce), oauth2.S256ChallengeOption(v)), http.StatusFound)
+}
+
+func (i *idp) callback(w http.ResponseWriter, r *http.Request) {
+	var state, nonce, v string
+	if ck, err := r.Cookie("flow"); err == nil {
+		if p := strings.SplitN(ck.Value, "|", 3); len(p) == 3 { state, nonce, v = p[0], p[1], p[2] }
+	}
+	if state == "" || r.URL.Query().Get("state") != state {
+		http.Error(w, "state mismatch", http.StatusBadRequest)
+		return
+	}
+	// 一次性使用：校验通过立即清掉 flow cookie，避免同一 state 被重放
+	http.SetCookie(w, &amp;http.Cookie{Name: "flow", Value: "", Path: "/", MaxAge: -1,
+		HttpOnly: true, Secure: true, SameSite: http.SameSiteLaxMode})
+	tok, err := i.cfg.Exchange(r.Context(), r.URL.Query().Get("code"), oauth2.VerifierOption(v))
+	if err != nil { http.Error(w, err.Error(), http.StatusUnauthorized); return }
+	raw, ok := tok.Extra("id_token").(string)
+	if !ok { http.Error(w, "no id_token", http.StatusUnauthorized); return }
+	idt, err := i.verifier.Verify(r.Context(), raw) // 验签 + iss + aud + exp
+	if err != nil { http.Error(w, err.Error(), http.StatusUnauthorized); return }
+	if idt.Nonce != nonce { http.Error(w, "nonce mismatch", http.StatusUnauthorized); return } // 库不比对 nonce
+	// 通过：用 idt.Subject 建本地会话，tok.AccessToken 调资源服务
+	http.Redirect(w, r, "/", http.StatusFound)
+}</code></pre>
+<h3 id="44-gin-认证中间件">4.4 Gin 认证中间件</h3>
+<p>中间件只做「验签 + 注入身份」，授权交给下一层。<code>Bearer</code> 前缀、<code>Abort</code>、<code>WWW-Authenticate</code> 三件事别省。</p>
+<pre><code class="lang-go">// 依赖：net/http、strings、time、gin、jwt/v5；AccessClaims 与 4.1 同包
+func Auth(keyfunc jwt.Keyfunc, issuer, audience string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		h := c.GetHeader("Authorization")
+		if !strings.HasPrefix(h, "Bearer ") {
+			c.Header("WWW-Authenticate", `Bearer realm="api"`)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"code": "NO_TOKEN"})
+			return
+		}
+		claims := &amp;AccessClaims{} // 结构体见 4.1
+		_, err := jwt.ParseWithClaims(strings.TrimPrefix(h, "Bearer "), claims, keyfunc,
+			jwt.WithValidMethods([]string{"RS256"}),
+			jwt.WithIssuer(issuer), jwt.WithAudience(audience),
+			jwt.WithExpirationRequired(), jwt.WithLeeway(30*time.Second),
+		)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"code": "INVALID_TOKEN"}) // 需要时用 errors.Is 区分 TOKEN_EXPIRED
+			return
+		}
+		c.Set("sub", claims.Subject) // 下游 handler 用 c.GetString("sub")
+		c.Set("tid", claims.TenantID)
+		c.Next()
+	}
+}</code></pre>
+<h3 id="45-refresh-token-轮换与重放检测">4.5 refresh token 轮换与重放检测</h3>
+<p>只存哈希、不存明文；<code>family_id</code> 串起一代代令牌；<code>FOR UPDATE</code> 保证并发刷新不会双发。</p>
+<pre><code class="lang-sql">CREATE TABLE refresh_token (id BIGSERIAL PRIMARY KEY, family_id UUID NOT NULL, user_id BIGINT NOT NULL,
+    token_hash BYTEA NOT NULL UNIQUE, expires_at TIMESTAMPTZ NOT NULL, used_at TIMESTAMPTZ, revoked_at TIMESTAMPTZ);</code></pre>
+<pre><code class="lang-go">// 依赖：context、database/sql、crypto/sha256、crypto/rand、encoding/hex、errors、time
+func rotateRefresh(ctx context.Context, db *sql.DB, raw string) (string, error) {
+	now, sum := time.Now(), hash(raw)
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil { return "", err }
+	defer tx.Rollback() // Commit 后返回 ErrTxDone，可忽略
+
+	var family string
+	var uid int64
+	var used, revoked sql.NullTime
+	if err = tx.QueryRowContext(ctx, `SELECT family_id, user_id, used_at, revoked_at FROM refresh_token
+		WHERE token_hash = $1 AND expires_at &gt; $2 FOR UPDATE`, sum, now).Scan(&amp;family, &amp;uid, &amp;used, &amp;revoked); err != nil {
+		return "", err
+	}
+	if used.Valid || revoked.Valid { // 已用令牌再次出现：整族作废
+		_, err = tx.ExecContext(ctx, `UPDATE refresh_token SET revoked_at = $1
+			WHERE family_id = $2 AND revoked_at IS NULL`, now, family)
+		if err != nil { return "", err }
+		return "", errors.Join(errors.New("refresh token reused"), tx.Commit())
+	}
+	next, err := newOpaqueToken()
+	if err != nil { return "", err }
+	if _, err = tx.ExecContext(ctx, `UPDATE refresh_token SET used_at = $1 WHERE token_hash = $2`, now, sum); err != nil {
+		return "", err
+	}
+	_, err = tx.ExecContext(ctx, `INSERT INTO refresh_token (family_id, token_hash, user_id, expires_at)
+		VALUES ($1, $2, $3, $4)`, family, hash(next), uid, now.Add(30*24*time.Hour))
+	if err != nil { return "", err }
+	return next, tx.Commit()
+}
+
+func hash(s string) []byte { b := sha256.Sum256([]byte(s)); return b[:] }
+
+func newOpaqueToken() (string, error) {
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil { return "", err }
+	return hex.EncodeToString(b), nil
+}</code></pre>
+<p>access token 用 4.1 的 <code>issue()</code> 现场签，refresh 只给 BFF/移动端安全存储；<code>errors.Join(业务错误, tx.Commit())</code> 保证撤销失败与提交失败都不会被吞。</p>
+<hr>
+
+<div class="callout info"><p><b>实战要点：</b>access token 短过期（5–15 分钟），refresh token 轮换并检测重放；多服务在网关统一校验，业务侧只信任已验签的上下文。</p></div>
+</section>
+<section data-anchor="5-版本演进">
+<h2 id="5-版本演进">5. 版本演进<span class="lvl b">版本</span></h2>
+<p>截至 2026-11，三条主线为 <strong>golang-jwt/jwt v5.3.1</strong>（2026-01-28，MIT）、<strong>coreos/go-oidc v3.21.0</strong>（2026-09-01，Apache-2.0）、<strong>x/oauth2 v0.37.0</strong>（2026-08-25，BSD-3-Clause）。</p>
+<div class="table-wrap"><table><thead><tr><th>时间</th><th>事件</th><th>影响</th></tr></thead><tbody><tr><td>2015</td><td>RFC 7519 发布</td><td>JWT claim 语义与 <code>alg</code> 注册表定型</td></tr><tr><td>2023.11</td><td>golang-jwt <strong>v5.0.0</strong>（社区从 <code>dgrijalva/jwt-go</code> 分叉而来）</td><td><code>Claims</code> 接口化、默认严格校验、错误链可 <code>errors.Is</code>；移除 <code>StandardClaims</code></td></tr><tr><td>2025.1</td><td><strong>RFC 9700（BCP 240）</strong></td><td>安全基线：强制 PKCE、禁 password/implicit、redirect 精确匹配、refresh 轮换或发送方约束</td></tr><tr><td>2025–2026</td><td>OAuth 2.1 仍为草案</td><td>截至 2026-11 为 <code>draft-ietf-oauth-v2-1-17</code>（2026-10-30），未成为 RFC；落地对齐 RFC 9700</td></tr><tr><td>2026.1</td><td>golang-jwt <strong>v5.3.1</strong></td><td>新增 <code>WithNotBeforeRequired</code>，修复 header 解析类问题（5.2.2 起）</td></tr></tbody></table></div>
+<p>升级提示：v4 → v5 破坏性（claims 结构与解析选项全改），别跨大版本盲升；go-oidc v3 依赖 go-jose v4 与 x/oauth2，升级后同步 <code>go mod tidy</code> 并确认 Go 版本下限（当前要求 1.25）。<strong>不要自己实现 JWT 验签</strong>——历史漏洞几乎都出在手写解析与算法选择上。</p>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>不校验 <code>alg</code>，中 <code>alg: none</code></strong>：header 改成 <code>{"alg":"none"}</code>、签名段清空，手写解析器直接放行。对策：<code>WithValidMethods</code> 白名单，永不从令牌头推导算法；</li><li><strong>HS256/RS256 混淆</strong>：把 <code>RS256</code> 改成 <code>HS256</code>，用公开的公钥当 HMAC 密钥重签即可伪造。对策：校验方固定算法，对外只发布公钥；</li><li><strong>只验签名不验 <code>aud</code>/<code>iss</code></strong>：同一 AS 发给订单服务的令牌能直接打管理服务。对策：每个资源服务写死自己的 <code>aud</code>，多 IdP 时按 <code>iss</code> 选密钥集；</li><li><strong>密钥硬编码/入库明文</strong>：<code>const secret = "..."</code>、配置提交到 Git。对策：KMS/Vault/环境注入，至少 <code>0600</code> 文件 + 启动校验长度；HS256 密钥 ≥32 字节；</li><li><strong>忘记校验 <code>exp</code> 或允许无 <code>exp</code></strong>：不同版本默认行为有差异，无 <code>exp</code> 的令牌可能永不过期。对策：<code>WithExpirationRequired()</code>，并断言 <code>exp - iat ≤ 预期上限</code>；</li><li><strong>时钟偏移导致误判</strong>：多节点 NTP 漂移，正常令牌被判 <code>not valid yet</code>。对策：leeway 30–60 秒 + 监控偏移，别用加大 leeway 掩盖问题；</li><li><strong>JWT 放 localStorage 被 XSS 读取</strong>：同源任一 XSS 都能把令牌带走。对策：BFF 模式放 <code>HttpOnly; Secure; SameSite=Lax</code> Cookie；纯 SPA 至少放内存 + refresh 轮换；</li><li><strong>refresh token 不轮换</strong>：泄露后可无限续期且无感知。对策：一用一换 + family 重放检测，已用令牌再次出现即全族撤销；</li><li><strong>把敏感信息塞进 payload</strong>：payload 只是 base64，不是加密。对策：只放标识与最小授权声明，PII 走 UserInfo；</li><li><strong>把 ID Token 当 access token 用</strong>：<code>aud</code> 是 <code>client_id</code>，资源服务应拒绝。对策：两条令牌分离，ID Token 只用于建会话；</li><li><strong>JWKS 缓存策略粗暴</strong>：每次拉会被 IdP 限流，永不刷新则轮换后全网 401。对策：TTL 缓存 + 未知 <code>kid</code> 强制刷新一次 + 失败降级旧密钥 + TTL 加抖动。</li></ol>
+<hr>
+
+<div class="callout warning"><p><b>生产警示：</b>alg=none、密钥硬编码、只验签名不验 aud/iss、JWT 放 localStorage、refresh 不轮换——这五个是最常见的高危配置。</p></div>
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>自建 JWT + 自研 AS</th><th>Keycloak（OIDC）</th><th>云 IdP（Entra/Auth0/Cognito）</th><th>服务端 Session</th></tr></thead><tbody><tr><td>认证能力</td><td>自己实现（密码/MFA/联邦都要写）</td><td>完整（OIDC/SAML/LDAP、MFA）</td><td>完整，开箱即用</td><td>自己实现登录</td></tr><tr><td>令牌</td><td>自签自轮换</td><td>标准 OIDC，JWKS 现成</td><td>标准 OIDC</td><td>无令牌，只有 session id</td></tr><tr><td>撤销</td><td>需自建（短 TTL/黑名单/版本号）</td><td>会话与令牌管理内建</td><td>内建</td><td>即时</td></tr><tr><td>适合</td><td>内部服务间、令牌格式可控</td><td>私有化、合规、已有 LDAP</td><td>快速上线、B2C 规模</td><td>单体、强一致会话</td></tr></tbody></table></div>
+<p>一句话决策：<strong>对外部用户、要 SSO/MFA，选 Keycloak 或云 IdP，别自己写 AS；只在签发内部令牌时用 golang-jwt，且必须配 JWKS 与轮换；要「登出即失效」的强一致会话，服务端 session 仍是最简单正确的答案</strong>。与 Casbin 的分工：<strong>本篇负责「你是谁」——校验令牌、确认主体、把 <code>sub</code>/租户/角色注入上下文；Casbin 负责「你能做什么」——拿主体判定 <code>(sub, obj, act)</code> 是否放行</strong>。两者在 Gin 里是相邻的两个中间件：认证 <code>Abort</code> 于 401，授权 <code>Abort</code> 于 403；JWT 里的 <code>roles</code> 只是 Casbin 的输入之一，<strong>不要</strong>用令牌里的角色数组替代策略引擎（有效期内无法回收权限）。Casbin 的模型与策略细节见 <a href="../casbin/casbin-guide.html">casbin-guide</a>，此处不重复。</p>
+<p>参考：<a href="https://pkg.go.dev/github.com/golang-jwt/jwt/v5">golang-jwt 文档</a>、<a href="https://github.com/coreos/go-oidc">go-oidc 仓库</a>、<a href="https://pkg.go.dev/golang.org/x/oauth2">x/oauth2 文档</a>、<a href="https://www.rfc-editor.org/rfc/rfc9700.html">RFC 9700 OAuth 2.0 Security BCP</a>、<a href="https://openid.net/specs/openid-connect-core-1_0.html">OpenID Connect Core 1.0</a>、<a href="https://www.rfc-editor.org/rfc/rfc8725.html">RFC 8725 JWT BCP</a>。</p>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

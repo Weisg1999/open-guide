@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Go 性能剖析 · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#d97706; --accent-light:#fef3c7; --accent-dark:#92400e;
+    --bg:#fdf9f3; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#1c1206; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#92400e 0%,#d97706 58%,#92400e 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">Go 性能剖析<span class="ver">Go 1.27</span></div>
+  <div class="sub">pprof · trace · benchmark</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#工具链与最小示例">工具链与最小示例</a>
+  <a href="#2-能力总览">2. 能力总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-cpu-profile100hz-采样与采样偏差">3.1 CPU profile：100Hz 采样与采样偏差</a>
+  <a class="sub-link" href="#32-heap-profilememprofilerate-与两个-space">3.2 heap profile：MemProfileRate 与两个 space</a>
+  <a class="sub-link" href="#33-block-mutex-goroutine三个默认关掉的视角">3.3 block / mutex / goroutine：三个默认关掉的视角</a>
+  <a class="sub-link" href="#34-逃逸分析栈还是堆是编译器决定的">3.4 逃逸分析：栈还是堆，是编译器决定的</a>
+  <a class="sub-link" href="#35-gc-模型三色标记写屏障gogc-与-gomemlimit">3.5 GC 模型：三色标记、写屏障、GOGC 与 GOMEMLIMIT</a>
+  <a class="sub-link" href="#36-trace看-goroutine-在等什么">3.6 trace：看 goroutine 在等什么</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-nethttppprof-接入与鉴权">4.1 net/http/pprof 接入与鉴权</a>
+  <a class="sub-link" href="#42-采-cpu-与生成火焰图">4.2 采 CPU 与生成火焰图</a>
+  <a class="sub-link" href="#43-benchmark-前后对比与-benchstat">4.3 benchmark 前后对比与 benchstat</a>
+  <a class="sub-link" href="#44-内存泄漏定位流程">4.4 内存泄漏定位流程</a>
+  <a href="#5-版本演进速览">5. 版本演进速览</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>Go 性能剖析技术指南</h1>
+<p>性能问题不能靠猜：pprof 告诉你时间花在哪，trace 告诉你 goroutine 在等什么，benchmark 告诉你改动是否真的更快。</p>
+<p style="opacity:.8;font-size:13.5px">pprof · trace · benchmark</p>
+<div class="meta"><span>CPU / heap / block / mutex</span><span>go tool trace</span><span>逃逸分析</span><span>GOGC / GOMEMLIMIT</span><span>benchstat 对比</span><span>PGO</span></div>
+</div>
+<blockquote><p>性能问题不能靠猜：pprof 告诉你时间花在哪，trace 告诉你 goroutine 在等什么，benchmark 告诉你改动是否真的更快。 工具链：<code>runtime/pprof</code> / <code>net/http/pprof</code> / <code>runtime/trace</code>，适用 <strong>Go 1.27.4</strong>（2026-11-10）　|　文档：<a href="https://pkg.go.dev/runtime/pprof">https://pkg.go.dev/runtime/pprof</a>　|　协议：BSD-3-Clause</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p><a href="../prometheus/prometheus-guide.html">Prometheus 篇</a>解决「系统整体趋势是否异常」，本篇解决更下一层的问题：<strong>这 200ms 花在哪一行代码、这次分配为什么上了堆、这个 goroutine 为什么三个月没被调度</strong>。指标告诉你「病了」，剖析告诉你「病灶在哪」。</p>
+<p>性能剖析不是调参玄学，而是<strong>有采样误差、有观测开销、需要对照实验</strong>的测量方法：输出是概率分布而不是精确计时，所以必须配合统计工具才能下结论。该做剖析的信号是——要优化但只有猜测（「大概是 JSON 慢」，采 30 秒往往结论相反）、P99 抖动而均值正常（排队或 GC）、RSS 单调上升或 GC 占比超 5%、改完要证明有效、容量规划前找饱和点。反过来，没有 baseline 就改代码、线上不隔离不鉴权就开 profile、只采 5 秒就下结论，都是浪费时间的做法。</p>
+<div class="table-wrap"><table><thead><tr><th>症状</th><th>第一手段</th><th>说明</th></tr></thead><tbody><tr><td>CPU 高、吞吐上不去</td><td>CPU profile</td><td>找热点函数与调用链，区分 flat / cum</td></tr><tr><td>延迟高但 CPU 不高</td><td><code>go tool trace</code> / block profile</td><td>在等锁、等网络、等调度，不是在算</td></tr><tr><td>内存涨、GC 频繁</td><td>heap profile + <code>GODEBUG=gctrace=1</code></td><td>先分清「泄漏」还是「分配太快」</td></tr><tr><td>goroutine 数持续上涨</td><td>goroutine profile</td><td>直接看几万个 goroutine 卡在哪一行</td></tr></tbody></table></div>
+<h3 id="工具链与最小示例">工具链与最小示例</h3>
+<p><code>pprof</code> / <code>trace</code> / <code>bench</code> 都随工具链分发，唯一要装的是 benchstat：<code>go install golang.org/x/perf/cmd/benchstat@latest</code>。</p>
+<pre><code class="lang-go">package main
+
+import (
+	"os"
+	"runtime/pprof"
+)
+
+func work() { // 假装是被测逻辑
+	var s float64
+	for i := 0; i &lt; 5e7; i++ {
+		s += float64(i % 7)
+	}
+	_ = s
+}
+
+func main() {
+	f, _ := os.Create("cpu.pprof")
+	defer f.Close()
+	if err := pprof.StartCPUProfile(f); err != nil {
+		panic(err) // 同一时刻只能有一个 CPU profile
+	}
+	defer pprof.StopCPUProfile() // 必须调用，否则文件不完整
+	work()
+}</code></pre>
+<pre><code class="lang-bash">go run main.go &amp;&amp; go tool pprof -top cpu.pprof</code></pre>
+<hr>
+
+</section>
+<section data-anchor="2-能力总览">
+<h2 id="2-能力总览">2. 能力总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>观测对象</th><th>采样方式与开销</th><th>默认状态</th><th>典型入口</th></tr></thead><tbody><tr><td><strong>CPU profile</strong></td><td>on-CPU 时间分布（调用栈）</td><td>100Hz 信号采样，约 5% 开销</td><td>按需开启</td><td><code>/debug/pprof/profile?seconds=30</code></td></tr><tr><td><strong>heap profile</strong></td><td>堆上存活 / 累计分配</td><td>平均每 512KB 分配采一次，开销低</td><td>常开（低频）</td><td><code>/debug/pprof/heap?gc=1</code></td></tr><tr><td><strong>block profile</strong></td><td>阻塞在同步原语上的时长</td><td>按时间间隔采样，开销随采样率上升</td><td><strong>关闭</strong></td><td><code>runtime.SetBlockProfileRate</code></td></tr><tr><td><strong>mutex profile</strong></td><td>锁竞争等待时长</td><td>按事件 1/n 采样</td><td><strong>关闭</strong></td><td><code>runtime.SetMutexProfileFraction</code></td></tr><tr><td><strong>goroutine profile</strong></td><td>全量 goroutine 栈快照</td><td>无采样，快照时短暂 STW</td><td>常开</td><td><code>/debug/pprof/goroutine?debug=2</code></td></tr><tr><td><strong>trace</strong></td><td>调度、GC、syscall、阻塞事件</td><td>事件流，文件大、开销高</td><td>按需开启</td><td><code>/debug/pprof/trace?seconds=5</code></td></tr><tr><td><strong>benchmark</strong></td><td>单测级别的耗时 / 分配 / 吞吐</td><td>无额外开销（独立进程）</td><td>测试时</td><td><code>go test -bench=. -benchmem</code></td></tr><tr><td><strong>benchstat</strong></td><td>两组 benchmark 的显著性差异</td><td>纯离线统计（Mann-Whitney U）</td><td>—</td><td><code>benchstat old.txt new.txt</code></td></tr><tr><td><strong>PGO</strong></td><td>用真实 profile 指导编译优化</td><td>构建变慢，运行时零额外开销</td><td>放 <code>default.pgo</code> 即自动生效</td><td><code>go build -pgo=auto</code></td></tr></tbody></table></div>
+<p>两点补充：<code>allocs</code> profile 是 heap 的 <code>alloc_*</code> 视图（同一份数据换 <code>sample_index</code>）；<code>threadcreate</code> 只在怀疑系统线程泄漏时用。<strong>pprof 只统计 Go 代码的时间</strong>，cgo 里的耗时会算到调用点但看不到内部，纯 C 热点要靠 <code>perf</code> 转 pprof。</p>
+<hr>
+
+<div class="features">
+  <div class="feature"><div class="fh"><h4>采样而非全量</h4></div><p>CPU profile 默认 100Hz，heap 按 MemProfileRate 采样；结论看比例，不看绝对值</p></div>
+  <div class="feature"><div class="fh"><h4>逃逸分析</h4></div><p>go build -gcflags=-m 看变量是否上堆；接口、闭包、返回指针是常见逃逸源</p></div>
+  <div class="feature"><div class="fh"><h4>GC 调优</h4></div><p>GOGC 控增长倍率，GOMEMLIMIT 给软上限；先减少分配，再谈调参</p></div>
+</div>
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-cpu-profile100hz-采样与采样偏差">3.1 CPU profile：100Hz 采样与采样偏差</h3>
+<p>runtime 用 <code>setitimer(ITIMER_PROF)</code> 每 <strong>10ms</strong> 发一次 <code>SIGPROF</code>，信号处理器抓取<strong>当前正在运行的 goroutine</strong> 的调用栈并累加。跑 1 秒 ≈ 100 个样本，由此带来三个后果：</p>
+<p><strong>它是统计，不是计时</strong>：只跑 3ms 的函数单次命中概率约 30%，连续错过几十次完全可能——短函数天然被低估，甚至从火焰图上消失。<strong>内联会改写归属</strong>（被内联的函数记在调用者名下），<strong>且只看得到 on-CPU 时间</strong>（阻塞、等锁、syscall 不在里面，别拿它解释「CPU 不高但慢」）。</p>
+<pre><code class="lang-text">flat  flat%   sum%        cum   cum%
+0.42s 42.00% 42.00%      0.42s 42.00%  runtime.memmove          ← flat：自身耗时
+0.11s 11.00% 53.00%      0.63s 63.00%  codec.(*Encoder).Write   ← cum：含被调函数</code></pre>
+<p>纪律：<strong>至少采 30 秒</strong>；两版本之间 5% 的差异别用 profile 判断（置信区间比差异大），交给 benchmark + benchstat；排查先 <code>-cum</code> 找链路，再 <code>-flat</code> 找自身热点。<code>SetCPUProfileRate</code> 理论上能改采样率，但受内核定时器精度限制，<strong>保持 100Hz</strong>。</p>
+<h3 id="32-heap-profilememprofilerate-与两个-space">3.2 heap profile：MemProfileRate 与两个 space</h3>
+<p>heap profile 也是采样：<code>runtime.MemProfileRate</code> 默认 <strong>512 × 1024 字节</strong>，含义是「平均每分配 512KB 采一个样本」。采样点按指数分布随机选取，不是每 512KB 一刀切，所以小对象要靠<strong>加权估算</strong>（样本自带权重）。</p>
+<pre><code class="lang-text">alloc_space ──────────────────────────────► 进程启动至今累计分配（只增不减）
+inuse_space      ┌────┐          ┌───────► 最近一次 GC 时仍存活（随 GC 回落）</code></pre>
+<p><code>inuse_space</code> 高 → 对象<strong>长期活着</strong>：全局 map 只增不删、缓存无上限、切片持有大底层数组、goroutine 泄漏带住栈上变量；<code>alloc_space</code> 高但 <code>inuse_space</code> 平稳 → <strong>分配风暴</strong>，不是泄漏：优化方向是 <code>sync.Pool</code>、预分配、减少拷贝、避免 <code>fmt.Sprintf</code>。</p>
+<p>两个必踩细节：heap profile 是<strong>上一次 GC 的快照</strong>，抓之前先 <code>runtime.GC()</code> 或加 <code>?gc=1</code>；<code>MemProfileRate = 1</code> 能精确到每次分配，但开销大到只能本地短跑。</p>
+<h3 id="33-block-mutex-goroutine三个默认关掉的视角">3.3 block / mutex / goroutine：三个默认关掉的视角</h3>
+<div class="table-wrap"><table><thead><tr><th>profile</th><th>记录什么</th><th>开启方式</th><th>什么时候看</th><th>陷阱</th></tr></thead><tbody><tr><td>block</td><td>阻塞在 channel / select / Mutex / Cond / WaitGroup 上的<strong>时长</strong></td><td><code>SetBlockProfileRate(ns)</code>，<code>1</code> = 全记</td><td>CPU 不高但延迟高</td><td>全量记录会明显拉低吞吐</td></tr><tr><td>mutex</td><td>锁<strong>竞争</strong>导致的等待时长</td><td><code>SetMutexProfileFraction(n)</code>，1/n 采样</td><td>怀疑锁粒度太粗</td><td>只记竞争，不记临界区执行时长</td></tr><tr><td>goroutine</td><td>所有 goroutine 的栈快照</td><td>默认开启</td><td>goroutine 数单调上升</td><td>快照需要短暂 STW</td></tr></tbody></table></div>
+<p><strong>mutex 只覆盖锁，block 覆盖所有同步原语</strong>：「写无缓冲 channel 卡住」在 mutex profile 里完全看不见。生产建议 <code>SetBlockProfileRate(1e6)</code>（平均每 1ms 阻塞时间采一个样本，更短的事件按比例抽样），排障窗口开、结束归零。goroutine profile 是查泄漏最直接的工具：<code>?debug=1</code> 按栈聚合出「同一种栈有 8000 个」，<code>?debug=2</code> 打出完整栈；<strong>压测后 goroutine 数回不到基线就是泄漏</strong>，不用等内存涨。</p>
+<h3 id="34-逃逸分析栈还是堆是编译器决定的">3.4 逃逸分析：栈还是堆，是编译器决定的</h3>
+<p>Go 没有「堆对象」语法，变量放哪由编译器决定。栈分配代价接近于零（函数返回整块回收），堆分配要付出分配 + GC 扫描 + 可能的 assist。</p>
+<pre><code class="lang-bash">go build -gcflags='-m' ./...        # 结论：escapes to heap / moved to heap
+go build -gcflags='-m -m' ./...     # 原因：为什么逃逸
+go build -gcflags='-m -l' ./...     # 关内联，避免「被内联后看不见」</code></pre>
+<p>常见原因：<strong>返回局部变量指针</strong>（语言要求，无法避免）、<strong>赋给 <code>interface{}</code> 装箱</strong>、<strong>被逃逸的闭包捕获</strong>、<strong>放进 channel / 全局 map / 逃出函数的 slice</strong>、<strong>对象过大超过栈上限</strong>。反直觉的是 <code>defer</code> 在开放编码后基本不产生额外逃逸，而 <code>fmt.Println(x)</code> 里的 <code>x</code> 几乎一定逃逸——参数是 <code>...any</code>。</p>
+<pre><code class="lang-go">package main
+
+import "fmt"
+
+type Point struct{ X, Y int }
+
+func onStack() Point { return Point{1, 2} }  // 值返回，通常留在栈上
+func onHeap() *Point { return &amp;Point{1, 2} } // 逃逸：指针被返回给调用者
+func boxed() any     { return Point{1, 2} }  // 逃逸：装箱进 interface
+
+func noEscape() int {
+	p := &amp;Point{3, 4}
+	return p.X + p.Y // 没传出函数，编译器可把它放栈上
+}
+
+func main() { fmt.Println(onStack(), *onHeap(), boxed(), noEscape()) }</code></pre>
+<p>隐性成本是<strong>栈扩容</strong>：goroutine 栈从 2KB 起，不够就翻倍并整体拷贝（上限 1GB）。深递归、大栈帧会反复触发拷贝，这也是「把大函数拆小反而更快」的原因之一。</p>
+<h3 id="35-gc-模型三色标记写屏障gogc-与-gomemlimit">3.5 GC 模型：三色标记、写屏障、GOGC 与 GOMEMLIMIT</h3>
+<pre><code class="lang-text">标记准备(STW, 几十µs) → 并发标记(占 25% CPU，写屏障记录新指针) → 标记终止(STW, 几十µs) → 并发清扫</code></pre>
+<p>三色抽象：<strong>白</strong>（未访问，回收候选）、<strong>灰</strong>（已发现，子对象未扫完）、<strong>黑</strong>（自身扫完）。不变式是「黑对象不能指向白对象」，破坏它就丢对象，所以并发标记期间靠<strong>混合写屏障</strong>（Dijkstra 插入 + Yuasa 删除）在指针写入时把新对象染灰、把旧对象保活。</p>
+<p><strong>STW 不是长尾主因</strong>：只在标记开始/终止，通常几十微秒；百毫秒尖刺多半来自 <strong>assist</strong>（分配太快的 goroutine 被抓去帮忙扫描）或内存归还 OS。<strong><code>GOGC=100</code></strong> 表示下次 GC 目标堆为存活堆的 2 倍，调大省 CPU 费内存，<code>GOGC=off</code> 只在配了 <code>GOMEMLIMIT</code> 时才敢用。<strong><code>GOMEMLIMIT</code>（1.19+）是软上限</strong>：接近时 GC 更激进甚至突破 GOGC 目标，但栈、runtime 元数据、cgo 内存不受控，仍可能 OOM。</p>
+<pre><code class="lang-bash">GODEBUG=gctrace=1 ./app
+# gc 12 @3.421s 2%: 0.021+1.8+0.003 ms clock, 0.17+0.4/1.2/0.1+0.02 ms cpu, 42-&gt;44-&gt;21 MB, 48 MB goal, 8 P
+#        ↑第12轮 ↑启动秒 ↑GC占总CPU ↑STW ↑并发标记 ↑STW              ↑标记前→标记后→存活  ↑下次目标</code></pre>
+<p><code>2%</code> 是 GC 占总 CPU 比例，超过 5% 就值得优化；<code>21</code> 一直涨说明存活对象在累积（回到 3.2）。</p>
+<pre><code class="lang-go">package main
+
+import "runtime/debug"
+
+func main() {
+	debug.SetMemoryLimit(900 &lt;&lt; 20) // 容器 limit 1GiB，留 10% 给栈与元数据
+	debug.SetGCPercent(200)         // 用内存换 CPU，让 GOMEMLIMIT 兜底
+}</code></pre>
+<h3 id="36-trace看-goroutine-在等什么">3.6 trace：看 goroutine 在等什么</h3><div class="figure">
+  <svg viewBox="0 0 880 524" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-go-perf" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d97706"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#92400e">从现象到根因的排查路径</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">先用指标判断问题类别，再选工具，最后用 benchmark 验证</text>
+    <rect x="90" y="84" width="700" height="52" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <circle cx="122" cy="110" r="14" fill="#d97706"/>
+    <text x="122" y="110" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">1</text>
+    <text x="150" y="110" dominant-baseline="central" font-size="13" fill="#92400e">现象：延迟升高 / CPU 打满 / 内存上涨</text>
+    <line x1="440" y1="138" x2="440" y2="154" stroke="#d97706" stroke-width="2" marker-end="url(#m-go-perf)"/>
+    <rect x="90" y="158" width="700" height="52" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <circle cx="122" cy="184" r="14" fill="#d97706"/>
+    <text x="122" y="184" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">2</text>
+    <text x="150" y="184" dominant-baseline="central" font-size="13" fill="#92400e">pprof：CPU 找热点函数，heap 找分配来源</text>
+    <line x1="440" y1="212" x2="440" y2="228" stroke="#d97706" stroke-width="2" marker-end="url(#m-go-perf)"/>
+    <rect x="90" y="232" width="700" height="52" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <circle cx="122" cy="258" r="14" fill="#d97706"/>
+    <text x="122" y="258" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">3</text>
+    <text x="150" y="258" dominant-baseline="central" font-size="13" fill="#92400e">trace：看调度延迟、GC STW、阻塞事件</text>
+    <line x1="440" y1="286" x2="440" y2="302" stroke="#d97706" stroke-width="2" marker-end="url(#m-go-perf)"/>
+    <rect x="90" y="306" width="700" height="52" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <circle cx="122" cy="332" r="14" fill="#d97706"/>
+    <text x="122" y="332" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">4</text>
+    <text x="150" y="332" dominant-baseline="central" font-size="13" fill="#92400e">benchmark + benchstat：验证改动是否真的更快</text>
+    <line x1="440" y1="360" x2="440" y2="376" stroke="#d97706" stroke-width="2" marker-end="url(#m-go-perf)"/>
+    <rect x="90" y="380" width="700" height="52" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <circle cx="122" cy="406" r="14" fill="#d97706"/>
+    <text x="122" y="406" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">5</text>
+    <text x="150" y="406" dominant-baseline="central" font-size="13" fill="#92400e">参数与代码：GOGC / GOMEMLIMIT / 池化 / 减少分配</text>
+    <rect x="40" y="448" width="800" height="54" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="472" font-size="12.5" fill="#1e293b">pprof 回答「时间花在哪」，trace 回答「goroutine 在等什么」，bench</text>
+    <text x="60" y="492" font-size="12.5" fill="#1e293b">mark 回答「改完是否更快」。</text>
+  </svg>
+  <figcaption>从现象到根因的排查路径</figcaption>
+</div>
+<p>CPU profile 回答「算了什么」，trace 回答「<strong>没在算的时候在等什么</strong>」。它记录每个 goroutine 的状态迁移（running / runnable / blocked）、每个 P 的调度、GC 周期、syscall 与网络阻塞，精度到微秒。</p>
+<ul><li><strong>Goroutine analysis</strong>：按栈聚合，直接给出「这种 goroutine 平均阻塞 800ms」，泄漏与慢调用一眼可见；</li><li><strong>Scheduler latency</strong>：runnable → running 的间隔。持续 &gt;1ms 说明 P 不够，或有长耗时 goroutine 长期不让出（1.14 后有异步抢占，但 syscall 与 cgo 仍可能拖住）；</li><li><strong>时间线</strong>：每个 G 一条轨道，能看出「醒了却排不上队」和「有 8 个 P 却只有一个在跑」。</li></ul>
+<p>开销比 CPU profile 大一个量级（几十 MB/秒），<strong>生产只开 1–5 秒</strong>，或用 <code>trace.NewFlightRecorder</code> 的环形缓冲保留最近 N 秒、出事再落盘。进程内采集只需 <code>trace.Start(f)</code> 与 <code>defer trace.Stop()</code>，注意同一时刻只能有一个 trace；HTTP 服务直接打 <code>/debug/pprof/trace?seconds=5</code> 即可。</p>
+<pre><code class="lang-bash">go tool trace -http=:8080 trace.out   # 优先看 Goroutine analysis 与 Scheduler latency</code></pre>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-nethttppprof-接入与鉴权">4.1 <code>net/http/pprof</code> 接入与鉴权</h3>
+<p>标准做法是<strong>独立端口 + 独立 mux + 鉴权 + 只监听回环</strong>。直接 <code>import _ "net/http/pprof"</code> 会注册到 <code>DefaultServeMux</code>，业务一旦也用默认 mux，pprof 就跟着业务端口裸奔。</p>
+<pre><code class="lang-go">package main
+
+import (
+	"crypto/subtle"
+	"log"
+	"net/http"
+	"net/http/pprof"
+)
+
+func requireToken(token string, next http.Handler) http.Handler {
+	want := []byte("Bearer " + token)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if subtle.ConstantTimeCompare([]byte(r.Header.Get("Authorization")), want) != 1 {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func main() {
+	mux := http.NewServeMux() // 独立 mux，不污染业务路由
+	mux.HandleFunc("/debug/pprof/", pprof.Index)
+	mux.HandleFunc("/debug/pprof/profile", pprof.Profile) // CPU，默认 30s
+	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)     // 轨迹，默认 1s
+
+	srv := &amp;http.Server{
+		Addr:    "127.0.0.1:6060", // 只监听回环，外部走跳板机 / kubectl port-forward
+		Handler: requireToken("change-me", mux),
+	}
+	log.Fatal(srv.ListenAndServe()) // 业务服务在另一端口，互不影响
+}</code></pre>
+<blockquote><p>更稳：pprof 端口不要出现在 Service 上，只走 <code>port-forward</code>；或用 sidecar 反代做 IP allowlist + mTLS。token 放 Header 而非 URL query，避免被 access log 与浏览器历史留存。</p></blockquote>
+<h3 id="42-采-cpu-与生成火焰图">4.2 采 CPU 与生成火焰图</h3>
+<pre><code class="lang-bash"># 直接起 Web UI（内置火焰图、调用图、源码视图）
+go tool pprof -http=:8081 'http://127.0.0.1:6060/debug/pprof/profile?seconds=30'
+curl -s -o cpu.pprof 'http://127.0.0.1:6060/debug/pprof/profile?seconds=30'
+go tool pprof -top -nodecount=25 cpu.pprof &amp;&amp; go tool pprof -list='codec.*Write' cpu.pprof</code></pre>
+<p>火焰图读法：<strong>横轴是样本占比，不是时间顺序</strong>；自下而上是调用链，每层宽度是该函数（含子调用）的占比。找「宽而平顶」的帧——宽说明耗时长，平顶说明耗时在自身。若顶层出现 <code>runtime.memmove</code>、<code>runtime.mallocgc</code>、<code>runtime.gcAssistAlloc</code>，根因在<strong>分配</strong>而不是算法，往下找谁在分配。</p>
+<h3 id="43-benchmark-前后对比与-benchstat">4.3 benchmark 前后对比与 benchstat</h3>
+<pre><code class="lang-go">package codec
+
+import (
+	"bytes"
+	"testing"
+)
+
+var sink []byte // 包级变量接收结果，防止编译器把循环整个优化掉
+
+func BenchmarkEncode(b *testing.B) {
+	payload := bytes.Repeat([]byte("go"), 4096)
+	var buf bytes.Buffer
+
+	b.ReportAllocs()
+	b.SetBytes(int64(len(payload))) // 让输出带 MB/s
+	b.ResetTimer()                  // 丢掉 setup 的时间
+
+	for i := 0; i &lt; b.N; i++ {
+		buf.Reset()
+		if err := Encode(&amp;buf, payload); err != nil {
+			b.Fatal(err)
+		}
+	}
+	sink = buf.Bytes()
+}</code></pre>
+<pre><code class="lang-bash">go test -run='^$' -bench='BenchmarkEncode$' -benchmem -count=6 ./codec &gt; old.txt
+# 改完代码后
+go test -run='^$' -bench='BenchmarkEncode$' -benchmem -count=6 ./codec &gt; new.txt
+benchstat old.txt new.txt</code></pre>
+<pre><code class="lang-text">                 │   old.txt    │               new.txt                │
+                 │    sec/op    │    sec/op     vs base                │
+Encode-8            412.5µs ± 2%   288.1µs ± 1%  -30.16% (p=0.002 n=6)
+                 │   allocs/op  │   allocs/op    vs base                │
+Encode-8             128 ± 0%        12 ± 0%    -90.62% (p=0.002 n=6)</code></pre>
+<p><code>-count=6</code> 是底线（benchstat 需要多样本算分布）；<code>p&lt;0.05</code> 才算显著，<code>~</code> 表示差异在噪声内；<code>±2%</code> 是本机抖动，<strong>跨机器比较毫无意义</strong>。分配从 128 降到 12 通常收益最大——它同时降 CPU 与 GC 压力，而 <code>sec/op</code> 只反映前者。</p>
+<h3 id="44-内存泄漏定位流程">4.4 内存泄漏定位流程</h3>
+<p>第一步永远是<strong>区分泄漏与高分配</strong>：<code>inuse_space</code> 单调涨是泄漏，<code>alloc_space</code> 涨而 <code>inuse</code> 平稳是分配风暴。</p>
+<pre><code class="lang-bash"># 1) 抓基线（?gc=1 先强制 GC，避免陈旧快照）；业务量稳定时等 15~30 分钟再抓第二份
+curl -s 'http://127.0.0.1:6060/debug/pprof/heap?gc=1' -o heap-1.pprof
+curl -s 'http://127.0.0.1:6060/debug/pprof/heap?gc=1' -o heap-2.pprof
+
+# 2) 相减：只看两份之间「新增且未释放」的对象，再定位到行
+go tool pprof -sample_index=inuse_space -base heap-1.pprof -top heap-2.pprof
+go tool pprof -sample_index=inuse_space -base heap-1.pprof -list='.*' heap-2.pprof
+
+# 3) 对照 alloc_space，区分泄漏与分配太快
+go tool pprof -sample_index=alloc_space -top heap-2.pprof</code></pre>
+<p>在 <code>-top</code> 里对照下面的签名，通常一眼就能定位：</p>
+<pre><code class="lang-text">inuse_space 涨 + 栈顶 net/http.(*persistConn)   → resp.Body 没 Close，连接与 buffer 一起被带住
+inuse_space 涨 + 栈顶 time.NewTicker/time.After → 循环里起了永不停止的定时器
+inuse 平 + inuse_objects 暴涨                   → 每请求新建 buffer / logger / regexp
+goroutine 数单调涨 + 栈停在 chan receive        → 消费者已退出，生产者永久阻塞</code></pre>
+<p>最后是<strong>验证</strong>：修复后同样跑 30 分钟，<code>heap_objects</code> 与 RSS 应回到平台期。heap profile 不含 goroutine 栈（每个至少 2KB）、cgo 分配与 mmap，RSS 涨而 heap 平的时候去查 goroutine 数与外部组件。</p>
+<hr>
+
+<div class="callout info"><p><b>实战要点：</b>生产开 net/http/pprof 必须加鉴权或只监听 localhost；采 30 秒足够，长时间 profile 会拖慢服务且文件巨大。</p></div>
+</section>
+<section data-anchor="5-版本演进速览">
+<h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>与性能剖析相关的关键变化</th></tr></thead><tbody><tr><td>Go 1.8</td><td>并发 GC 改用<strong>混合写屏障</strong>，STW 从毫秒级降到通常几十微秒；<code>go tool trace</code> 已能看调度时间线</td></tr><tr><td>Go 1.14</td><td><strong>异步抢占</strong>（基于信号），长循环不再拖住调度与 GC，profile 更贴近真实</td></tr><tr><td>Go 1.16</td><td><code>runtime/metrics</code> 稳定，可结构化读取 GC / 堆 / 调度指标</td></tr><tr><td>Go 1.19</td><td><strong><code>GOMEMLIMIT</code></strong> 软内存上限（<code>debug.SetMemoryLimit</code>），容器场景的关键拼图</td></tr><tr><td>Go 1.20</td><td>PGO 预览（<code>-pgo</code>），需显式指定 profile 文件</td></tr><tr><td>Go 1.21</td><td><strong>PGO 正式 GA</strong>：主包目录放 <code>default.pgo</code> 即自动启用，典型 CPU 收益 2%~7%</td></tr><tr><td>Go 1.22</td><td>循环变量改为每轮独立，闭包捕获的逃逸行为随之变化，升级后应重跑 benchmark</td></tr><tr><td>Go 1.24</td><td><code>testing.B.Loop</code> 简化基准写法；map 改用 Swiss table，查找与扩容行为变化</td></tr><tr><td>近年 1.2x</td><td>trace 支持环形缓冲（FlightRecorder）、容器感知的 <code>GOMAXPROCS</code> 默认值、PGO 内联策略增强</td></tr></tbody></table></div>
+<blockquote><p>PGO 的采集：把生产 CPU profile 存成主包目录下的 <code>default.pgo</code>，<code>go build</code> 自动启用（<code>-pgo=off</code> 关闭）。收益高度依赖 profile 是否代表生产负载——mock 流量可能零收益甚至负优化，算法级问题永远优先。</p></blockquote>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>没有 baseline 就动手</strong>：一次改三处再一起测，无法归因。一次只改一个变量，先存 <code>old.txt</code>。</li><li><strong>benchmark 失真</strong>：setup 算进计时（漏 <code>b.ResetTimer</code>）、结果没被使用而被编译器整个删掉（用包级 <code>sink</code> 或 <code>b.Loop</code>）、<code>b.N</code> 太小导致启动成本占比过高。</li><li><strong>微基准不代表真实负载</strong>：单 goroutine、无锁竞争、数据全在 L1、没有 GC 压力。基准里快 3 倍，线上可能因为多一层指针跳转变慢。互补手段是压测 + trace。</li><li><strong>只看平均值不看分位数</strong>：<code>go test -bench</code> 报的是均值，SLO 看的是 P99/P999。均值 5ms、P99 800ms 的服务「平均很快」，体感极差。</li><li><strong>把 CPU 打满当成容量足够</strong>：70% 之后排队延迟非线性上升，再叠上 GC assist、连接池与 fd 上限，真正饱和点远早于 100%。容量规划看延迟拐点。</li><li><strong>pprof 端口裸奔</strong>：heap 与 goroutine 快照里有函数名、包路径、栈上的参数值（可能含 token），profile 接口还能被反复调用来打 DoS。必须独立端口 + 鉴权 + 内网。</li><li><strong>线上开 profile 不设限</strong>：CPU profile 约 5% 开销、30 秒通常几百 KB 到数 MB（<code>go tool trace</code> 才是几十 MB 量级），并发请求还能把采样器拖垮；<code>SetBlockProfileRate(1)</code> 会让每次 channel 操作都记一笔，吞吐可能掉一半。限时、限流、用完归零。</li><li><strong>混淆 <code>inuse_space</code> 与 <code>alloc_space</code></strong>：拿 <code>alloc_space</code> 的 top 去修「泄漏」，改半天 RSS 不降；抓 heap 不加 <code>?gc=1</code>，看到的是旧快照。</li><li><strong>只盯业务代码不看 GC</strong>：<code>gcAssistAlloc</code> 占比高说明分配速率超过回收速率，加机器没用，要减少分配或调 <code>GOGC/GOMEMLIMIT</code>。</li><li><strong>容器里不看 CPU limit</strong>：Go 1.25+ 已默认容器感知，但旧版本或显式设置 <code>GOMAXPROCS</code> 时仍按宿主机核数推导；2 核 limit 的 Pod 以为自己有 64 核，结果是海量 assist 与调度延迟。</li><li><strong>PGO 用错样本</strong>：拿 mock 或旧版本代码的 profile，收益归零甚至负优化。大改后重采，多实例 profile 用 <code>pprof -proto</code> 合并。</li><li><strong>把火焰图宽度当因果</strong>：宽只代表耗时多，不代表该优化。先确认它在关键路径上、且复杂度可降。</li></ol>
+<hr>
+
+<div class="callout warning"><p><b>生产警示：</b>微基准不代表真实负载：循环体被优化、缓存全命中、无锁竞争都会给出过于乐观的数字；用 benchstat 看显著性，别只看单次结果。</p></div>
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>工具</th><th>回答什么问题</th><th>时间尺度</th><th>开销</th><th>生产可用</th><th>盲区</th></tr></thead><tbody><tr><td><strong>pprof（cpu/heap）</strong></td><td>时间花在哪个函数、内存是谁占的</td><td>秒~分钟</td><td>低（~5%）</td><td>可，短时开启</td><td>阻塞、调度、syscall 内部</td></tr><tr><td><strong>block / mutex profile</strong></td><td>在等哪把锁、哪个 channel</td><td>秒~分钟</td><td>中~高</td><td>谨慎，短窗口</td><td>网络 IO、无竞争的锁</td></tr><tr><td><strong>goroutine profile</strong></td><td>几万个 goroutine 卡在哪一行</td><td>瞬时快照</td><td>低（短暂 STW）</td><td>可，常开</td><td>生命周期与因果</td></tr><tr><td><strong><code>go tool trace</code></strong></td><td>为什么延迟高但 CPU 不高</td><td>毫秒~秒</td><td>高（事件流）</td><td>谨慎，1~5s</td><td>函数内部耗时</td></tr><tr><td><strong>benchmark + benchstat</strong></td><td>改动是否真的更快、差异是否显著</td><td>纳秒~毫秒</td><td>无</td><td>只在 CI/本地</td><td>真实并发与长尾</td></tr><tr><td><strong>PGO</strong></td><td>不改代码还能不能再榨几个点</td><td>编译期</td><td>构建变慢</td><td>是，零运行时开销</td><td>算法与内存问题</td></tr><tr><td><strong>持续剖析（Pyroscope / Parca）</strong></td><td>长期趋势、哪次发布引入回归</td><td>分钟~天</td><td>低（采样）</td><td>是</td><td>单次请求细节</td></tr><tr><td><strong>eBPF（Pixie / btrace）</strong></td><td>无侵入看 syscall、网络、锁</td><td>微秒~秒</td><td>低~中</td><td>是</td><td>Go 用户态语义、内联函数</td></tr></tbody></table></div>
+<p>一句话决策：</p>
+<ul><li><strong>默认顺序</strong>：<code>GODEBUG=gctrace=1</code> + 指标判断类型 → CPU 高上 CPU profile，延迟高上 trace，内存涨上 heap profile → 效果用 benchmark + benchstat 验证。</li><li><strong>线上排障</strong>：pprof 独立端口 + 鉴权 + 限时；集群层面叠 Pyroscope / Parca 做持续剖析，回答「哪次发布变慢了」。</li><li><strong>不想改代码、要看 syscall 与网络</strong>：eBPF 工具，但 Go 的内联与用户态调度仍要靠 pprof / trace 补。</li><li><strong>性能治理常态化</strong>：把 benchmark 放进 CI，用 benchstat 卡住 &gt;5% 的回归，比事后救火便宜得多。</li><li><strong>PGO 是加分项</strong>：先把分配降下来、锁粒度调对，再谈那 2%~7%。</li></ul>
+<p>参考：<a href="https://pkg.go.dev/runtime/pprof">https://pkg.go.dev/runtime/pprof</a>、<a href="https://pkg.go.dev/runtime/trace">https://pkg.go.dev/runtime/trace</a>、<a href="https://go.dev/doc/pgo">https://go.dev/doc/pgo</a>、<a href="https://github.com/google/pprof">https://github.com/google/pprof</a></p>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

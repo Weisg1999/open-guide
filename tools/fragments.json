@@ -2132,5 +2132,281 @@
    "section": 6,
    "html": "<div class=\"callout warning\"><p><b>生产警示：</b>Enforcer 不是并发安全的，多 goroutine 共享要加锁或用 SyncedEnforcer；AutoSave 会在每次变更后全量落盘，策略多时性能会塌方。</p></div>"
   }
+ ],
+ "go-concurrency": [
+  {
+   "h2": "2. 能力总览",
+   "section": 2,
+   "html": "<div class=\"features\">\n  <div class=\"feature\"><div class=\"fh\"><h4>GMP 调度</h4></div><p>M 绑定 P 执行 G；阻塞系统调用会让出 P，goroutine 初始栈仅 2KB</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>取消树</h4></div><p>context 从根向下传播取消；WithValue 只放请求域数据，不放依赖</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>并发原语</h4></div><p>channel 管通信，Mutex 管共享状态，atomic 管单字变量，errgroup 管一组任务</p></div>\n</div>"
+  },
+  {
+   "h2": "3. 核心概念与原理",
+   "section": 3,
+   "html": "<div class=\"figure\">\n  <svg viewBox=\"0 0 880 268\" xmlns=\"http://www.w3.org/2000/svg\" font-family=\"-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif\">\n    <defs><marker id=\"m-go-concurrency\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0,0 L10,5 L0,10 z\" fill=\"#0891b2\"/></marker></defs>\n    <text x=\"440\" y=\"34\" text-anchor=\"middle\" font-size=\"17\" font-weight=\"700\" fill=\"#155e75\">channel 的发送与接收</text>\n    <text x=\"440\" y=\"57\" text-anchor=\"middle\" font-size=\"12.5\" fill=\"#64748b\">每次收发都要拿 hchan 锁，缓冲满或空时 goroutine 进等待队列</text>\n    <rect x=\"142\" y=\"82\" width=\"175\" height=\"80\" rx=\"12\" fill=\"#cffafe\" stroke=\"#0891b2\" stroke-width=\"1.5\"/>\n    <text x=\"229\" y=\"112\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#155e75\">发送 ch &lt;- v</text>\n    <text x=\"229\" y=\"136\" text-anchor=\"middle\" font-size=\"11\" fill=\"#155e75\">加锁后先看 buf 是否有空间</text>\n    <line x1=\"320\" y1=\"122\" x2=\"346\" y2=\"122\" stroke=\"#0891b2\" stroke-width=\"2\" marker-end=\"url(#m-go-concurrency)\"/>\n    <rect x=\"352\" y=\"82\" width=\"175\" height=\"80\" rx=\"12\" fill=\"#cffafe\" stroke=\"#0891b2\" stroke-width=\"1.5\"/>\n    <text x=\"440\" y=\"112\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#155e75\">环形缓冲 buf</text>\n    <text x=\"440\" y=\"136\" text-anchor=\"middle\" font-size=\"11\" fill=\"#155e75\">有空间入队；无空间进 sendq</text>\n    <line x1=\"532\" y1=\"122\" x2=\"558\" y2=\"122\" stroke=\"#0891b2\" stroke-width=\"2\" marker-end=\"url(#m-go-concurrency)\"/>\n    <rect x=\"564\" y=\"82\" width=\"175\" height=\"80\" rx=\"12\" fill=\"#cffafe\" stroke=\"#0891b2\" stroke-width=\"1.5\"/>\n    <text x=\"651\" y=\"112\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#155e75\">接收 &lt;- ch</text>\n    <text x=\"651\" y=\"136\" text-anchor=\"middle\" font-size=\"11\" fill=\"#155e75\">从 buf 取，或唤醒 sendq 中的 G</text>\n    <rect x=\"40\" y=\"186\" width=\"800\" height=\"58\" rx=\"10\" fill=\"#f8fafc\" stroke=\"#e3e9f2\" stroke-width=\"1\"/>\n    <text x=\"60\" y=\"210\" font-size=\"12.5\" fill=\"#1e293b\">channel 不是无锁队列：缓冲满/空时 goroutine 会挂到 sendq/recv</text>\n    <text x=\"60\" y=\"230\" font-size=\"12.5\" fill=\"#1e293b\">q 并让出 P，这是它比 mutex 更贵的场景。</text>\n  </svg>\n  <figcaption>channel 的发送与接收</figcaption>\n</div>",
+   "after": "3.3 channel 的内部结构"
+  },
+  {
+   "h2": "4. 使用实战",
+   "section": 4,
+   "html": "<div class=\"callout info\"><p><b>实战要点：</b>errgroup.WithContext 在任一任务失败时取消整组，适合扇出；需要限并发就配 SetLimit，不要自己用带缓冲 channel 写信号量。</p></div>"
+  },
+  {
+   "h2": "6. 常见坑与最佳实践",
+   "section": 6,
+   "html": "<div class=\"callout warning\"><p><b>生产警示：</b>goroutine 泄漏的四种典型：无缓冲 channel 永久阻塞、context 从不取消、for-select 没有退出分支、HTTP body 未关闭；测试里用 goleak 兜底。</p></div>"
+  }
+ ],
+ "go-perf": [
+  {
+   "h2": "2. 能力总览",
+   "section": 2,
+   "html": "<div class=\"features\">\n  <div class=\"feature\"><div class=\"fh\"><h4>采样而非全量</h4></div><p>CPU profile 默认 100Hz，heap 按 MemProfileRate 采样；结论看比例，不看绝对值</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>逃逸分析</h4></div><p>go build -gcflags=-m 看变量是否上堆；接口、闭包、返回指针是常见逃逸源</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>GC 调优</h4></div><p>GOGC 控增长倍率，GOMEMLIMIT 给软上限；先减少分配，再谈调参</p></div>\n</div>"
+  },
+  {
+   "h2": "3. 核心概念与原理",
+   "section": 3,
+   "html": "<div class=\"figure\">\n  <svg viewBox=\"0 0 880 524\" xmlns=\"http://www.w3.org/2000/svg\" font-family=\"-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif\">\n    <defs><marker id=\"m-go-perf\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0,0 L10,5 L0,10 z\" fill=\"#d97706\"/></marker></defs>\n    <text x=\"440\" y=\"34\" text-anchor=\"middle\" font-size=\"17\" font-weight=\"700\" fill=\"#92400e\">从现象到根因的排查路径</text>\n    <text x=\"440\" y=\"57\" text-anchor=\"middle\" font-size=\"12.5\" fill=\"#64748b\">先用指标判断问题类别，再选工具，最后用 benchmark 验证</text>\n    <rect x=\"90\" y=\"84\" width=\"700\" height=\"52\" rx=\"10\" fill=\"#fef3c7\" stroke=\"#d97706\" stroke-width=\"1.5\"/>\n    <circle cx=\"122\" cy=\"110\" r=\"14\" fill=\"#d97706\"/>\n    <text x=\"122\" y=\"110\" text-anchor=\"middle\" dominant-baseline=\"central\" font-size=\"13\" font-weight=\"700\" fill=\"#ffffff\">1</text>\n    <text x=\"150\" y=\"110\" dominant-baseline=\"central\" font-size=\"13\" fill=\"#92400e\">现象：延迟升高 / CPU 打满 / 内存上涨</text>\n    <line x1=\"440\" y1=\"138\" x2=\"440\" y2=\"154\" stroke=\"#d97706\" stroke-width=\"2\" marker-end=\"url(#m-go-perf)\"/>\n    <rect x=\"90\" y=\"158\" width=\"700\" height=\"52\" rx=\"10\" fill=\"#fef3c7\" stroke=\"#d97706\" stroke-width=\"1.5\"/>\n    <circle cx=\"122\" cy=\"184\" r=\"14\" fill=\"#d97706\"/>\n    <text x=\"122\" y=\"184\" text-anchor=\"middle\" dominant-baseline=\"central\" font-size=\"13\" font-weight=\"700\" fill=\"#ffffff\">2</text>\n    <text x=\"150\" y=\"184\" dominant-baseline=\"central\" font-size=\"13\" fill=\"#92400e\">pprof：CPU 找热点函数，heap 找分配来源</text>\n    <line x1=\"440\" y1=\"212\" x2=\"440\" y2=\"228\" stroke=\"#d97706\" stroke-width=\"2\" marker-end=\"url(#m-go-perf)\"/>\n    <rect x=\"90\" y=\"232\" width=\"700\" height=\"52\" rx=\"10\" fill=\"#fef3c7\" stroke=\"#d97706\" stroke-width=\"1.5\"/>\n    <circle cx=\"122\" cy=\"258\" r=\"14\" fill=\"#d97706\"/>\n    <text x=\"122\" y=\"258\" text-anchor=\"middle\" dominant-baseline=\"central\" font-size=\"13\" font-weight=\"700\" fill=\"#ffffff\">3</text>\n    <text x=\"150\" y=\"258\" dominant-baseline=\"central\" font-size=\"13\" fill=\"#92400e\">trace：看调度延迟、GC STW、阻塞事件</text>\n    <line x1=\"440\" y1=\"286\" x2=\"440\" y2=\"302\" stroke=\"#d97706\" stroke-width=\"2\" marker-end=\"url(#m-go-perf)\"/>\n    <rect x=\"90\" y=\"306\" width=\"700\" height=\"52\" rx=\"10\" fill=\"#fef3c7\" stroke=\"#d97706\" stroke-width=\"1.5\"/>\n    <circle cx=\"122\" cy=\"332\" r=\"14\" fill=\"#d97706\"/>\n    <text x=\"122\" y=\"332\" text-anchor=\"middle\" dominant-baseline=\"central\" font-size=\"13\" font-weight=\"700\" fill=\"#ffffff\">4</text>\n    <text x=\"150\" y=\"332\" dominant-baseline=\"central\" font-size=\"13\" fill=\"#92400e\">benchmark + benchstat：验证改动是否真的更快</text>\n    <line x1=\"440\" y1=\"360\" x2=\"440\" y2=\"376\" stroke=\"#d97706\" stroke-width=\"2\" marker-end=\"url(#m-go-perf)\"/>\n    <rect x=\"90\" y=\"380\" width=\"700\" height=\"52\" rx=\"10\" fill=\"#fef3c7\" stroke=\"#d97706\" stroke-width=\"1.5\"/>\n    <circle cx=\"122\" cy=\"406\" r=\"14\" fill=\"#d97706\"/>\n    <text x=\"122\" y=\"406\" text-anchor=\"middle\" dominant-baseline=\"central\" font-size=\"13\" font-weight=\"700\" fill=\"#ffffff\">5</text>\n    <text x=\"150\" y=\"406\" dominant-baseline=\"central\" font-size=\"13\" fill=\"#92400e\">参数与代码：GOGC / GOMEMLIMIT / 池化 / 减少分配</text>\n    <rect x=\"40\" y=\"448\" width=\"800\" height=\"54\" rx=\"10\" fill=\"#f8fafc\" stroke=\"#e3e9f2\" stroke-width=\"1\"/>\n    <text x=\"60\" y=\"472\" font-size=\"12.5\" fill=\"#1e293b\">pprof 回答「时间花在哪」，trace 回答「goroutine 在等什么」，bench</text>\n    <text x=\"60\" y=\"492\" font-size=\"12.5\" fill=\"#1e293b\">mark 回答「改完是否更快」。</text>\n  </svg>\n  <figcaption>从现象到根因的排查路径</figcaption>\n</div>",
+   "after": "3.6 trace：看 goroutine 在等什么"
+  },
+  {
+   "h2": "4. 使用实战",
+   "section": 4,
+   "html": "<div class=\"callout info\"><p><b>实战要点：</b>生产开 net/http/pprof 必须加鉴权或只监听 localhost；采 30 秒足够，长时间 profile 会拖慢服务且文件巨大。</p></div>"
+  },
+  {
+   "h2": "6. 常见坑与最佳实践",
+   "section": 6,
+   "html": "<div class=\"callout warning\"><p><b>生产警示：</b>微基准不代表真实负载：循环体被优化、缓存全命中、无锁竞争都会给出过于乐观的数字；用 benchstat 看显著性，别只看单次结果。</p></div>"
+  }
+ ],
+ "distributed-transaction": [
+  {
+   "h2": "2. 能力总览",
+   "section": 2,
+   "html": "<div class=\"features\">\n  <div class=\"feature\"><div class=\"fh\"><h4>一致性谱系</h4></div><p>2PC 强一致但阻塞；TCC 侵入业务；Saga 靠补偿；Outbox 最工程化</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>补偿三难</h4></div><p>空回滚、悬挂、幂等是 TCC 的必答题；Saga 要接受补偿不可逆</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>兜底手段</h4></div><p>幂等键、去重表、状态机、定时对账，缺一不可</p></div>\n</div>"
+  },
+  {
+   "h2": "3. 核心概念与原理",
+   "section": 3,
+   "html": "<div class=\"figure\">\n  <svg viewBox=\"0 0 880 268\" xmlns=\"http://www.w3.org/2000/svg\" font-family=\"-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif\">\n    <defs><marker id=\"m-distributed-transaction\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0,0 L10,5 L0,10 z\" fill=\"#6366f1\"/></marker></defs>\n    <text x=\"440\" y=\"34\" text-anchor=\"middle\" font-size=\"17\" font-weight=\"700\" fill=\"#3730a3\">Outbox 的完整链路</text>\n    <text x=\"440\" y=\"57\" text-anchor=\"middle\" font-size=\"12.5\" fill=\"#64748b\">业务表与 outbox 在同一个本地事务提交，投递失败可重试</text>\n    <rect x=\"36\" y=\"82\" width=\"175\" height=\"80\" rx=\"12\" fill=\"#e0e7ff\" stroke=\"#6366f1\" stroke-width=\"1.5\"/>\n    <text x=\"124\" y=\"112\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#3730a3\">本地事务</text>\n    <text x=\"124\" y=\"136\" text-anchor=\"middle\" font-size=\"11\" fill=\"#3730a3\">业务表 + outbox 同库提交</text>\n    <line x1=\"215\" y1=\"122\" x2=\"241\" y2=\"122\" stroke=\"#6366f1\" stroke-width=\"2\" marker-end=\"url(#m-distributed-transaction)\"/>\n    <rect x=\"247\" y=\"82\" width=\"175\" height=\"80\" rx=\"12\" fill=\"#e0e7ff\" stroke=\"#6366f1\" stroke-width=\"1.5\"/>\n    <text x=\"334\" y=\"112\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#3730a3\">投递器</text>\n    <text x=\"334\" y=\"136\" text-anchor=\"middle\" font-size=\"11\" fill=\"#3730a3\">轮询或 CDC 读未发送记录</text>\n    <line x1=\"426\" y1=\"122\" x2=\"452\" y2=\"122\" stroke=\"#6366f1\" stroke-width=\"2\" marker-end=\"url(#m-distributed-transaction)\"/>\n    <rect x=\"458\" y=\"82\" width=\"175\" height=\"80\" rx=\"12\" fill=\"#e0e7ff\" stroke=\"#6366f1\" stroke-width=\"1.5\"/>\n    <text x=\"546\" y=\"112\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#3730a3\">MQ 投递</text>\n    <text x=\"546\" y=\"136\" text-anchor=\"middle\" font-size=\"11\" fill=\"#3730a3\">至少一次，失败重试</text>\n    <line x1=\"637\" y1=\"122\" x2=\"663\" y2=\"122\" stroke=\"#6366f1\" stroke-width=\"2\" marker-end=\"url(#m-distributed-transaction)\"/>\n    <rect x=\"669\" y=\"82\" width=\"175\" height=\"80\" rx=\"12\" fill=\"#e0e7ff\" stroke=\"#6366f1\" stroke-width=\"1.5\"/>\n    <text x=\"756\" y=\"112\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#3730a3\">消费端</text>\n    <text x=\"756\" y=\"136\" text-anchor=\"middle\" font-size=\"11\" fill=\"#3730a3\">幂等键去重 + 对账</text>\n    <rect x=\"40\" y=\"186\" width=\"800\" height=\"58\" rx=\"10\" fill=\"#f8fafc\" stroke=\"#e3e9f2\" stroke-width=\"1\"/>\n    <text x=\"60\" y=\"210\" font-size=\"12.5\" fill=\"#1e293b\">把「写库」和「发消息」放进同一个本地事务，用至少一次投递加消费端幂等，换取最终一致。</text>\n  </svg>\n  <figcaption>Outbox 的完整链路</figcaption>\n</div>",
+   "after": "3.4 本地消息表与 Outbox：同库事务 + 至少一次"
+  },
+  {
+   "h2": "4. 使用实战",
+   "section": 4,
+   "html": "<div class=\"callout info\"><p><b>实战要点：</b>Outbox 表要有 status、retry_count、next_retry_at 与索引；多实例投递用 SELECT ... FOR UPDATE SKIP LOCKED 抢占，避免重复发送。</p></div>"
+  },
+  {
+   "h2": "6. 常见坑与最佳实践",
+   "section": 6,
+   "html": "<div class=\"callout warning\"><p><b>生产警示：</b>不要用「先写库再发 MQ」的两步操作假装事务：第二步失败就永久不一致；Kafka 事务只覆盖 Kafka 读写，不覆盖你的数据库。</p></div>"
+  }
+ ],
+ "mqtt": [
+  {
+   "h2": "2. 能力总览",
+   "section": 2,
+   "html": "<div class=\"features\">\n  <div class=\"feature\"><div class=\"fh\"><h4>主题寻址</h4></div><p>层级主题 + `+` / `#` 通配符，`$share/` 共享订阅做负载均衡</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>会话状态</h4></div><p>Clean Start 与 Session Expiry 决定离线消息是否保留</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>遗嘱与 retained</h4></div><p>LWT 上报异常离线；retained 保留最后状态，但会永久残留</p></div>\n</div>"
+  },
+  {
+   "h2": "3. 核心概念与原理",
+   "section": 3,
+   "html": "<div class=\"figure\">\n  <svg viewBox=\"0 0 880 450\" xmlns=\"http://www.w3.org/2000/svg\" font-family=\"-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif\">\n    <defs><marker id=\"m-mqtt\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0,0 L10,5 L0,10 z\" fill=\"#16a34a\"/></marker></defs>\n    <text x=\"440\" y=\"34\" text-anchor=\"middle\" font-size=\"17\" font-weight=\"700\" fill=\"#166534\">QoS 三级与代价</text>\n    <text x=\"440\" y=\"57\" text-anchor=\"middle\" font-size=\"12.5\" fill=\"#64748b\">QoS 提升的是投递保证，不是业务幂等</text>\n    <rect x=\"90\" y=\"84\" width=\"700\" height=\"52\" rx=\"10\" fill=\"#dcfce7\" stroke=\"#16a34a\" stroke-width=\"1.5\"/>\n    <circle cx=\"122\" cy=\"110\" r=\"14\" fill=\"#16a34a\"/>\n    <text x=\"122\" y=\"110\" text-anchor=\"middle\" dominant-baseline=\"central\" font-size=\"13\" font-weight=\"700\" fill=\"#ffffff\">1</text>\n    <text x=\"150\" y=\"110\" dominant-baseline=\"central\" font-size=\"13\" fill=\"#166534\">QoS 0：至多一次，发完即忘，弱网会丢</text>\n    <line x1=\"440\" y1=\"138\" x2=\"440\" y2=\"154\" stroke=\"#16a34a\" stroke-width=\"2\" marker-end=\"url(#m-mqtt)\"/>\n    <rect x=\"90\" y=\"158\" width=\"700\" height=\"52\" rx=\"10\" fill=\"#dcfce7\" stroke=\"#16a34a\" stroke-width=\"1.5\"/>\n    <circle cx=\"122\" cy=\"184\" r=\"14\" fill=\"#16a34a\"/>\n    <text x=\"122\" y=\"184\" text-anchor=\"middle\" dominant-baseline=\"central\" font-size=\"13\" font-weight=\"700\" fill=\"#ffffff\">2</text>\n    <text x=\"150\" y=\"184\" dominant-baseline=\"central\" font-size=\"13\" fill=\"#166534\">QoS 1：至少一次，PUBACK 确认，可能重复</text>\n    <line x1=\"440\" y1=\"212\" x2=\"440\" y2=\"228\" stroke=\"#16a34a\" stroke-width=\"2\" marker-end=\"url(#m-mqtt)\"/>\n    <rect x=\"90\" y=\"232\" width=\"700\" height=\"52\" rx=\"10\" fill=\"#dcfce7\" stroke=\"#16a34a\" stroke-width=\"1.5\"/>\n    <circle cx=\"122\" cy=\"258\" r=\"14\" fill=\"#16a34a\"/>\n    <text x=\"122\" y=\"258\" text-anchor=\"middle\" dominant-baseline=\"central\" font-size=\"13\" font-weight=\"700\" fill=\"#ffffff\">3</text>\n    <text x=\"150\" y=\"258\" dominant-baseline=\"central\" font-size=\"13\" fill=\"#166534\">QoS 2：恰好一次，PUBREC / PUBREL / PUBCOMP 两次往返</text>\n    <line x1=\"440\" y1=\"286\" x2=\"440\" y2=\"302\" stroke=\"#16a34a\" stroke-width=\"2\" marker-end=\"url(#m-mqtt)\"/>\n    <rect x=\"90\" y=\"306\" width=\"700\" height=\"52\" rx=\"10\" fill=\"#dcfce7\" stroke=\"#16a34a\" stroke-width=\"1.5\"/>\n    <circle cx=\"122\" cy=\"332\" r=\"14\" fill=\"#16a34a\"/>\n    <text x=\"122\" y=\"332\" text-anchor=\"middle\" dominant-baseline=\"central\" font-size=\"13\" font-weight=\"700\" fill=\"#ffffff\">4</text>\n    <text x=\"150\" y=\"332\" dominant-baseline=\"central\" font-size=\"13\" fill=\"#166534\">选型原则：按业务容忍度选，不要一律 QoS 2</text>\n    <rect x=\"40\" y=\"374\" width=\"800\" height=\"54\" rx=\"10\" fill=\"#f8fafc\" stroke=\"#e3e9f2\" stroke-width=\"1\"/>\n    <text x=\"60\" y=\"398\" font-size=\"12.5\" fill=\"#1e293b\">QoS 2 在弱网下多两次往返；多数遥测场景 QoS 1 加消费端幂等就够了。</text>\n  </svg>\n  <figcaption>QoS 三级与代价</figcaption>\n</div>",
+   "after": "3.3 QoS 三级握手与投递语义"
+  },
+  {
+   "h2": "4. 使用实战",
+   "section": 4,
+   "html": "<div class=\"callout info\"><p><b>实战要点：</b>ClientID 必须全局唯一且稳定，冲突会互踢；重连成功后要在 OnConnect 里重新订阅，paho 不会自动恢复。</p></div>"
+  },
+  {
+   "h2": "6. 常见坑与最佳实践",
+   "section": 6,
+   "html": "<div class=\"callout warning\"><p><b>生产警示：</b>retained 消息不会自动过期，主题设计不当会长期占用内存；百万设备同时重连会打爆 broker，客户端要指数退避加抖动，服务端配连接速率限制。</p></div>"
+  }
+ ],
+ "service-governance": [
+  {
+   "h2": "2. 能力总览",
+   "section": 2,
+   "html": "<div class=\"features\">\n  <div class=\"feature\"><div class=\"fh\"><h4>限流</h4></div><p>令牌桶允许突发、漏桶输出匀速；单机限流不等于集群限流</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>重试</h4></div><p>只重试幂等操作，指数退避加抖动，并设总预算</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>隔离与超时</h4></div><p>舱壁隔离故障域；deadline 逐跳扣减，别让下游无超时</p></div>\n</div>"
+  },
+  {
+   "h2": "3. 核心概念与原理",
+   "section": 3,
+   "html": "<div class=\"figure\">\n  <svg viewBox=\"0 0 880 376\" xmlns=\"http://www.w3.org/2000/svg\" font-family=\"-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif\">\n    <defs><marker id=\"m-service-governance\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0,0 L10,5 L0,10 z\" fill=\"#e11d48\"/></marker></defs>\n    <text x=\"440\" y=\"34\" text-anchor=\"middle\" font-size=\"17\" font-weight=\"700\" fill=\"#9f1239\">熔断器三态与探针</text>\n    <text x=\"440\" y=\"57\" text-anchor=\"middle\" font-size=\"12.5\" fill=\"#64748b\">熔断的本质是快速失败加自动恢复</text>\n    <rect x=\"90\" y=\"84\" width=\"700\" height=\"52\" rx=\"10\" fill=\"#ffe4e6\" stroke=\"#e11d48\" stroke-width=\"1.5\"/>\n    <circle cx=\"122\" cy=\"110\" r=\"14\" fill=\"#e11d48\"/>\n    <text x=\"122\" y=\"110\" text-anchor=\"middle\" dominant-baseline=\"central\" font-size=\"13\" font-weight=\"700\" fill=\"#ffffff\">1</text>\n    <text x=\"150\" y=\"110\" dominant-baseline=\"central\" font-size=\"13\" fill=\"#9f1239\">Closed：正常放行，滑动窗口统计失败率与慢调用</text>\n    <line x1=\"440\" y1=\"138\" x2=\"440\" y2=\"154\" stroke=\"#e11d48\" stroke-width=\"2\" marker-end=\"url(#m-service-governance)\"/>\n    <rect x=\"90\" y=\"158\" width=\"700\" height=\"52\" rx=\"10\" fill=\"#ffe4e6\" stroke=\"#e11d48\" stroke-width=\"1.5\"/>\n    <circle cx=\"122\" cy=\"184\" r=\"14\" fill=\"#e11d48\"/>\n    <text x=\"122\" y=\"184\" text-anchor=\"middle\" dominant-baseline=\"central\" font-size=\"13\" font-weight=\"700\" fill=\"#ffffff\">2</text>\n    <text x=\"150\" y=\"184\" dominant-baseline=\"central\" font-size=\"13\" fill=\"#9f1239\">Open：达到阈值立即失败，直接走降级，不再打下游</text>\n    <line x1=\"440\" y1=\"212\" x2=\"440\" y2=\"228\" stroke=\"#e11d48\" stroke-width=\"2\" marker-end=\"url(#m-service-governance)\"/>\n    <rect x=\"90\" y=\"232\" width=\"700\" height=\"52\" rx=\"10\" fill=\"#ffe4e6\" stroke=\"#e11d48\" stroke-width=\"1.5\"/>\n    <circle cx=\"122\" cy=\"258\" r=\"14\" fill=\"#e11d48\"/>\n    <text x=\"122\" y=\"258\" text-anchor=\"middle\" dominant-baseline=\"central\" font-size=\"13\" font-weight=\"700\" fill=\"#ffffff\">3</text>\n    <text x=\"150\" y=\"258\" dominant-baseline=\"central\" font-size=\"13\" fill=\"#9f1239\">Half-Open：冷却后放少量探针，成功回 Closed，失败回 Open</text>\n    <rect x=\"40\" y=\"300\" width=\"800\" height=\"54\" rx=\"10\" fill=\"#f8fafc\" stroke=\"#e3e9f2\" stroke-width=\"1\"/>\n    <text x=\"60\" y=\"324\" font-size=\"12.5\" fill=\"#1e293b\">窗口统计口径与最小请求数决定它会不会误跳；阈值要来自压测与历史数据。</text>\n  </svg>\n  <figcaption>熔断器三态与探针</figcaption>\n</div>",
+   "after": "3.3 熔断器三态与滑动窗口统计"
+  },
+  {
+   "h2": "4. 使用实战",
+   "section": 4,
+   "html": "<div class=\"callout info\"><p><b>实战要点：</b>限流要区分「拒绝」与「排队」：入口限流直接 429，内部依赖可以短暂排队，但必须设最大等待时间。</p></div>"
+  },
+  {
+   "h2": "6. 常见坑与最佳实践",
+   "section": 6,
+   "html": "<div class=\"callout warning\"><p><b>生产警示：</b>没有超时的重试等于放大器：下游变慢时重试会成倍增加负载；熔断阈值拍脑袋设 50% 往往不是误跳就是失效。</p></div>"
+  }
+ ],
+ "go-testing": [
+  {
+   "h2": "2. 能力总览",
+   "section": 2,
+   "html": "<div class=\"features\">\n  <div class=\"feature\"><div class=\"fh\"><h4>表驱动</h4></div><p>用 t.Run 命名用例，失败信息自带输入与期望</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>并行陷阱</h4></div><p>t.Parallel 与循环变量：Go 1.22 前必须显式捕获</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>可测性</h4></div><p>时间、随机、网络都注入接口，否则只能靠 sleep 和重试</p></div>\n</div>"
+  },
+  {
+   "h2": "3. 核心概念与原理",
+   "section": 3,
+   "html": "<div class=\"figure\">\n  <svg viewBox=\"0 0 880 450\" xmlns=\"http://www.w3.org/2000/svg\" font-family=\"-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif\">\n    <defs><marker id=\"m-go-testing\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0,0 L10,5 L0,10 z\" fill=\"#059669\"/></marker></defs>\n    <text x=\"440\" y=\"34\" text-anchor=\"middle\" font-size=\"17\" font-weight=\"700\" fill=\"#065f46\">测试分层与成本</text>\n    <text x=\"440\" y=\"57\" text-anchor=\"middle\" font-size=\"12.5\" fill=\"#64748b\">越往下越真实、越慢、越不稳定</text>\n    <rect x=\"90\" y=\"84\" width=\"700\" height=\"52\" rx=\"10\" fill=\"#d1fae5\" stroke=\"#059669\" stroke-width=\"1.5\"/>\n    <circle cx=\"122\" cy=\"110\" r=\"14\" fill=\"#059669\"/>\n    <text x=\"122\" y=\"110\" text-anchor=\"middle\" dominant-baseline=\"central\" font-size=\"13\" font-weight=\"700\" fill=\"#ffffff\">1</text>\n    <text x=\"150\" y=\"110\" dominant-baseline=\"central\" font-size=\"13\" fill=\"#065f46\">单元测试：纯函数与领域逻辑，毫秒级，无外部依赖</text>\n    <line x1=\"440\" y1=\"138\" x2=\"440\" y2=\"154\" stroke=\"#059669\" stroke-width=\"2\" marker-end=\"url(#m-go-testing)\"/>\n    <rect x=\"90\" y=\"158\" width=\"700\" height=\"52\" rx=\"10\" fill=\"#d1fae5\" stroke=\"#059669\" stroke-width=\"1.5\"/>\n    <circle cx=\"122\" cy=\"184\" r=\"14\" fill=\"#059669\"/>\n    <text x=\"122\" y=\"184\" text-anchor=\"middle\" dominant-baseline=\"central\" font-size=\"13\" font-weight=\"700\" fill=\"#ffffff\">2</text>\n    <text x=\"150\" y=\"184\" dominant-baseline=\"central\" font-size=\"13\" fill=\"#065f46\">组件测试：httptest / sqlmock，覆盖 handler 与 repository</text>\n    <line x1=\"440\" y1=\"212\" x2=\"440\" y2=\"228\" stroke=\"#059669\" stroke-width=\"2\" marker-end=\"url(#m-go-testing)\"/>\n    <rect x=\"90\" y=\"232\" width=\"700\" height=\"52\" rx=\"10\" fill=\"#d1fae5\" stroke=\"#059669\" stroke-width=\"1.5\"/>\n    <circle cx=\"122\" cy=\"258\" r=\"14\" fill=\"#059669\"/>\n    <text x=\"122\" y=\"258\" text-anchor=\"middle\" dominant-baseline=\"central\" font-size=\"13\" font-weight=\"700\" fill=\"#ffffff\">3</text>\n    <text x=\"150\" y=\"258\" dominant-baseline=\"central\" font-size=\"13\" fill=\"#065f46\">集成测试：testcontainers 起真实 PG / Redis，分钟级</text>\n    <line x1=\"440\" y1=\"286\" x2=\"440\" y2=\"302\" stroke=\"#059669\" stroke-width=\"2\" marker-end=\"url(#m-go-testing)\"/>\n    <rect x=\"90\" y=\"306\" width=\"700\" height=\"52\" rx=\"10\" fill=\"#d1fae5\" stroke=\"#059669\" stroke-width=\"1.5\"/>\n    <circle cx=\"122\" cy=\"332\" r=\"14\" fill=\"#059669\"/>\n    <text x=\"122\" y=\"332\" text-anchor=\"middle\" dominant-baseline=\"central\" font-size=\"13\" font-weight=\"700\" fill=\"#ffffff\">4</text>\n    <text x=\"150\" y=\"332\" dominant-baseline=\"central\" font-size=\"13\" fill=\"#065f46\">端到端：只留少量关键链路，最慢也最脆弱</text>\n    <rect x=\"40\" y=\"374\" width=\"800\" height=\"54\" rx=\"10\" fill=\"#f8fafc\" stroke=\"#e3e9f2\" stroke-width=\"1\"/>\n    <text x=\"60\" y=\"398\" font-size=\"12.5\" fill=\"#1e293b\">测试金字塔的意义是把反馈速度与置信度分层，而不是追求某个覆盖率数字。</text>\n  </svg>\n  <figcaption>测试分层与成本</figcaption>\n</div>",
+   "after": "3.5 测试替身：fake / stub / mock 的分工"
+  },
+  {
+   "h2": "4. 使用实战",
+   "section": 4,
+   "html": "<div class=\"callout info\"><p><b>实战要点：</b>集成测试用 build tag 或短模式隔离，默认 go test ./... 只跑快的；CI 里再单独跑集成与 -race。</p></div>"
+  },
+  {
+   "h2": "6. 常见坑与最佳实践",
+   "section": 6,
+   "html": "<div class=\"callout warning\"><p><b>生产警示：</b>覆盖率不等于质量：一百个只断言 err == nil 的测试也能刷到 90%；mock 过度会让测试与实现强耦合，重构时全红。</p></div>"
+  }
+ ],
+ "go-time": [
+  {
+   "h2": "2. 能力总览",
+   "section": 2,
+   "html": "<div class=\"features\">\n  <div class=\"feature\"><div class=\"fh\"><h4>时刻 vs 墙上时间</h4></div><p>time.Time 是时刻；2026-03-29 02:30 在欧洲可能不存在</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>tzdata</h4></div><p>容器里没时区库会 LoadLocation 失败；可 import _ \"time/tzdata\" 内嵌</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>数据库语义</h4></div><p>MySQL TIMESTAMP 受 time_zone 影响，DATETIME 不受；PG timestamptz 存 UTC</p></div>\n</div>"
+  },
+  {
+   "h2": "3. 核心概念与原理",
+   "section": 3,
+   "html": "<div class=\"figure\">\n  <svg viewBox=\"0 0 880 268\" xmlns=\"http://www.w3.org/2000/svg\" font-family=\"-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif\">\n    <defs><marker id=\"m-go-time\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0,0 L10,5 L0,10 z\" fill=\"#0284c7\"/></marker></defs>\n    <text x=\"440\" y=\"34\" text-anchor=\"middle\" font-size=\"17\" font-weight=\"700\" fill=\"#075985\">一次跨时区写入与读取</text>\n    <text x=\"440\" y=\"57\" text-anchor=\"middle\" font-size=\"12.5\" fill=\"#64748b\">存储用 UTC 时刻，展示用目标时区</text>\n    <rect x=\"142\" y=\"82\" width=\"175\" height=\"80\" rx=\"12\" fill=\"#e0f2fe\" stroke=\"#0284c7\" stroke-width=\"1.5\"/>\n    <text x=\"229\" y=\"112\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#075985\">业务事件</text>\n    <text x=\"229\" y=\"136\" text-anchor=\"middle\" font-size=\"11\" fill=\"#075985\">带时区的本地时间</text>\n    <line x1=\"320\" y1=\"122\" x2=\"346\" y2=\"122\" stroke=\"#0284c7\" stroke-width=\"2\" marker-end=\"url(#m-go-time)\"/>\n    <rect x=\"352\" y=\"82\" width=\"175\" height=\"80\" rx=\"12\" fill=\"#e0f2fe\" stroke=\"#0284c7\" stroke-width=\"1.5\"/>\n    <text x=\"440\" y=\"112\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#075985\">统一存 UTC</text>\n    <text x=\"440\" y=\"136\" text-anchor=\"middle\" font-size=\"11\" fill=\"#075985\">timestamptz / Unix 时间戳</text>\n    <line x1=\"532\" y1=\"122\" x2=\"558\" y2=\"122\" stroke=\"#0284c7\" stroke-width=\"2\" marker-end=\"url(#m-go-time)\"/>\n    <rect x=\"564\" y=\"82\" width=\"175\" height=\"80\" rx=\"12\" fill=\"#e0f2fe\" stroke=\"#0284c7\" stroke-width=\"1.5\"/>\n    <text x=\"651\" y=\"112\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#075985\">按目标时区展示</text>\n    <text x=\"651\" y=\"136\" text-anchor=\"middle\" font-size=\"11\" fill=\"#075985\">LoadLocation + In</text>\n    <rect x=\"40\" y=\"186\" width=\"800\" height=\"58\" rx=\"10\" fill=\"#f8fafc\" stroke=\"#e3e9f2\" stroke-width=\"1\"/>\n    <text x=\"60\" y=\"210\" font-size=\"12.5\" fill=\"#1e293b\">不要把「墙上时间」当唯一真相：DST 切换当天，凌晨两点的本地时间可能不存在或出现两次。</text>\n  </svg>\n  <figcaption>一次跨时区写入与读取</figcaption>\n</div>",
+   "after": "3.4 夏令时：不存在的钟点与重复的钟点"
+  },
+  {
+   "h2": "4. 使用实战",
+   "section": 4,
+   "html": "<div class=\"callout info\"><p><b>实战要点：</b>跨时区服务统一用 UTC 存储与传输，接口层用 RFC3339 带偏移；日切统计显式指定时区，不要依赖服务器 Local。</p></div>"
+  },
+  {
+   "h2": "6. 常见坑与最佳实践",
+   "section": 6,
+   "html": "<div class=\"callout warning\"><p><b>生产警示：</b>time.Parse 不带时区会得到 UTC；用 Format(\"2006-01-02\") 做业务日切，在跨时区与 DST 下会错位；基础镜像常缺 tzdata。</p></div>"
+  }
+ ],
+ "vector-database": [
+  {
+   "h2": "2. 能力总览",
+   "section": 2,
+   "html": "<div class=\"features\">\n  <div class=\"feature\"><div class=\"fh\"><h4>度量与归一化</h4></div><p>cosine 先归一化；内积与 cosine 只在单位向量下等价</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>HNSW 三角</h4></div><p>M 与 efConstruction 建索引时定，efSearch 查询时调</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>混合检索</h4></div><p>向量分与 BM25 分不可直接相加，用 RRF 或先归一化</p></div>\n</div>"
+  },
+  {
+   "h2": "3. 核心概念与原理",
+   "section": 3,
+   "html": "<div class=\"figure\">\n  <svg viewBox=\"0 0 880 268\" xmlns=\"http://www.w3.org/2000/svg\" font-family=\"-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif\">\n    <defs><marker id=\"m-vector-database\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0,0 L10,5 L0,10 z\" fill=\"#8b5cf6\"/></marker></defs>\n    <text x=\"440\" y=\"34\" text-anchor=\"middle\" font-size=\"17\" font-weight=\"700\" fill=\"#5b21b6\">带过滤的向量检索</text>\n    <text x=\"440\" y=\"57\" text-anchor=\"middle\" font-size=\"12.5\" fill=\"#64748b\">post-filter 先取 top-k 再过滤，过滤性强时结果不足</text>\n    <rect x=\"36\" y=\"82\" width=\"175\" height=\"80\" rx=\"12\" fill=\"#ede9fe\" stroke=\"#8b5cf6\" stroke-width=\"1.5\"/>\n    <text x=\"124\" y=\"112\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#5b21b6\">查询向量 + filter</text>\n    <text x=\"124\" y=\"136\" text-anchor=\"middle\" font-size=\"11\" fill=\"#5b21b6\">业务条件与 top-k</text>\n    <line x1=\"215\" y1=\"122\" x2=\"241\" y2=\"122\" stroke=\"#8b5cf6\" stroke-width=\"2\" marker-end=\"url(#m-vector-database)\"/>\n    <rect x=\"247\" y=\"82\" width=\"175\" height=\"80\" rx=\"12\" fill=\"#ede9fe\" stroke=\"#8b5cf6\" stroke-width=\"1.5\"/>\n    <text x=\"334\" y=\"112\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#5b21b6\">pre-filter</text>\n    <text x=\"334\" y=\"136\" text-anchor=\"middle\" font-size=\"11\" fill=\"#5b21b6\">先缩小候选集合</text>\n    <line x1=\"426\" y1=\"122\" x2=\"452\" y2=\"122\" stroke=\"#8b5cf6\" stroke-width=\"2\" marker-end=\"url(#m-vector-database)\"/>\n    <rect x=\"458\" y=\"82\" width=\"175\" height=\"80\" rx=\"12\" fill=\"#ede9fe\" stroke=\"#8b5cf6\" stroke-width=\"1.5\"/>\n    <text x=\"546\" y=\"112\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#5b21b6\">HNSW 检索</text>\n    <text x=\"546\" y=\"136\" text-anchor=\"middle\" font-size=\"11\" fill=\"#5b21b6\">在候选内做近邻</text>\n    <line x1=\"637\" y1=\"122\" x2=\"663\" y2=\"122\" stroke=\"#8b5cf6\" stroke-width=\"2\" marker-end=\"url(#m-vector-database)\"/>\n    <rect x=\"669\" y=\"82\" width=\"175\" height=\"80\" rx=\"12\" fill=\"#ede9fe\" stroke=\"#8b5cf6\" stroke-width=\"1.5\"/>\n    <text x=\"756\" y=\"112\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#5b21b6\">返回 top-k</text>\n    <text x=\"756\" y=\"136\" text-anchor=\"middle\" font-size=\"11\" fill=\"#5b21b6\">不足则调大 efSearch</text>\n    <rect x=\"40\" y=\"186\" width=\"800\" height=\"58\" rx=\"10\" fill=\"#f8fafc\" stroke=\"#e3e9f2\" stroke-width=\"1\"/>\n    <text x=\"60\" y=\"210\" font-size=\"12.5\" fill=\"#1e293b\">过滤条件越强，post-filter 丢得越多；pre-filter 或 filtered-</text>\n    <text x=\"60\" y=\"230\" font-size=\"12.5\" fill=\"#1e293b\">HNSW 才能保证召回。</text>\n  </svg>\n  <figcaption>带过滤的向量检索</figcaption>\n</div>",
+   "after": "3.4 过滤检索：post-filter 为什么会少结果"
+  },
+  {
+   "h2": "4. 使用实战",
+   "section": 4,
+   "html": "<div class=\"callout info\"><p><b>实战要点：</b>pgvector 的 HNSW 索引构建会持锁，大表要在低峰期或 CONCURRENTLY 建；efSearch 按召回率评测结果调，不要凭感觉。</p></div>"
+  },
+  {
+   "h2": "6. 常见坑与最佳实践",
+   "section": 6,
+   "html": "<div class=\"callout warning\"><p><b>生产警示：</b>换 embedding 模型必须全量重建向量与索引，新旧向量混在同一索引里会给出无意义的相似度；向量库不是主库，元数据仍要落 PostgreSQL。</p></div>"
+  }
+ ],
+ "auth": [
+  {
+   "h2": "2. 能力总览",
+   "section": 2,
+   "html": "<div class=\"features\">\n  <div class=\"feature\"><div class=\"fh\"><h4>JWT 是格式</h4></div><p>不是会话方案；无状态意味着撤销要靠短过期加黑名单</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>OAuth2 模式</h4></div><p>授权码 + PKCE 是默认；隐式已弃用，密码模式不适合第三方</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>OIDC</h4></div><p>在 OAuth2 上补 ID Token、UserInfo 与发现文档</p></div>\n</div>"
+  },
+  {
+   "h2": "3. 核心概念与原理",
+   "section": 3,
+   "html": "<div class=\"figure\">\n  <svg viewBox=\"0 0 880 268\" xmlns=\"http://www.w3.org/2000/svg\" font-family=\"-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif\">\n    <defs><marker id=\"m-auth\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0,0 L10,5 L0,10 z\" fill=\"#1d4ed8\"/></marker></defs>\n    <text x=\"440\" y=\"34\" text-anchor=\"middle\" font-size=\"17\" font-weight=\"700\" fill=\"#1e3a8a\">一次 JWT 校验的完整清单</text>\n    <text x=\"440\" y=\"57\" text-anchor=\"middle\" font-size=\"12.5\" fill=\"#64748b\">只验签名不校验 aud，令牌会在所有服务通用</text>\n    <rect x=\"36\" y=\"82\" width=\"175\" height=\"80\" rx=\"12\" fill=\"#dbeafe\" stroke=\"#1d4ed8\" stroke-width=\"1.5\"/>\n    <text x=\"124\" y=\"112\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#1e3a8a\">解析头部</text>\n    <text x=\"124\" y=\"136\" text-anchor=\"middle\" font-size=\"11\" fill=\"#1e3a8a\">alg / kid，拒绝 none</text>\n    <line x1=\"215\" y1=\"122\" x2=\"241\" y2=\"122\" stroke=\"#1d4ed8\" stroke-width=\"2\" marker-end=\"url(#m-auth)\"/>\n    <rect x=\"247\" y=\"82\" width=\"175\" height=\"80\" rx=\"12\" fill=\"#dbeafe\" stroke=\"#1d4ed8\" stroke-width=\"1.5\"/>\n    <text x=\"334\" y=\"112\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#1e3a8a\">验签</text>\n    <text x=\"334\" y=\"136\" text-anchor=\"middle\" font-size=\"11\" fill=\"#1e3a8a\">公钥或 JWKS 缓存</text>\n    <line x1=\"426\" y1=\"122\" x2=\"452\" y2=\"122\" stroke=\"#1d4ed8\" stroke-width=\"2\" marker-end=\"url(#m-auth)\"/>\n    <rect x=\"458\" y=\"82\" width=\"175\" height=\"80\" rx=\"12\" fill=\"#dbeafe\" stroke=\"#1d4ed8\" stroke-width=\"1.5\"/>\n    <text x=\"546\" y=\"112\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#1e3a8a\">校验 claims</text>\n    <text x=\"546\" y=\"136\" text-anchor=\"middle\" font-size=\"11\" fill=\"#1e3a8a\">iss / aud / exp / nbf</text>\n    <line x1=\"637\" y1=\"122\" x2=\"663\" y2=\"122\" stroke=\"#1d4ed8\" stroke-width=\"2\" marker-end=\"url(#m-auth)\"/>\n    <rect x=\"669\" y=\"82\" width=\"175\" height=\"80\" rx=\"12\" fill=\"#dbeafe\" stroke=\"#1d4ed8\" stroke-width=\"1.5\"/>\n    <text x=\"756\" y=\"112\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#1e3a8a\">放行或 401</text>\n    <text x=\"756\" y=\"136\" text-anchor=\"middle\" font-size=\"11\" fill=\"#1e3a8a\">失败原因要可观测</text>\n    <rect x=\"40\" y=\"186\" width=\"800\" height=\"58\" rx=\"10\" fill=\"#f8fafc\" stroke=\"#e3e9f2\" stroke-width=\"1\"/>\n    <text x=\"60\" y=\"210\" font-size=\"12.5\" fill=\"#1e293b\">alg 必须走白名单；JWKS 缓存要接受 kid 变化，轮换期留重叠窗口。</text>\n  </svg>\n  <figcaption>一次 JWT 校验的完整清单</figcaption>\n</div>",
+   "after": "3.3 校验清单：少一项就是一个洞"
+  },
+  {
+   "h2": "4. 使用实战",
+   "section": 4,
+   "html": "<div class=\"callout info\"><p><b>实战要点：</b>access token 短过期（5–15 分钟），refresh token 轮换并检测重放；多服务在网关统一校验，业务侧只信任已验签的上下文。</p></div>"
+  },
+  {
+   "h2": "6. 常见坑与最佳实践",
+   "section": 6,
+   "html": "<div class=\"callout warning\"><p><b>生产警示：</b>alg=none、密钥硬编码、只验签名不验 aud/iss、JWT 放 localStorage、refresh 不轮换——这五个是最常见的高危配置。</p></div>"
+  }
+ ],
+ "k8s-operator": [
+  {
+   "h2": "2. 能力总览",
+   "section": 2,
+   "html": "<div class=\"features\">\n  <div class=\"feature\"><div class=\"fh\"><h4>声明式</h4></div><p>level-triggered：比较期望与实际，而不是处理单次事件</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>并发控制</h4></div><p>resourceVersion 冲突要重试；status 更新也会触发新事件</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>清理语义</h4></div><p>ownerReference 级联删除；finalizer 负责外部资源回收</p></div>\n</div>"
+  },
+  {
+   "h2": "3. 核心概念与原理",
+   "section": 3,
+   "html": "<div class=\"figure\">\n  <svg viewBox=\"0 0 880 268\" xmlns=\"http://www.w3.org/2000/svg\" font-family=\"-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif\">\n    <defs><marker id=\"m-k8s-operator\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0,0 L10,5 L0,10 z\" fill=\"#326ce5\"/></marker></defs>\n    <text x=\"440\" y=\"34\" text-anchor=\"middle\" font-size=\"17\" font-weight=\"700\" fill=\"#1b3f8f\">Reconcile 的收敛循环</text>\n    <text x=\"440\" y=\"57\" text-anchor=\"middle\" font-size=\"12.5\" fill=\"#64748b\">Reconcile 可能被重复调用任意次，必须幂等</text>\n    <rect x=\"36\" y=\"82\" width=\"175\" height=\"80\" rx=\"12\" fill=\"#dbe7fb\" stroke=\"#326ce5\" stroke-width=\"1.5\"/>\n    <text x=\"124\" y=\"112\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#1b3f8f\">Watch 事件</text>\n    <text x=\"124\" y=\"136\" text-anchor=\"middle\" font-size=\"11\" fill=\"#1b3f8f\">CR 或子资源变化</text>\n    <line x1=\"215\" y1=\"122\" x2=\"241\" y2=\"122\" stroke=\"#326ce5\" stroke-width=\"2\" marker-end=\"url(#m-k8s-operator)\"/>\n    <rect x=\"247\" y=\"82\" width=\"175\" height=\"80\" rx=\"12\" fill=\"#dbe7fb\" stroke=\"#326ce5\" stroke-width=\"1.5\"/>\n    <text x=\"334\" y=\"112\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#1b3f8f\">workqueue</text>\n    <text x=\"334\" y=\"136\" text-anchor=\"middle\" font-size=\"11\" fill=\"#1b3f8f\">去重 + 限速重试</text>\n    <line x1=\"426\" y1=\"122\" x2=\"452\" y2=\"122\" stroke=\"#326ce5\" stroke-width=\"2\" marker-end=\"url(#m-k8s-operator)\"/>\n    <rect x=\"458\" y=\"82\" width=\"175\" height=\"80\" rx=\"12\" fill=\"#dbe7fb\" stroke=\"#326ce5\" stroke-width=\"1.5\"/>\n    <text x=\"546\" y=\"112\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#1b3f8f\">Reconcile</text>\n    <text x=\"546\" y=\"136\" text-anchor=\"middle\" font-size=\"11\" fill=\"#1b3f8f\">读实际状态</text>\n    <line x1=\"637\" y1=\"122\" x2=\"663\" y2=\"122\" stroke=\"#326ce5\" stroke-width=\"2\" marker-end=\"url(#m-k8s-operator)\"/>\n    <rect x=\"669\" y=\"82\" width=\"175\" height=\"80\" rx=\"12\" fill=\"#dbe7fb\" stroke=\"#326ce5\" stroke-width=\"1.5\"/>\n    <text x=\"756\" y=\"112\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#1b3f8f\">写期望状态</text>\n    <text x=\"756\" y=\"136\" text-anchor=\"middle\" font-size=\"11\" fill=\"#1b3f8f\">更新 status 或子资源</text>\n    <rect x=\"40\" y=\"186\" width=\"800\" height=\"58\" rx=\"10\" fill=\"#f8fafc\" stroke=\"#e3e9f2\" stroke-width=\"1\"/>\n    <text x=\"60\" y=\"210\" font-size=\"12.5\" fill=\"#1e293b\">事件只是触发信号：控制器比较期望与实际，而不是处理单次事件。</text>\n  </svg>\n  <figcaption>Reconcile 的收敛循环</figcaption>\n</div>",
+   "after": "3.3 Reconcile 的输入是 NamespacedName"
+  },
+  {
+   "h2": "4. 使用实战",
+   "section": 4,
+   "html": "<div class=\"callout info\"><p><b>实战要点：</b>先 Get 再 Create，冲突时重新入队；用 Server-Side Apply 减少字段争用；RBAC 按 kubebuilder 生成的 role 收紧。</p></div>"
+  },
+  {
+   "h2": "6. 常见坑与最佳实践",
+   "section": 6,
+   "html": "<div class=\"callout warning\"><p><b>生产警示：</b>Reconcile 里 sleep 等 Pod 就绪会阻塞队列；finalizer 未删导致 CR 永远 Terminating；更新 status 触发自身热循环是新手最常见的坑。</p></div>"
+  }
+ ],
+ "cobra-sqlc": [
+  {
+   "h2": "2. 能力总览",
+   "section": 2,
+   "html": "<div class=\"features\">\n  <div class=\"feature\"><div class=\"fh\"><h4>Cobra</h4></div><p>命令树 + RunE；PersistentFlags 给全局，LocalFlags 给子命令</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>sqlc 注解</h4></div><p>:one / :many / :exec / :batch*；NULL 映射到 pgtype 或 sql.Null*</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>迁移配合</h4></div><p>goose 管 schema，sqlc 只读 schema 不执行迁移</p></div>\n</div>"
+  },
+  {
+   "h2": "3. 核心概念与原理",
+   "section": 3,
+   "html": "<div class=\"figure\">\n  <svg viewBox=\"0 0 880 268\" xmlns=\"http://www.w3.org/2000/svg\" font-family=\"-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif\">\n    <defs><marker id=\"m-cobra-sqlc\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0,0 L10,5 L0,10 z\" fill=\"#ca8a04\"/></marker></defs>\n    <text x=\"440\" y=\"34\" text-anchor=\"middle\" font-size=\"17\" font-weight=\"700\" fill=\"#854d0e\">SQL 到类型安全代码</text>\n    <text x=\"440\" y=\"57\" text-anchor=\"middle\" font-size=\"12.5\" fill=\"#64748b\">SQL 是源、Go 是产物，改查询就重新生成</text>\n    <rect x=\"36\" y=\"82\" width=\"175\" height=\"80\" rx=\"12\" fill=\"#fef9c3\" stroke=\"#ca8a04\" stroke-width=\"1.5\"/>\n    <text x=\"124\" y=\"112\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#854d0e\">schema + queries</text>\n    <text x=\"124\" y=\"136\" text-anchor=\"middle\" font-size=\"11\" fill=\"#854d0e\">DDL 与带注解查询</text>\n    <line x1=\"215\" y1=\"122\" x2=\"241\" y2=\"122\" stroke=\"#ca8a04\" stroke-width=\"2\" marker-end=\"url(#m-cobra-sqlc)\"/>\n    <rect x=\"247\" y=\"82\" width=\"175\" height=\"80\" rx=\"12\" fill=\"#fef9c3\" stroke=\"#ca8a04\" stroke-width=\"1.5\"/>\n    <text x=\"334\" y=\"112\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#854d0e\">sqlc generate</text>\n    <text x=\"334\" y=\"136\" text-anchor=\"middle\" font-size=\"11\" fill=\"#854d0e\">解析 AST、推断类型</text>\n    <line x1=\"426\" y1=\"122\" x2=\"452\" y2=\"122\" stroke=\"#ca8a04\" stroke-width=\"2\" marker-end=\"url(#m-cobra-sqlc)\"/>\n    <rect x=\"458\" y=\"82\" width=\"175\" height=\"80\" rx=\"12\" fill=\"#fef9c3\" stroke=\"#ca8a04\" stroke-width=\"1.5\"/>\n    <text x=\"546\" y=\"112\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#854d0e\">生成的 Go 代码</text>\n    <text x=\"546\" y=\"136\" text-anchor=\"middle\" font-size=\"11\" fill=\"#854d0e\">参数与返回值强类型</text>\n    <line x1=\"637\" y1=\"122\" x2=\"663\" y2=\"122\" stroke=\"#ca8a04\" stroke-width=\"2\" marker-end=\"url(#m-cobra-sqlc)\"/>\n    <rect x=\"669\" y=\"82\" width=\"175\" height=\"80\" rx=\"12\" fill=\"#fef9c3\" stroke=\"#ca8a04\" stroke-width=\"1.5\"/>\n    <text x=\"756\" y=\"112\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#854d0e\">pgx / database/sql</text>\n    <text x=\"756\" y=\"136\" text-anchor=\"middle\" font-size=\"11\" fill=\"#854d0e\">直接调用</text>\n    <rect x=\"40\" y=\"186\" width=\"800\" height=\"58\" rx=\"10\" fill=\"#f8fafc\" stroke=\"#e3e9f2\" stroke-width=\"1\"/>\n    <text x=\"60\" y=\"210\" font-size=\"12.5\" fill=\"#1e293b\">生成文件不要手改；schema 由 goose 管，sqlc 只读不执行迁移。</text>\n  </svg>\n  <figcaption>SQL 到类型安全代码</figcaption>\n</div>",
+   "after": "3.4 sqlc 的编译模型：从 DDL 到类型"
+  },
+  {
+   "h2": "4. 使用实战",
+   "section": 4,
+   "html": "<div class=\"callout info\"><p><b>实战要点：</b>Cobra 的 RunE 返回错误，配合 SilenceUsage 避免错误时打印整页帮助；flag 与 Viper 用 BindPFlag 绑定，保持单一来源。</p></div>"
+  },
+  {
+   "h2": "6. 常见坑与最佳实践",
+   "section": 6,
+   "html": "<div class=\"callout warning\"><p><b>生产警示：</b>在 init() 里构建整棵命令树会让测试互相污染；sqlc 不支持运行期拼 WHERE，动态条件用 sqlc.narg 或拆查询，别退回字符串拼接。</p></div>"
+  }
+ ],
+ "go-modern": [
+  {
+   "h2": "2. 能力总览",
+   "section": 2,
+   "html": "<div class=\"features\">\n  <div class=\"feature\"><div class=\"fh\"><h4>循环变量</h4></div><p>1.22 起每次迭代新建变量；旧的闭包捕获写法行为会变</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>迭代器</h4></div><p>iter.Seq / Seq2 让自定义集合支持 range，注意提前 return 的清理</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>工具链</h4></div><p>go 指令与 toolchain 决定实际编译器版本，CI 要钉住</p></div>\n</div>"
+  },
+  {
+   "h2": "3. 核心概念与原理",
+   "section": 3,
+   "html": "<div class=\"figure\">\n  <svg viewBox=\"0 0 880 376\" xmlns=\"http://www.w3.org/2000/svg\" font-family=\"-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif\">\n    <defs><marker id=\"m-go-modern\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0,0 L10,5 L0,10 z\" fill=\"#d946ef\"/></marker></defs>\n    <text x=\"440\" y=\"34\" text-anchor=\"middle\" font-size=\"17\" font-weight=\"700\" fill=\"#86198f\">升级时真正会改变行为的三类变化</text>\n    <text x=\"440\" y=\"57\" text-anchor=\"middle\" font-size=\"12.5\" fill=\"#64748b\">风险来自语义变化与工具链切换，而不是新 API</text>\n    <rect x=\"90\" y=\"84\" width=\"700\" height=\"52\" rx=\"10\" fill=\"#fae8ff\" stroke=\"#d946ef\" stroke-width=\"1.5\"/>\n    <circle cx=\"122\" cy=\"110\" r=\"14\" fill=\"#d946ef\"/>\n    <text x=\"122\" y=\"110\" text-anchor=\"middle\" dominant-baseline=\"central\" font-size=\"13\" font-weight=\"700\" fill=\"#ffffff\">1</text>\n    <text x=\"150\" y=\"110\" dominant-baseline=\"central\" font-size=\"13\" fill=\"#86198f\">语言语义：循环变量按迭代作用域、range-over-func、泛型别名</text>\n    <line x1=\"440\" y1=\"138\" x2=\"440\" y2=\"154\" stroke=\"#d946ef\" stroke-width=\"2\" marker-end=\"url(#m-go-modern)\"/>\n    <rect x=\"90\" y=\"158\" width=\"700\" height=\"52\" rx=\"10\" fill=\"#fae8ff\" stroke=\"#d946ef\" stroke-width=\"1.5\"/>\n    <circle cx=\"122\" cy=\"184\" r=\"14\" fill=\"#d946ef\"/>\n    <text x=\"122\" y=\"184\" text-anchor=\"middle\" dominant-baseline=\"central\" font-size=\"13\" font-weight=\"700\" fill=\"#ffffff\">2</text>\n    <text x=\"150\" y=\"184\" dominant-baseline=\"central\" font-size=\"13\" fill=\"#86198f\">标准库：slices / maps / cmp、log/slog、math/rand/v2、unique / weak</text>\n    <line x1=\"440\" y1=\"212\" x2=\"440\" y2=\"228\" stroke=\"#d946ef\" stroke-width=\"2\" marker-end=\"url(#m-go-modern)\"/>\n    <rect x=\"90\" y=\"232\" width=\"700\" height=\"52\" rx=\"10\" fill=\"#fae8ff\" stroke=\"#d946ef\" stroke-width=\"1.5\"/>\n    <circle cx=\"122\" cy=\"258\" r=\"14\" fill=\"#d946ef\"/>\n    <text x=\"122\" y=\"258\" text-anchor=\"middle\" dominant-baseline=\"central\" font-size=\"13\" font-weight=\"700\" fill=\"#ffffff\">3</text>\n    <text x=\"150\" y=\"258\" dominant-baseline=\"central\" font-size=\"13\" fill=\"#86198f\">工具链：go 指令与 toolchain、PGO、go fix、遥测</text>\n    <rect x=\"40\" y=\"300\" width=\"800\" height=\"54\" rx=\"10\" fill=\"#f8fafc\" stroke=\"#e3e9f2\" stroke-width=\"1\"/>\n    <text x=\"60\" y=\"324\" font-size=\"12.5\" fill=\"#1e293b\">升级按 minor 逐级走，重点读 release notes 的「行为变化」章节。</text>\n  </svg>\n  <figcaption>升级时真正会改变行为的三类变化</figcaption>\n</div>",
+   "after": "3.1 循环变量按迭代作用域（1.22）"
+  },
+  {
+   "h2": "4. 使用实战",
+   "section": 4,
+   "html": "<div class=\"callout info\"><p><b>实战要点：</b>CI 同时跑 -race、go vet 与基准回归；先升一个 minor 观察一周，再继续下一级。</p></div>"
+  },
+  {
+   "h2": "6. 常见坑与最佳实践",
+   "section": 6,
+   "html": "<div class=\"callout warning\"><p><b>生产警示：</b>把 GOEXPERIMENT 下的实验特性当稳定 API、依赖 toolchain 自动下载、只在本地升级导致 CI 版本漂移，是三类典型翻车。</p></div>"
+  }
  ]
 }

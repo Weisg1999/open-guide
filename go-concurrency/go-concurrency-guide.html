@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Go 并发与 Context · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#0891b2; --accent-light:#cffafe; --accent-dark:#155e75;
+    --bg:#f4fafc; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#04222b; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#155e75 0%,#0891b2 58%,#155e75 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">Go 并发与 Context<span class="ver">Go 1.27</span></div>
+  <div class="sub">goroutine · channel · context</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a href="#2-能力总览">2. 能力总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-gmp-调度模型">3.1 GMP 调度模型</a>
+  <a class="sub-link" href="#32-goroutine-的栈与成本">3.2 goroutine 的栈与成本</a>
+  <a class="sub-link" href="#33-channel-的内部结构">3.3 channel 的内部结构</a>
+  <a class="sub-link" href="#34-select-的语义">3.4 select 的语义</a>
+  <a class="sub-link" href="#35-context-的树形取消">3.5 context 的树形取消</a>
+  <a class="sub-link" href="#36-happens-before-与内存模型">3.6 happens-before 与内存模型</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-errgroup扇出-限流-错误传播">4.1 errgroup：扇出 + 限流 + 错误传播</a>
+  <a class="sub-link" href="#42-pipeline-与-fan-outfan-in">4.2 pipeline 与 fan-out/fan-in</a>
+  <a class="sub-link" href="#43-优雅退出信号-独立关闭预算">4.3 优雅退出：信号 + 独立关闭预算</a>
+  <a class="sub-link" href="#44-singleflight缓存击穿">4.4 singleflight：缓存击穿</a>
+  <a class="sub-link" href="#45-syncpoolatomic-与检测">4.5 sync.Pool、atomic 与检测</a>
+  <a href="#5-版本演进">5. 版本演进</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+  <a class="sub-link" href="#什么时候串行更快">什么时候串行更快</a>
+  <a class="sub-link" href="#什么时候不该用并发">什么时候不该用并发</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>Go 并发与 Context 技术指南</h1>
+<p>Go 并发的完整心智模型：goroutine 便宜但不免费，channel 是通信而非队列，context 是取消树而非参数袋。</p>
+<p style="opacity:.8;font-size:13.5px">goroutine · channel · context</p>
+<div class="meta"><span>适用 Go 1.21+</span><span>示例基于 Go 1.27.4</span><span>GMP 调度</span><span>context 取消树</span><span>errgroup / singleflight</span><span>goroutine 泄漏排查</span></div>
+</div>
+<blockquote><p>Go 并发的完整心智模型：goroutine 便宜但不免费，channel 是通信而非队列，context 是取消树而非参数袋。 适用版本：Go 1.21+（context 语义稳定），示例基于 <strong>Go 1.27.4</strong>（2026-11-10）　|　标准库文档：<a href="https://pkg.go.dev/context">https://pkg.go.dev/context</a>　|　协议：BSD-3-Clause</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p>Go 没有「并发框架」。能力全部内建在语言与运行时：<code>go</code> 语句、<code>chan</code>、<code>select</code>、<code>sync</code>、<code>sync/atomic</code>、<code>context</code>，加上外挂的 <code>golang.org/x/sync/errgroup</code>、<code>singleflight</code>。设计目标只有一个：<strong>让「同时等待很多个 I/O」写起来像串行代码一样直白</strong>。</p>
+<p>它解决三个具体问题：<strong>调度成本</strong>（OS 线程栈按 MB 计、切换走内核；goroutine 初始栈 2 KB、切换在用户态）；<strong>协作方式</strong>（channel 把「交接数据」与「交接控制权」合成一个动作，让竞争条件从「忘记加锁」变成「没有共享」）；<strong>生命周期</strong>（一次请求扇出到 DB、缓存、下游 RPC，需要一条统一取消链在超时或客户端断开时砍掉整棵调用树）。</p>
+<p>适用：HTTP/gRPC 服务端、I/O 扇出与聚合、后台作业、流式 pipeline。<strong>不适合</strong>：CPU 密集计算（并行度受 <code>GOMAXPROCS</code> 限制，收益常被 GC 与缓存失效吃掉）、硬实时系统、跨进程协调（那是 etcd / 消息队列的领域）。</p>
+<p>本文立场：<strong>先想清楚数据归谁所有，再选原语</strong>。选 channel 还是 mutex 不是风格问题，而是所有权是否转移的问题。</p>
+<hr>
+
+</section>
+<section data-anchor="2-能力总览">
+<h2 id="2-能力总览">2. 能力总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>原语</th><th>语义</th><th>关键成本</th><th>典型用途</th></tr></thead><tbody><tr><td><code>go f()</code></td><td>运行时调度的可增长栈协程</td><td>~2 KB 栈；不回收则永久占内存</td><td>一切异步执行</td></tr><tr><td><code>chan T</code></td><td>带锁环形队列 + 等待队列</td><td>每次收发一次锁/原子操作</td><td>所有权转移、结果收集、信号</td></tr><tr><td><code>select</code></td><td>多路等待，随机公平选择</td><td>O(cases)，需乱序</td><td>超时、取消、多源聚合</td></tr><tr><td><code>sync.Mutex</code></td><td>互斥，不可重入</td><td>无竞争一次 CAS，竞争则睡眠</td><td>保护共享状态</td></tr><tr><td><code>sync.RWMutex</code></td><td>读写锁</td><td>读锁也有原子开销；写可能饥饿</td><td>读多写少且临界区较长</td></tr><tr><td><code>sync.WaitGroup</code></td><td>等待一组任务结束</td><td>一个原子计数器</td><td>扇出后汇合</td></tr><tr><td><code>sync.Once</code></td><td>恰好执行一次</td><td>快路径一次原子读</td><td>单例、懒初始化</td></tr><tr><td><code>sync.Pool</code></td><td>临时对象复用，GC 会清空</td><td>每 P 一个私有队列</td><td>减少短命对象分配</td></tr><tr><td><code>sync/atomic</code></td><td>无锁原子操作（1.19+ 类型化）</td><td>单条指令 + 屏障</td><td>计数器、标志位、无锁读</td></tr><tr><td><code>context</code></td><td>取消树 + 截止时间 + 请求域值</td><td>每次派生一次分配</td><td>请求生命周期管理</td></tr><tr><td><code>errgroup</code></td><td>WaitGroup + 错误传播 + 取消</td><td>薄封装</td><td>扇出任务编排</td></tr><tr><td><code>singleflight</code></td><td>相同 key 的并发调用合并</td><td>一张 key→call 表</td><td>缓存击穿、重复加载</td></tr></tbody></table></div>
+<hr>
+
+<div class="features">
+  <div class="feature"><div class="fh"><h4>GMP 调度</h4></div><p>M 绑定 P 执行 G；阻塞系统调用会让出 P，goroutine 初始栈仅 2KB</p></div>
+  <div class="feature"><div class="fh"><h4>取消树</h4></div><p>context 从根向下传播取消；WithValue 只放请求域数据，不放依赖</p></div>
+  <div class="feature"><div class="fh"><h4>并发原语</h4></div><p>channel 管通信，Mutex 管共享状态，atomic 管单字变量，errgroup 管一组任务</p></div>
+</div>
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-gmp-调度模型">3.1 GMP 调度模型</h3>
+<pre><code class="lang-text">G (goroutine)  待执行的函数 + 栈 + 状态
+M (machine)    OS 线程，真正跑在 CPU 上
+P (processor)  逻辑处理器，持本地队列 runq（256 个 G）
+
+  ┌── P0 runq[256] ──► M0 运行中
+  ├── P1 runq[256] ──► M1 自旋找活（work stealing 偷别的 P 一半）
+  └── 全局队列（P 本地空了才取，带锁）</code></pre>
+<ul><li><strong>M 必须绑定 P 才能执行 G</strong>，<code>GOMAXPROCS</code> 限制的是 P 的数量（并行度），不是 goroutine 数量；</li><li><strong>work stealing</strong> 让「goroutine 数远大于核数」依然高效，负载自动均衡；</li><li><strong>阻塞系统调用</strong>时 M 会把 P 交出（handoff），另一个 M 接管继续跑队列——慢 syscall 不会拖住整个 P；但 cgo 与纯阻塞 syscall 会让线程数膨胀；</li><li><strong>抢占</strong>：Go 1.14 起基于信号的异步抢占，长循环也能被打断。</li></ul>
+<h3 id="32-goroutine-的栈与成本">3.2 goroutine 的栈与成本</h3>
+<p>初始栈 2 KB（Go 1.4 起从 8 KB 下调），<strong>按需倍增/收缩</strong>，上限默认 1 GB。栈是<strong>可移动的</strong>（copy stack），所以不能把 Go 指针传给 C，也不能假设栈地址稳定。直接成本 ≈ 2 KB 栈 + <code>g</code> 结构体（约 300 B），创建约 200~300 ns，比线程轻两个数量级。但「便宜」只对<strong>创建</strong>成立，不对<strong>驻留</strong>成立：每个阻塞在 channel 上的 G 都占着栈与 sudog，一万个就是二十多 MB 常驻且被 GC 扫描——所以 goroutine 必须<strong>有界</strong>，裸 <code>go func()</code> 无上限是事故的常见起点。</p>
+<h3 id="33-channel-的内部结构">3.3 channel 的内部结构</h3><div class="figure">
+  <svg viewBox="0 0 880 268" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-go-concurrency" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0891b2"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#155e75">channel 的发送与接收</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">每次收发都要拿 hchan 锁，缓冲满或空时 goroutine 进等待队列</text>
+    <rect x="142" y="82" width="175" height="80" rx="12" fill="#cffafe" stroke="#0891b2" stroke-width="1.5"/>
+    <text x="229" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#155e75">发送 ch &lt;- v</text>
+    <text x="229" y="136" text-anchor="middle" font-size="11" fill="#155e75">加锁后先看 buf 是否有空间</text>
+    <line x1="320" y1="122" x2="346" y2="122" stroke="#0891b2" stroke-width="2" marker-end="url(#m-go-concurrency)"/>
+    <rect x="352" y="82" width="175" height="80" rx="12" fill="#cffafe" stroke="#0891b2" stroke-width="1.5"/>
+    <text x="440" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#155e75">环形缓冲 buf</text>
+    <text x="440" y="136" text-anchor="middle" font-size="11" fill="#155e75">有空间入队；无空间进 sendq</text>
+    <line x1="532" y1="122" x2="558" y2="122" stroke="#0891b2" stroke-width="2" marker-end="url(#m-go-concurrency)"/>
+    <rect x="564" y="82" width="175" height="80" rx="12" fill="#cffafe" stroke="#0891b2" stroke-width="1.5"/>
+    <text x="651" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#155e75">接收 &lt;- ch</text>
+    <text x="651" y="136" text-anchor="middle" font-size="11" fill="#155e75">从 buf 取，或唤醒 sendq 中的 G</text>
+    <rect x="40" y="186" width="800" height="58" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="210" font-size="12.5" fill="#1e293b">channel 不是无锁队列：缓冲满/空时 goroutine 会挂到 sendq/recv</text>
+    <text x="60" y="230" font-size="12.5" fill="#1e293b">q 并让出 P，这是它比 mutex 更贵的场景。</text>
+  </svg>
+  <figcaption>channel 的发送与接收</figcaption>
+</div>
+<pre><code class="lang-text">type hchan struct {
+    qcount   uint     // 当前元素个数
+    dataqsiz uint     // 缓冲区容量（make 的第二个参数）
+    buf      unsafe.Pointer // 指向 [dataqsiz]T 环形数组
+    sendx    uint     // 下一个写入位置
+    recvx    uint     // 下一个读取位置
+    recvq    waitq    // 阻塞的接收者（sudog 链表）
+    sendq    waitq    // 阻塞的发送者
+    lock     mutex    // 保护以上全部字段
+}</code></pre>
+<p>收发路径（<code>chansend</code> / <code>chanrecv</code>）：</p>
+<ol><li><strong>等待者优先直传</strong>：发送时若 <code>recvq</code> 非空，直接把值从发送方栈拷到接收方栈，<strong>跳过缓冲区</strong>——这是无缓冲 channel 高效的原因；</li><li><strong>缓冲区</strong>：未满则写 <code>buf[sendx]</code>，<code>sendx = (sendx+1) % dataqsiz</code>；</li><li><strong>满/空则阻塞</strong>：G 被包成 <code>sudog</code> 挂到 <code>sendq</code>/<code>recvq</code>，<code>gopark</code> 让出 P，由对端 <code>goready</code> 唤醒；</li><li><strong>close</strong>：置 <code>closed=1</code>，唤醒 <code>recvq</code> 全部（零值 + <code>ok=false</code>）与 <code>sendq</code> 全部（<strong>panic: send on closed channel</strong>）。</li></ol>
+<p>由此推出语义边界：无缓冲 channel 是<strong>同步交接</strong>（rendezvous），不是「发出去就完事」；有缓冲 channel 是容量为 n 的队列，满了照样阻塞，因此<strong>自带背压</strong>——这正是它优于无界内存队列之处；<code>len(ch)</code> 只是瞬时快照，<strong>不是同步手段</strong>；nil 或已关闭的 channel 再 close 会 panic，所以<strong>只由发送方关闭且只关一次</strong>。</p>
+<h3 id="34-select-的语义">3.4 select 的语义</h3>
+<ul><li><strong>随机公平</strong>：运行时打乱 case 顺序（随机起点轮询），多个 channel 同时就绪时<strong>等概率</strong>选中。不要依赖书写顺序；</li><li><strong>全阻塞则挂起</strong>：无 <code>default</code> 且无就绪 case 时当前 G 睡眠；若<strong>所有 case 都是 nil channel</strong>，则永久阻塞——当进程内所有 G 都阻塞，运行时报 <code>all goroutines are asleep - deadlock!</code>，否则只是单个 G 静默泄漏；</li><li><strong>nil channel 是有用特性</strong>：永不就绪，可用于「动态关掉某一路」；</li><li><strong><code>default</code> 是忙轮询</strong>：<code>for { select { case &lt;-ch: ... default: } }</code> 会跑满一个核，只能用于 try-send，不能用来「等」；</li><li>case 的 channel 表达式只求值一次；循环里 <code>case &lt;-time.After(d)</code> 每次都新建定时器，应改用 <code>time.Ticker</code>。</li></ul>
+<h3 id="35-context-的树形取消">3.5 context 的树形取消</h3>
+<pre><code class="lang-text">Background() / TODO()            ← 根，永不取消
+      │
+  cancelCtx   (WithCancel)       ← Done()/Err() + children map，负责传播
+      ├── timerCtx (WithTimeout / WithDeadline)  ← timer + deadline
+      │        └── valueCtx (WithValue)          ← 单链表，只存一对 k/v
+      └── valueCtx (WithValue)</code></pre>
+<div class="table-wrap"><table><thead><tr><th>类型</th><th>取消时发生什么</th></tr></thead><tbody><tr><td><code>cancelCtx</code></td><td><code>close(done)</code>、<code>err=Canceled</code>、递归 cancel 全部 children</td></tr><tr><td><code>timerCtx</code></td><td>timer 到期 → <code>cancel(true, DeadlineExceeded)</code> 并 stop 定时器</td></tr><tr><td><code>valueCtx</code></td><td>不参与取消；<code>Value</code> 沿父链单向查找，O(depth)</td></tr></tbody></table></div>
+<ul><li><strong>取消是协作式的</strong>：<code>ctx.Done()</code> 只是 <code>&lt;-chan struct{}</code>，没人替你杀 goroutine，被调用方必须自己 <code>select</code> 它并返回；</li><li><strong><code>WithValue</code> 不是参数袋</strong>：只放 trace_id、身份、超时预算这类请求域元数据，业务参数走签名；key 用私有空结构体类型；</li><li>派生 context <strong>必须 cancel</strong>，否则 <code>timerCtx</code> 的定时器与父节点 children map 会挂到超时。</li></ul>
+<p>Go 1.20/1.21 补齐三块：<code>WithCancelCause</code> + <code>Cause</code>（区分「谁取消的」，比只有 <code>Canceled</code> 有用）；<code>WithoutCancel</code>（切断取消与截止时间但<strong>保留 value</strong>，异步审计/补偿的标配）；<code>AfterFunc</code>（取消时<strong>异步</strong>执行回调并返回 <code>stop</code>，不常驻 goroutine）。</p>
+<h3 id="36-happens-before-与内存模型">3.6 happens-before 与内存模型</h3>
+<p>Go 不保证「多核看到同一份数据」。只有下列关系建立可见性：<strong>程序顺序</strong>（同 goroutine 内）、<strong>channel</strong>（第 n 次发送完成 happens before 第 n 次接收完成；<code>close</code> happens before 收到零值）、<strong>Mutex</strong>（<code>Unlock</code> before 后续 <code>Lock</code> 返回）、<strong>Once / WaitGroup</strong>（<code>Done</code> before <code>Wait</code> 返回）、<strong>atomic</strong>（<code>sync/atomic</code> 一直是顺序一致语义；Go 1.19 起提供 <code>atomic.Int64</code> 等类型化封装，可直接当同步原语）。</p>
+<p><code>go test -race</code> 用 ThreadSanitizer 做<strong>动态</strong> happens-before 检测，只能发现<strong>本次执行真正发生</strong>的竞争。所以「race 通过」不等于「没有竞争」，只等于没被抓到——CI 常态跑 <code>-race</code>，并让并发路径的集成测试也跑一遍。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-errgroup扇出-限流-错误传播">4.1 errgroup：扇出 + 限流 + 错误传播</h3>
+<pre><code class="lang-go">package main
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"time"
+
+	"golang.org/x/sync/errgroup"
+)
+
+func main() {
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+
+	g, ctx := errgroup.WithContext(ctx) // 任一任务出错 → 派生 ctx 取消
+	g.SetLimit(4)                       // 并发上限，超出的 Go 调用阻塞
+
+	out := make([]string, 10)
+	for i := range out {
+		g.Go(func() error {
+			select {
+			case &lt;-time.After(20 * time.Millisecond):
+				out[i] = fmt.Sprintf("item-%d", i) // 各写各的下标，无竞争
+				return nil
+			case &lt;-ctx.Done():
+				return ctx.Err() // 超时或兄弟任务失败
+			}
+		})
+	}
+	err := g.Wait() // 只保留首个错误；nil 表示全部成功
+	fmt.Println(len(out), err, errors.Is(err, context.DeadlineExceeded))
+}</code></pre>
+<p><code>WithContext</code> 只返回<strong>第一个</strong>错误，其余被丢弃（要全收就自己用 <code>errors.Join</code>）。<code>SetLimit</code> 是写 worker pool 最短的路径，代价是排队时阻塞调用方。</p>
+<h3 id="42-pipeline-与-fan-outfan-in">4.2 pipeline 与 fan-out/fan-in</h3>
+<pre><code class="lang-go">package main
+
+import (
+	"context"
+	"fmt"
+	"sync"
+)
+
+// 通用 stage：上游关闭即退出，每次阻塞都有取消出口
+func stage(ctx context.Context, in &lt;-chan int, f func(int) int) &lt;-chan int {
+	out := make(chan int)
+	go func() {
+		defer close(out)
+		for n := range in {
+			select {
+			case out &lt;- f(n):
+			case &lt;-ctx.Done():
+				return
+			}
+		}
+	}()
+	return out
+}
+
+func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	in := make(chan int, 8)
+	for i := 1; i &lt;= 8; i++ {
+		in &lt;- i
+	}
+	close(in) // 源关闭 → 各 stage 依次退出
+	square := func(n int) int { return n * n }
+
+	results := make(chan int, 8)
+
+	var wg sync.WaitGroup
+	for i := 0; i &lt; 2; i++ { // fan-out：两个 worker 抢同一输入
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for v := range stage(ctx, in, square) {
+				results &lt;- v // fan-in：汇总到同一 channel
+			}
+		}()
+	}
+	go func() { wg.Wait(); close(results) }() // 全部 worker 结束才关闭
+
+	sum := 0
+	for v := range results {
+		sum += v
+	}
+	fmt.Println("sum:", sum) // 204
+}</code></pre>
+<p>三条铁律：<strong>每个 stage 自己 <code>defer close(out)</code></strong>、<strong>消费方必须读到关闭</strong>、<strong>每个阻塞点都要有 <code>&lt;-ctx.Done()</code> 出口</strong>。缺任一条就是泄漏。</p>
+<h3 id="43-优雅退出信号-独立关闭预算">4.3 优雅退出：信号 + 独立关闭预算</h3>
+<pre><code class="lang-go">// package serve：真实项目里由 main 传入 *http.Server
+package serve
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"os/signal"
+	"syscall"
+	"time"
+)
+
+type Server interface{ Shutdown(context.Context) error }
+
+func run(ctx context.Context, srv Server) error {
+	ctx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	&lt;-ctx.Done() // 收到信号，或上游取消
+	fmt.Println("cause:", context.Cause(ctx))
+
+	// 父 ctx 已取消，但关停需要独立的 10s 预算，所以先脱钩再派生超时
+	shutdownCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		return errors.Join(err, ctx.Err())
+	}
+	return nil
+}</code></pre>
+<p>这里是 context 最容易写错的地方：直接 <code>srv.Shutdown(ctx)</code> 会立刻返回 <code>context.Canceled</code>，一个连接都等不到。<strong>脱钩（保留 value/日志字段）+ 独立超时</strong>才是正确姿势。</p>
+<h3 id="44-singleflight缓存击穿">4.4 singleflight：缓存击穿</h3>
+<pre><code class="lang-go">package main
+
+import (
+	"context"
+	"fmt"
+	"sync"
+	"sync/atomic"
+	"time"
+
+	"golang.org/x/sync/singleflight"
+)
+
+var group singleflight.Group
+var dbCalls atomic.Int64
+
+func loadFromDB(ctx context.Context, key string) (string, error) {
+	dbCalls.Add(1)
+	select {
+	case &lt;-time.After(80 * time.Millisecond):
+		return "value-of-" + key, nil
+	case &lt;-ctx.Done():
+		return "", ctx.Err()
+	}
+}
+
+func Get(ctx context.Context, key string) (string, error) {
+	// 第三个返回值 shared 标记「结果是否来自别人的调用」，可用于统计合并率
+	v, err, _ := group.Do(key, func() (any, error) {
+		// 共享调用不能绑定某一个调用者的 ctx，否则它断开会连带取消所有人
+		return loadFromDB(context.WithoutCancel(ctx), key)
+	})
+	if err != nil {
+		return "", err
+	}
+	return v.(string), nil
+}
+
+func main() {
+	var wg sync.WaitGroup
+	for i := 0; i &lt; 100; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			_, _ = Get(context.Background(), "user:1")
+		}()
+	}
+	wg.Wait()
+	fmt.Println("loadFromDB calls:", dbCalls.Load()) // 通常为 1：100 个并发只回源一次
+}</code></pre>
+<p><code>shared=true</code> 时要注意：<strong>这一次传进来的 ctx 被忽略是正常的</strong>——共享计算的生存期属于第一个发起者，而不是任意一个等待者。</p>
+<h3 id="45-syncpoolatomic-与检测">4.5 sync.Pool、atomic 与检测</h3>
+<p><code>sync.Pool</code> 只解决「短命对象的分配压力」，不承担缓存职责——每次 GC 都会清空（Go 1.13 起保留两个周期）。用法三条：<code>Get</code> 后当脏对象处理先 <code>Reset</code>；<code>Put</code> 之前不要继续持有引用；取出的大对象若返回给调用方，<strong>必须拷贝</strong>（Pool 里的实例随时会被别人取走）。<code>sync/atomic</code> 的适用边界是<strong>单个变量的读写</strong>：计数器用 <code>atomic.Int64</code>，无锁读配置用 <code>atomic.Pointer[T]</code>；一旦涉及「多个字段要保持一致」，就必须退回 mutex，原子操作组合不出事务。</p>
+<p>检测三件套：<code>go test -race -count=1 ./...</code>（CI 常态；需 cgo 工具链、慢 2~20 倍，不要带到生产）、<code>go vet ./...</code>（抓 <code>copylocks</code> 复制锁与 <code>lostcancel</code> 漏调 cancel）、<code>pprof</code> 的 <code>/debug/pprof/goroutine?debug=2</code>（看全部 goroutine 栈）。</p>
+<hr>
+
+<div class="callout info"><p><b>实战要点：</b>errgroup.WithContext 在任一任务失败时取消整组，适合扇出；需要限并发就配 SetLimit，不要自己用带缓冲 channel 写信号量。</p></div>
+</section>
+<section data-anchor="5-版本演进">
+<h2 id="5-版本演进">5. 版本演进<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>并发相关变化</th><th>迁移注意</th></tr></thead><tbody><tr><td>Go 1.4</td><td>goroutine 初始栈从 8 KB 降到 2 KB</td><td>栈按需增长，创建成本大幅下降</td></tr><tr><td>Go 1.14</td><td>基于信号的<strong>异步抢占</strong></td><td>长循环不再饿死调度器</td></tr><tr><td>Go 1.19</td><td><code>atomic.Int64</code> / <code>Pointer[T]</code> / <code>Bool</code> 类型化封装</td><td>新代码优先类型化 API；顺序一致语义并非 1.19 才引入</td></tr><tr><td>Go 1.20</td><td><code>WithCancelCause</code> / <code>CancelCauseFunc</code> / <code>Cause</code></td><td>别再只判 <code>Canceled</code>，把原因带上</td></tr><tr><td>Go 1.21</td><td><code>WithoutCancel</code>、<code>AfterFunc</code>、<code>WithDeadlineCause</code>、<code>WithTimeoutCause</code></td><td>异步任务终于有官方「脱钩保值」手段</td></tr><tr><td>Go 1.22</td><td><strong>循环变量每轮独立</strong>；<code>math/rand/v2</code> 去掉全局锁</td><td>依赖共享循环变量的老代码<strong>语义变了</strong>，升级必审</td></tr><tr><td>Go 1.23</td><td>迭代器；未被引用的 <code>Timer</code>/<code>Ticker</code> 可被 GC 回收</td><td><code>time.After</code> 泄漏风险下降，高频循环仍用 Ticker</td></tr><tr><td>Go 1.24</td><td>Swiss table map、<code>weak</code> 包、<code>runtime.AddCleanup</code></td><td>大 map 并发读更快；替代 <code>SetFinalizer</code></td></tr><tr><td>Go 1.25</td><td><code>sync.WaitGroup.Go</code>；<code>testing/synctest</code> 稳定；容器感知 <code>GOMAXPROCS</code></td><td>K8s 里不再需要 automaxprocs</td></tr><tr><td>Go 1.27</td><td>调度器与 channel 持续优化</td><td>升级前跑全量 <code>-race</code> 回归</td></tr></tbody></table></div>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>goroutine 泄漏——阻塞在无人接收的 channel</strong>。<code>go func(){ ch &lt;- v }()</code> 而消费方提前返回，G 永久挂起。<strong>对策</strong>：所有发送写成 <code>select { case ch &lt;- v: case &lt;-ctx.Done(): }</code>，并在 <code>TestMain</code> 用 <code>goleak</code> 断言无残留。</li><li><strong>泄漏——<code>range</code> 一个永不关闭的 channel</strong>。<strong>对策</strong>：明确「谁关闭」，只用发送方关闭，用 <code>defer close(out)</code>。</li><li><strong>泄漏——HTTP body / rows / 连接没关</strong>。<code>resp.Body</code> 不关会让 transport 的读 goroutine 常驻。<strong>对策</strong>：<code>defer resp.Body.Close()</code>，并读完 <code>io.Copy(io.Discard, resp.Body)</code> 才能复用连接。</li><li><strong>泄漏——重试循环没有退出条件</strong>。<strong>对策</strong>：次数上限 + <code>ctx.Done()</code> 出口 + 指数退避，三者缺一不可。</li><li><strong>把 context 存进 struct 或当参数袋</strong>。<strong>对策</strong>：ctx 永远第一个参数显式传递；业务值走结构体，只有跨 API 边界的元数据进 <code>WithValue</code>。</li><li><strong>忘记 <code>cancel()</code></strong>。timer 会活到超时，父节点 children map 一直挂。<strong>对策</strong>：<code>ctx, cancel := ...</code> 下一行立刻 <code>defer cancel()</code>；<code>go vet</code> 的 <code>lostcancel</code> 能抓一部分。</li><li><strong><code>WaitGroup.Add</code> 写在 goroutine 里</strong>。<code>Wait</code> 可能先返回，或计数为负 panic。<strong>对策</strong>：<code>Add</code> 必须在启动前调用；Go 1.25+ 用 <code>wg.Go(...)</code>。</li><li><strong>复制含锁的结构体</strong>。值传递后两个副本各自加锁 = 没锁。<strong>对策</strong>：<code>go vet</code> 的 <code>copylocks</code>，含锁类型一律指针接收者并内嵌 <code>noCopy</code>。</li><li><strong><code>Mutex</code> 不可重入</strong>。同一 goroutine 重复 <code>Lock</code> 直接死锁。<strong>对策</strong>：把临界区抽成不加锁的私有方法，公开方法只负责加锁。</li><li><strong>以为 <code>RWMutex</code> 一定更快</strong>。临界区只有几条指令时它比 <code>Mutex</code> 更贵，还有写饥饿。<strong>对策</strong>：临界区极短用 <code>Mutex</code>；读多写少且读操作有实际耗时（序列化、拷大结构）才上 <code>RWMutex</code>。</li><li><strong>用 channel 当无界队列</strong>。<code>make(chan T, 100000)</code> 只是把内存当缓冲，消费者一慢就 OOM。<strong>对策</strong>：容量取「能吸收的突变量」，满了阻塞形成背压；真要缓冲用 Kafka/Redis。</li><li><strong><code>select</code> 误用：<code>default</code> 空转或 nil channel 死锁</strong>。前者跑满一个核，后者让 case 永不就绪。<strong>对策</strong>：<code>default</code> 只用于 try-send，要等就阻塞、要定频用 <code>time.Ticker</code>；<code>select</code> 前保证 channel 非 nil，故意用 nil 语义时必须写注释。</li><li><strong>共享 ctx 给 singleflight / 后台任务</strong>。第一个调用者断开会连带取消所有等待者。<strong>对策</strong>：共享计算用 <code>WithoutCancel</code> 或独立 <code>Background()</code> + 自己的超时。</li><li><strong>无差别 <code>go func()</code> 包住每个请求</strong>。并发度随流量线性上升，DB 连接池瞬间打爆。<strong>对策</strong>：<code>errgroup.SetLimit</code> 或带缓冲 channel 当信号量，把并发钉在连接池大小附近。</li></ol>
+<blockquote><p>「不要通过共享内存来通信」的正确理解是<strong>优先转移所有权</strong>，不是禁用 mutex。反例：用 channel 传一个 <code>map</code>，但发送方之后还在改它——既没转移所有权，又多了 channel 开销，是最差的组合。判断标准只有一句：<strong>发送之后，发送方是否还持有并修改这个值？</strong> 若还持有，就该用 mutex。</p></blockquote>
+<hr>
+
+<div class="callout warning"><p><b>生产警示：</b>goroutine 泄漏的四种典型：无缓冲 channel 永久阻塞、context 从不取消、for-select 没有退出分支、HTTP body 未关闭；测试里用 goleak 兜底。</p></div>
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>channel</th><th><code>sync.Mutex</code></th><th><code>sync/atomic</code></th><th><code>errgroup</code></th><th><code>singleflight</code></th><th>串行</th></tr></thead><tbody><tr><td>解决问题</td><td>所有权转移、信号、编排</td><td>保护共享状态</td><td>单变量无锁更新</td><td>一组任务的错误与取消</td><td>相同 key 请求合并</td><td>最简单</td></tr><tr><td>开销</td><td>中（锁 + 唤醒）</td><td>低（无竞争一次 CAS）</td><td><strong>最低</strong>（单指令）</td><td>低（薄封装）</td><td>低（一张表）</td><td>零</td></tr><tr><td>可读性</td><td>扇出/流水线最佳</td><td>状态机、缓存最佳</td><td>计数/标志最佳</td><td>批量 I/O</td><td>缓存加载</td><td>最佳</td></tr><tr><td>主要风险</td><td>泄漏、死锁、nil</td><td>死锁、粒度、复制</td><td>复合操作非原子</td><td>只留第一个错误</td><td>共享 ctx 被连带取消</td><td>延迟叠加</td></tr><tr><td>典型场景</td><td>worker pool、pipeline</td><td>配置热更新、连接池</td><td>QPS 计数、closed 标志</td><td>并行调 N 个下游</td><td>缓存击穿</td><td>有顺序依赖</td></tr></tbody></table></div>
+<p>一句话结论：<strong>传递「数据 + 控制权」用 channel；保护「一块共享状态」用 mutex；只是一个数字或开关用 atomic；扇出独立任务用 errgroup；同一 key 被并发重复计算用 singleflight；剩下的情况先怀疑要不要并发。</strong></p>
+<h3 id="什么时候串行更快">什么时候串行更快</h3>
+<ul><li><strong>任务少且都快</strong>（单个 &lt; 1 µs）：goroutine 创建 + 调度 + channel 交接的开销超过被并行的工作本身；</li><li><strong>逻辑天然有序</strong>：B 依赖 A 的结果，并发只增加同步点；</li><li><strong>资源已饱和</strong>：并发全在同一把锁上排队，或 CPU 已打满——只增加切换与 GC 压力；</li><li><strong>顺序 I/O</strong>：并发写同一 <code>*os.File</code> 或同一 TCP 连接要额外加锁，收益为负。</li></ul>
+<h3 id="什么时候不该用并发">什么时候不该用并发</h3>
+<ul><li><strong>正确性成本 &gt; 性能收益</strong>：一年跑几次的批处理，串行 3 秒和并行 300 ms 对业务没区别，但并发 bug 可能查三天；</li><li><strong>给不出有界并发</strong>：没有连接池上限、没有背压、没有超时——那不是用并发，是制造雪崩；</li><li><strong>外部约束不允许</strong>：审计日志、账务流水必须有序写入；依赖的 SDK 不是并发安全的（部分 C 库绑定、老 SDK），加锁封装常比串行更慢更脆。</li></ul>
+<p>参考：<a href="https://go.dev/ref/mem">Go 内存模型</a>、<a href="https://go.dev/blog/pipelines">Go 并发模式（pipelines）</a>、<a href="https://pkg.go.dev/context">context 包文档</a>、<a href="https://go.dev/src/runtime/proc.go">调度器源码 proc.go</a>。</p>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

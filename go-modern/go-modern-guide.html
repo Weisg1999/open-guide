@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Go 1.2x 现代特性 · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#d946ef; --accent-light:#fae8ff; --accent-dark:#86198f;
+    --bg:#fdf6ff; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#2a0a2e; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#86198f 0%,#d946ef 58%,#86198f 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">Go 1.2x 现代特性<span class="ver">Go 1.27</span></div>
+  <div class="sub">迭代器 · 泛型别名 · 工具链</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a href="#2-能力总览">2. 能力总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-循环变量按迭代作用域122">3.1 循环变量按迭代作用域（1.22）</a>
+  <a class="sub-link" href="#32-range-over-func-与-iterseq123">3.2 range-over-func 与 iter.Seq（1.23）</a>
+  <a class="sub-link" href="#33-泛型类型别名与-api-设计123-实验-124-正式">3.3 泛型类型别名与 API 设计（1.23 实验 → 1.24 正式）</a>
+  <a class="sub-link" href="#34-unique-与-weak驻留与弱引用123-124">3.4 unique 与 weak：驻留与弱引用（1.23 / 1.24）</a>
+  <a class="sub-link" href="#35-标准库的泛型化与结构化日志">3.5 标准库的泛型化与结构化日志</a>
+  <a class="sub-link" href="#36-运行时与工具链默认值才是最大的变更">3.6 运行时与工具链：默认值才是最大的变更</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-用迭代器写分页遍历">4.1 用迭代器写分页遍历</a>
+  <a class="sub-link" href="#42-用-unique-去重字符串用-weak-做弱缓存">4.2 用 unique 去重字符串、用 weak 做弱缓存</a>
+  <a class="sub-link" href="#43-用-synctest-测时间相关并发">4.3 用 synctest 测时间相关并发</a>
+  <a href="#5-版本演进">5. 版本演进</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>Go 1.2x 现代语言特性指南</h1>
+<p>版本升级不是改个 go 指令：循环变量语义、迭代器、泛型别名、工具链与运行时都在变，升级前要知道哪些会改变行为。</p>
+<p style="opacity:.8;font-size:13.5px">迭代器 · 泛型别名 · 工具链</p>
+<div class="meta"><span>1.22 循环变量</span><span>range-over-func</span><span>泛型类型别名</span><span>unique / weak</span><span>testing/synctest</span><span>toolchain</span></div>
+</div>
+<blockquote><p>版本升级不是改个 <code>go</code> 指令：循环变量语义、迭代器、泛型别名、工具链与运行时都在变，升级前要知道哪些会改变行为。 适用范围：Go 1.21 → <strong>1.27.4</strong>（2026-11-10）　|　发布说明：<a href="https://go.dev/doc/devel/release">https://go.dev/doc/devel/release</a>　|　协议：BSD-3-Clause</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p>Go 1.21 到 1.27 只用了四年，语言与标准库的形态变化却比 1.0 → 1.20 更大。本文不按「新 API 清单」罗列，而是按<strong>升级时真正会咬人的地方</strong>组织：哪些变更会静默改变已有代码的行为，哪些只是多了一个更好用的函数。</p>
+<p>影响业务代码的变化分三层：<strong>语义层</strong>（循环变量按迭代作用域、range-over-func 的控制流限制、timer 通道无缓冲），不改 API 但改结果；<strong>API 层</strong>（<code>iter</code> / <code>unique</code> / <code>weak</code> / <code>os.Root</code> / <code>encoding/json/v2</code>），不升也能活，但新代码不该再手写旧轮子；<strong>默认值层</strong>（<code>GOMAXPROCS</code> 容器感知、Green Tea GC 默认、<code>encoding/json</code> 切到 v2、<code>go test</code> 默认 <code>stdversion</code>），一行代码没改，压测数字和错误文本却会变。</p>
+<p>泛型语法与并发原语分别见 <a href="../go-generics/go-generics-tutorial.html">Go 泛型教程</a> 与 <a href="../go-concurrency/go-concurrency-guide.html">Go 并发指南</a>，本文只讨论版本演进本身：特性属于哪个版本、为什么这么设计、升级时怎么验证。</p>
+<p><strong>核心立场</strong>：升级的最小单位不是工具链，而是<strong>模块的 <code>go</code> 行</strong>。只换编译器不换 <code>go</code> 行，新语义不会生效；换了 <code>go</code> 行，就等于一次性接受该版本所有行为变更。</p>
+<hr>
+
+</section>
+<section data-anchor="2-能力总览">
+<h2 id="2-能力总览">2. 能力总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>语言</th><th>标准库</th><th>运行时 / 工具链</th><th>升级风险</th></tr></thead><tbody><tr><td><strong>1.21</strong></td><td><code>min</code>/<code>max</code>/<code>clear</code>；泛型推断增强</td><td><code>slices</code>、<code>maps</code>、<code>cmp</code>、<code>log/slog</code></td><td>PGO 默认 <code>-pgo=auto</code>；<code>toolchain</code> 指令；<code>go</code> 行成为严格最低版本</td><td>低，但 <code>go</code> 行写高后旧工具链直接拒绝构建</td></tr><tr><td><strong>1.22</strong></td><td><strong>循环变量按迭代创建</strong>；<code>range</code> 整数</td><td><code>math/rand/v2</code>；<code>net/http</code> 路由模式</td><td><code>vet</code> 跟进新语义</td><td><strong>高</strong>：闭包捕获行为变化</td></tr><tr><td><strong>1.23</strong></td><td><strong>range-over-func</strong>；新增 <code>iter</code></td><td><code>unique</code>、<code>structs</code>、<code>slices</code>/<code>maps</code> 迭代器函数</td><td>timer 通道改无缓冲、未 Stop 也可回收；<code>go telemetry</code>；<code>stdversion</code> 分析器</td><td>中：<code>len(timer.C)</code>、GODEBUG</td></tr><tr><td><strong>1.24</strong></td><td><strong>泛型类型别名</strong>完整支持</td><td><code>os.Root</code>、<code>weak</code>、<code>runtime.AddCleanup</code>、<code>strings</code>/<code>go/types</code> 迭代器、<code>B.Loop</code></td><td><code>synctest</code> 实验（需 <code>GOEXPERIMENT</code>）</td><td>低，实验包 API 不稳定</td></tr><tr><td><strong>1.25</strong></td><td>无</td><td><code>synctest</code> 转正；<code>trace.FlightRecorder</code></td><td>Green Tea GC 实验；<code>json/v2</code> 实验；<strong><code>GOMAXPROCS</code> 容器感知</strong></td><td>中：容器并行度变化；修复的 nil 检查会让旧代码 panic</td></tr><tr><td><strong>1.26</strong></td><td><code>new(表达式)</code>；类型参数可自引用</td><td><code>errors.AsType</code>、<code>slog.NewMultiHandler</code>、<code>reflect</code> 迭代器</td><td><strong>Green Tea 默认</strong>；goroutine 泄漏 profile 实验；<code>go fix</code> 重写</td><td>中：<code>go mod init</code> 生成的 <code>go</code> 行更低</td></tr><tr><td><strong>1.27</strong></td><td><strong>泛型方法</strong>；结构体字面量键可用字段选择器</td><td><strong><code>encoding/json/v2</code> 与 <code>jsontext</code> 转正</strong>；<code>uuid</code>；<code>CutLast</code></td><td>移除 <code>asynctimerchan</code>；<code>go test</code> 默认 <code>stdversion</code>；按大小特化分配</td><td>高：JSON 更严格、错误文本变化</td></tr></tbody></table></div>
+<p>读表的正确方式：<strong>先看风险列，再看特性列</strong>。1.24 新增最多，但都是可选 API；1.22 只改两条语言规则，却能让老测试红掉。</p>
+<hr>
+
+<div class="features">
+  <div class="feature"><div class="fh"><h4>循环变量</h4></div><p>1.22 起每次迭代新建变量；旧的闭包捕获写法行为会变</p></div>
+  <div class="feature"><div class="fh"><h4>迭代器</h4></div><p>iter.Seq / Seq2 让自定义集合支持 range，注意提前 return 的清理</p></div>
+  <div class="feature"><div class="fh"><h4>工具链</h4></div><p>go 指令与 toolchain 决定实际编译器版本，CI 要钉住</p></div>
+</div>
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-循环变量按迭代作用域122">3.1 循环变量按迭代作用域（1.22）</h3><div class="figure">
+  <svg viewBox="0 0 880 376" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-go-modern" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d946ef"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#86198f">升级时真正会改变行为的三类变化</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">风险来自语义变化与工具链切换，而不是新 API</text>
+    <rect x="90" y="84" width="700" height="52" rx="10" fill="#fae8ff" stroke="#d946ef" stroke-width="1.5"/>
+    <circle cx="122" cy="110" r="14" fill="#d946ef"/>
+    <text x="122" y="110" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">1</text>
+    <text x="150" y="110" dominant-baseline="central" font-size="13" fill="#86198f">语言语义：循环变量按迭代作用域、range-over-func、泛型别名</text>
+    <line x1="440" y1="138" x2="440" y2="154" stroke="#d946ef" stroke-width="2" marker-end="url(#m-go-modern)"/>
+    <rect x="90" y="158" width="700" height="52" rx="10" fill="#fae8ff" stroke="#d946ef" stroke-width="1.5"/>
+    <circle cx="122" cy="184" r="14" fill="#d946ef"/>
+    <text x="122" y="184" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">2</text>
+    <text x="150" y="184" dominant-baseline="central" font-size="13" fill="#86198f">标准库：slices / maps / cmp、log/slog、math/rand/v2、unique / weak</text>
+    <line x1="440" y1="212" x2="440" y2="228" stroke="#d946ef" stroke-width="2" marker-end="url(#m-go-modern)"/>
+    <rect x="90" y="232" width="700" height="52" rx="10" fill="#fae8ff" stroke="#d946ef" stroke-width="1.5"/>
+    <circle cx="122" cy="258" r="14" fill="#d946ef"/>
+    <text x="122" y="258" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">3</text>
+    <text x="150" y="258" dominant-baseline="central" font-size="13" fill="#86198f">工具链：go 指令与 toolchain、PGO、go fix、遥测</text>
+    <rect x="40" y="300" width="800" height="54" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="324" font-size="12.5" fill="#1e293b">升级按 minor 逐级走，重点读 release notes 的「行为变化」章节。</text>
+  </svg>
+  <figcaption>升级时真正会改变行为的三类变化</figcaption>
+</div>
+<p>1.21 及以前，<code>for i := 0; ...</code> 的 <code>i</code> 整个循环只有一份，所有闭包共享——Go 最著名的脚坑。1.22 改为<strong>每次迭代创建新变量</strong>，并支持 <code>for i := range 10</code>：</p>
+<pre><code class="lang-go">package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+func main() {
+	var wg sync.WaitGroup
+	out := make([]int, 3)
+
+	for i := 0; i &lt; 3; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			out[i] = i // 1.22 起各自捕获本次迭代的 i
+		}()
+	}
+	wg.Wait()
+	fmt.Println(out) // [0 1 2]；go 行是 1.21 时 i 已变成 3，这里会越界 panic
+}</code></pre>
+<p>关键细节：<strong>语义由 <code>go.mod</code> 的 <code>go</code> 行决定，不由编译器版本决定</strong>。工具链换成 1.27、<code>go.mod</code> 仍写 <code>go 1.21</code>，旧行为原样保留——同一段代码在 1.27 工具链下仍会因 <code>i</code> 已变成 3 而 <code>panic: index out of range</code>。所以「升级 Go」是两步：换工具链、抬 <code>go</code> 行，后者才是行为开关。</p>
+<p>回归风险在<strong>依赖共享变量的老代码</strong>：循环结束后读 <code>i</code> 收尾、用 <code>i</code> 标记「最后一次迭代」、在 <code>defer</code> 里引用 <code>i</code>，新语义下都会静默变成另一个结果。而且 <code>vet</code> 的 loopclosure 检查在新语义下不再报警，等于少了一道保险，只能靠测试与 <code>-race</code> 兜底。显式把变量作为参数传入闭包，依然是最可读的写法。</p>
+<h3 id="32-range-over-func-与-iterseq123">3.2 range-over-func 与 <code>iter.Seq</code>（1.23）</h3>
+<p>1.23 允许 <code>for range</code> 遍历特定签名的函数：<code>func(func() bool)</code>、<code>func(func(V) bool)</code>、<code>func(func(K, V) bool)</code>。后两者在 <code>iter</code> 包里有了名字：<code>Seq[V]</code> 与 <code>Seq2[K, V]</code>，参数 <code>yield</code> 的返回值表示「是否继续」。</p>
+<p>编译器把 <code>for v := range seq</code> 改写成「调用 <code>seq</code>，传入一个回调」，回调体就是循环体；<code>break</code> 让回调返回 <code>false</code>，迭代器看到后提前 <code>return</code>。这是<strong>推送模型</strong>：数据源决定节奏，消费方只能喊停，不能主动要下一个；需要「拉」时用 <code>iter.Pull</code> 转成 <code>next()/stop()</code>。自定义集合只需暴露一个方法，内部结构完全不外泄：</p>
+<pre><code class="lang-go">package main
+
+import (
+	"fmt"
+	"iter"
+)
+
+type node[T any] struct{ val T; next *node[T] }
+
+type List[T any] struct{ head *node[T] }
+
+func (l *List[T]) Push(v T) { l.head = &amp;node[T]{v, l.head} }
+
+// All 返回只读视图：调用方拿不到 node。
+func (l *List[T]) All() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for n := l.head; n != nil; n = n.next {
+			if !yield(n.val) {
+				return
+			}
+		}
+	}
+}
+
+func main() {
+	var l List[int]
+	l.Push(1)
+	l.Push(2)
+	for v := range l.All() {
+		fmt.Println(v)
+		if v == 2 {
+			break // yield 返回 false，上游立刻 return
+		}
+	}
+}</code></pre>
+<p>限制：<code>yield</code> 不能在另一个 goroutine 里调用，也不能放进 <code>defer</code>；迭代器函数体里对循环变量的「延迟使用」不受语言保护。错误处理约定用 <code>iter.Seq2[T, error]</code>——把错误当成一种元素产出，消费方在循环里判断，避免「迭代到一半返回 error」这种无法表达的形态。</p>
+<h3 id="33-泛型类型别名与-api-设计123-实验-124-正式">3.3 泛型类型别名与 API 设计（1.23 实验 → 1.24 正式）</h3>
+<p>1.24 让类型别名也能带类型参数，且<strong>跨包可用</strong>（1.23 是 <code>GOEXPERIMENT=aliastypeparams</code> 的单包预览，1.25 移除开关）。别名不是新类型：方法集、可赋值性、类型断言全部沿用目标类型。</p>
+<p>这给出一个干净的迁移手法——<strong>改名但不破坏调用方</strong>：</p>
+<pre><code class="lang-go">package main
+
+import "fmt"
+
+type Page[T any] struct{ Items []T; Next string }
+
+type CursorPage[T any] = Page[T] // 1.24：别名，与 Page[T] 是同一类型
+
+type Stack[T any] struct{ items []T }
+
+func (s *Stack[T]) Push(v T) { s.items = append(s.items, v) }
+
+// 1.27：方法可声明自己的类型参数；接口方法仍不允许。
+func (s *Stack[T]) Map[U any](f func(T) U) []U {
+	out := make([]U, 0, len(s.items))
+	for _, v := range s.items {
+		out = append(out, f(v))
+	}
+	return out
+}
+
+func main() {
+	var p CursorPage[int] = Page[int]{Items: []int{1}}
+	fmt.Println(p.Items)
+
+	var st Stack[int]
+	st.Push(2)
+	fmt.Println(st.Map(func(v int) int { return v * 10 })) // [20]
+}</code></pre>
+<p>边界：别名适合「同一概念的两个名字」（迁移期、领域缩写、跨包重导出），<strong>不适合制造类型安全</strong>——<code>type UserID = string</code> 就是 <code>string</code>，要区分必须用定义类型 <code>type UserID string</code>；也不能给指向非本地类型的别名加方法。1.27 的泛型方法补上了长期短板（以前只能写顶层函数 <code>MapStack[T, U]</code>），但「泛型方法实现接口」依然不通，因为接口方法不能带类型参数。</p>
+<h3 id="34-unique-与-weak驻留与弱引用123-124">3.4 <code>unique</code> 与 <code>weak</code>：驻留与弱引用（1.23 / 1.24）</h3>
+<p><code>unique.Make</code> 做<strong>字符串驻留</strong>：相同内容只留一份底层存储，返回 <code>unique.Handle[T]</code>。Handle 可比较、可作 map 键，比较等价于指针比较，O(1)；<code>Value()</code> 取回原值。收益是「几十万个请求头名字，实际只有十几种取值」时，内存与哈希成本一起下降。代价是驻留表全局存在，Handle 存活期间值不会被回收——只适合枚举型、高重复、长生命周期的小值，对低频大对象做驻留只会增加常驻内存。<code>weak.Make(ptr)</code> 则相反，返回的 <code>weak.Pointer[T]</code> <strong>不阻止 GC</strong>，对象被回收后 <code>Value()</code> 返回 <code>nil</code>。它解决「缓存不该决定对象寿命」：弱缓存里没人用的值自然消失，不需要 finalizer，也没有清理 goroutine 的延迟。1.24 同期补了 <code>runtime.AddCleanup</code> 与 <code>maphash.Comparable</code>，三者构成内存敏感结构的基础件。注意 <code>weak</code> 不承诺「很快回收」，也不能管理文件句柄这类需要确定性释放的资源。</p>
+<h3 id="35-标准库的泛型化与结构化日志">3.5 标准库的泛型化与结构化日志</h3>
+<p>1.21 的 <code>slices</code>/<code>maps</code>/<code>cmp</code> 是「能用」，1.23 补上迭代器版本后才「好用」：<code>slices.SortFunc</code>/<code>Collect</code>/<code>Values</code>/<code>Sorted</code>/<code>Chunk</code>，<code>maps.Keys</code>/<code>Values</code> 返回 <code>iter.Seq</code>，<code>cmp.Compare</code> 统一三路比较。同期还有 <code>log/slog</code> 提供结构化日志与级别（1.26 加 <code>NewMultiHandler</code>）、<code>math/rand/v2</code> 用 ChaCha8/PCG 替代旧源（1.22）、<code>os.Root</code> 把文件操作限制在单一目录树内（1.24）、<code>encoding/json/v2</code> 提供更严格的解码与更快的反序列化（1.25 实验，1.27 转正；经典 <code>encoding/json</code> 改由 v2 支撑，v1 行为保持兼容）。</p>
+<p><code>slog</code> 的价值不在「又一个日志库」，而在<strong>把日志变成数据</strong>：<code>logger.Info("request", "path", p, "took", d)</code> 的字段可被采样、脱敏、转发，不必解析字符串。<code>math/rand/v2</code> 的价值是<strong>去掉可预测性</strong>：全局源无条件随机播种，<code>IntN</code> 取代别扭的 <code>Int63n</code>。<code>os.Root</code> 则是被低估的安全特性——处理用户上传路径、解压归档时，它比手写 <code>filepath.Clean</code> 加前缀判断可靠得多。</p>
+<h3 id="36-运行时与工具链默认值才是最大的变更">3.6 运行时与工具链：默认值才是最大的变更</h3>
+<ul><li><strong><code>GOMEMLIMIT</code></strong>（1.19 引入，1.21 起需重新标定）：软内存上限，含堆与运行时管理的内存。逼近上限时运行时把 GC CPU 压在 50% 以内，用 CPU 换内存，<strong>不是硬限制</strong>，不能替代容器 memory limit。</li><li><strong>Green Tea GC</strong>：1.25 以 <code>GOEXPERIMENT=greenteagc</code> 实验，1.26 <strong>默认开启</strong>，小对象扫描局部性更好，重度 GC 程序开销降 10%–40%；关闭开关 <code>nogreenteagc</code> 只保留到 1.26。不改代码，但会改变 CPU/内存曲线，容量规划要重测。</li><li><strong><code>GOMAXPROCS</code> 容器感知</strong>（1.25）：按 cgroup CPU 限额设置并行度并周期更新，修正「limit 2 核、<code>GOMAXPROCS</code> 却是 32」的浪费；手动设置 <code>GOMAXPROCS</code> 会关闭自动更新。</li><li><strong><code>go</code> 行与 <code>toolchain</code> 行</strong>（1.21）：前者是严格最低版本，后者是建议版本；缺省时 <code>GOTOOLCHAIN=auto</code> 按需下载，这是「可复现」与「自动跟进」的开关。</li><li><strong>PGO 与 telemetry</strong>：PGO 于 1.20 预览、1.21 生产可用，main 包目录放 <code>default.pgo</code> 即自动启用（典型收益 2%–7%）；<code>go telemetry</code>（1.23）默认 <code>local</code>，只写本地计数器，CI 通常保持 <code>local</code> 或 <code>off</code>。</li><li><strong><code>go fix</code></strong>（1.26 重写）：从语法迁移工具变成 modernizers 集合，与 <code>go vet</code> 共用分析框架；1.27 新增 <code>atomictypes</code>、<code>slicesbackward</code>、<code>unsafefuncs</code> 等 fixer。</li></ul>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-用迭代器写分页遍历">4.1 用迭代器写分页遍历</h3>
+<p>目标：调用方写 <code>for u, err := range Users(ctx, store, 2)</code>，看不到 <code>offset</code>，也不会把全表读进内存；<code>break</code> 后不再发请求；错误作为元素产出。</p>
+<pre><code class="lang-go">package main
+
+import (
+	"context"
+	"fmt"
+	"iter"
+)
+
+type User struct{ ID int; Name string }
+
+type Store struct{ data []User }
+
+func (s *Store) Page(ctx context.Context, offset, limit int) ([]User, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	if offset &gt;= len(s.data) {
+		return nil, nil // 越界返回空页，作为「结束」信号
+	}
+	return s.data[offset:min(offset+limit, len(s.data))], nil
+}
+
+func Users(ctx context.Context, s *Store, size int) iter.Seq2[User, error] {
+	return func(yield func(User, error) bool) {
+		for off := 0; ; off += size {
+			page, err := s.Page(ctx, off, size)
+			if err != nil {
+				yield(User{}, err)
+				return
+			}
+			if len(page) == 0 {
+				return
+			}
+			for _, u := range page {
+				if !yield(u, nil) {
+					return // 消费方 break：不再请求下一页
+				}
+			}
+		}
+	}
+}
+
+func main() {
+	s := &amp;Store{data: []User{{1, "alice"}, {2, "bob"}, {3, "carol"}}}
+	for u, err := range Users(context.Background(), s, 2) {
+		if err != nil {
+			fmt.Println("err:", err)
+			break
+		}
+		fmt.Println(u.ID, u.Name)
+	}
+}</code></pre>
+<p>三个要点：<strong>惰性</strong>——每页只在需要时请求，内存上界是 <code>size</code>；<strong>可组合</strong>——再包一层过滤函数依然零中间切片；<strong>可中断</strong>——<code>break</code> 通过 <code>yield</code> 的 <code>false</code> 一路传回上游，不会多拉一页。需要排序或随机访问时再 <code>slices.Collect</code> 物化，别在热路径上无条件收集。</p>
+<h3 id="42-用-unique-去重字符串用-weak-做弱缓存">4.2 用 <code>unique</code> 去重字符串、用 <code>weak</code> 做弱缓存</h3>
+<pre><code class="lang-go">package main
+
+import (
+	"fmt"
+	"sync"
+	"unique"
+	"weak"
+)
+
+type Header struct{ Method, Path string }
+
+type WeakCache[K comparable, V any] struct {
+	mu sync.Mutex
+	m  map[K]weak.Pointer[V]
+}
+
+func (c *WeakCache[K, V]) Put(k K, v *V) {
+	c.mu.Lock()
+	c.m[k] = weak.Make(v)
+	c.mu.Unlock()
+}
+
+func (c *WeakCache[K, V]) Get(k K) (*V, bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if p, ok := c.m[k]; ok {
+		if v := p.Value(); v != nil {
+			return v, true
+		}
+		delete(c.m, k) // 已被回收，顺手清理表项
+	}
+	return nil, false
+}
+
+func main() {
+	h1, h2 := unique.Make("GET /users"), unique.Make("GET /users")
+	fmt.Println(h1 == h2, h1.Value()) // true GET /users
+
+	c := &amp;WeakCache[string, Header]{m: make(map[string]weak.Pointer[Header])}
+	hdr := &amp;Header{"GET", "/healthz"}
+	c.Put("health", hdr)
+	got, ok := c.Get("health")
+	fmt.Println(ok, got.Path) // true /healthz
+}</code></pre>
+<p><code>unique.Handle</code> 可直接当 map 键：<code>map[unique.Handle[string]]int</code> 的哈希对指针做，比每次重算字符串哈希便宜。弱缓存的心智模型是「<strong>缓存是建议，不是存储</strong>」：命中率取决于外部是否还持有对象，不能拿它做正确性保证；GC 时机不可控，测试里也不要断言「GC 后一定 miss」。</p>
+<h3 id="43-用-synctest-测时间相关并发">4.3 用 <code>synctest</code> 测时间相关并发</h3>
+<p><code>testing/synctest</code> 在 1.24 是实验包（<code>GOEXPERIMENT=synctest</code>，API 也不同），1.25 转正：<code>synctest.Test</code> 在隔离 bubble 里跑测试，bubble 内 <code>time</code> 走假时钟，<strong>所有 goroutine 阻塞时时间瞬间推进</strong>。原本要等 30 秒的超时测试，现在 0.00s 跑完且完全确定。</p>
+<pre><code class="lang-go">package main
+
+import (
+	"context"
+	"errors"
+	"testing"
+	"testing/synctest"
+	"time"
+)
+
+// 慢查询 30s，deadline 10s：真实时间 0s，断言完全确定。
+func TestDeadlinePropagation(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		done := make(chan error, 1)
+		go func() {
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			select {
+			case &lt;-time.After(30 * time.Second):
+				done &lt;- nil
+			case &lt;-ctx.Done():
+				done &lt;- ctx.Err()
+			}
+		}()
+
+		if err := &lt;-done; !errors.Is(err, context.DeadlineExceeded) {
+			t.Fatalf("err = %v, want deadline exceeded", err)
+		}
+	})
+}</code></pre>
+<p>关键在假时钟：<code>&lt;-done</code> 让主 goroutine 阻塞，bubble 内无人可运行，时钟直接跳到最早的 timer（10s 的 context），超时先触发，30s 的 <code>time.After</code> 永远等不到。规则：测试必须自包含，不与 bubble 外的 goroutine 或真实网络交互；<code>synctest.Wait</code> 只能由 bubble 内单个 goroutine 调用；<code>T.Run</code>/<code>T.Parallel</code>/<code>T.Deadline</code> 在 bubble 内不可用。1.27 又补了 <code>synctest.Sleep</code>，省掉「睡一段假时间」的样板。</p>
+<hr>
+
+<div class="callout info"><p><b>实战要点：</b>CI 同时跑 -race、go vet 与基准回归；先升一个 minor 观察一周，再继续下一级。</p></div>
+</section>
+<section data-anchor="5-版本演进">
+<h2 id="5-版本演进">5. 版本演进<span class="lvl b">版本</span></h2>
+<p>三个阶段主题清晰：</p>
+<ol><li><strong>1.21–1.22：语义与基础设施</strong>。<code>min</code>/<code>max</code>/<code>clear</code>、<code>slices</code>/<code>maps</code>/<code>slog</code> 落地，<code>go</code> 行变严格、<code>toolchain</code> 出现，PGO 转正；随后 1.22 用「循环变量按迭代」拆掉最大的脚坑，并支持 <code>range</code> 整数。升级必须读 release notes 的 <em>Changes to the language</em>。</li><li><strong>1.23–1.24：迭代器与内存原语</strong>。range-over-func + <code>iter</code> 改变了「集合怎么暴露」的 API 风格，<code>unique</code>/<code>weak</code>/<code>os.Root</code> 补上驻留、弱引用、目录约束三块基础能力，泛型别名让泛型 API 可以平稳改名。1.24 也是最后一个 <code>synctest</code> 需要 <code>GOEXPERIMENT</code> 的版本。</li><li><strong>1.25–1.27：默认值与正确性</strong>。1.25 无语言变更，但 <code>GOMAXPROCS</code> 容器感知、<code>synctest</code> 转正；1.26 把 Green Tea GC 设为默认、重写 <code>go fix</code>、加 <code>new(表达式)</code>；1.27 泛型方法补齐、<code>encoding/json/v2</code> 成为默认实现、goroutine 泄漏 profile 正式可用。</li></ol>
+<p>另一个维度是 <strong>GODEBUG 的生命周期</strong>，它决定「旧行为」还能保留多久：</p>
+<div class="table-wrap"><table><thead><tr><th>设置</th><th>引入</th><th>默认</th><th>移除</th></tr></thead><tbody><tr><td><code>loopvar</code></td><td>1.22（按 <code>go</code> 行切换）</td><td>新语义</td><td>尚未移除</td></tr><tr><td><code>asynctimerchan</code></td><td>1.23</td><td>1.23+ 模块无缓冲</td><td><strong>1.27 移除</strong></td></tr><tr><td><code>gotypesalias</code></td><td>1.22</td><td>1.23 起默认为真</td><td>1.27 移除</td></tr></tbody></table></div>
+<p>规律：<strong>每个 GODEBUG 都是临时逃生门</strong>，通常存活 2–3 个版本。用 <code>go.mod</code> 的 <code>godebug</code> 指令（1.23 起）能固定行为，但那只是把问题推迟到移除版本。升级计划里应把「依赖的 GODEBUG」单列一行，标注消失版本。</p>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>只换工具链、不抬 <code>go</code> 行</strong>：新语义不会生效。实测 <code>go 1.21</code> 的模块在 1.27 工具链下，循环变量依然共享。验收要同时看 <code>go version</code> 与 <code>go.mod</code> 的 <code>go</code> 行。</li><li><strong>抬了 <code>go</code> 行却没跑回归</strong>：闭包捕获、<code>defer</code> 里的循环变量、循环后读 <code>i</code> 的收尾逻辑都会变。用 <code>go test -race ./...</code> 全量跑，重点看并发测试与重试逻辑。</li><li><strong><code>toolchain</code> 行导致 CI 联网下载</strong>：<code>GOTOOLCHAIN=auto</code> 在受限网络里直接构建失败。CI 固定 <code>GOTOOLCHAIN=local</code> 或预装目标版本，本地与 CI 的 <code>toolchain</code> 行保持一致。</li><li><strong>把 <code>GOEXPERIMENT</code> 带上生产</strong>：<code>greenteagc</code>、<code>jsonv2</code>、<code>synctest</code> 都曾是开关，实验构建与正式构建行为不同。CI 断言 <code>go env GOEXPERIMENT</code> 为空，发布产物记录构建参数。</li><li><strong>把实验 API 当稳定接口</strong>：<code>synctest</code> 1.24 与 1.25 的 API 不同，<code>json/v2</code> 1.25 的实验版在 1.27 又调整了 tag 语义（<code>inline</code> 改名 <code>embed</code>）。对外 SDK 不要依赖未 GA 的包。</li><li><strong>假设 timer 通道有 1 个缓冲</strong>：1.23 起无缓冲，<code>len(t.C)</code> 恒为 0，1.27 无条件生效。判断是否触发要用非阻塞 <code>select</code>，不要读 <code>len</code>。</li><li><strong>容器并行度悄悄变了</strong>：1.25 起 <code>GOMAXPROCS</code> 跟随 cgroup 限额并周期更新，旧的压测结论与线程池假设可能失效。需要固定值时显式设置，并接受「关闭自动更新」的代价。</li><li><strong><code>go mod init</code> 生成更低的 <code>go</code> 行</strong>（1.26 起为 <code>1.(N-1).0</code>）：新项目会拿不到当前版本语义，用 <code>go get go@1.27.0</code> 显式提升，别以为工具链新就够了。</li><li><strong>把 <code>GOMEMLIMIT</code> 当硬限制</strong>：它只触发更激进的 GC，不阻止 OOM，容器 memory limit 仍是最终防线；几十 MB 的小堆下软限制不精确。</li><li><strong>JSON 行为变化打穿测试</strong>：1.27 的 v2 默认拒绝重复键与非法 UTF-8，错误文本也变了。不要断言错误字符串，用 <code>errors.Is</code>/<code>errors.As</code>；对宽容解析有依赖的入口显式配置选项。</li><li><strong>一次性 <code>go fix</code> 全仓</strong>：modernizer 不改行为，但几千行 diff 无法 review。按 fixer 分批、先 <code>go fix -diff</code> 看补丁，再逐包应用。</li></ol>
+<hr>
+
+<div class="callout warning"><p><b>生产警示：</b>把 GOEXPERIMENT 下的实验特性当稳定 API、依赖 toolchain 自动下载、只在本地升级导致 CI 版本漂移，是三类典型翻车。</p></div>
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<p>「要不要升到 1.27」没有统一答案，但决策可拆成三个问题：<strong>新特性是否刚需、行为变更是否可控、回滚路径是否存在</strong>。</p>
+<div class="table-wrap"><table><thead><tr><th>场景</th><th>建议</th><th>理由</th></tr></thead><tbody><tr><td>新项目</td><td>直接 1.27，<code>go</code> 行写 <code>1.27.0</code></td><td>拿到泛型方法、<code>json/v2</code>、<code>synctest</code>，没有历史包袱</td></tr><tr><td>稳定期业务服务</td><td>跟到 1.26 或 1.27，先只换工具链</td><td>工具链升级风险低；<code>go</code> 行单独一次 PR，配全量回归</td></tr><tr><td>强依赖 <code>GOEXPERIMENT</code></td><td>停在实验特性 GA 的版本</td><td>实验开关会在下个版本消失，别把临时方案写进架构</td></tr><tr><td>对外 SDK / 库</td><td>最低支持版本对齐下游，通常滞后 1–2 个版本</td><td>你的 <code>go</code> 行就是下游的最低版本，抬太高会赶走用户</td></tr><tr><td>容器密集、成本敏感</td><td>尽快到 1.25+</td><td><code>GOMAXPROCS</code> 容器感知直接消除超卖浪费</td></tr></tbody></table></div>
+<p>升级评估清单（按顺序执行）：</p>
+<ol><li>读目标版本的 <em>Changes to the language</em> 与 <em>Runtime</em> 两节，只挑「行为变化」，忽略新增 API；</li><li>分支上只改 <code>go.mod</code> 的 <code>go</code> 行，跑 <code>go vet ./...</code>、<code>go test -race ./...</code>、<code>go build ./...</code>；</li><li>跑基准：GC 相关看 <code>GOGC</code>/<code>GOMEMLIMIT</code> 曲线，PGO 看 <code>default.pgo</code> 是否命中，容器内看 <code>GOMAXPROCS</code> 实际值；</li><li>灰度一个实例，对比 P99 与 RSS，再全量；</li><li>记录回滚方式：<code>go</code> 行回退、<code>GODEBUG</code> 兜底、镜像回滚，三者至少留一个。</li></ol>
+<p>最后一条经验：<strong>逐版本升级，不要跨版本跳跃</strong>。1.21 → 1.22 的行为变化必须在 1.22 上定位，混进 1.27 的升级里就会同时面对循环变量、timer 通道、JSON 解码三组变量，排查成本呈指数上升。每个中间版本跑一次测试，成本远低于一次「大爆炸升级」后的救火。</p>
+<p>参考：<a href="https://go.dev/doc/devel/release">https://go.dev/doc/devel/release</a>、<a href="https://go.dev/doc/gc-guide">https://go.dev/doc/gc-guide</a>、<a href="https://go.dev/blog/loopvar-preview">https://go.dev/blog/loopvar-preview</a>、<a href="https://go.dev/blog/range-functions">https://go.dev/blog/range-functions</a></p>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

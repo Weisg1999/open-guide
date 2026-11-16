@@ -1,6 +1,6 @@
 # open-guide
 
-[![Docs](https://img.shields.io/badge/docs-35%20guides-16a34a)](./README_EN.md)
+[![Docs](https://img.shields.io/badge/docs-47%20guides-16a34a)](./README_EN.md)
 [![Language](https://img.shields.io/badge/topic-Go%20ecosystem-00ADD8?logo=go)](https://go.dev)
 [![Format](https://img.shields.io/badge/format-Markdown%20%2B%20HTML-orange)](./README_EN.md)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
@@ -9,7 +9,7 @@
 > **A collection of in-depth, hands-on guides for the Go backend ecosystem.**
 > Not another Hello World — these are manuals you can actually read, search, and copy working code from.
 >
-> 35 long-form guides · ~13,500 lines of Markdown · each one ships as **Markdown** *and* a **single-file HTML** page (sidebar TOC + syntax highlighting, just open it in a browser).
+> 47 long-form guides · ~18,300 lines of Markdown · each one ships as **Markdown** *and* a **single-file HTML** page (sidebar TOC + syntax highlighting, just open it in a browser).
 
 <div align="center">
 
@@ -25,7 +25,7 @@
 
 | 📚 Guides | 📝 Text | 📄 Offline manuals | 🖼️ Diagrams | ✅ Writing rules | ⚖️ License |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| **35** | **≈ 13,500 lines** | **35 pages** | **92 SVG** | **7 required elements** | **MIT** |
+| **47** | **≈ 18,300 lines** | **47 pages** | **104 SVG** | **7 required elements** | **MIT** |
 
 </div>
 
@@ -57,21 +57,27 @@
 
 | 🔤 Language | 🌐 Frameworks | 🗄️ Data & Search | 📨 Messaging | 🔭 Observability | 🐳 Deployment |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| **3** | **6** | **13** | **6** | **6** | **1** |
+| **9** | **8** | **15** | **7** | **6** | **2** |
 
 </div>
 
 Every guide ships as `MD` (searchable, copyable, PR-friendly) and `HTML` (a dependency-free, single-file offline manual).
 
-### 🔤 Go Language Core <sub>3 guides</sub>
+### 🔤 Go Language Core <sub>9 guides</sub>
 
 | Topic | What's covered | Files |
 | --- | --- | --- |
 | **Go Generics** | Type parameters, constraints, generic types & methods, how GC Shape Stenciling actually works, the limits and footguns of generics, hands-on: a type-safe generic cache | [MD](./go-generics/go-generics-tutorial.md) · [HTML](./go-generics/go-generics-tutorial.html) |
 | **Go Reflection** | The three laws of reflection, `reflect.Type` / `reflect.Value`, dynamic invocation & mutation, struct tags in depth (how `encoding/json` and ORMs work), performance cost, reflection vs. generics | [MD](./go-reflection/go-reflection-tutorial.md) · [HTML](./go-reflection/go-reflection-tutorial.html) |
+| **Go Concurrency & Context** | GMP scheduling, channel internals and select, context cancellation trees, happens-before and atomics, errgroup / singleflight, goroutine leak hunting | [MD](./go-concurrency/go-concurrency-guide.md) · [HTML](./go-concurrency/go-concurrency-guide.html) |
+| **Go Profiling** | The five pprof profiles, escape analysis, GC with GOGC / GOMEMLIMIT, `go tool trace`, benchmarks and benchstat, PGO | [MD](./go-perf/go-perf-guide.md) · [HTML](./go-perf/go-perf-guide.html) |
+| **Go Testing & Testability** | Table-driven tests and `t.Run`, `t.Parallel` and loop variables, httptest, fake / stub / mock, sqlmock, testcontainers, fuzzing, race and coverage caveats | [MD](./go-testing/go-testing-guide.md) · [HTML](./go-testing/go-testing-guide.html) |
+| **Time Zones & Time Handling** | Instant vs civil time, `time.Time` internals, IANA tzdata in containers, nonexistent and repeated DST hours, database time semantics, cross-zone scheduling and daily cut-offs | [MD](./go-time/go-time-guide.md) · [HTML](./go-time/go-time-guide.html) |
+| **Go 1.2x Modern Features** | 1.22 loop-variable semantics, range-over-func and iter, generic type aliases, unique / weak, slices / maps / slog, toolchain and PGO | [MD](./go-modern/go-modern-guide.md) · [HTML](./go-modern/go-modern-guide.html) |
 | **samber/lo** | The Lodash-style generics toolkit: the full slice / map / channel / string / function helper catalog, and how it relates to the stdlib `slices` / `maps` packages | [MD](./samber-lo/samber-lo-guide.md) · [HTML](./samber-lo/samber-lo-guide.html) |
+| **Cobra / sqlc** | Command trees and RunE, PersistentFlags vs LocalFlags, Viper binding, the sqlc compilation model and query annotations, NULL type mapping, goose migrations | [MD](./cobra-sqlc/cobra-sqlc-guide.md) · [HTML](./cobra-sqlc/cobra-sqlc-guide.html) |
 
-### 🌐 Web, Microservices & Governance <sub>6 guides</sub>
+### 🌐 Web, Microservices & Governance <sub>8 guides</sub>
 
 | Topic | What's covered | Files |
 | --- | --- | --- |
@@ -81,13 +87,16 @@ Every guide ships as `MD` (searchable, copyable, PR-friendly) and `HTML` (a depe
 | **gRPC-Go** | HTTP/2 multiplexing and Protobuf encoding, `.proto` contracts and codegen, four streaming modes, interceptor chains, deadline propagation, resolver/balancer | [MD](./grpc/grpc-guide.md) · [HTML](./grpc/grpc-guide.html) |
 | **Viper** | Configuration precedence (Set / flag / env / file / remote KV / defaults), `AutomaticEnv` and key replacers, `Unmarshal` + mapstructure, `WatchConfig` hot reload, concurrency and zero-value traps | [MD](./viper/viper-guide.md) · [HTML](./viper/viper-guide.html) |
 | **Casbin** | The PERM meta-model and evaluation flow, ACL / RBAC / ABAC / RESTful, `g` role inheritance and multi-tenant domains, adapters and watchers for policy sync, enforcer concurrency and caching, boundaries with OPA | [MD](./casbin/casbin-guide.md) · [HTML](./casbin/casbin-guide.html) |
+| **Authentication: JWT / OAuth2 / OIDC** | JWT structure and signing algorithms, the full validation checklist (alg allowlist / iss / aud / exp), JWKS rotation, OAuth2 flows and PKCE, OIDC, refresh rotation and revocation | [MD](./auth/auth-guide.md) · [HTML](./auth/auth-guide.html) |
+| **Service Governance** | Four rate-limiting algorithms, per-node vs cluster limits, circuit-breaker states and sliding windows, adaptive limits, retry budgets and idempotency, bulkheads and fallbacks | [MD](./service-governance/service-governance-guide.md) · [HTML](./service-governance/service-governance-guide.html) |
 
-### 🗄️ Data Stores & Search <sub>13 guides</sub>
+### 🗄️ Data Stores & Search <sub>15 guides</sub>
 
 | Topic | What's covered | Files |
 | --- | --- | --- |
 | **MySQL** | B+ tree clustered indexes and table lookups, leftmost-prefix and covering indexes, MVCC / ReadView and isolation levels, next-key locks and deadlocks, `EXPLAIN` for slow queries, replication lag, `database/sql` connection pooling | [MD](./mysql/mysql-guide.md) · [HTML](./mysql/mysql-guide.html) |
 | **PostgreSQL** | Tuple-based MVCC and VACUUM, default READ COMMITTED and SSI, B-tree / GIN / GiST / BRIN indexes, `jsonb` with GIN, WAL logical replication, pgx v5 pooling and `CopyFrom`, SQLSTATE-based retries | [MD](./postgresql/postgresql-guide.md) · [HTML](./postgresql/postgresql-guide.html) |
+| **Distributed Transactions** | The cost of 2PC / XA, TCC and its three failure modes, Saga orchestration and compensation, the Outbox pattern, transactional messaging, idempotency and reconciliation | [MD](./distributed-transaction/distributed-transaction-guide.md) · [HTML](./distributed-transaction/distributed-transaction-guide.html) |
 | **GORM** | Chained API, associations & preloading, transactions and savepoints, hooks, migrator, soft delete, read/write-splitting plugin, generics-based interfaces | [MD](./gorm/gorm-guide.md) · [HTML](./gorm/gorm-guide.html) |
 | **go-redis** | Connection pool & `Cmdable`, Pipeline vs TxPipeline, `redis.Nil` semantics, Lua and distributed locks, Stream consumer groups, Cluster slots and hash tags, cache-stampede defences | [MD](./redis/redis-guide.md) · [HTML](./redis/redis-guide.html) |
 | **etcd** | Raft consensus, MVCC, the bbolt B+ tree, leases / watches / distributed locks, clientv3 in practice, what's new in v3.6 | [MD](./etcd/etcd-guide.md) · [HTML](./etcd/etcd-guide.html) |
@@ -99,16 +108,18 @@ Every guide ships as `MD` (searchable, copyable, PR-friendly) and `HTML` (a depe
 | **ClickHouse** | MergeTree parts and background merges, sparse primary index and data-skipping indexes, `ORDER BY` design, vectorized execution, materialized views, `PrepareBatch` bulk writes, `ReplacingMergeTree` eventual dedup, and the FDAP comparison with InfluxDB 3 | [MD](./clickhouse/clickhouse-guide.md) · [HTML](./clickhouse/clickhouse-guide.html) |
 | **OpenSearch** | The ES 7.10 fork and Apache-2.0 licensing, Lucene inverted index and NRT, shard routing, k-NN vector search, ISM and Data Streams, the `opensearch-go` client, compatibility boundaries with Elasticsearch | [MD](./opensearch/opensearch-guide.md) · [HTML](./opensearch/opensearch-guide.html) |
 | **TimescaleDB** | Hypertables and automatic chunk partitioning, `time_bucket`, continuous aggregates, columnar compression with segmentby / orderby, retention and tiering, why unique indexes must include the time column, boundaries with InfluxDB / ClickHouse | [MD](./timescaledb/timescaledb-guide.md) · [HTML](./timescaledb/timescaledb-guide.html) |
+| **Vector Databases** | Distance metrics and normalization, HNSW's M / efConstruction / efSearch, IVF / PQ, pre-filter vs post-filter, RRF hybrid search, pgvector / Milvus / Qdrant in practice | [MD](./vector-database/vector-database-guide.md) · [HTML](./vector-database/vector-database-guide.html) |
 
 > 💡 Elasticsearch wears two hats: business full-text search and log search. For logs, pair the `trace_id` from the [Zap guide](./zap/zap-guide.md) with [OpenTelemetry](./opentelemetry/opentelemetry-guide.md) traces.
 
-### 📨 Messaging, Tasks & Scheduling <sub>6 guides</sub>
+### 📨 Messaging, Tasks & Scheduling <sub>7 guides</sub>
 
 | Topic | What's covered | Files |
 | --- | --- | --- |
 | **asynq** ⭐ | The flagship guide (1,300+ lines). Redis-backed distributed task queue: task lifecycle, delayed jobs, retries & dead letters, weighted / strict priority queues, deduplication, task aggregation, timeouts and deadlines, Prometheus metrics, deploying the Asynqmon web UI | [MD](./asynq/asynq技术文档与使用手册.md) · [HTML](./asynq/asynq技术文档与使用手册.html) |
 | **Apache Kafka** | Partitions and replicas, consumer groups and offsets, ISR and ack semantics, hands-on with `segmentio/kafka-go`, Kafka 4.x dropping ZooKeeper | [MD](./kafka/kafka-guide.md) · [HTML](./kafka/kafka-guide.html) |
 | **NATS / JetStream** | Subject-based addressing, pub/sub and request-reply, queue groups, JetStream streams and consumers, `nats.go` in practice | [MD](./nats/nats-guide.md) · [HTML](./nats/nats-guide.html) |
+| **MQTT / EMQX** | Packet and connection lifecycle, QoS 0/1/2 handshakes, sessions and Session Expiry, retained and will messages, shared subscriptions, paho in practice, EMQX 6.x and the BSL licence | [MD](./mqtt/mqtt-guide.md) · [HTML](./mqtt/mqtt-guide.html) |
 | **robfig/cron** | 5-field and 6-field cron expressions, parser extensions (`@every`, `@daily`, …), job wrappers (`SkipIfStillRunning`, …), time zones and concurrency, custom jobs | [MD](./robfig-cron/robfig-cron-guide.md) · [HTML](./robfig-cron/robfig-cron-guide.html) |
 | **RabbitMQ / RocketMQ** | Exchange/Queue routing, publisher confirms and manual ACKs, Quorum Queues and DLX, CommitLog sequential writes, ordered / transactional / scheduled messages, at-least-once idempotency, and the boundaries with Kafka / NATS / asynq | [MD](./rabbitmq/rabbitmq-guide.md) · [HTML](./rabbitmq/rabbitmq-guide.html) |
 | **Temporal** | Durable execution and event-history replay, determinism constraints, durable timers, Activity idempotency and layered retries, Signal / Query / Update, Saga compensation, `GetVersion` and `Continue-As-New`, WorkflowReplayer tests | [MD](./temporal/temporal-guide.md) · [HTML](./temporal/temporal-guide.html) |
@@ -128,11 +139,12 @@ Every guide ships as `MD` (searchable, copyable, PR-friendly) and `HTML` (a depe
 
 > 💡 `Zap` / `slog` produce logs, `Loki` retrieves them, `Prometheus` handles metrics and `OpenTelemetry` traces — all linked by a shared `service.name` and `trace_id`.
 
-### 🐳 Deployment & Orchestration <sub>1 guide</sub>
+### 🐳 Deployment & Orchestration <sub>2 guides</sub>
 
 | Topic | What's covered | Files |
 | --- | --- | --- |
 | **Docker / Kubernetes** | Image layers and multi-stage builds, namespaces/cgroups, the declarative reconcile loop, Pod/Deployment/Service, three probes and QoS classes, rolling updates and graceful shutdown, client-go and RBAC | [MD](./docker-k8s/docker-k8s-guide.md) · [HTML](./docker-k8s/docker-k8s-guide.html) |
+| **Kubernetes Operator** | Declarative reconciliation and level-triggered design, CRD / Scheme, idempotent Reconcile, resourceVersion conflicts, ownerReference and finalizers, envtest and e2e | [MD](./k8s-operator/k8s-operator-guide.md) · [HTML](./k8s-operator/k8s-operator-guide.html) |
 
 ---
 
@@ -146,7 +158,7 @@ Every guide ships as `MD` (searchable, copyable, PR-friendly) and `HTML` (a depe
 | `Kratos` · `go-zero` → `etcd` | `GORM` → `go-redis` | `asynq` |
 | `ES` / `OpenSearch` · `MongoDB` (search / docs) | `InfluxDB` / `TimescaleDB` → `MinIO` → `ClickHouse` | `Kafka` · `NATS` · `RabbitMQ` → `Temporal` |
 
-**Shared foundation**　`Go Generics` → `Reflection` → `samber/lo`　·　`Zap` / `slog` · `Prometheus` · `VictoriaMetrics / Thanos` · `OpenTelemetry` · `Loki`　·　`Docker / K8s`
+**Shared foundation**　`Go Generics` → `Reflection` → `Concurrency` → `Profiling` → `Testing` → `samber/lo`　·　`Zap` / `slog` · `Prometheus` · `VictoriaMetrics / Thanos` · `OpenTelemetry` · `Loki`　·　`Docker / K8s`
 
 </div>
 
@@ -154,14 +166,24 @@ Every guide ships as `MD` (searchable, copyable, PR-friendly) and `HTML` (a depe
 
 | Your goal | Suggested order |
 | --- | --- |
-| Solidify Go fundamentals | Generics → Reflection → samber/lo |
+| Solidify Go fundamentals | Generics → Reflection → **Concurrency & Context** → **Profiling** → samber/lo |
+| Add login to a service | **Authentication** → start with the validation checklist, then hand authorization to Casbin |
+| Extend the Kubernetes API | **Kubernetes Operator** → CRD + Reconcile; check whether Helm is enough first |
+| Build a CLI / want type-safe SQL | **Cobra / sqlc** → command tree + generated queries, never string concatenation |
+| Plan a Go upgrade | **Go 1.2x Modern Features** → read the behaviour changes, then upgrade one minor at a time |
+| Deliver maintainable code | **Go Testing & Testability** → table-driven → httptest → testcontainers |
+| Serve users in multiple time zones | **Time Zones & Time Handling** → store UTC, render per zone, test DST |
+| Flaky dependencies / traffic spikes | **Service Governance** → rate limit → circuit break → retry budget; timeouts first |
+| Semantic search / RAG | **Vector Databases** → start with pgvector, evaluate dedicated stores at scale |
+| Service got slow / memory climbing | **Go Profiling** → pprof for hotspots, trace for waiting, then GC tuning |
+| Writes must stay consistent across services | **Distributed Transactions** → first ask whether you can avoid it, then pick Outbox / Saga |
 | Ship your first API service | **Viper** (configuration first) → Gin → **MySQL** → GORM → robfig/cron → **Zap** (establish logging conventions early) |
 | Build microservices | Gin → **gRPC-Go** → Kratos *and* go-zero (read them side by side) → etcd → asynq → **Casbin** (centralize authorization) |
 | Solidify the data layer | **MySQL** (indexes / transactions / locks) → GORM → **go-redis** |
 | Add caching / distributed locks | **go-redis** → then asynq / etcd to understand the boundaries between cache, task queue and strong-consistency coordination |
 | Build search / log retrieval | **Elasticsearch** / **OpenSearch** (read the fork and licence differences first) → pair with Zap `trace_id` and OpenTelemetry traces |
 | Store semi-structured, fast-changing data | **MongoDB** → alongside MySQL (source of truth) and ES (search replica) |
-| Build IoT / monitoring / time-series | InfluxDB 2.x → InfluxDB 3 (to see the evolution) → **TimescaleDB** (when you need JOINs with business tables) → MinIO → Kafka / NATS |
+| Build IoT / monitoring / time-series | InfluxDB 2.x → InfluxDB 3 (to see the evolution) → **TimescaleDB** (when you need JOINs with business tables) → MinIO → **MQTT / EMQX** (device ingress) → Kafka / NATS |
 | Set up observability | **Zap** → **Prometheus** → **OpenTelemetry** (logs / metrics / traces, linked by `trace_id`) → **VictoriaMetrics / Thanos** (when retention outgrows local disks) |
 | Build OLAP analytics / log detail | **ClickHouse** → ingest with the Kafka table engine |
 | Decouple services / ordered and transactional messages | **RabbitMQ / RocketMQ** → split work with asynq (job execution) |
@@ -209,7 +231,7 @@ The builder uses only the Python 3 standard library — no third-party packages.
 | File | Purpose |
 |---|---|
 | [`tools/themes.json`](./tools/themes.json) | Per-guide colours, hero subtitle and tags |
-| [`tools/fragments.json`](./tools/fragments.json) | SVG architecture diagrams, feature cards and callouts that have no Markdown equivalent, injected by chapter anchor (354 blocks / 92 diagrams) |
+| [`tools/fragments.json`](./tools/fragments.json) | SVG architecture diagrams, feature cards and callouts that have no Markdown equivalent, injected by chapter anchor (402 blocks / 104 diagrams) |
 | [`tools/anchor_map.json`](./tools/anchor_map.json) | Legacy semantic anchors -> heading slugs, so links inside those blocks keep working |
 
 A new topic needs no build configuration: the script auto-discovers `*/ *.md` and assigns a stable palette from the directory name. CI ([`.github/workflows/check-html.yml`](./.github/workflows/check-html.yml)) runs `--check --audit` on every push / PR, which mechanically prevents MD/HTML drift.
@@ -244,7 +266,7 @@ The original convention was a strict "7-section" layout. In practice, a deep man
 ## 6. Upstream Projects & Versions
 
 <details>
-<summary><b>Expand the full version table (35 entries)</b></summary>
+<summary><b>Expand the full version table (47 entries)</b></summary>
 
 | Guide | Upstream repo | Version documented |
 | --- | --- | --- |
@@ -276,6 +298,18 @@ The original convention was a strict "7-section" layout. In practice, a deep man
 | Temporal | [temporalio/temporal](https://github.com/temporalio/temporal) | Server 1.3x · sdk-go v1.x |
 | log/slog | [pkg.go.dev/log/slog](https://pkg.go.dev/log/slog) | Go 1.21+ (stdlib) |
 | Go Generics / Reflection | [Official Go proposal & blog](https://go.dev/blog/laws-of-reflection) | Go 1.18+ |
+| Authentication: JWT / OAuth2 / OIDC | [golang-jwt/jwt](https://github.com/golang-jwt/jwt) · [coreos/go-oidc](https://github.com/coreos/go-oidc) | jwt v5 · go-oidc v3 · x/oauth2 |
+| Kubernetes Operator | [kubernetes-sigs/controller-runtime](https://github.com/kubernetes-sigs/controller-runtime) | v0.25 · client-go v0.37 · kubebuilder v4.16 |
+| Cobra / sqlc | [spf13/cobra](https://github.com/spf13/cobra) · [sqlc-dev/sqlc](https://github.com/sqlc-dev/sqlc) | cobra v1.10.2 · sqlc v1.31.1 · goose v3.30 |
+| Go 1.2x Modern Features | [go.dev/doc/devel/release](https://go.dev/doc/devel/release) | Go 1.21 → 1.27.4 |
+| Go Testing & Testability | [pkg.go.dev/testing](https://pkg.go.dev/testing) | Go 1.27.4 · testify v1.x · testcontainers-go v0.4x |
+| Time Zones & Time Handling | [pkg.go.dev/time](https://pkg.go.dev/time) | Go 1.27.4 · IANA tzdata 2026 |
+| Service Governance | [alibaba/sentinel-golang](https://github.com/alibaba/sentinel-golang) · [sony/gobreaker](https://github.com/sony/gobreaker) | x/time/rate v0.16 · gobreaker v2.4 · sentinel v1.x |
+| Vector Databases | [pgvector](https://github.com/pgvector/pgvector) · [milvus](https://github.com/milvus-io/milvus) · [qdrant](https://github.com/qdrant/qdrant) | pgvector 0.8 · Milvus 2.x · Qdrant 1.x |
+| Go Concurrency & Context | [pkg.go.dev/context](https://pkg.go.dev/context) | Go 1.21+ (examples on Go 1.27.4) |
+| Go Profiling | [runtime/pprof](https://pkg.go.dev/runtime/pprof) | Go 1.27.4 |
+| Distributed Transactions | [temporalio/temporal](https://github.com/temporalio/temporal) · [apache/rocketmq](https://github.com/apache/rocketmq) | Temporal 1.3x · Kafka 4.x · RocketMQ 5.x |
+| MQTT / EMQX | [emqx/emqx](https://github.com/emqx/emqx) | 6.3 (5.10 maintained; 5.9+ BSL 1.1) |
 | Viper | [spf13/viper](https://github.com/spf13/viper) | v1.21.0 |
 | OpenSearch | [opensearch-project/OpenSearch](https://github.com/opensearch-project/OpenSearch) | 3.9.0 (Apache-2.0) |
 | VictoriaMetrics / Thanos | [VictoriaMetrics](https://github.com/VictoriaMetrics/VictoriaMetrics) · [thanos-io/thanos](https://github.com/thanos-io/thanos) | v1.156.0 / v0.42.5 |

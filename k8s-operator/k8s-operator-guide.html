@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kubernetes Operator · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#326ce5; --accent-light:#dbe7fb; --accent-dark:#1b3f8f;
+    --bg:#f4f7fd; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#0a1832; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#1b3f8f 0%,#326ce5 58%,#1b3f8f 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">Kubernetes Operator<span class="ver">v0.25 / 1.37</span></div>
+  <div class="sub">CRD · Reconcile · finalizer</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a href="#2-能力总览">2. 能力总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-声明式-api-与-level-triggered-协调">3.1 声明式 API 与 level-triggered 协调</a>
+  <a class="sub-link" href="#32-crdscheme-与标记">3.2 CRD、Scheme 与标记</a>
+  <a class="sub-link" href="#33-reconcile-的输入是-namespacedname">3.3 Reconcile 的输入是 NamespacedName</a>
+  <a class="sub-link" href="#34-幂等设计先查再建createorupdatessa">3.4 幂等设计：先查再建、CreateOrUpdate、SSA</a>
+  <a class="sub-link" href="#35-乐观并发与-resourceversion">3.5 乐观并发与 resourceVersion</a>
+  <a class="sub-link" href="#36-ownerreference-与-finalizer">3.6 ownerReference 与 finalizer</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-api-类型与标记">4.1 API 类型与标记</a>
+  <a class="sub-link" href="#42-crd-与-cr">4.2 CRD 与 CR</a>
+  <a class="sub-link" href="#43-reconcile-实现manager-组装与-rbac">4.3 Reconcile 实现、Manager 组装与 RBAC</a>
+  <a class="sub-link" href="#44-测试三层">4.4 测试三层</a>
+  <a href="#5-版本演进速览">5. 版本演进速览</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>Kubernetes Operator 技术指南</h1>
+<p>Operator 不是「用 Go 写 YAML」：它把运维知识编码进控制器，用声明式 API 把期望状态持续收敛成现实。</p>
+<p style="opacity:.8;font-size:13.5px">CRD · Reconcile · finalizer</p>
+<div class="meta"><span>controller-runtime v0.25</span><span>client-go v0.37</span><span>kubebuilder v4.16</span><span>声明式协调</span><span>幂等 Reconcile</span><span>envtest</span></div>
+</div>
+<blockquote><p>Operator 不是「用 Go 写 YAML」：它把运维知识编码进控制器，用声明式 API 把「期望状态」持续收敛成现实。 上游：<a href="https://github.com/kubernetes-sigs/controller-runtime">https://github.com/kubernetes-sigs/controller-runtime</a> v0.25 · <a href="https://github.com/kubernetes/client-go">https://github.com/kubernetes/client-go</a> v0.37 · <a href="https://github.com/kubernetes-sigs/kubebuilder">https://github.com/kubernetes-sigs/kubebuilder</a> v4.16　|　对应 Kubernetes 1.37</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p><a href="../docker-k8s/docker-k8s-guide.html">Docker 与 K8s 篇</a> 解决「进程怎么被正确打包、调度、停止」；本篇解决下一个问题：<strong>当一件事需要「看状态 → 决定做什么 → 做完再检查」时，怎么交给集群自动做</strong>。答案是 CRD（扩展 API）+ 控制器（协调循环），合称 Operator。基础对象（Pod / Deployment / 探针 / 优雅下线）不再重复。</p>
+<ul><li><strong>本质</strong>：用自定义资源描述期望（<code>replicas: 3</code>、<code>intervalHours: 6</code>、<code>version: 16</code>），控制器把它翻译成 Deployment / Service / Job / 云 API 调用，并持续纠偏</li><li><strong>适用</strong>：有状态服务（数据库、MQ、存储）、多步编排（主从切换、分片再平衡、证书轮转）、把内部平台能力（备份、灰度、发号）暴露成 K8s 原生 API</li><li><strong>不适用</strong>：无状态服务（Deployment + Helm 足够）、差异只在 values 里的配置、运维流程还没跑通（先写成人能执行的 runbook 再编码）</li><li><strong>代价</strong>：你写的是<strong>长期运行的控制平面代码</strong>——幂等、并发、RBAC、版本升级、故障注入都要自己扛，复杂度比一个 Helm chart 高一个数量级</li></ul>
+<pre><code class="lang-bash"># 版本锚点（截至 2026-11）：kubebuilder v4.16.0 / controller-runtime v0.25 / k8s.io/* v0.37
+curl -L -o kubebuilder "https://github.com/kubernetes-sigs/kubebuilder/releases/download/v4.16.0/kubebuilder_$(go env GOOS)_$(go env GOARCH)"
+chmod +x kubebuilder &amp;&amp; sudo mv kubebuilder /usr/local/bin/
+go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest   # envtest 依赖
+
+mkdir backup-operator &amp;&amp; cd backup-operator
+kubebuilder init --domain example.com --repo example.com/backup-operator
+kubebuilder create api --group backup --version v1alpha1 --kind BackupSchedule --resource --controller
+make manifests generate     # controller-gen 生成 CRD 与 DeepCopy
+make install run            # 装 CRD 并把控制器跑在本地，迭代最快</code></pre>
+<blockquote><p><code>make install</code> / <code>make deploy</code> 用当前 context。先 <code>kubectl config current-context</code>——有团队因此把 CRD 装进了生产。</p></blockquote>
+<hr>
+
+</section>
+<section data-anchor="2-能力总览">
+<h2 id="2-能力总览">2. 能力总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>由谁提供</th><th>说明</th></tr></thead><tbody><tr><td>扩展 API</td><td>CRD（<code>apiextensions.k8s.io/v1</code>）</td><td>group/version/kind、OpenAPI schema、CEL 校验、printer columns</td></tr><tr><td>类型注册</td><td><code>Scheme</code> + <code>runtime.Object</code></td><td>Go struct ↔ GVK 映射；client、cache、序列化全靠它</td></tr><tr><td>协调框架</td><td>controller-runtime <code>Manager</code> + <code>Reconciler</code></td><td>统一管理 cache、client、workqueue、webhook、metrics 生命周期</td></tr><tr><td>事件与排队</td><td>informer（List-Watch cache）+ workqueue</td><td>本地缓存 + 增量事件；key 去重、指数退避、可配并发 worker</td></tr><tr><td>写入语义</td><td>Create / Update / Patch / Server-Side Apply</td><td>从「读改写」到「声明字段所有权」</td></tr><tr><td>所有权与清理</td><td>ownerReference + finalizer</td><td>级联删除、外部资源回收</td></tr><tr><td>准入控制</td><td>validating/mutating webhook、CEL</td><td>默认值、跨字段校验、版本转换</td></tr><tr><td>权限</td><td><code>+kubebuilder:rbac</code> → Role</td><td>按 verbs/resources 生成最小权限</td></tr><tr><td>测试与高可用</td><td>fake client / envtest / kind；leader election</td><td>三层测试；多副本只有一个实例在协调</td></tr></tbody></table></div>
+<hr>
+
+<div class="features">
+  <div class="feature"><div class="fh"><h4>声明式</h4></div><p>level-triggered：比较期望与实际，而不是处理单次事件</p></div>
+  <div class="feature"><div class="fh"><h4>并发控制</h4></div><p>resourceVersion 冲突要重试；status 更新也会触发新事件</p></div>
+  <div class="feature"><div class="fh"><h4>清理语义</h4></div><p>ownerReference 级联删除；finalizer 负责外部资源回收</p></div>
+</div>
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-声明式-api-与-level-triggered-协调">3.1 声明式 API 与 level-triggered 协调</h3>
+<pre><code class="lang-text">edge-triggered ：事件 → 处理一次 → 忘记（漏一个就永久偏航，重启后不知道错过了什么）
+level-triggered：读现状 → 与期望比对 → 收敛 → 再读（每次都重新算，不依赖历史）</code></pre>
+<p>Deployment 控制器不会因为「收到一个 Pod 删除事件」就补 Pod，而是每次数一遍「现在几个、我要几个」。两个直接结论：<strong>Reconcile 必须可重复执行</strong>，结果只取决于读到的对象状态；<strong>事件只是「可能有事」的提示</strong>，丢了、合并了、重复了都不影响正确性，只影响收敛速度。</p>
+<h3 id="32-crdscheme-与标记">3.2 CRD、Scheme 与标记</h3>
+<p><code>apiVersion: backup.example.com/v1alpha1</code> 的 group/version 来自 <code>create api</code>，kind 来自 Go struct，三者构成 <strong>GVK</strong>；<code>Scheme</code> 负责 GVK ↔ Go 类型双向映射。漏了 <code>AddToScheme</code> 的典型报错是 <code>no kind is registered for the type v1alpha1.BackupSchedule</code>。</p>
+<div class="table-wrap"><table><thead><tr><th>标记</th><th>作用</th></tr></thead><tbody><tr><td><code>+kubebuilder:object:root=true</code></td><td>生成 DeepCopy、注册为顶层对象</td></tr><tr><td><code>+kubebuilder:subresource:status</code></td><td>开启 status 子资源：<code>kubectl apply</code> 改不动，控制器用 <code>Status().Update</code> 单独写</td></tr><tr><td><code>+kubebuilder:validation:Minimum/Maximum/Enum</code></td><td>写进 CRD 的 OpenAPI schema，由 API Server 校验</td></tr><tr><td><code>+kubebuilder:default=6</code></td><td>默认值由 <strong>API Server</strong> 填充，不是控制器</td></tr><tr><td><code>+kubebuilder:rbac:...</code></td><td>生成 <code>config/rbac/role.yaml</code>，别手写 Role</td></tr><tr><td><code>+kubebuilder:validation:XValidation:rule="..."</code></td><td>CEL 跨字段校验，表达力强于 OpenAPI</td></tr></tbody></table></div>
+<p>status 子资源不只是「好看」：它与 spec 分开存储，控制器高频回写 status 不会和用户的 <code>kubectl apply</code> 抢同一个 <code>resourceVersion</code>，也避免用户改 status 造成状态漂移。</p>
+<h3 id="33-reconcile-的输入是-namespacedname">3.3 Reconcile 的输入是 NamespacedName</h3><div class="figure">
+  <svg viewBox="0 0 880 268" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-k8s-operator" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#326ce5"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#1b3f8f">Reconcile 的收敛循环</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">Reconcile 可能被重复调用任意次，必须幂等</text>
+    <rect x="36" y="82" width="175" height="80" rx="12" fill="#dbe7fb" stroke="#326ce5" stroke-width="1.5"/>
+    <text x="124" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#1b3f8f">Watch 事件</text>
+    <text x="124" y="136" text-anchor="middle" font-size="11" fill="#1b3f8f">CR 或子资源变化</text>
+    <line x1="215" y1="122" x2="241" y2="122" stroke="#326ce5" stroke-width="2" marker-end="url(#m-k8s-operator)"/>
+    <rect x="247" y="82" width="175" height="80" rx="12" fill="#dbe7fb" stroke="#326ce5" stroke-width="1.5"/>
+    <text x="334" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#1b3f8f">workqueue</text>
+    <text x="334" y="136" text-anchor="middle" font-size="11" fill="#1b3f8f">去重 + 限速重试</text>
+    <line x1="426" y1="122" x2="452" y2="122" stroke="#326ce5" stroke-width="2" marker-end="url(#m-k8s-operator)"/>
+    <rect x="458" y="82" width="175" height="80" rx="12" fill="#dbe7fb" stroke="#326ce5" stroke-width="1.5"/>
+    <text x="546" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#1b3f8f">Reconcile</text>
+    <text x="546" y="136" text-anchor="middle" font-size="11" fill="#1b3f8f">读实际状态</text>
+    <line x1="637" y1="122" x2="663" y2="122" stroke="#326ce5" stroke-width="2" marker-end="url(#m-k8s-operator)"/>
+    <rect x="669" y="82" width="175" height="80" rx="12" fill="#dbe7fb" stroke="#326ce5" stroke-width="1.5"/>
+    <text x="756" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#1b3f8f">写期望状态</text>
+    <text x="756" y="136" text-anchor="middle" font-size="11" fill="#1b3f8f">更新 status 或子资源</text>
+    <rect x="40" y="186" width="800" height="58" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="210" font-size="12.5" fill="#1e293b">事件只是触发信号：控制器比较期望与实际，而不是处理单次事件。</text>
+  </svg>
+  <figcaption>Reconcile 的收敛循环</figcaption>
+</div>
+<pre><code class="lang-text">watch 事件 → informer 更新本地 cache → 入队 key = "namespace/name"（自动去重）
+         → rate limiter（失败指数退避 5ms→1000s）→ worker 取 key → Get 最新对象 → Reconcile</code></pre>
+<p>签名只有 <code>ctrl.Request{NamespacedName}</code>，没有事件类型、没有旧对象——框架刻意不让你依赖「为什么被叫醒」，只能去读现状。</p>
+<p>一次逻辑变更常触发多次协调：<code>Update</code> 加 finalizer → 自身事件入队；创建 Deployment → <code>Owns()</code> 让子资源变化也入队；写 status → 又一次事件；失败返回 error → 退避重试；cache resync（默认 10h）→ 周期兜底；短时间 10 个事件合并成 1 个 key。</p>
+<p>所以<strong>绝不在 Reconcile 里 sleep 等资源就绪</strong>：占住 worker、阻塞队列，等待期间对象还可能已变。要「过会儿再看」返回 <code>ctrl.Result{RequeueAfter: 30 * time.Second}</code>；要「立刻重试」返回 error 交给限速器。</p>
+<h3 id="34-幂等设计先查再建createorupdatessa">3.4 幂等设计：先查再建、CreateOrUpdate、SSA</h3>
+<div class="table-wrap"><table><thead><tr><th>写法</th><th>语义</th><th>风险</th></tr></thead><tbody><tr><td><code>Get</code> 后 <code>Create</code></td><td>不存在才建</td><td>竞态下两个 worker 都 404，第二个 <code>AlreadyExists</code>；需显式视为成功</td></tr><tr><td><code>controllerutil.CreateOrUpdate</code></td><td>读 → 改 → 写</td><td>内部是 Update，会用完整对象覆盖别人改的字段；冲突要重试</td></tr><tr><td><code>client.Apply</code>（SSA）</td><td>只声明「我拥有的字段」</td><td>需正确 <code>FieldOwner</code>；所有权冲突要 <code>ForceOwnership</code>，慎用</td></tr></tbody></table></div>
+<p>判断标准是<strong>字段归属</strong>：CR 完全拥有的从属对象（它建的 Deployment）两种都行；与他人共享的对象（往公共 ConfigMap 加 key）优先 SSA，避免抹掉别人的 key。</p>
+<h3 id="35-乐观并发与-resourceversion">3.5 乐观并发与 resourceVersion</h3>
+<p>K8s 没有悲观锁：<code>Update</code> 带上读到的 <code>resourceVersion</code>，服务端发现已被改过就返回 <strong>409 Conflict</strong>。正确姿势是「重读 → 重算 → 再写」：判断 <code>apierrors.IsConflict(err)</code> 后返回 <code>ctrl.Result{Requeue: true}, nil</code>，交给队列退避重试，而不是把旧对象硬写回去。</p>
+<p>同一对象不会被两个 worker 并发处理（workqueue 保证 key 独占），但<strong>你的控制器 + 用户的 kubectl + 另一个控制器</strong>随时并发写同一对象，冲突是常态而非异常。</p>
+<h3 id="36-ownerreference-与-finalizer">3.6 ownerReference 与 finalizer</h3>
+<ul><li><code>controllerutil.SetControllerReference(cr, child, scheme)</code>：子对象变动触发 owner 入队（配合 <code>Owns()</code>），owner 删除时子对象被 GC 级联删除（默认 background）</li><li><strong>owner 必须与 child 同 namespace</strong>（或 owner 是集群级），跨 namespace 只能靠 label + 手动清理</li><li>级联删除对<strong>集群外资源无效</strong>：云快照、DNS 记录、对象存储桶，GC 一无所知 → 用 finalizer</li></ul>
+<pre><code class="lang-text">kubectl delete → 打 deletionTimestamp（对象 Terminating）→ 控制器清外部资源
+              → RemoveFinalizer → finalizers 清空 → 从 etcd 真正消失</code></pre>
+<p><strong>finalizer 卡死排查</strong>：<code>kubectl get bsched nightly -o jsonpath='{.metadata.finalizers}'</code> 看是谁挂的 → 找对应控制器日志（没在跑 / panic / 权限不足）→ 确认 RBAC 有 <code>&lt;resource&gt;/finalizers</code> 的 <code>update</code> → 最后才考虑 <code>kubectl patch ... --type=merge -p '{"metadata":{"finalizers":null}}'</code> 强摘（会泄漏外部资源，仅限确认无害时）。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<p>目标：<code>BackupSchedule</code> CR 声明「每 N 小时备份一次」，控制器维护 Deployment + Service 并回写 status。</p>
+<h3 id="41-api-类型与标记">4.1 API 类型与标记</h3>
+<pre><code class="lang-go">// api/v1alpha1/backupschedule_types.go
+package v1alpha1
+
+import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+type BackupScheduleSpec struct {
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:validation:Maximum=24
+	// +kubebuilder:default=6
+	IntervalHours int32 `json:"intervalHours,omitempty"`
+	// +kubebuilder:validation:MinLength=1
+	Image string `json:"image"`
+}
+
+type BackupScheduleStatus struct {
+	// +listType=map
+	// +listMapKey=type
+	Conditions         []metav1.Condition `json:"conditions,omitempty"`
+	ObservedGeneration int64              `json:"observedGeneration,omitempty"`
+}
+
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Ready",type=string,JSONPath=`.status.conditions[?(@.type=="Ready")].status`
+type BackupSchedule struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+	Spec              BackupScheduleSpec   `json:"spec,omitempty"`
+	Status            BackupScheduleStatus `json:"status,omitempty"`
+}
+
+// BackupScheduleList 与 init() 里的 SchemeBuilder.Register 由 scaffold 生成，此处省略。</code></pre>
+<h3 id="42-crd-与-cr">4.2 CRD 与 CR</h3>
+<p><code>make manifests</code> 生成完整 schema；下面是等价可用的精简版（status 用 <code>preserve-unknown-fields</code> 省去 conditions 的 schema 细节）：</p>
+<pre><code class="lang-yaml">apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata: {name: backupschedules.backup.example.com}
+spec:
+  group: backup.example.com
+  scope: Namespaced
+  names: {kind: BackupSchedule, listKind: BackupScheduleList, plural: backupschedules, singular: backupschedule, shortNames: [bsched]}
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      subresources: {status: {}}        # 必须开启，控制器才能单独写 status
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec: {type: object, required: [image], properties: {intervalHours: {type: integer, minimum: 1, maximum: 24, default: 6}, image: {type: string, minLength: 1}}}
+            status: {type: object, x-kubernetes-preserve-unknown-fields: true}</code></pre>
+<pre><code class="lang-bash"># 示例 CR（config/samples/）：spec: {intervalHours: 6, image: "registry.example.com/pg-backup:v1.4.0"}
+kubectl apply -f config/crd/bases/backup.example.com_backupschedules.yaml -f config/samples/backup_v1alpha1_backupschedule.yaml
+kubectl get bsched &amp;&amp; kubectl get bsched nightly -o yaml   # READY 列由 §4.1 的 printcolumn 生成</code></pre>
+<h3 id="43-reconcile-实现manager-组装与-rbac">4.3 Reconcile 实现、Manager 组装与 RBAC</h3>
+<pre><code class="lang-go">// internal/controller/backupschedule_controller.go
+package controller
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+
+	backupv1 "example.com/backup-operator/api/v1alpha1"
+)
+
+const finalizer = "backup.example.com/cleanup"
+
+type BackupScheduleReconciler struct {
+	client.Client
+	Scheme *runtime.Scheme
+}
+
+// +kubebuilder:rbac:groups=backup.example.com,resources=backupschedules,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=backup.example.com,resources=backupschedules/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=backup.example.com,resources=backupschedules/finalizers,verbs=update
+// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch;delete
+
+func (r *BackupScheduleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	// 事件只是提示：每次都从 cache 读最新对象
+	var bs backupv1.BackupSchedule
+	if err := r.Get(ctx, req.NamespacedName, &amp;bs); err != nil {
+		return ctrl.Result{}, client.IgnoreNotFound(err) // 已删除不是错误
+	}
+	// 删除路径：先清外部资源，再摘 finalizer；清不掉就保留，交给退避重试
+	if !bs.DeletionTimestamp.IsZero() {
+		if controllerutil.ContainsFinalizer(&amp;bs, finalizer) {
+			if err := r.cleanupRemote(ctx, &amp;bs); err != nil {
+				return ctrl.Result{}, err
+			}
+			controllerutil.RemoveFinalizer(&amp;bs, finalizer)
+			return ctrl.Result{}, r.Update(ctx, &amp;bs)
+		}
+		return ctrl.Result{}, nil
+	}
+	// 首次进入：AddFinalizer 返回 true 表示真的加上了，写完立刻返回让新版本重新入队
+	if controllerutil.AddFinalizer(&amp;bs, finalizer) {
+		return ctrl.Result{}, r.Update(ctx, &amp;bs)
+	}
+	// 收敛从属对象；每次协调都走一遍，因此必须幂等
+	if err := r.reconcileWorkload(ctx, &amp;bs); err != nil {
+		r.markReady(ctx, &amp;bs, metav1.ConditionFalse, "WorkloadFailed", err.Error())
+		return ctrl.Result{}, err
+	}
+	r.markReady(ctx, &amp;bs, metav1.ConditionTrue, "Reconciled", "backup worker is ready")
+	return ctrl.Result{RequeueAfter: time.Duration(bs.Spec.IntervalHours) * time.Hour}, nil // 不是 sleep
+}
+
+func (r *BackupScheduleReconciler) reconcileWorkload(ctx context.Context, bs *backupv1.BackupSchedule) error {
+	labels := map[string]string{"app.kubernetes.io/name": "pg-backup", "app.kubernetes.io/instance": bs.Name}
+
+	dep := &amp;appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{Name: bs.Name, Namespace: bs.Namespace}}
+	if _, err := controllerutil.CreateOrUpdate(ctx, r.Client, dep, func() error {
+		replicas := int32(1)
+		dep.Spec.Replicas = &amp;replicas
+		dep.Spec.Selector = &amp;metav1.LabelSelector{MatchLabels: labels}
+		dep.Spec.Template.ObjectMeta.Labels = labels
+		dep.Spec.Template.Spec.Containers = []corev1.Container{{
+			Name: "worker", Image: bs.Spec.Image,
+			Args:  []string{"--interval", fmt.Sprint(bs.Spec.IntervalHours)},
+			Ports: []corev1.ContainerPort{{Name: "metrics", ContainerPort: 9090}},
+		}}
+		return controllerutil.SetControllerReference(bs, dep, r.Scheme) // 级联删除 + Owns 触发
+	}); err != nil {
+		return fmt.Errorf("deployment: %w", err)
+	}
+
+	svc := &amp;corev1.Service{ObjectMeta: metav1.ObjectMeta{Name: bs.Name, Namespace: bs.Namespace}}
+	if _, err := controllerutil.CreateOrUpdate(ctx, r.Client, svc, func() error {
+		svc.Spec.Selector, svc.Spec.Ports = labels, []corev1.ServicePort{{Name: "metrics", Port: 9090}}
+		return controllerutil.SetControllerReference(bs, svc, r.Scheme)
+	}); err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+	return nil
+}
+
+// markReady 只在状态真变化时写 status，避免「写 status → 事件 → 再写」的热循环
+func (r *BackupScheduleReconciler) markReady(ctx context.Context, bs *backupv1.BackupSchedule,
+	status metav1.ConditionStatus, reason, msg string) {
+	changed := meta.SetStatusCondition(&amp;bs.Status.Conditions, metav1.Condition{Type: "Ready",
+		Status: status, Reason: reason, Message: msg, ObservedGeneration: bs.Generation})
+	if changed || bs.Status.ObservedGeneration != bs.Generation {
+		bs.Status.ObservedGeneration = bs.Generation
+		_ = r.Status().Update(ctx, bs) // 失败由下一次协调兜底
+	}
+}
+
+func (r *BackupScheduleReconciler) cleanupRemote(context.Context, *backupv1.BackupSchedule) error {
+	return nil // 真实实现：删除对象存储/云上的备份目录
+}
+
+// SetupWithManager 注册 watch：主资源 + 自己创建的 Deployment，子资源变化也会入队。
+func (r *BackupScheduleReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	return ctrl.NewControllerManagedBy(mgr).
+		For(&amp;backupv1.BackupSchedule{}).
+		Owns(&amp;appsv1.Deployment{}).
+		Complete(r)
+}</code></pre>
+<blockquote><p><code>meta.SetStatusCondition</code> 只在条件内容变化时返回 true；但 spec 变更（generation 递增）不一定改变条件，所以再用 <code>ObservedGeneration</code> 兜住一次写入。watch 由 <code>SetupWithManager</code> 里的 <code>For(&amp;BackupSchedule{}).Owns(&amp;appsv1.Deployment{})</code> 建立，子资源变化同样会入队。</p></blockquote>
+<pre><code class="lang-go">// cmd/main.go 关键片段
+mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+	Scheme: scheme, LeaderElection: true,                   // 多副本只让一个实例协调
+	LeaderElectionID:       "backup-operator.backup.example.com", // 抢 Lease，默认 15s 续约
+	HealthProbeBindAddress: ":8081",
+})
+if err != nil { return 1 }
+if err := (&amp;controller.BackupScheduleReconciler{Client: mgr.GetClient(), Scheme: mgr.GetScheme()}).SetupWithManager(mgr); err != nil { return 1 }
+if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil { return 1 } // SIGTERM 优雅退出</code></pre>
+<p><code>make manifests</code> 由上面的 marker 生成 <code>config/rbac/role.yaml</code>：控制器必须能 <code>list</code>/<code>watch</code> 才能建 informer cache，只给 <code>get</code> 会在启动时报 <code>cannot list resource</code>——这是 RBAC 报错最常见的一行；单 namespace 部署把 <code>ClusterRole</code> 换成 <code>Role</code> + <code>RoleBinding</code>。控制器自身以 Deployment 部署（2 副本 + PDB，靠上面的 Lease 选主），<code>kubectl -n backup-system get lease backup-operator.backup.example.com -o yaml</code> 可看谁在协调。</p>
+<h3 id="44-测试三层">4.4 测试三层</h3>
+<pre><code class="lang-go">// 第一层：fake client 单测，不启 apiserver，毫秒级，覆盖分支与幂等
+func TestReconcileCreatesDeployment(t *testing.T) {
+	sch := runtime.NewScheme()
+	_ = clientgoscheme.AddToScheme(sch)
+	_ = backupv1.AddToScheme(sch)
+	key := types.NamespacedName{Name: "nightly", Namespace: "default"}
+	bs := &amp;backupv1.BackupSchedule{ObjectMeta: metav1.ObjectMeta{Name: key.Name, Namespace: key.Namespace},
+		Spec: backupv1.BackupScheduleSpec{Image: "pg-backup:v1", IntervalHours: 6}}
+	c := fake.NewClientBuilder().WithScheme(sch).WithStatusSubresource(bs).WithObjects(bs).Build()
+	r := &amp;BackupScheduleReconciler{Client: c, Scheme: sch}
+	for i := 0; i &lt; 3; i++ { // 第一次挂 finalizer，后两次验证幂等（不应 AlreadyExists）
+		_, err := r.Reconcile(t.Context(), ctrl.Request{NamespacedName: key})
+		require.NoError(t, err)
+	}
+	var dep appsv1.Deployment
+	require.NoError(t, c.Get(t.Context(), key, &amp;dep))
+	require.Equal(t, "pg-backup:v1", dep.Spec.Template.Spec.Containers[0].Image)
+}</code></pre>
+<pre><code class="lang-go">// 第二层：envtest 集成，真 apiserver + etcd，验证 CRD schema、默认值、status 子资源、finalizer
+testEnv := &amp;envtest.Environment{CRDDirectoryPaths: []string{"../../config/crd/bases"}, ErrorIfCRDPathMissing: true}
+_, err := testEnv.Start() // 返回的 cfg 交给 ctrl.NewManager；启动即校验 CRD 能装进 apiserver
+require.NoError(t, err)</code></pre>
+<pre><code class="lang-bash"># 第三层：kind e2e，验证真实调度、真实删除与级联
+kind create cluster --image kindest/node:v1.37.0 &amp;&amp; make docker-build deploy IMG=registry.example.com/backup-operator:v0.1.0
+kubectl apply -f config/samples/ &amp;&amp; kubectl get bsched nightly -w
+kubectl delete bsched nightly &amp;&amp; kubectl get deploy nightly   # 应被级联删除</code></pre>
+<p>排障入口：<code>kubectl -n backup-system get lease backup-operator.backup.example.com -o yaml</code> 看 leader；<code>kubectl get events --field-selector involvedObject.name=nightly</code> 看 Event；<code>curl -s localhost:8080/metrics | grep controller_runtime_reconcile</code> 看错误数与耗时。</p>
+<hr>
+
+<div class="callout info"><p><b>实战要点：</b>先 Get 再 Create，冲突时重新入队；用 Server-Side Apply 减少字段争用；RBAC 按 kubebuilder 生成的 role 收紧。</p></div>
+</section>
+<section data-anchor="5-版本演进速览">
+<h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>阶段</th><th>关键变化与迁移注意点</th></tr></thead><tbody><tr><td>K8s 1.16</td><td><strong>CRD <code>v1</code> GA</strong>：必须提供完整 OpenAPI schema，不再允许 <code>preserveUnknownFields: true</code></td></tr><tr><td>K8s 1.22</td><td>CRD <code>v1beta1</code> 移除；<strong>Server-Side Apply GA</strong>，字段所有权模型稳定</td></tr><tr><td>K8s 1.25</td><td>CRD 的 <strong>CEL 校验 GA</strong>（<code>x-kubernetes-validations</code>），跨字段/不可变规则不必再写 webhook</td></tr><tr><td>K8s 1.30</td><td><strong>ValidatingAdmissionPolicy GA</strong>，部分 webhook 场景可由 CEL 策略替代；CRD 校验 ratcheting 改善升级兼容</td></tr><tr><td>kubebuilder v3 → v4</td><td>布局改 <code>go/v4</code>：<code>main.go</code> 移到 <code>cmd/</code>、控制器进 <code>internal/controller/</code>、Kustomize v5、<code>PROJECT</code> 文件记录 layout 版本</td></tr><tr><td>controller-runtime v0.22</td><td>原生 SSA 客户端（<code>client.Apply</code>）、controller warmup、依赖 k8s 1.34</td></tr><tr><td>controller-runtime v0.23</td><td>优先级队列默认启用；webhook builder 改为 <code>WebhookManagedBy(mgr, obj)</code>；Event 迁到 <code>events.k8s.io</code>，RBAC 需同步改</td></tr></tbody></table></div>
+<p><strong>迁移注意</strong>：</p>
+<ul><li>controller-runtime 每个 minor 对应一个 client-go minor，<strong>绑在一起升级</strong>；跨版本混搭不受支持（v0.25 对齐 client-go v0.37 / K8s 1.37）</li><li>v0.23 起不再用 <code>mgr.GetEventRecorderFor</code>，RBAC 里 core 的 <code>events</code> 要换成 <code>events.k8s.io</code>；CRD 删字段、改类型、改 storage version 需要 conversion webhook 或新版本 + 数据迁移</li></ul>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>Reconcile 不幂等</strong>：<code>Create</code> 前不 <code>Get</code>，第二次协调就 <code>AlreadyExists</code> 刷屏；或用 <code>GenerateName</code> 每次造新对象，越协调越多。先读后写或直接 <code>CreateOrUpdate</code>；把 <code>IsAlreadyExists</code> 当作成功，也应当是显式决定而非碰巧。</li><li><strong>忽略 409 Conflict</strong>：拿陈旧对象 <code>Update</code> 覆盖，丢用户修改。判断 <code>apierrors.IsConflict</code> → 重读重算 → 重试，或直接返回 error 交给限速队列。</li><li><strong>写 status 触发自身再入队的热循环</strong>：无条件 <code>Status().Update</code>，即使内容没变 <code>resourceVersion</code> 也会变 → 新事件 → 再协调，CPU 与 API QPS 一起打满。写前比对，并给 <code>For()</code> 加 <code>predicate.GenerationChangedPredicate{}</code> 过滤纯 status 事件。</li><li><strong>在 Reconcile 里 sleep 等就绪</strong>：占住 worker、队头阻塞，吞吐塌陷。用 <code>RequeueAfter</code>，或 <code>Owns</code> 子资源让它 Ready 时把你叫醒。</li><li><strong>finalizer 没删导致资源删不掉</strong>：清理失败却摘了 finalizer（泄漏外部资源），或异常时永不摘（卡死）。失败必须返回 error 保留 finalizer，并确认 RBAC 有 <code>&lt;resource&gt;/finalizers</code> 的 <code>update</code>。</li><li><strong>RBAC 直接给 cluster-admin</strong>：控制器从此能删任意 namespace 的任意资源。用 marker 生成最小权限；<code>Owns</code> 的资源必须有 <code>watch</code>；单 namespace 场景用 <code>Role</code> 而非 <code>ClusterRole</code>。</li><li><strong>业务逻辑全塞进 Reconcile</strong>：几百行 <code>if/else</code> 混着 API 调用与状态机，无法测试。拆成纯函数（spec + 现状 → 计划）+ 薄副作用层，纯函数用表驱动测试。</li><li><strong>过度 watch</strong>：watch 全集群 Pod/Secret，或每个 CR 建一个 informer，把 API Server 和内存打爆。按 namespace 收敛 cache（<code>cache.Options.DefaultNamespaces</code>）、用 selector 过滤、限制 <code>MaxConcurrentReconciles</code>。</li><li><strong>跨 namespace 设 ownerReference</strong>：API Server 直接拒绝（<code>OwnerRefInvalidNamespace</code>），或被 GC 误删。跨 ns 用 label 关联 + 显式 finalizer 清理。</li><li><strong>忘记 <code>AddToScheme</code></strong>：<code>no kind is registered</code> 或 decode 出空对象。新 API 包要在 <code>main.go</code> 和测试里各注册一次。</li><li><strong>控制器自身无资源限制</strong>：manager 被 OOMKilled 会让「所有 CR 停止收敛」，但集群表面看起来正常。给 requests/limits、PDB，并监控 <code>controller_runtime_reconcile_errors_total</code>；也别把 Operator 当 Helm 用——只「创建一次资源」而不纠偏、不写 status、不管 finalizer，那不如用 Helm。</li></ol>
+<hr>
+
+<div class="callout warning"><p><b>生产警示：</b>Reconcile 里 sleep 等 Pod 就绪会阻塞队列；finalizer 未删导致 CR 永远 Terminating；更新 status 触发自身热循环是新手最常见的坑。</p></div>
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>kubebuilder + controller-runtime</th><th>Operator SDK（Ansible/Helm）</th><th>Helm Chart</th><th>Kustomize</th><th>Crossplane</th></tr></thead><tbody><tr><td>表达力</td><td><strong>最强</strong>，任意 Go 逻辑</td><td>中（playbook/模板）</td><td>低（模板渲染）</td><td>低（patch 叠加）</td><td>中高（Composition）</td></tr><tr><td>持续纠偏</td><td><strong>原生</strong> level-triggered</td><td>有（周期运行）</td><td>无（一次性 apply）</td><td>无</td><td>有</td></tr><tr><td>status / conditions</td><td><strong>完整</strong></td><td>弱</td><td>无</td><td>无</td><td>有</td></tr><tr><td>finalizer / 外部清理</td><td><strong>完整</strong></td><td>有限</td><td>无（hook 易失败）</td><td>无</td><td>有</td></tr><tr><td>学习成本</td><td>高（Go + 控制器模型）</td><td>中（会 Ansible 即可）</td><td><strong>低</strong></td><td>低</td><td>中</td></tr><tr><td>典型场景</td><td>有状态服务、复杂生命周期</td><td>已有 Ansible 资产</td><td>无状态应用发布</td><td>环境差异化部署</td><td>云资源编排</td></tr></tbody></table></div>
+<p>一句话决策：</p>
+<ul><li><strong>要「持续收敛 + 生命周期 + 外部资源清理」</strong> → kubebuilder + controller-runtime，生态标准、可测试、可维护。</li><li><strong>只是把一组 YAML 发上去</strong> → Helm（配 Kustomize 做环境差异），别写 Operator。</li><li><strong>团队已有大量 Ansible playbook、逻辑不复杂</strong> → Operator SDK 的 Ansible 插件，复用资产。</li><li><strong>主要编排云资源（RDS、OSS、VPC）或不想自研</strong> → Crossplane、云厂商托管 Operator，或用 PaaS 托底。</li></ul>
+<blockquote><p>落地顺序：先把 CRD 的 API 设计对（字段、默认值、校验、conditions）→ 再写幂等 Reconcile → 补 finalizer 与 RBAC → 最后才是 webhook、多版本转换、HA 与可观测。<strong>API 设计错了，后面每一层都在还债。</strong></p></blockquote>
+<p>参考：<a href="https://book.kubebuilder.io/">https://book.kubebuilder.io/</a> · <a href="https://sdk.operatorframework.io/docs/building-operators/golang/">https://sdk.operatorframework.io/docs/building-operators/golang/</a> · <a href="https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/">https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/</a> · <a href="https://kubernetes.io/docs/reference/using-api/server-side-apply/">https://kubernetes.io/docs/reference/using-api/server-side-apply/</a>（版本与特性整理于 2026-11，具体以上游最新 release 为准）</p>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

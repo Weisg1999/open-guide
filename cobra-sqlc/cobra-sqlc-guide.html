@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cobra / sqlc · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#ca8a04; --accent-light:#fef9c3; --accent-dark:#854d0e;
+    --bg:#fdfbee; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#1f1a05; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#854d0e 0%,#ca8a04 58%,#854d0e 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">Cobra / sqlc<span class="ver">v1.10.2 / v1.31</span></div>
+  <div class="sub">CLI 工程化 · SQL 代码生成</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a href="#2-能力总览">2. 能力总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-cobra-的命令树与执行流水线">3.1 Cobra 的命令树与执行流水线</a>
+  <a class="sub-link" href="#32-rune错误传播与-silenceusage-silenceerrors">3.2 RunE、错误传播与 SilenceUsage / SilenceErrors</a>
+  <a class="sub-link" href="#33-flagspersistentflags-vs-localflagsargs-与必填校验">3.3 Flags：PersistentFlags vs LocalFlags，Args 与必填校验</a>
+  <a class="sub-link" href="#34-sqlc-的编译模型从-ddl-到类型">3.4 sqlc 的编译模型：从 DDL 到类型</a>
+  <a class="sub-link" href="#35-查询注解命名参数与类型映射">3.5 查询注解、命名参数与类型映射</a>
+  <a class="sub-link" href="#36-动态-sql-的边界与-goose-的配合">3.6 动态 SQL 的边界与 goose 的配合</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-目录布局与脚手架">4.1 目录布局与脚手架</a>
+  <a class="sub-link" href="#42-rootflagviper-绑定与配置装载">4.2 root：flag、Viper 绑定与配置装载</a>
+  <a class="sub-link" href="#43-serve-与-migratelocalflags-与子命令分工">4.3 serve 与 migrate：LocalFlags 与子命令分工</a>
+  <a class="sub-link" href="#44-sqlcyaml">4.4 sqlc.yaml</a>
+  <a class="sub-link" href="#45-迁移与查询">4.5 迁移与查询</a>
+  <a class="sub-link" href="#46-调用生成代码分页批量错误分支">4.6 调用生成代码：分页、批量、错误分支</a>
+  <a class="sub-link" href="#47-补全脚本与动态补全">4.7 补全脚本与动态补全</a>
+  <a href="#5-版本演进">5. 版本演进</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>Cobra / sqlc 技术指南</h1>
+<p>两个把约定变成代码的工具：Cobra 把命令树与参数解析标准化，sqlc 把 SQL 语句直接编译成类型安全的 Go 代码。</p>
+<p style="opacity:.8;font-size:13.5px">CLI 工程化 · SQL 代码生成</p>
+<div class="meta"><span>cobra v1.10</span><span>sqlc v1.31</span><span>命令树与 Viper</span><span>sqlc 注解</span><span>NULL 类型映射</span><span>goose 迁移</span></div>
+</div>
+<blockquote><p>两个把「约定」变成「代码」的工具：Cobra 把命令树与参数解析标准化，sqlc 把 SQL 语句直接编译成类型安全的 Go 代码。 上游：<a href="https://github.com/spf13/cobra">https://github.com/spf13/cobra</a> v1.10.2 · <a href="https://github.com/sqlc-dev/sqlc">https://github.com/sqlc-dev/sqlc</a> v1.31.1　|　配套：<a href="https://github.com/pressly/goose">https://github.com/pressly/goose</a> v3.30.1 · pgx v5　|　协议：Apache-2.0 / MIT</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p>Cobra 是 spf13 为 Hugo 写的 CLI 框架，如今是 Go 命令行的事实标准（kubectl、docker、gh、hugo、etcdctl 都在用）。它把「命令树 + POSIX 风格 flag + 帮助/补全」固化成结构体，开发者只需填 <code>RunE</code>。sqlc 走另一条路：<strong>不提供 ORM API，而是把 <code>.sql</code> 文件当作源码</strong>，解析 DDL 与查询语句，在编译期推导参数与返回列的类型，生成 <code>Queries</code> 结构体与 <code>Querier</code> 接口。一个治理「程序怎么被调用」，一个治理「SQL 怎么变成函数」，二者组合正好覆盖一个 Go 后端服务的入口层与数据层。</p>
+<p><strong>适用</strong>：需要子命令的 CLI / 运维工具 / 服务二进制（<code>app serve</code>、<code>app migrate</code>）；SQL 复杂、DBA 参与评审、想要「SQL 就是文档」的数据访问层。<strong>不适合</strong>：只有一两个位置参数的小脚本（标准库 <code>flag</code> 足够）；把 sqlc 当 ORM 用（它没有关联、钩子、迁移、懒加载）；运行期动态拼 WHERE 的报表系统（见 3.6）。</p>
+<pre><code class="lang-bash">go get github.com/spf13/cobra@v1.10.2
+go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1
+go install github.com/pressly/goose/v3/cmd/goose@v3.30.1
+go install github.com/spf13/cobra-cli@latest        # 脚手架，可选</code></pre>
+<hr>
+
+</section>
+<section data-anchor="2-能力总览">
+<h2 id="2-能力总览">2. 能力总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>Cobra（CLI 骨架）</th><th>sqlc（数据访问代码生成）</th></tr></thead><tbody><tr><td>输入</td><td>Go 代码里声明的 <code>Command</code> 树 + pflag 定义</td><td><code>schema</code>（DDL 文件/目录）+ <code>queries</code>（带注解的 <code>.sql</code>）</td></tr><tr><td>输出</td><td>可执行程序、帮助文本、补全脚本、man page</td><td><code>db.go</code> / <code>models.go</code> / <code>query.sql.go</code> / <code>Querier</code> 接口</td></tr><tr><td>核心机制</td><td>遍历参数找目标命令 → 解析 flag → 校验 Args → 跑钩子 → <code>RunE</code></td><td>解析 DDL 建 catalog → 语义分析查询 → 推导类型 → 渲染模板</td></tr><tr><td>类型安全</td><td>flag 取值仍是字符串，需 <code>GetInt</code> 等强转</td><td>参数与返回值<strong>编译期</strong>确定，列类型映射到 Go 类型</td></tr><tr><td>错误模型</td><td><code>RunE</code> 返回 <code>error</code>，<code>Execute</code> 统一出口</td><td>生成 <code>error</code> 返回；<code>:one</code> 无行时返回驱动的 ErrNoRows（<code>database/sql</code> 为 <code>sql.ErrNoRows</code>，pgx 为 <code>pgx.ErrNoRows</code>）</td></tr><tr><td>扩展点</td><td><code>PersistentPreRunE</code>、<code>Args</code>、<code>FlagErrorFunc</code>、补全函数</td><td><code>overrides</code>、<code>sqlc.arg/narg/slice/embed</code>、Go/JSON 模板插件</td></tr><tr><td>配套</td><td>Viper（配置）、cobra-cli（脚手架）</td><td>goose / golang-migrate（迁移）、pgx / database/sql（驱动）</td></tr></tbody></table></div>
+<hr>
+
+<div class="features">
+  <div class="feature"><div class="fh"><h4>Cobra</h4></div><p>命令树 + RunE；PersistentFlags 给全局，LocalFlags 给子命令</p></div>
+  <div class="feature"><div class="fh"><h4>sqlc 注解</h4></div><p>:one / :many / :exec / :batch*；NULL 映射到 pgtype 或 sql.Null*</p></div>
+  <div class="feature"><div class="fh"><h4>迁移配合</h4></div><p>goose 管 schema，sqlc 只读 schema 不执行迁移</p></div>
+</div>
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-cobra-的命令树与执行流水线">3.1 Cobra 的命令树与执行流水线</h3>
+<p><code>cobra.Command</code> 是一棵树：<code>parent</code> / <code>commands</code> 双向可查，<code>Use</code> 的第一段是命令名，后面是参数说明（<code>Use: "get NAME"</code>）。<code>ExecuteC</code> 先 <code>Find(args)</code>：用 <code>stripFlags</code> 把 <code>--flag value</code>、<code>--flag=value</code>、<code>-abc</code> 从参数里剔除，剩下的第一个词逐层匹配子命令名或 <code>Aliases</code>，因此 <code>app --log-level debug serve</code> 与 <code>app serve --log-level debug</code> 等价（前提是 <code>--log-level</code> 是 persistent flag）；匹配不到且当前命令有子命令时，Cobra 会用 <code>SuggestionsMinimumDistance</code>（默认 2）给出「你是不是想输入 app server?」。</p>
+<p>命中目标命令后，<code>execute()</code> 严格按序执行：</p>
+<pre><code class="lang-text">ParseFlags(args)          →  解析本命令可见的全部 flag（local + 继承的 persistent）
+help / version 短路      →  -h、--help 直接打印并返回
+ValidateArgs(args)        →  Args 校验器
+PersistentPreRunE         →  沿父链只执行**最近一个**；之后 PreRunE
+ValidateRequiredFlags()   →  MarkFlagRequired 的检查（在 PreRun 之后）
+ValidateFlagGroups()      →  mutually exclusive / one required 组校验
+RunE → PostRunE</code></pre>
+<p>注意两点：<strong><code>Args</code> 在 flag 解析之后</strong>，所以校验器里可以 <code>cmd.Flags().GetString("env")</code>；<code>PersistentPreRunE</code> 不会叠加执行，若需父子都跑，必须在子命令里显式调用父逻辑。Cobra 还会自动挂 <code>help</code> 与 <code>completion</code> 两个子命令，可通过 <code>CompletionOptions.DisableDefaultCmd</code> 关掉。</p>
+<h3 id="32-rune错误传播与-silenceusage-silenceerrors">3.2 <code>RunE</code>、错误传播与 <code>SilenceUsage</code> / <code>SilenceErrors</code></h3>
+<p><code>RunE</code> 的返回值是整个 CLI 唯一的错误通道：<code>execute()</code> 把它原样上抛，<code>ExecuteC</code> 再决定打印什么。两个开关控制两条输出：<code>SilenceErrors=false</code>（默认）打印 <code>Error: &lt;err&gt;</code> 到 stderr；<code>SilenceUsage=false</code>（默认）打印<strong>整页 Usage / Flags / 子命令列表</strong>。对服务型 CLI 后者几乎总是错的——数据库连不上时刷屏三十行帮助，真正的错误被埋掉。</p>
+<p>生产写法是根命令同时置 <code>true</code>，错误由 <code>main</code> 统一处理，退出码自己给（Cobra <strong>不会</strong>根据错误类型设置退出码）：</p>
+<pre><code class="lang-go">func main() {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	if err := NewRoot(&amp;App{v: viper.New()}).ExecuteContext(ctx); err != nil {
+		fmt.Fprintln(os.Stderr, "错误:", err)
+		os.Exit(1) // Execute 返回 error 时进程默认仍是 0
+	}
+}</code></pre>
+<p>需要区分「用法错误」与「运行错误」时，别改全局开关，而是在 <code>Args</code> 校验器返回错误时<strong>显式</strong> <code>cmd.Usage()</code>，或用 <code>cmd.SetFlagErrorFunc</code> 统一包装。<code>ExecuteContext</code> 把 <code>cmd.Context()</code> 贯穿到 <code>RunE</code>，配合 <code>signal.NotifyContext</code> 才让 Ctrl-C 能中断长任务；<code>cmd.SetOut</code> / <code>SetErr</code> 可替换输出流，这是命令可测的关键（见第 6 章第 1 条）。错误包装用 <code>%w</code>，让 <code>main</code> 能 <code>errors.Is</code> 映射退出码（2 用法错误、3 未找到）。</p>
+<h3 id="33-flagspersistentflags-vs-localflagsargs-与必填校验">3.3 Flags：<code>PersistentFlags</code> vs <code>LocalFlags</code>，Args 与必填校验</h3>
+<p>几套 flag 集合的关系是新手最容易绕晕的地方：</p>
+<div class="table-wrap"><table><thead><tr><th>方法</th><th>内容</th></tr></thead><tbody><tr><td><code>cmd.Flags()</code></td><td>执行期合并视图：本命令 local flag + 从祖先继承的 persistent flag</td></tr><tr><td><code>cmd.PersistentFlags()</code></td><td>只有本命令声明、会被所有后代继承的 flag</td></tr><tr><td><code>cmd.LocalFlags()</code> / <code>InheritedFlags()</code></td><td>本命令声明的全部（含自己的 persistent）/ 仅从祖先继承的</td></tr><tr><td><code>cmd.LocalNonPersistentFlags()</code></td><td>只在本命令生效、不向下传的</td></tr></tbody></table></div>
+<p><code>--dsn</code> 这种「所有子命令都要用」的放 <code>PersistentFlags</code>；<code>serve --addr</code> 这种只属于一个命令的放 <code>Flags</code>。副作用是<strong>兄弟命令会被 persistent flag 隐式耦合</strong>：在 root 上加了 <code>--dry-run</code>，<code>migrate</code> 也会接受它，很容易出现「flag 被解析了但没被读取」的静默失效。</p>
+<p><code>Args</code> 是一组可组合的校验器：<code>cobra.NoArgs</code>、<code>ExactArgs(n)</code>、<code>MinimumNArgs(n)</code>、<code>RangeArgs(min, max)</code>、<code>OnlyValidArgs</code>（配合 <code>ValidArgs</code> 或 <code>ValidArgsFunction</code>），以及 <code>MatchAll(cobra.MinimumNArgs(1), myValidator)</code>。<strong>不写 <code>Args</code> 时多余位置参数会被静默丢弃</strong>，这是「用户敲错命令却成功退出」的头号原因。</p>
+<p>必填校验有两层，别混用：<code>MarkFlagRequired</code> 只检查「用户是否显式传了这个 flag」，在 <code>PreRun</code> 之后、<code>RunE</code> 之前执行；但<strong>它不看配置文件或环境变量</strong>，即使 <code>PreRun</code> 已经从 <code>config.yaml</code> 读到 DSN 也不算数。所以<strong>凡是配置文件 / 环境变量也能提供的项（DSN、端口）都不要标 required</strong>，否则 <code>app serve</code> 不带 <code>--dsn</code> 仍会失败，正确做法是配置合并后在 <code>RunE</code> 里校验（见 4.2 的 <code>a.cfg.DSN == ""</code>）。继承 flag 要在<strong>定义它的命令</strong>上调 <code>MarkPersistentFlagRequired</code>，在子命令上调 <code>MarkFlagRequired</code> 会因找不到 flag 而返回 error——忽略这个 error 就得到「看起来设了必填、其实没生效」。互斥/依赖用 <code>MarkFlagsMutuallyExclusive</code>、<code>MarkFlagsOneRequired</code>、<code>MarkFlagsRequiredTogether</code>（v1.5+），它们同样走 <code>ValidateFlagGroups</code>。</p>
+<h3 id="34-sqlc-的编译模型从-ddl-到类型">3.4 sqlc 的编译模型：从 DDL 到类型</h3><div class="figure">
+  <svg viewBox="0 0 880 268" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-cobra-sqlc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#ca8a04"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#854d0e">SQL 到类型安全代码</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">SQL 是源、Go 是产物，改查询就重新生成</text>
+    <rect x="36" y="82" width="175" height="80" rx="12" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+    <text x="124" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#854d0e">schema + queries</text>
+    <text x="124" y="136" text-anchor="middle" font-size="11" fill="#854d0e">DDL 与带注解查询</text>
+    <line x1="215" y1="122" x2="241" y2="122" stroke="#ca8a04" stroke-width="2" marker-end="url(#m-cobra-sqlc)"/>
+    <rect x="247" y="82" width="175" height="80" rx="12" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+    <text x="334" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#854d0e">sqlc generate</text>
+    <text x="334" y="136" text-anchor="middle" font-size="11" fill="#854d0e">解析 AST、推断类型</text>
+    <line x1="426" y1="122" x2="452" y2="122" stroke="#ca8a04" stroke-width="2" marker-end="url(#m-cobra-sqlc)"/>
+    <rect x="458" y="82" width="175" height="80" rx="12" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+    <text x="546" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#854d0e">生成的 Go 代码</text>
+    <text x="546" y="136" text-anchor="middle" font-size="11" fill="#854d0e">参数与返回值强类型</text>
+    <line x1="637" y1="122" x2="663" y2="122" stroke="#ca8a04" stroke-width="2" marker-end="url(#m-cobra-sqlc)"/>
+    <rect x="669" y="82" width="175" height="80" rx="12" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+    <text x="756" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#854d0e">pgx / database/sql</text>
+    <text x="756" y="136" text-anchor="middle" font-size="11" fill="#854d0e">直接调用</text>
+    <rect x="40" y="186" width="800" height="58" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="210" font-size="12.5" fill="#1e293b">生成文件不要手改；schema 由 goose 管，sqlc 只读不执行迁移。</text>
+  </svg>
+  <figcaption>SQL 到类型安全代码</figcaption>
+</div>
+<p>sqlc 是一次<strong>离线编译</strong>，分三段：</p>
+<ol><li><strong>建 catalog</strong>：读 <code>schema</code> 指定的 DDL 文件（或 goose/golang-migrate 的迁移目录），解析 <code>CREATE TABLE / ALTER TABLE / CREATE TYPE</code>，得到「表 → 列 → 类型 + 是否 NOT NULL」的目录，作为全局状态。</li><li><strong>语义分析查询</strong>：逐个 <code>queries</code> 文件按 <code>-- name: X :one</code> 切分，解析 SQL AST（PostgreSQL 走 libpg_query），用 catalog 做名字解析：<code>WHERE id = $1</code> 里 <code>$1</code> 的类型来自 <code>users.id</code>；<code>SELECT *</code> 展开成具体列；<code>JOIN</code> 后同名列去重并加表名前缀。</li><li><strong>渲染</strong>：按 <code>engine</code>（<code>postgresql</code> / <code>mysql</code> / <code>sqlite</code>）与 <code>sql_package</code> 选类型映射表，输出三件套——<code>db.go</code>（<code>DBTX</code> 接口 + <code>New</code> + <code>WithTx</code>）、<code>models.go</code>（表结构体与枚举）、<code>query.sql.go</code>（<code>const getUser</code> + <code>Params</code>/<code>Row</code> + 方法 + <code>Querier</code> 接口）。</li></ol>
+<p>由此推出两个硬性质：<strong>SQL 文本在生成期固定</strong>，运行期不可能改写；<strong>类型来自 schema</strong>，schema 变了必须重新 generate，否则生成代码与真实库漂移。日常命令：<code>sqlc compile</code> 只做类型检查不落盘（CI 最快的一步）、<code>sqlc generate</code> 写文件、<code>sqlc diff</code> 比对生成代码差异、<code>sqlc vet</code> 跑配置里的 <code>rules</code>（如禁止全表扫描）。<code>sqlc.yaml</code> 的 <code>version: "2"</code> 是现行格式（<code>"1"</code> 已废弃但长期兼容）：顶层 <code>sql</code> 是一个<strong>包列表</strong>，每项即旧版的 <code>packages</code>，各自带 <code>engine</code>、<code>schema</code>、<code>queries</code> 与 <code>gen.go</code>，因此一个仓库可以同时生成 <code>store</code> 与 <code>report</code> 两个包。</p>
+<h3 id="35-查询注解命名参数与类型映射">3.5 查询注解、命名参数与类型映射</h3>
+<p>注解决定生成的方法签名，选错会丢掉关键信息：</p>
+<div class="table-wrap"><table><thead><tr><th>注解</th><th>生成签名要点</th><th>适用</th></tr></thead><tbody><tr><td><code>:one</code></td><td><code>(Row, error)</code>，无行返回 <code>sql.ErrNoRows</code></td><td>主键查询、<code>RETURNING</code></td></tr><tr><td><code>:many</code></td><td><code>([]Row, error)</code></td><td>列表；<code>emit_empty_slices</code> 决定空结果是否 <code>[]</code></td></tr><tr><td><code>:exec</code></td><td><code>error</code>，<strong>丢弃影响行数</strong></td><td>DDL、确定会命中的写入</td></tr><tr><td><code>:execrows</code></td><td><code>(int64, error)</code></td><td>需要判断「是否真的改了」的 UPDATE/DELETE</td></tr><tr><td><code>:execresult</code> / <code>:execlastid</code></td><td><code>(sql.Result, error)</code> / <code>(int64, error)</code></td><td>要 LastInsertId（MySQL）</td></tr><tr><td><code>:copyfrom</code></td><td><code>(ctx, []Params) (int64, error)</code>，走 <code>pgx.CopyFrom</code></td><td>大批量 INSERT</td></tr><tr><td><code>:batchexec</code></td><td><code>FooBatch</code> + <code>QueueAdd</code> + 回调</td><td>一次往返发多条语句</td></tr></tbody></table></div>
+<p>参数写法有三种：位置参数 <code>$1</code>（PostgreSQL）/ <code>?</code>（MySQL、SQLite）；<code>sqlc.arg('name')</code> 生成命名字段且<strong>非空</strong>；<code>sqlc.narg('name')</code> 生成可空类型（<code>pgtype.Text</code> / <code>sql.NullString</code> / 指针，取决于 <code>sql_package</code> 与选项）。<code>sqlc.embed(users)</code> 把整行结构体嵌进结果，省掉手写字段映射；<code>sqlc.slice('ids')</code> 只在 MySQL/SQLite 可用（展开成 <code>IN (?, ?, ...)</code>），PostgreSQL 应写 <code>= ANY(sqlc.arg('ids')::bigint[])</code>。</p>
+<p><code>NULL</code> 是类型映射的主战场。默认策略：<strong>NOT NULL 列 → 原生类型（<code>string</code>、<code>int64</code>、<code>time.Time</code>），可空列 → 包装类型</strong>。<code>sql_package: "pgx/v5"</code> 下可空列是 <code>pgtype.Text</code> / <code>pgtype.Int8</code> / <code>pgtype.Timestamptz</code>，取值要 <code>if v.Valid { ... }</code>；<code>database/sql</code> 下是 <code>sql.NullString</code> 一类。嫌麻烦可以开 <code>emit_pointers_for_null_types: true</code> 得到 <code>*string</code>，或用 <code>overrides</code> 把某个 <code>db_type</code> 映射到自定义类型（<code>uuid → uuid.UUID</code>、<code>numeric → decimal.Decimal</code>）。注意 <code>overrides</code> 要区分可空与否，加 <code>nullable: true</code> 才能覆盖可空列，只写一条往往只对 NOT NULL 生效。</p>
+<h3 id="36-动态-sql-的边界与-goose-的配合">3.6 动态 SQL 的边界与 goose 的配合</h3>
+<p>sqlc 的边界很硬：<strong>WHERE 子句、排序列、表名都不能在运行期拼</strong>。工程上有四种正当出路：写多条专用查询在 Go 里 switch（最推荐，可读可测）；用「可选过滤」模式 <code>WHERE (sqlc.narg('status')::text IS NULL OR status = sqlc.narg('status')::text)</code>，一条查询覆盖有无筛选；用 <code>sqlc.slice</code> / <code>ANY</code> 处理变长 <code>IN</code>；确实要动态排序列时，<strong>只允许白名单</strong>映射：<code>ORDER BY CASE WHEN sqlc.arg('sort')::text = 'created' THEN created_at END</code>，或退化到手写 pgx 查询。绝不接受把用户输入拼进 SQL 字符串——那等于同时放弃类型安全和注入防护。</p>
+<p>迁移工具与 sqlc 的分工是「<strong>迁移拥有 schema，sqlc 只读不写</strong>」：goose 用版本化文件管理真实库演进，文件里 <code>-- +goose Up</code> / <code>-- +goose Down</code> 分段；sqlc 的 <code>schema</code> 直接指向 <code>db/migrations</code> 目录，它只解析 Up 段（遇到 <code>Down</code> 会跳过），因此<strong>一份 DDL 同时喂给迁移和代码生成</strong>，从根上消除「手写 schema.sql 与迁移不一致」的漂移。代价是迁移文件必须<strong>可被解析</strong>：sqlc 按文件名顺序应用，<code>ALTER TABLE ... RENAME</code> 这类语句要写全；用 squash / out-of-order 迁移时务必在 CI 里从空库 <code>goose up</code> 后再 <code>sqlc generate &amp;&amp; git diff --exit-code</code>，让漂移变成红灯而不是线上事故。goose 的 <code>-- +goose StatementBegin/End</code> 用于函数、触发器这类含分号的语句，漏写会被切成两半。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-目录布局与脚手架">4.1 目录布局与脚手架</h3>
+<pre><code class="lang-text">app/
+├── cmd/app/main.go          # 只做 main、信号、退出码
+├── internal/cli/            # root.go / serve.go / migrate.go
+├── internal/service/        # 业务：组合 sqlc 的 Queries
+├── internal/store/          # sqlc 输出，勿手改
+├── db/                      # migrations/（goose）+ queries/ + embed.go
+└── sqlc.yaml</code></pre>
+<p><code>cobra-cli init --author "you" --license mit</code> 能生成 <code>cmd/root.go</code> + <code>main.go</code>，<code>cobra-cli add serve</code> 追加子命令；但它默认把 <code>rootCmd</code> 写成包级变量、在 <code>init()</code> 里 <code>AddCommand</code>，这正是第 6 章第 1 条要避免的形态。建议只借它的目录骨架，命令一律用构造函数产出。</p>
+<h3 id="42-rootflagviper-绑定与配置装载">4.2 root：flag、Viper 绑定与配置装载</h3>
+<p><code>App</code> 是持有 <code>*viper.Viper</code>、<code>Config</code>、<code>*slog.Logger</code> 的轻量容器，由 <code>main</code> 构造后注入命令树；<code>Config</code> 字段用 <code>mapstructure</code> tag 与 Viper key 对齐。</p>
+<pre><code class="lang-go">// internal/cli/root.go
+package cli
+
+import (
+	"errors"
+	"fmt"
+	"io/fs"
+	"log/slog"
+	"os"
+	"strings"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+)
+
+type Config struct {
+	DSN      string `mapstructure:"dsn"`
+	LogLevel string `mapstructure:"log_level"`
+	PoolSize int32  `mapstructure:"pool_size"`
+}
+
+func NewRoot(app *App) *cobra.Command {
+	root := &amp;cobra.Command{
+		Use: "app", Short: "用户服务：HTTP + 迁移",
+		SilenceUsage: true, SilenceErrors: true, // 错误统一由 main 打印一行
+		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error { return app.load(cmd) },
+	}
+	pf := root.PersistentFlags()
+	pf.String("dsn", "", "PostgreSQL DSN（也可用 APP_DSN 或配置文件）")
+	pf.String("log-level", "info", "debug|info|warn|error")
+	pf.Int32("pool-size", 10, "连接池大小")
+	pf.String("config", "./config.yaml", "配置文件路径")
+	_ = app.v.BindPFlag("dsn", pf.Lookup("dsn")) // 返回 error 只可能是 flag 名写错
+	_ = app.v.BindPFlag("log_level", pf.Lookup("log-level"))
+	_ = app.v.BindPFlag("pool_size", pf.Lookup("pool-size"))
+	root.AddCommand(newServe(app), newMigrate(app))
+	return root
+}
+
+func (a *App) load(cmd *cobra.Command) error {
+	v := a.v
+	v.SetEnvPrefix("APP") // APP_DSN / APP_LOG_LEVEL
+	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
+	v.AutomaticEnv()
+	cfgPath, _ := cmd.Flags().GetString("config")
+	v.SetConfigFile(cfgPath) // 未指定时用 flag 默认的 ./config.yaml
+	if err := v.ReadInConfig(); err != nil {
+		// SetConfigFile 指定具体路径后，文件不存在返回 *fs.PathError，不是 ConfigFileNotFoundError
+		var notFound viper.ConfigFileNotFoundError
+		missing := errors.As(err, &amp;notFound) || errors.Is(err, fs.ErrNotExist)
+		// 显式 --config 指定的文件必须存在；默认路径缺失才允许降级到 env/flag
+		if cmd.Flags().Changed("config") || !missing {
+			return fmt.Errorf("读取配置: %w", err)
+		}
+	}
+	if err := v.Unmarshal(&amp;a.cfg); err != nil {
+		return fmt.Errorf("解码配置: %w", err)
+	}
+	if a.cfg.DSN == "" { // 必填项在这里校验，而不是 MarkFlagRequired
+		return errors.New("缺少 dsn：--dsn / APP_DSN / config.yaml 任选其一")
+	}
+	var lvl slog.Level
+	_ = lvl.UnmarshalText([]byte(a.cfg.LogLevel))
+	a.log = slog.New(slog.NewJSONHandler(os.Stderr, &amp;slog.HandlerOptions{Level: lvl}))
+	return nil
+}</code></pre>
+<p>优先级来自 Viper 的固定链：<strong>显式 <code>Set</code> &gt; 用户改过的 flag &gt; 环境变量 &gt; 配置文件 &gt; flag 默认值</strong>。绑定 flag 时若用户没传，Viper 会跳过该 flag 继续下探，只有整条链都没值才回落到 <code>DefValue</code>——所以配置文件里的 <code>dsn</code> 不会被 <code>--dsn</code> 的空默认值盖掉；业务默认值用 <code>SetDefault</code> 表达，别塞进 flag 默认值。细节见 <a href="../viper/viper-guide.html">Viper 指南</a>。</p>
+<h3 id="43-serve-与-migratelocalflags-与子命令分工">4.3 serve 与 migrate：LocalFlags 与子命令分工</h3>
+<pre><code class="lang-go">// internal/cli/serve.go
+func newServe(app *App) *cobra.Command {
+	var addr string
+	cmd := &amp;cobra.Command{
+		Use: "serve", Short: "启动 HTTP 服务", Args: cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			ctx := cmd.Context()
+			pcfg, err := pgxpool.ParseConfig(app.cfg.DSN)
+			if err != nil {
+				return fmt.Errorf("解析 dsn: %w", err)
+			}
+			pcfg.MaxConns = app.cfg.PoolSize
+			pool, err := pgxpool.NewWithConfig(ctx, pcfg)
+			if err != nil {
+				return fmt.Errorf("连接数据库: %w", err)
+			}
+			defer pool.Close()
+			srv := &amp;http.Server{Addr: addr, Handler: newRouter(store.New(pool), app.log)}
+			go func() { _ = srv.ListenAndServe() }()
+			&lt;-ctx.Done() // ExecuteContext 收到 SIGINT/SIGTERM
+			sctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			return srv.Shutdown(sctx)
+		},
+	}
+	cmd.Flags().StringVar(&amp;addr, "addr", ":8080", "HTTP 监听地址") // 只属于 serve
+	return cmd
+}</code></pre>
+<pre><code class="lang-go">// internal/cli/migrate.go —— 需要 up / status 时把它们拆成子命令，复用 openDB
+func newMigrate(app *App) *cobra.Command {
+	return &amp;cobra.Command{
+		Use: "migrate", Short: "数据库迁移（goose）", Args: cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			sqlDB, err := sql.Open("pgx", app.cfg.DSN) // 需空导入 pgx/v5/stdlib
+			if err != nil {
+				return fmt.Errorf("打开数据库: %w", err)
+			}
+			defer sqlDB.Close()
+			goose.SetBaseFS(db.FS) // //go:embed migrations/*.sql
+			if err := goose.SetDialect("postgres"); err != nil {
+				return err
+			}
+			return goose.UpContext(cmd.Context(), sqlDB, "migrations")
+		},
+	}
+}</code></pre>
+<h3 id="44-sqlcyaml">4.4 <code>sqlc.yaml</code></h3>
+<pre><code class="lang-yaml">version: "2"
+sql:
+  - engine: "postgresql"
+    schema: "db/migrations"      # 直接吃 goose 迁移，单一事实来源
+    queries: "db/queries"
+    gen:
+      go:
+        package: "store"
+        out: "internal/store"
+        sql_package: "pgx/v5"     # 生成 pgx 原生签名，而非 database/sql
+        emit_json_tags: true
+        emit_interface: true      # 生成 Querier 接口，便于 mock
+        emit_empty_slices: true   # 空结果返回 []T{} 而非 nil
+        overrides:
+          - db_type: "uuid"
+            go_type: "github.com/google/uuid.UUID"
+          - db_type: "uuid"
+            nullable: true        # 可空列必须单独写一条
+            go_type: "*github.com/google/uuid.UUID"</code></pre>
+<h3 id="45-迁移与查询">4.5 迁移与查询</h3>
+<pre><code class="lang-sql">-- db/migrations/0001_init.sql
+-- +goose Up
+CREATE TABLE users (
+    id bigserial PRIMARY KEY, email text NOT NULL UNIQUE,
+    name text NOT NULL, status text NOT NULL DEFAULT 'active',
+    created_at timestamptz NOT NULL DEFAULT now()
+);
+-- +goose Down
+DROP TABLE users;</code></pre>
+<pre><code class="lang-sql">-- db/queries/user.sql
+-- name: ListUsers :many
+SELECT * FROM users
+WHERE (sqlc.narg('status')::text IS NULL OR status = sqlc.narg('status')::text)
+ORDER BY id DESC LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
+
+-- name: CountUsers :one
+SELECT count(*) FROM users
+WHERE (sqlc.narg('status')::text IS NULL OR status = sqlc.narg('status')::text);
+
+-- name: CreateUser :one
+INSERT INTO users (email, name) VALUES ($1, $2) RETURNING *;
+
+-- name: BatchCreateUsers :copyfrom
+INSERT INTO users (email, name) VALUES ($1, $2);
+
+-- name: DeleteUser :execrows
+DELETE FROM users WHERE id = $1;</code></pre>
+<pre><code class="lang-bash">sqlc compile &amp;&amp; sqlc generate        # 先类型检查，再落盘
+sqlc vet &amp;&amp; sqlc diff &amp;&amp; git diff --exit-code internal/store  # rules + 漂移检查</code></pre>
+<h3 id="46-调用生成代码分页批量错误分支">4.6 调用生成代码：分页、批量、错误分支</h3>
+<pre><code class="lang-go">// internal/service/user.go
+type UserService struct{ q *store.Queries }
+
+func (s *UserService) Page(ctx context.Context, status *string, page, size int32) ([]store.User, int64, error) {
+	var st pgtype.Text // sqlc.narg → 可空类型，NULL 即 Valid=false
+	if status != nil {
+		st = pgtype.Text{String: *status, Valid: true}
+	}
+	total, err := s.q.CountUsers(ctx, store.CountUsersParams{Status: st})
+	if err != nil {
+		return nil, 0, fmt.Errorf("统计: %w", err)
+	}
+	rows, err := s.q.ListUsers(ctx, store.ListUsersParams{Status: st, Limit: size, Offset: (page - 1) * size})
+	if err != nil {
+		return nil, 0, fmt.Errorf("列表: %w", err)
+	}
+	return rows, total, nil // emit_empty_slices：空结果是 []，可安全 JSON 序列化
+}
+
+func (s *UserService) Import(ctx context.Context, pool *pgxpool.Pool, in []store.BatchCreateUsersParams) (int64, error) {
+	tx, err := pool.Begin(ctx) // CopyFrom 必须在事务内
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback(ctx) // 已 Commit 时返回 ErrTxClosed，可忽略
+	n, err := s.q.WithTx(tx).BatchCreateUsers(ctx, in)
+	if err != nil {
+		return 0, fmt.Errorf("批量写入: %w", err)
+	}
+	return n, tx.Commit(ctx)
+}</code></pre>
+<p><code>store.New(pool)</code> 能直接接 <code>*pgxpool.Pool</code>，因为生成的 <code>DBTX</code> 接口只要求 <code>Exec/Query/QueryRow</code>；<code>WithTx</code> 返回同一套方法绑定到 <code>pgx.Tx</code>，因此「一个事务里跨多个生成查询」不需要额外抽象层。<code>:execrows</code> 返回的 <code>RowsAffected</code> 要显式判 0——UPDATE 影响 0 行却当成功，是 <code>:exec</code> 最常见的线上事故。</p>
+<h3 id="47-补全脚本与动态补全">4.7 补全脚本与动态补全</h3>
+<p>生成脚本是三条重定向：<code>go build -o bin/app ./cmd/app</code> 之后，<code>bin/app completion bash &gt; /usr/local/etc/bash_completion.d/app</code>（zsh 写 <code>${fpath[1]}/_app</code>、fish 写 <code>~/.config/fish/completions/app.fish</code>），<code>bin/app __complete migrate ""</code> 可查看补全输出与 <code>ShellCompDirective</code>。静态补全只能补命令名与 flag；要补「数据库里已有的租户 ID」，给命令挂 <code>ValidArgsFunction</code>（或 <code>RegisterFlagCompletionFunc</code>），返回候选值 + <code>cobra.ShellCompDirectiveNoFileComp</code> 表示别再补文件名。补全函数跑在独立进程里，<strong>必须快</strong>：别连数据库做全表扫描，超过几百毫秒用户会明显卡顿。</p>
+<hr>
+
+<div class="callout info"><p><b>实战要点：</b>Cobra 的 RunE 返回错误，配合 SilenceUsage 避免错误时打印整页帮助；flag 与 Viper 用 BindPFlag 绑定，保持单一来源。</p></div>
+</section>
+<section data-anchor="5-版本演进">
+<h2 id="5-版本演进">5. 版本演进<span class="lvl b">版本</span></h2>
+<p>Cobra 长期处于「小步稳定」：v1.8 / v1.9 以 bug 修复和 Go 版本跟进为主，v1.10.0（2025-08）把 pflag 提到 1.0.8，顺带引入 <code>ParseErrorsWhitelist → ParseErrorsAllowlist</code> 的重命名（同时依赖 cobra 与 pflag 的项目会编译失败），并允许自定义默认 <code>ShellCompDirective</code>；v1.10.1（2025-09）把 pflag 退回兼容版 1.0.9，修复了这次破坏性变更。sqlc 节奏更快，1.30 → 1.31 引入了 <code>sqlc parse</code>（输出 AST JSON）、完整 SQL 格式化、analyzer v2 实验特性；goose 在 2026 年保持月度发版。以下版本号均已核对上游 Releases（截至 2026-11）。</p>
+<div class="table-wrap"><table><thead><tr><th>项目</th><th>版本</th><th>时间</th><th>要点</th></tr></thead><tbody><tr><td>Cobra</td><td>v1.10.0</td><td>2025-08</td><td>pflag 1.0.8；<code>SetHelpFunc</code> 可拿 context；默认补全指令可定制</td></tr><tr><td>Cobra</td><td><strong>v1.10.2</strong></td><td>2025-09 起</td><td>v1.10.1 回退 pflag 1.0.9 恢复 <code>ParseErrorsWhitelist</code> 兼容，v1.10.2 为后续补丁；当前最新</td></tr><tr><td>sqlc</td><td>v1.18 前后</td><td>2023</td><td>引入 <code>sql_package: "pgx/v5"</code>，可空列改映射 <code>pgtype.*</code></td></tr><tr><td>sqlc</td><td><strong>v1.31.1</strong></td><td><strong>2026-04-22</strong></td><td>1.31.0 加 <code>parse</code> 子命令、AST 格式化、strip psql 元命令；1.31.1 修 <code>go install</code> 的 replace 指令</td></tr><tr><td>goose</td><td>v3.28.0</td><td>2026-09-02</td><td>最低 Go 1.26；MySQL 表级 Locker；ClickHouse 版本表排序修正</td></tr><tr><td>goose</td><td><strong>v3.30.1</strong></td><td><strong>2026-11-12</strong></td><td>当前最新；v3.29.0 起支持 YDB 连接串凭证</td></tr></tbody></table></div>
+<p>升级提示：Cobra 1.10 与 pflag 必须同向升级，<code>go mod graph | grep pflag</code> 确认没有两个版本共存；sqlc 升级后先 <code>sqlc compile</code> 再 <code>sqlc generate</code>，重点看 <code>pgtype</code> 相关字段是否变化（v1.18 的 pgx/v5 迁移会改一批结构体字段类型，属于跨大版本改造）；goose 3.28 起 <code>tstamp</code> 改 <code>DATETIME</code>，老库需要手动 <code>ALTER TABLE goose_db_version</code>。</p>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>命令写在 <code>init()</code> 里、用包级 <code>rootCmd</code></strong>：无法在一个测试进程里构造多份命令树，flag 值在用例间互相污染，<code>init</code> 还让「谁注册了这个 flag」不可追踪。→ 一律 <code>NewRoot(app)</code> 返回新树，依赖（Viper、logger、pool）作为参数注入，测试里 <code>root.SetArgs([]string{...}); root.SetOut(&amp;buf)</code> 即可断言输出。</li><li><strong>没设 <code>SilenceUsage</code> / 忘了退出码</strong>：<code>RunE</code> 返回「数据库连接失败」，用户看到三十行帮助 + 一条被淹没的错误；或者 <code>Execute()</code> 的返回值被丢弃，进程永远退出 0，CI 与 k8s 探针全部失灵。→ 根命令置 <code>SilenceUsage/SilenceErrors = true</code>，<code>main</code> 打印一行、按错误分级映射退出码（用法 2 / 未找到 3 / 其它 1）。</li><li><strong>persistent 与 local flag 混用</strong>：把 <code>--addr</code> 放到 root 的 <code>PersistentFlags</code>，于是 <code>migrate</code> 也接受它却没人读；或子命令里 <code>Flags().String("dsn")</code> 另建同名 flag，与 root 的 persistent flag 相互覆盖。→ 全局项才 persistent，且只在定义处 <code>BindPFlag</code>、<code>MarkPersistentFlagRequired</code>。</li><li><strong><code>MarkFlagRequired</code> 用错位置</strong>：在子命令上标记继承来的 flag，返回的 error 被 <code>_ =</code> 吞掉，实际没生效；或把「配置里能给」的 DSN 标成必填，导致纯配置文件启动直接失败。→ 必填校验放在配置合并之后，required 只用于「只能从命令行给」的项。</li><li><strong>不写 <code>Args</code></strong>：<code>app serve extra-arg</code> 静默成功，参数被丢掉；<code>app get</code> 漏参数却进入 <code>RunE</code> 后 panic。→ 每个命令都显式选 <code>NoArgs</code> / <code>ExactArgs(n)</code> / <code>MinimumNArgs(1)</code>，值集合用 <code>OnlyValidArgs</code>。</li><li><strong>flag 与配置优先级错乱</strong>：以为「flag 默认值 &gt; 配置文件」，结果配置文件里的 <code>log_level</code> 被 flag 的 <code>"info"</code> 盖住；或在 <code>RunE</code> 里才 <code>BindPFlag</code>，Cobra 早已解析完，绑定形同虚设。→ 绑定在构造函数里做，理解「改过的 flag &gt; env &gt; config &gt; flag 默认值」，默认值用 <code>SetDefault</code> 而非 flag 表达。</li><li><strong>手改生成代码</strong>：在 <code>internal/store/query.sql.go</code> 里加了个判断，下次 <code>sqlc generate</code> 全没；或把 <code>out</code> 目录提交后又手动重命名方法，CI 的 <code>sqlc diff</code> 天天红。→ 生成目录只读，改 SQL 或改 <code>overrides</code>；把 <code>sqlc compile &amp;&amp; sqlc generate &amp;&amp; git diff --exit-code</code> 放进 CI。</li><li><strong>schema 与迁移漂移</strong>：<code>sqlc.yaml</code> 指向一份手抄的 <code>schema.sql</code>，迁移却在另一个目录演进，生成代码查了不存在的列，运行期才报 <code>column does not exist</code>。→ schema 直指 <code>db/migrations</code>，CI 从空库 <code>goose up</code> 后再 generate；本地用 <code>sqlc vet</code> + <code>goose status</code> 双向确认。</li><li><strong><code>NULL</code> 映射踩坑</strong>：可空列生成 <code>pgtype.Text</code>，业务代码直接 <code>row.Name.String</code> 拿到 <code>""</code>、<code>row.CreatedAt.Time</code> 拿到零值时间，看起来「有值」实则是 NULL；<code>emit_pointers_for_null_types</code> 打开后又要处处判 <code>nil</code>。→ 建表尽量 <code>NOT NULL DEFAULT</code>，确实可空就显式查 <code>Valid</code>/<code>nil</code>，或在 <code>overrides</code> 里统一映射为 <code>*T</code>。</li><li><strong>把大 SQL 拼成字符串 + 用 <code>:exec</code></strong>：<code>WHERE</code> 用 <code>fmt.Sprintf</code> 拼、参数顺序靠人肉对齐，注入风险与类型错误双杀；UPDATE 走 <code>:exec</code> 又把 0 行更新当成成功。→ 拆成多条静态查询、可选条件用 <code>sqlc.narg</code>、<code>IN</code> 用 <code>ANY</code>/<code>sqlc.slice</code>、需要行数就用 <code>:execrows</code>。</li><li><strong>忽略 goose 的注解规则</strong>：漏 <code>-- +goose Up</code>、含分号的函数体没包 <code>StatementBegin/End</code>、<code>-- +goose NO TRANSACTION</code> 与并发索引混用，表现为迁移只执行了一半。→ 一个文件一个版本、每条语句带分号、复杂 DDL 用 <code>StatementBegin/End</code>，上线前在空库跑一遍。</li></ol>
+<hr>
+
+<div class="callout warning"><p><b>生产警示：</b>在 init() 里构建整棵命令树会让测试互相污染；sqlc 不支持运行期拼 WHERE，动态条件用 sqlc.narg 或拆查询，别退回字符串拼接。</p></div>
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<p>CLI 框架：</p>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>Cobra</th><th>urfave/cli v3</th><th>kong</th><th>标准库 <code>flag</code></th></tr></thead><tbody><tr><td>命令树</td><td><strong>最成熟</strong>，任意嵌套 + 别名 + 建议</td><td>成熟，语法更「声明式」</td><td>由 struct tag 推导</td><td>无</td></tr><tr><td>flag 解析</td><td>pflag（POSIX 短/长、组合、slice）</td><td>自带，支持环境变量绑定</td><td>反射建 flag，类型丰富</td><td>仅 <code>-flag</code></td></tr><tr><td>与 Viper</td><td>官方级配合（<code>BindPFlag</code>）</td><td>可用但需手写</td><td>可用但需手写</td><td>需自己桥接</td></tr><tr><td>适合</td><td>多子命令的服务与运维工具</td><td>中小型 CLI，函数式风格</td><td>配置项多的单命令工具</td><td>一次性脚本</td></tr></tbody></table></div>
+<p>数据访问：</p>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>sqlc</th><th>GORM</th><th>sqlx</th><th>ent</th></tr></thead><tbody><tr><td>输入</td><td>手写 SQL + DDL</td><td>Go struct</td><td>手写 SQL</td><td>Schema DSL</td></tr><tr><td>类型安全</td><td><strong>编译期</strong>（从 schema 推导）</td><td>运行时（v1.30 泛型改善）</td><td>手写扫描，易错</td><td><strong>编译期最强</strong></td></tr><tr><td>复杂 SQL</td><td><strong>原生，随便写</strong></td><td>链式绕，需 Raw</td><td>原生</td><td>图式查询，报表别扭</td></tr><tr><td>关联 / 钩子 / 迁移</td><td>无（交给 goose）</td><td>内置</td><td>无</td><td>内置（图式）</td></tr><tr><td>动态查询</td><td>弱（生成期固定）</td><td><strong>强</strong></td><td><strong>强</strong></td><td>中</td></tr><tr><td>适合</td><td>SQL 为主、DBA 参与评审的服务</td><td>业务建模、快速交付</td><td>报表 / 动态 SQL 逃生舱</td><td>实体关系复杂的领域</td></tr></tbody></table></div>
+<p><strong>分工建议</strong>：入口层 Cobra + Viper 是默认组合；数据层以 sqlc 为<strong>主干</strong>——固定查询、事务、批量写入全部走生成代码，schema 由 goose 迁移独占。GORM 留给「后台管理 CRUD、字段多、要 AutoMigrate 快速起步」的模块或既有项目；它和 sqlc 可以共存于同一个库（同一份表结构，两套访问方式），但<strong>同一张表只选一个写入口</strong>，否则钩子与时间戳维护会互相打架。真正需要运行期拼 WHERE、动态排序、跨表 union 的报表，用 sqlx 写在独立的 <code>report</code> 包里，并强制参数化与列名白名单——这是 sqlc 有意不覆盖的边界，而不是它的缺陷。若团队人手少、SQL 能力不均，先用 GORM 起步再逐步把热点查询迁到 sqlc，比一步到位更现实。</p>
+<p>参考：<a href="https://cobra.dev/">Cobra 官方文档</a>、<a href="https://docs.sqlc.dev/">sqlc 文档</a>、<a href="https://github.com/pressly/goose">goose README</a>、<a href="https://github.com/jackc/pgx">pgx v5 类型映射</a>。</p>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

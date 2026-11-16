@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Go 测试与可测性 · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#059669; --accent-light:#d1fae5; --accent-dark:#065f46;
+    --bg:#f4faf7; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#022c22; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#065f46 0%,#059669 58%,#065f46 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">Go 测试与可测性<span class="ver">Go 1.27</span></div>
+  <div class="sub">表驱动 · httptest · testcontainers</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a href="#2-能力总览">2. 能力总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-testingt-的生命周期runcleanuphelper">3.1 testing.T 的生命周期：Run、Cleanup、Helper</a>
+  <a class="sub-link" href="#32-表驱动结构与-trun-命名">3.2 表驱动：结构与 t.Run 命名</a>
+  <a class="sub-link" href="#33-tparallel-与循环变量捕获">3.3 t.Parallel 与循环变量捕获</a>
+  <a class="sub-link" href="#34-httptest-的两种形态与边界">3.4 httptest 的两种形态与边界</a>
+  <a class="sub-link" href="#35-测试替身fake-stub-mock-的分工">3.5 测试替身：fake / stub / mock 的分工</a>
+  <a class="sub-link" href="#36-真实依赖sqlmock真库与容器的成本模型">3.6 真实依赖：sqlmock、真库与容器的成本模型</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-表驱动-testify">4.1 表驱动 + testify</a>
+  <a class="sub-link" href="#42-httptest-测-gin-handler">4.2 httptest 测 Gin handler</a>
+  <a class="sub-link" href="#43-sqlmock-测-repository">4.3 sqlmock 测 repository</a>
+  <a class="sub-link" href="#44-testcontainers-起-postgresql-redis">4.4 testcontainers 起 PostgreSQL / Redis</a>
+  <a class="sub-link" href="#45-fuzz-一个解析函数">4.5 fuzz 一个解析函数</a>
+  <a class="sub-link" href="#46-目录组织与-build-tag">4.6 目录组织与 build tag</a>
+  <a class="sub-link" href="#47-可测性注入-clock-与随机源">4.7 可测性：注入 clock 与随机源</a>
+  <a href="#5-版本演进">5. 版本演进</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>Go 测试与可测性技术指南</h1>
+<p>测试不是覆盖率的数字游戏：能稳定复现失败、能安全重构、能在 CI 里快速给出信号，才算可测。</p>
+<p style="opacity:.8;font-size:13.5px">表驱动 · httptest · testcontainers</p>
+<div class="meta"><span>testing / fuzz</span><span>t.Parallel 陷阱</span><span>testify v1.x</span><span>sqlmock</span><span>testcontainers-go</span><span>注入 clock</span></div>
+</div>
+<blockquote><p>测试不是覆盖率的数字游戏：能稳定复现失败、能安全重构、能在 CI 里快速给出信号，才算可测。 标准库：<a href="https://pkg.go.dev/testing">https://pkg.go.dev/testing</a> · <a href="https://pkg.go.dev/testing/fuzz">https://pkg.go.dev/testing/fuzz</a>　|　生态：testify v1.x · testcontainers-go v0.4x　|　适用 <strong>Go 1.27.4</strong>（2026-11-10）</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p>Go 的测试能力不是某个框架给的，而是<strong>工具链的一等公民</strong>：<code>go test</code> 负责编译、运行、缓存与报告，<code>testing</code> 提供生命周期与组织方式，<code>httptest</code>、<code>testing/fuzz</code>、<code>-race</code>、覆盖率各自补齐一类信号。设计取向很明确——测试就是普通 Go 代码，不引入运行时发现，因此测试与业务代码同构，能一起重构、一起调试。</p>
+<p>由此得到两个判断：</p>
+<ul><li><strong>可测性是设计属性</strong>。函数内部直接 <code>time.Now()</code>、<code>rand.Int()</code>、<code>http.Get()</code>，外部只能靠 sleep、真网络去凑；把环境收进接口、在装配层注入，测试才有确定性。</li><li><strong>分层按"失败能定位到哪里"切</strong>。单元测试回答"决策对不对"，组件测试回答"这层协议/路由/序列化对不对"，集成测试回答"真实依赖的约束与方言对不对"。三层写成同一种东西，只会得到又慢又不准的套件。</li></ul>
+<pre><code class="lang-bash">go test ./...                       # 单元测试（默认）
+go test -race -shuffle=on ./...     # CI 推荐：竞态 + 顺序随机
+go test -tags=integration ./...     # 集成测试（需 Docker）</code></pre>
+<hr>
+
+</section>
+<section data-anchor="2-能力总览">
+<h2 id="2-能力总览">2. 能力总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>入口</th><th>解决的问题</th><th>成本/边界</th></tr></thead><tbody><tr><td>子测试与生命周期</td><td><code>t.Run</code> / <code>t.Cleanup</code> / <code>t.TempDir</code></td><td>用例分组、资源释放、失败定位到 case</td><td>子测试名要唯一可读</td></tr><tr><td>并行</td><td><code>t.Parallel</code> / <code>-parallel</code></td><td>缩短墙钟时间</td><td>共享状态、<code>t.Setenv</code> 会冲突</td></tr><tr><td>表驱动</td><td><code>[]struct{...}</code> + <code>t.Run</code></td><td>同逻辑多组输入，新增 case 只加一行</td><td>别把所有层塞进一张表</td></tr><tr><td>HTTP 测试</td><td><code>NewRecorder</code> / <code>NewServer</code></td><td>handler 单测 / 真实客户端联调</td><td>Recorder 不经过真实网络</td></tr><tr><td>断言</td><td><code>assert</code> / <code>require</code></td><td>可读失败信息、JSON/集合比较</td><td>require 失败即终止</td></tr><tr><td>SQL 单测</td><td><code>go-sqlmock</code></td><td>锁 SQL 文本、参数、事务边界</td><td>不校验方言与约束</td></tr><tr><td>真实依赖</td><td><code>testcontainers-go</code></td><td>PostgreSQL/Redis 真实行为</td><td>需 Docker，秒级启动</td></tr><tr><td>模糊测试</td><td><code>testing.F</code> + <code>-fuzz</code></td><td>找 panic、越界、不变量破坏</td><td>只适合纯函数</td></tr><tr><td>竞态检测</td><td><code>-race</code></td><td>数据竞争、并行测试互相污染</td><td>2–20 倍减速</td></tr><tr><td>覆盖率</td><td><code>-coverprofile</code></td><td>找从未执行的分支</td><td>语句覆盖≠分支覆盖</td></tr></tbody></table></div>
+<hr>
+
+<div class="features">
+  <div class="feature"><div class="fh"><h4>表驱动</h4></div><p>用 t.Run 命名用例，失败信息自带输入与期望</p></div>
+  <div class="feature"><div class="fh"><h4>并行陷阱</h4></div><p>t.Parallel 与循环变量：Go 1.22 前必须显式捕获</p></div>
+  <div class="feature"><div class="fh"><h4>可测性</h4></div><p>时间、随机、网络都注入接口，否则只能靠 sleep 和重试</p></div>
+</div>
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-testingt-的生命周期runcleanuphelper">3.1 <code>testing.T</code> 的生命周期：Run、Cleanup、Helper</h3>
+<p>执行顺序是：<strong>函数体 → 子测试（含并行子测试）全部结束 → 本层 Cleanup 逆序执行</strong>。<code>t.Cleanup</code> 是 LIFO，父测试的 Cleanup 晚于子测试，正好匹配"先建后拆"的资源栈。</p>
+<pre><code class="lang-go">func TestOrderService(t *testing.T) {
+    t.Cleanup(func() { t.Log("父测试收尾") })   // 最后执行
+    t.Run("create", func(t *testing.T) {
+        t.Cleanup(func() { t.Log("create 收尾") }) // 先于父 Cleanup
+    })
+}</code></pre>
+<p>三个易错语义：<code>t.Fatal</code>/<code>require</code> 内部的 <code>FailNow</code> <strong>只能在测试 goroutine 调用</strong>；<code>t.Helper()</code> 把失败行号指向调用者，封装断言必加；<code>t.Setenv</code> 与 <code>t.Parallel</code> 互斥（环境变量是进程级的，会 panic）。</p>
+<h3 id="32-表驱动结构与-trun-命名">3.2 表驱动：结构与 <code>t.Run</code> 命名</h3>
+<p>表驱动的价值不在少写代码，而在<strong>把差异压成数据</strong>：输入、期望、期望错误三列覆盖多数分支。每个 case 给一个能当测试名用的 <code>name</code>，失败时 <code>go test -run 'TestAtoi/overflow'</code> 能直接命中。</p>
+<pre><code class="lang-go">tests := []struct {
+    name, in string
+    want     int
+    wantErr  bool
+}{
+    {"plain", "42", 42, false},
+    {"space", " 7", 0, true},
+}
+for _, tt := range tests {
+    t.Run(tt.name, func(t *testing.T) { /* ... */ })
+}</code></pre>
+<p>命名建议 <code>方法_场景_期望</code>，子测试名只写场景；名字里避免 <code>/</code> 与空格，它们会被转成下划线，影响 <code>-run</code> 过滤。</p>
+<h3 id="33-tparallel-与循环变量捕获">3.3 <code>t.Parallel</code> 与循环变量捕获</h3>
+<p><code>t.Parallel()</code> 的语义是：<strong>当前测试暂停、交还控制权；父测试串行部分跑完后，所有并行子测试同时恢复</strong>。因此并行子测试之间没有顺序，共享切片、map、全局计数器、环境变量都会变成竞争。</p>
+<p>循环变量是另一个坑。Go 1.22 起（且 <code>go.mod</code> 的 <code>go</code> 指令 ≥ 1.22），每轮迭代创建新变量，闭包捕获当轮副本；<strong>在此之前</strong>所有闭包共享同一个变量，并行子测试恢复时往往已经走到最后一个 case，经典修复是循环体首行 <code>tt := tt</code>。判断项目是否真启用新语义看 <code>go.mod</code>，而不是 <code>go version</code>——模块的 <code>go</code> 指令决定语言版本。</p>
+<pre><code class="lang-go">for _, tt := range tests {
+    tt := tt        // Go 1.22 前必需；1.22+ 冗余但无害
+    t.Run(tt.name, func(t *testing.T) {
+        t.Parallel()
+        _ = tt
+    })
+}</code></pre>
+<h3 id="34-httptest-的两种形态与边界">3.4 <code>httptest</code> 的两种形态与边界</h3>
+<p><code>httptest.NewRecorder()</code> 在进程内直接调用 <code>handler.ServeHTTP(w, req)</code>，不启 socket、不做真实超时与连接管理，<strong>适合 handler/中间件的行为测试</strong>（状态码、JSON、Header、错误分支），快且确定。<code>httptest.NewServer()</code> 启动真实 <code>http.Server</code> 监听 <code>127.0.0.1:0</code>，返回可用 <code>Client()</code>，<strong>适合测试客户端代码</strong>（重试、超时、重定向、TLS、连接复用），测完必须 <code>Close()</code>。</p>
+<p>边界要清楚：Recorder 测不到"服务端读 body 超限""客户端取消请求""HTTP/2""真实 TLS"，这些必须上 <code>NewServer</code>/<code>NewTLSServer</code>；反过来，用真服务器测纯业务分支会引入端口、时序和 CI 防火墙的不确定性。Gin 场景默认 <code>gin.SetMode(gin.TestMode)</code> + Recorder，<code>c.Request.Context()</code> 也能正常工作。</p>
+<h3 id="35-测试替身fake-stub-mock-的分工">3.5 测试替身：fake / stub / mock 的分工</h3><div class="figure">
+  <svg viewBox="0 0 880 450" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-go-testing" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#059669"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#065f46">测试分层与成本</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">越往下越真实、越慢、越不稳定</text>
+    <rect x="90" y="84" width="700" height="52" rx="10" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/>
+    <circle cx="122" cy="110" r="14" fill="#059669"/>
+    <text x="122" y="110" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">1</text>
+    <text x="150" y="110" dominant-baseline="central" font-size="13" fill="#065f46">单元测试：纯函数与领域逻辑，毫秒级，无外部依赖</text>
+    <line x1="440" y1="138" x2="440" y2="154" stroke="#059669" stroke-width="2" marker-end="url(#m-go-testing)"/>
+    <rect x="90" y="158" width="700" height="52" rx="10" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/>
+    <circle cx="122" cy="184" r="14" fill="#059669"/>
+    <text x="122" y="184" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">2</text>
+    <text x="150" y="184" dominant-baseline="central" font-size="13" fill="#065f46">组件测试：httptest / sqlmock，覆盖 handler 与 repository</text>
+    <line x1="440" y1="212" x2="440" y2="228" stroke="#059669" stroke-width="2" marker-end="url(#m-go-testing)"/>
+    <rect x="90" y="232" width="700" height="52" rx="10" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/>
+    <circle cx="122" cy="258" r="14" fill="#059669"/>
+    <text x="122" y="258" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">3</text>
+    <text x="150" y="258" dominant-baseline="central" font-size="13" fill="#065f46">集成测试：testcontainers 起真实 PG / Redis，分钟级</text>
+    <line x1="440" y1="286" x2="440" y2="302" stroke="#059669" stroke-width="2" marker-end="url(#m-go-testing)"/>
+    <rect x="90" y="306" width="700" height="52" rx="10" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/>
+    <circle cx="122" cy="332" r="14" fill="#059669"/>
+    <text x="122" y="332" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">4</text>
+    <text x="150" y="332" dominant-baseline="central" font-size="13" fill="#065f46">端到端：只留少量关键链路，最慢也最脆弱</text>
+    <rect x="40" y="374" width="800" height="54" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="398" font-size="12.5" fill="#1e293b">测试金字塔的意义是把反馈速度与置信度分层，而不是追求某个覆盖率数字。</text>
+  </svg>
+  <figcaption>测试分层与成本</figcaption>
+</div>
+<div class="table-wrap"><table><thead><tr><th>类型</th><th>行为</th><th>适合</th><th>不适合</th></tr></thead><tbody><tr><td>Stub</td><td>返回预置值</td><td>固定成功/失败分支</td><td>验证调用过程</td></tr><tr><td>Fake</td><td>可工作的轻量实现（内存 map/队列）</td><td>repository、缓存、消息总线</td><td>需要真实事务/约束</td></tr><tr><td>Mock</td><td>记录并断言调用</td><td>你<strong>不拥有</strong>的外部协议边界</td><td>自己定义的领域接口</td></tr></tbody></table></div>
+<p>关键原则：<strong>接口由使用方定义，且尽量小</strong>。handler 只需要 <code>UserGetter</code>，就不要注入整个 <code>UserService</code>；repository 的 fake 用内存 map 实现，比一堆 <code>EXPECT().Get().Return()</code> 更能承受重构。<code>gomock</code>/<code>mockery</code> 的代价是生成代码进仓库、接口一变就要重生成、期望顺序把实现细节写进测试、<code>AnyTimes()</code> 泛滥后断言形同虚设——只该用在第三方 SDK、gRPC client、支付网关这类边界上。</p>
+<h3 id="36-真实依赖sqlmock真库与容器的成本模型">3.6 真实依赖：sqlmock、真库与容器的成本模型</h3>
+<p>三者是不同保真度，不是替代关系：</p>
+<ul><li><code>go-sqlmock</code> 替换 <code>database/sql/driver</code>，断言"发出了什么 SQL、传了什么参数、事务是否成对"。它<strong>不解析 SQL、不校验方言、不执行约束</strong>；默认正则匹配器会把期望串当正则，括号、<code>+</code>、<code>.</code> 都可能匹配过宽，建议 <code>regexp.QuoteMeta</code> 或 <code>QueryMatcherEqual</code>。</li><li>本地真库保真度高，但<strong>状态不可控</strong>：上一个测试留下的数据、版本差异、并行分支互相污染，都是 flaky 来源。</li><li><code>testcontainers-go</code> 每个测试进程拉起一次性容器，镜像可钉死、结束自动清理，隔离性最好；代价是 Docker 依赖、镜像拉取、2–5 秒启动与 CI 资源。</li></ul>
+<p>结论：<strong>SQL 构造与错误分支用 sqlmock，约束/方言/迁移/并发用容器</strong>。为了"快"把集成测试全改成 sqlmock，只是在测试你对 SQL 的想象。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-表驱动-testify">4.1 表驱动 + testify</h3>
+<pre><code class="lang-go">package parse
+
+import (
+    "strconv"
+    "testing"
+
+    "github.com/stretchr/testify/assert"
+    "github.com/stretchr/testify/require"
+)
+
+func TestAtoi(t *testing.T) {
+    tests := []struct {
+        name, in string
+        want     int
+        wantErr  bool
+    }{
+        {"plain", "42", 42, false},
+        {"space", " 7", 0, true},
+        {"overflow", "99999999999999999999", 0, true},
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            t.Parallel()
+            got, err := strconv.Atoi(tt.in)
+            if tt.wantErr {
+                require.Error(t, err)
+                return
+            }
+            require.NoError(t, err)
+            assert.Equal(t, tt.want, got)
+        })
+    }
+}</code></pre>
+<p><code>require</code> 用于"后续断言已无意义"的前置条件（err 非空、对象非 nil），<code>assert</code> 用于可继续收集的字段比较；别在循环里用 require 吞掉后续 case 的信息。</p>
+<h3 id="42-httptest-测-gin-handler">4.2 httptest 测 Gin handler</h3>
+<pre><code class="lang-go">package handler
+
+import (
+    "net/http"
+    "net/http/httptest"
+    "testing"
+
+    "github.com/gin-gonic/gin"
+    "github.com/stretchr/testify/require"
+)
+
+func TestGetUser(t *testing.T) {
+    gin.SetMode(gin.TestMode)
+    r := gin.New()
+    r.GET("/users/:id", func(c *gin.Context) {
+        c.JSON(http.StatusOK, gin.H{"id": c.Param("id"), "name": "alice"})
+    })
+    w := httptest.NewRecorder()
+    r.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/users/7", nil))
+    require.Equal(t, http.StatusOK, w.Code)
+    require.JSONEq(t, `{"id":"7","name":"alice"}`, w.Body.String())
+}</code></pre>
+<p>真实项目把 handler 的依赖（repository、下游 client）声明成小接口，测试注入手写 stub；<code>httptest</code> 只负责把请求送进路由，不改变这层替身策略。</p>
+<h3 id="43-sqlmock-测-repository">4.3 sqlmock 测 repository</h3>
+<pre><code class="lang-go">package repo
+
+import (
+    "context"
+    "database/sql"
+    "regexp"
+    "testing"
+
+    "github.com/DATA-DOG/go-sqlmock"
+    "github.com/stretchr/testify/require"
+)
+
+type UserRepo struct{ db *sql.DB }
+
+func (r *UserRepo) Name(ctx context.Context, id int64) (string, error) {
+    var name string
+    err := r.db.QueryRowContext(ctx, `SELECT name FROM users WHERE id = $1`, id).Scan(&amp;name)
+    if err == sql.ErrNoRows {
+        return "", nil
+    }
+    return name, err
+}
+
+func TestUserRepoName(t *testing.T) {
+    db, mock, err := sqlmock.New()
+    require.NoError(t, err)
+    t.Cleanup(func() { _ = db.Close() })
+    rows := sqlmock.NewRows([]string{"name"}).AddRow("alice")
+    mock.ExpectQuery(regexp.QuoteMeta(`SELECT name FROM users WHERE id = $1`)).
+        WithArgs(int64(7)).WillReturnRows(rows)
+    got, err := (&amp;UserRepo{db: db}).Name(context.Background(), 7)
+    require.NoError(t, err)
+    require.Equal(t, "alice", got)
+    require.NoError(t, mock.ExpectationsWereMet())
+}</code></pre>
+<p>测试价值在于锁定 SQL 文本、占位符与参数类型：有人把 <code>$1</code> 改成字符串拼接，测试立刻失败。但它不会告诉你 PostgreSQL 是否接受这条语句——那是 4.4 的职责。</p>
+<h3 id="44-testcontainers-起-postgresql-redis">4.4 testcontainers 起 PostgreSQL / Redis</h3>
+<pre><code class="lang-go">package repo_test
+
+import (
+    "context"
+    "database/sql"
+    "testing"
+
+    _ "github.com/jackc/pgx/v5/stdlib"
+    "github.com/stretchr/testify/require"
+    "github.com/testcontainers/testcontainers-go"
+    "github.com/testcontainers/testcontainers-go/modules/postgres"
+    "github.com/testcontainers/testcontainers-go/modules/redis"
+)
+
+func startPostgres(t *testing.T) *sql.DB {
+    ctx := context.Background()
+    ctr, err := postgres.Run(ctx, "postgres:17-alpine",
+        postgres.WithDatabase("app"),
+        postgres.WithUsername("app"),
+        postgres.WithPassword("secret"),
+    )
+    require.NoError(t, err)
+    testcontainers.CleanupContainer(t, ctr)
+    dsn, err := ctr.ConnectionString(ctx, "sslmode=disable")
+    require.NoError(t, err)
+    db, err := sql.Open("pgx", dsn)
+    require.NoError(t, err)
+    t.Cleanup(func() { _ = db.Close() })
+    return db
+}
+
+func TestRedis(t *testing.T) {
+    ctr, err := redis.Run(context.Background(), "redis:7-alpine")
+    require.NoError(t, err)
+    testcontainers.CleanupContainer(t, ctr)
+}</code></pre>
+<p>工程要点：<strong>每个包只起一次</strong>（放 <code>TestMain</code> 或 <code>sync.Once</code>），不要每个 <code>TestXxx</code> 拉一个容器；<strong>钉镜像版本</strong>（<code>latest</code> 会让 CI 在某个周一突然变红）；CI 首次拉镜像 10–60 秒、之后启动 2–5 秒，私有 runner 要确认 Docker daemon 权限与磁盘配额；显式 <code>CleanupContainer</code> 之外还有 Ryuk 兜底，避免 Ctrl-C 后残留。</p>
+<h3 id="45-fuzz-一个解析函数">4.5 fuzz 一个解析函数</h3>
+<pre><code class="lang-go">package ports
+
+import (
+    "errors"
+    "strconv"
+    "strings"
+    "testing"
+)
+
+func ParsePort(s string) (int, error) {
+    n, err := strconv.Atoi(strings.TrimSpace(s))
+    if err != nil || n &lt; 1 || n &gt; 65535 {
+        return 0, errors.New("invalid port")
+    }
+    return n, nil
+}
+
+func FuzzParsePort(f *testing.F) {
+    for _, s := range []string{"80", "443", " 8080 ", "0", "65536", "-1", "abc"} {
+        f.Add(s)
+    }
+    f.Fuzz(func(t *testing.T, s string) {
+        if n, err := ParsePort(s); err == nil &amp;&amp; (n &lt; 1 || n &gt; 65535) {
+            t.Fatalf("out of range: %d for %q", n, s)
+        }
+    })
+}</code></pre>
+<p>种子语料写在 <code>f.Add</code>（编译进测试二进制，不写入 testdata）；<code>testdata/fuzz/FuzzParsePort/</code> 是可手工提交的额外语料，fuzz 失败时工具也会把最小化用例写进去。<code>-run=FuzzParsePort</code> 只跑种子，<code>-fuzz=... -fuzztime=30s</code> 才变异。fuzz 只断言<strong>不变量</strong>（不 panic、不越界、解析成功必在合法区间），体内不要连数据库或发网络请求。</p>
+<h3 id="46-目录组织与-build-tag">4.6 目录组织与 build tag</h3>
+<pre><code class="lang-text">internal/order/
+├── service.go
+├── service_test.go                    # 单元测试，默认执行
+├── repository.go
+└── repository_integration_test.go     # //go:build integration</code></pre>
+<p><code>testdata/</code> 放 fixture（go 工具链忽略）。<code>_test.go</code> 不参与正常构建；包名用 <code>order_test</code> 是外部测试包，只能调用导出 API，能反过来检验 API 是否够用，需要白盒访问未导出字段时才用同包。build tag 必须在文件最前（前面只能有空行或 <code>// Copyright</code>），与 <code>package</code> 之间空一行；跑集成测试用 <code>go test -tags=integration -count=1 ./internal/order</code>。</p>
+<h3 id="47-可测性注入-clock-与随机源">4.7 可测性：注入 clock 与随机源</h3>
+<pre><code class="lang-go">package token
+
+import "time"
+
+type Clock interface{ Now() time.Time }
+
+type Cache struct {
+    clock Clock
+    ttl   time.Duration
+}
+
+func (c *Cache) Fresh(at time.Time) bool { return c.clock.Now().Sub(at) &lt; c.ttl }</code></pre>
+<p>测试里注入手写 <code>fakeClock</code>（<code>now time.Time</code> 字段 + <code>Now()</code> 返回它），推进时间就是改字段，<strong>不需要 sleep</strong>。同样的套路适用于随机数（注入 <code>io.Reader</code> 或 <code>func() int64</code>）、UUID 生成器、重试退避。原则：<strong>领域代码不直接触碰 <code>time.Now</code>/<code>rand</code>/<code>os.Getenv</code></strong>，这些调用只允许出现在 <code>main</code> 或装配层。</p>
+<hr>
+
+<div class="callout info"><p><b>实战要点：</b>集成测试用 build tag 或短模式隔离，默认 go test ./... 只跑快的；CI 里再单独跑集成与 -race。</p></div>
+</section>
+<section data-anchor="5-版本演进">
+<h2 id="5-版本演进">5. 版本演进<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>时间</th><th>与测试相关的要点</th></tr></thead><tbody><tr><td>Go 1.18</td><td>2022.3</td><td>原生模糊测试（<code>testing.F</code>、<code>go test -fuzz</code>）与泛型</td></tr><tr><td>Go 1.22</td><td>2024.2</td><td><strong>循环变量按迭代创建</strong>（需 <code>go.mod</code> ≥ 1.22），并行捕获问题大幅减少</td></tr><tr><td>Go 1.24</td><td>2025.2</td><td><strong><code>testing.B.Loop</code></strong> 取代 <code>b.N</code> 循环；新增 <code>T.Context</code>、<code>T.Chdir</code>；<code>synctest</code> 实验</td></tr><tr><td>Go 1.25</td><td>2025.8</td><td><code>testing/synctest</code> 转正，假时钟下测并发时序；<code>T.Attr</code>、<code>T.Output</code></td></tr><tr><td>Go 1.27.4</td><td>2026.11.10</td><td>本文基准；<code>testing</code> 无移除性变更，<code>B.Loop</code>/<code>T.Context</code> 已是推荐写法（截至 2026-11）</td></tr></tbody></table></div>
+<p><code>B.Loop</code> 的收益值得单独说：首次调用重置计时器、返回 false 时停止计时，setup/cleanup 不计入测量；编译器不会把循环体内的调用优化掉，也不用手动 <code>b.ResetTimer()</code>。老代码的 <code>b.N</code> 写法仍可用，新基准统一 <code>for b.Loop()</code>。</p>
+<p>生态侧：<code>stretchr/testify</code> 主线 <strong>v1.12.x</strong>（v1.12.1，2026-08），API 长期稳定；<code>testcontainers-go</code> 主线 <strong>v0.45.0</strong>（2026-11），模块拆为 <code>modules/postgres</code>、<code>modules/redis</code> 等；<code>go-sqlmock</code> 停留在 <strong>v1.5.2</strong>（2024-01），作者明示"功能完整、寻找维护者"，属低维护但可用的稳定件。</p>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>并行测试共享状态</strong>：<code>t.Parallel()</code> 后所有子测试同时恢复，共享 slice/map/全局计数器必然竞争。要么每个 case 自建数据，要么并行段内只读；<code>-race</code> 必须进 CI，本地不跑等于没测。</li><li><strong>mock 过度导致测试与实现耦合</strong>：对领域接口生成 mock，会把"调用几次、顺序如何"写进测试，重构内部实现就红一片。领域内用 fake，mock 只放第三方边界。</li><li><strong>测试依赖执行顺序</strong>：Go 不保证同包内顺序，<code>-shuffle=on</code> 会打乱，<code>-count=1</code> 则会绕过结果缓存。任何"上个测试建的数据下个测试用"都是定时炸弹；共享 fixture 放 <code>TestMain</code>，每个测试自己清理。<code>-timeout=60s</code> 让卡死用例尽早带 goroutine 栈退出。</li><li><strong>集成测试污染本地库</strong>：连开发库跑测试，轻则脏数据，重则 <code>TRUNCATE</code> 误伤。集成测试只连容器或专用库，连接串从环境变量读，默认跳过（build tag 或 <code>testing.Short()</code>）。</li><li><strong>用 sleep 等异步</strong>：<code>time.Sleep(100*time.Millisecond)</code> 在 CI 上必然偶发失败。用 channel/WaitGroup 同步，或 <code>assert.Eventually</code> 轮询条件，超时给足但不要靠猜。</li><li><strong>覆盖率造假</strong>：调用函数但不写断言、<code>t.Log</code> 代替 <code>t.Error</code>、<code>_ = f()</code> 当覆盖，都能把数字刷到 90%。而且 <code>-cover</code> 统计的是<strong>语句是否执行</strong>，不判断 <code>if</code> 两个方向是否都走到，语句覆盖不等于分支覆盖；覆盖率只用来找"从未执行的分支"，门禁建议"关键包不低于基线"而非全仓 80%。</li><li><strong>sqlmock 正则过宽</strong>：<code>ExpectQuery("SELECT")</code> 能匹配任何 SELECT；用 <code>regexp.QuoteMeta</code> 锁全句或 <code>QueryMatcherEqual</code>。别忘了 <code>ExpectationsWereMet()</code>，否则未满足的期望会被静默忽略。</li><li><strong>在 goroutine 里 <code>t.Fatal</code></strong>：<code>FailNow</code> 只退出当前 goroutine，主 goroutine 不会停在失败点，后续代码继续执行，容易留下 panic 或泄漏。goroutine 内用 <code>t.Errorf</code>，或把 error 发回 channel 由主 goroutine 断言。</li><li><strong>时间与随机数不可控</strong>：直接 <code>time.Now()</code> 让 TTL/过期逻辑只能 sleep 测，直接 <code>rand</code> 让用例不可复现。注入 clock 与随机源，测试用假实现推进时间。</li></ol>
+<hr>
+
+<div class="callout warning"><p><b>生产警示：</b>覆盖率不等于质量：一百个只断言 err == nil 的测试也能刷到 90%；mock 过度会让测试与实现强耦合，重构时全红。</p></div>
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>标准库 <code>testing</code></th><th>testify</th><th>gomock / mockery</th><th>go-sqlmock</th><th>testcontainers-go</th></tr></thead><tbody><tr><td>层次</td><td>组织与生命周期</td><td>断言/suite</td><td>接口替身生成</td><td>SQL driver 边界</td><td>真实依赖</td></tr><tr><td>额外依赖</td><td>无</td><td>低（纯 Go）</td><td>中（生成器+运行时）</td><td>低</td><td>高（Docker）</td></tr><tr><td>运行成本</td><td>最低</td><td>最低</td><td>低</td><td>低</td><td>秒级启动+镜像</td></tr><tr><td>保真度</td><td>—</td><td>—</td><td>只验证调用</td><td>中（不校验方言）</td><td>高（真实引擎）</td></tr><tr><td>主要风险</td><td>断言啰嗦</td><td>滥用 require 掩盖信息</td><td>与实现耦合、生成物维护</td><td>正则过宽、假通过</td><td>CI 资源、镜像漂移</td></tr><tr><td>建议位置</td><td>所有层</td><td>所有层</td><td>第三方边界</td><td>repository 单测</td><td>集成/契约测试</td></tr></tbody></table></div>
+<p>一句话：<strong>默认只用标准库 + testify 把单元层写扎实，repository 的 SQL 构造用 sqlmock 锁住，真实约束与方言交给 testcontainers；mock 生成器留给不归你管的边界</strong>。</p>
+<p>参考：<a href="https://pkg.go.dev/testing">testing 包文档</a>、<a href="https://go.dev/doc/fuzz/">Go 模糊测试教程</a>、<a href="https://github.com/stretchr/testify">testify</a>、<a href="https://golang.testcontainers.org/">testcontainers-go</a>、<a href="https://github.com/DATA-DOG/go-sqlmock">go-sqlmock</a>。</p>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

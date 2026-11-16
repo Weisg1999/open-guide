@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>时区与时间处理 · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#0284c7; --accent-light:#e0f2fe; --accent-dark:#075985;
+    --bg:#f4faff; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#042f4a; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#075985 0%,#0284c7 58%,#075985 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">时区与时间处理<span class="ver">Go 1.27</span></div>
+  <div class="sub">时刻 · 时区 · DST</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a href="#2-能力总览">2. 能力总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-timetime-的内部表示为什么-不可靠">3.1 time.Time 的内部表示：为什么 == 不可靠</a>
+  <a class="sub-link" href="#32-时刻instant与墙上时间civil-time">3.2 时刻（instant）与墙上时间（civil time）</a>
+  <a class="sub-link" href="#33-location-与-iana-数据库的查找顺序">3.3 Location 与 IANA 数据库的查找顺序</a>
+  <a class="sub-link" href="#34-夏令时不存在的钟点与重复的钟点">3.4 夏令时：不存在的钟点与重复的钟点</a>
+  <a class="sub-link" href="#35-格式化与解析layout-是参考时刻">3.5 格式化与解析：layout 是参考时刻</a>
+  <a class="sub-link" href="#36-数据库里的时间语义由列类型决定">3.6 数据库里的时间：语义由列类型决定</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-站点模型与本地日-utc-区间">4.1 站点模型与「本地日 → UTC 区间」</a>
+  <a class="sub-link" href="#42-写入utc-时刻-冗余本地日期">4.2 写入：UTC 时刻 + 冗余本地日期</a>
+  <a class="sub-link" href="#43-读取展示与按本地日统计">4.3 读取、展示与按本地日统计</a>
+  <a class="sub-link" href="#44-跨时区定时任务civil-触发-去重">4.4 跨时区定时任务：civil 触发 + 去重</a>
+  <a class="sub-link" href="#45-dst-边界的表驱动测试">4.5 DST 边界的表驱动测试</a>
+  <a href="#5-版本演进">5. 版本演进</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>时区与时间处理技术指南</h1>
+<p>时间处理的三个坑：把「时刻」当「墙上时间」，把本地时区当 UTC，把夏令时当成固定偏移。</p>
+<p style="opacity:.8;font-size:13.5px">时刻 · 时区 · DST</p>
+<div class="meta"><span>time.Time 内部表示</span><span>IANA tzdata</span><span>DST 边界</span><span>TIMESTAMP vs TIMESTAMPTZ</span><span>CRON_TZ</span><span>日切统计</span></div>
+</div>
+<blockquote><p>时间处理的三个坑：把「时刻」当「墙上时间」，把本地时区当 UTC，把夏令时当成固定偏移。 标准库：<a href="https://pkg.go.dev/time">https://pkg.go.dev/time</a> · <a href="https://pkg.go.dev/time/tzdata">https://pkg.go.dev/time/tzdata</a>（内嵌 IANA 数据）　|　适用 <strong>Go 1.27.4</strong>（2026-11-10），IANA tzdata 2026 版</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p>这篇讲的不是第三方库，而是标准库 <code>time</code> 与它背后的 IANA 时区数据库。它是所有 Go 服务的地基——日志、订单、审计、定时任务、报表日切都建在它上面，也因此「差 8 小时」「少一天」「任务没跑」的事故，几乎都能回溯到这里的某个误解。三篇的分工：cron 篇回答「到点怎么触发」，只用到 <code>time.Location</code> 一个参数；MySQL 篇回答「时间字段怎么存」，只用到 DSN 里的 <code>loc</code> 一个参数；本篇回答<strong>这两个参数背后是什么</strong>，为什么同一个 <code>time.Time</code> 能打印出两个钟点、为什么夏令时那天任务少跑一次。</p>
+<p><code>time</code> 包的定位可以概括为一句话：<strong>它同时表示「时刻」和「墙上时间」，允许你自由转换，但不会替你判断该用哪个</strong>。判断错了标准库不报错，只会安静地给你一个偏移 8 小时的结果。</p>
+<pre><code class="lang-go">package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	loc, err := time.LoadLocation("Europe/Berlin")
+	if err != nil {
+		panic(err) // 容器缺 tzdata 时在这里暴露
+	}
+	now := time.Now()
+	fmt.Println(now.UTC().Format(time.RFC3339))
+	fmt.Println(now.In(loc).Format(time.RFC3339))
+}</code></pre>
+<hr>
+
+</section>
+<section data-anchor="2-能力总览">
+<h2 id="2-能力总览">2. 能力总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>时刻表示</td><td><code>time.Time</code> 同时携带墙钟读数、单调读数与 <code>*Location</code></td></tr><tr><td>时区加载</td><td><code>LoadLocation</code> 按 <code>ZONEINFO</code> → 系统目录 → 内嵌数据 → <code>$GOROOT</code> 顺序查找</td></tr><tr><td>IANA 数据</td><td><code>time/tzdata</code> 把完整数据库编进二进制（约 +450 KB），也可 <code>-tags timetzdata</code></td></tr><tr><td>夏令时</td><td>内置过渡规则；<code>Zone()</code> 给偏移与缩写，<code>IsDST()</code> 判断是否处于夏令时</td></tr><tr><td>格式化</td><td>layout 是参考时刻 <code>Mon Jan 2 15:04:05 MST 2006</code>，不是格式串</td></tr><tr><td>解析</td><td><code>Parse</code> 无时区信息时返回 UTC；<code>ParseInLocation</code> 指定时区</td></tr></tbody></table></div>
+<hr>
+
+<div class="features">
+  <div class="feature"><div class="fh"><h4>时刻 vs 墙上时间</h4></div><p>time.Time 是时刻；2026-03-29 02:30 在欧洲可能不存在</p></div>
+  <div class="feature"><div class="fh"><h4>tzdata</h4></div><p>容器里没时区库会 LoadLocation 失败；可 import _ "time/tzdata" 内嵌</p></div>
+  <div class="feature"><div class="fh"><h4>数据库语义</h4></div><p>MySQL TIMESTAMP 受 time_zone 影响，DATETIME 不受；PG timestamptz 存 UTC</p></div>
+</div>
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-timetime-的内部表示为什么-不可靠">3.1 <code>time.Time</code> 的内部表示：为什么 <code>==</code> 不可靠</h3>
+<pre><code class="lang-text">type Time struct {
+    wall uint64   // 1 bit 有无单调读数 | 33 bit 秒 | 30 bit 纳秒
+    ext  int64    // 有单调读数：进程启动以来的秒；否则：公元 1 年起的秒
+    loc  *Location
+}</code></pre>
+<p>三个直接后果：</p>
+<ol><li><strong><code>==</code> 比的是三个字段，不是「同一瞬间」</strong>。<code>UTC</code> 与 <code>FixedZone("UTC", 0)</code> 指向不同 <code>loc</code>，同一瞬间也不相等。</li><li><strong>单调读数让 <code>==</code> 更不可靠</strong>：<code>time.Now()</code> 带单调读数，数据库读回来的不带，墙钟一致也 <code>!=</code>。同理 <code>time.Time</code> 不适合做 map key，必须做键时先 <code>t.UTC().Round(0).Format(time.RFC3339Nano)</code>。</li><li><strong><code>Equal</code> 才是「同一瞬间」</strong>，它忽略 <code>loc</code> 与单调读数；<code>Compare</code>（Go 1.20+）可直接排序。</li></ol>
+<pre><code class="lang-go">a := time.Now()
+b := a.Round(0)                      // Round(0) 剥掉单调读数，Add(0) 不会
+fmt.Println(a == b, a.Equal(b))      // false true
+c := a.In(time.FixedZone("UTC", 0))
+fmt.Println(a == c, a.Equal(c))      // false true</code></pre>
+<blockquote><p>单调读数是进程私有的，无跨进程意义，序列化、写日志、入库时都会丢。<strong>跨进程边界的时间一律用 <code>Equal</code>/<code>Before</code>/<code>After</code>，绝不用 <code>==</code></strong>；需要显式剥离时用 <code>t.Round(0)</code>。</p></blockquote>
+<h3 id="32-时刻instant与墙上时间civil-time">3.2 时刻（instant）与墙上时间（civil time）</h3>
+<p>这是全文的地基，两者混淆是所有时区 bug 的源头。</p>
+<div class="table-wrap"><table><thead><tr><th></th><th>时刻 instant</th><th>墙上时间 civil</th></tr></thead><tbody><tr><td>本质</td><td>时间轴上的一个点</td><td>「年月日时分秒 + 时区规则」</td></tr><tr><td>唯一性</td><td>全局唯一</td><td>同一钟点可能对应 0 个或 2 个时刻</td></tr><tr><td>表达</td><td>Unix 纳秒、<code>2026-11-16T03:00:00Z</code></td><td><code>2026-11-16 09:00 Europe/Berlin</code></td></tr><tr><td>换时区</td><td>不变</td><td>变成另一个时刻</td></tr></tbody></table></div>
+<p>判断规则只有一条：<strong>问「宇宙中哪一刻」用 instant，问「当地钟表指到几点」用 civil</strong>。事件发生时间存 UTC，展示时转 civil；定时规则必须带 IANA 时区名，不能用固定偏移。</p>
+<h3 id="33-location-与-iana-数据库的查找顺序">3.3 <code>Location</code> 与 IANA 数据库的查找顺序</h3>
+<p><code>*Location</code> 的本质是一张<strong>过渡表</strong>：若干 <code>zone{名称, 偏移, 是否 DST, 起止时刻}</code> 加未来规则。它不是「当前偏移」一个数字，所以 <code>FixedZone("CST", 8*3600)</code> 永远替代不了 <code>Asia/Shanghai</code>——后者在 1986–1991 年实行过夏令时，前者不知道。</p>
+<p><code>LoadLocation(name)</code> 的顺序（<code>""</code> 返回 UTC，<code>"Local"</code> 返回进程本地时区）：</p>
+<ol><li><code>$ZONEINFO</code> 指向的目录或 zip；</li><li>系统目录 <code>/usr/share/zoneinfo</code>、<code>/usr/share/lib/zoneinfo</code>、<code>/usr/lib/locale/TZ</code>、<code>/etc/zoneinfo</code>；</li><li>导入了 <code>time/tzdata</code> 时的<strong>内嵌数据</strong>；</li><li><code>$GOROOT/lib/time/zoneinfo.zip</code>。</li></ol>
+<p>两个容易踩反的点：</p>
+<ul><li><strong>内嵌数据是兜底，不是优先</strong>。镜像里有 <code>/usr/share/zoneinfo</code> 就用镜像那份，哪怕它是三年前的；升级 Go 不会让运行中的容器换数据。IANA 2026 年就改过加拿大几个省（Manitoba 自 2026-10-31 永久 -05，西北地区自 2026-08-21 永久 -06），旧数据会让「本地 9 点」的任务整整偏一小时，而 Go 不报任何错。</li><li><strong>Go 没有 API 告诉你加载的是哪版 tzdata</strong>（Node 有 <code>process.versions.tz</code>，Python 有 <code>tzdata.IANA_VERSION</code>）。<code>Local</code> 也不是常量：Linux 来自 <code>TZ</code> 或 <code>/etc/localtime</code>，Windows 来自注册表。它是「部署机时区」，不是业务时区。</li></ul>
+<h3 id="34-夏令时不存在的钟点与重复的钟点">3.4 夏令时：不存在的钟点与重复的钟点</h3><div class="figure">
+  <svg viewBox="0 0 880 268" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-go-time" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0284c7"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#075985">一次跨时区写入与读取</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">存储用 UTC 时刻，展示用目标时区</text>
+    <rect x="142" y="82" width="175" height="80" rx="12" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+    <text x="229" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#075985">业务事件</text>
+    <text x="229" y="136" text-anchor="middle" font-size="11" fill="#075985">带时区的本地时间</text>
+    <line x1="320" y1="122" x2="346" y2="122" stroke="#0284c7" stroke-width="2" marker-end="url(#m-go-time)"/>
+    <rect x="352" y="82" width="175" height="80" rx="12" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+    <text x="440" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#075985">统一存 UTC</text>
+    <text x="440" y="136" text-anchor="middle" font-size="11" fill="#075985">timestamptz / Unix 时间戳</text>
+    <line x1="532" y1="122" x2="558" y2="122" stroke="#0284c7" stroke-width="2" marker-end="url(#m-go-time)"/>
+    <rect x="564" y="82" width="175" height="80" rx="12" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+    <text x="651" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#075985">按目标时区展示</text>
+    <text x="651" y="136" text-anchor="middle" font-size="11" fill="#075985">LoadLocation + In</text>
+    <rect x="40" y="186" width="800" height="58" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="210" font-size="12.5" fill="#1e293b">不要把「墙上时间」当唯一真相：DST 切换当天，凌晨两点的本地时间可能不存在或出现两次。</text>
+  </svg>
+  <figcaption>一次跨时区写入与读取</figcaption>
+</div>
+<div class="table-wrap"><table><thead><tr><th>本地日期（Europe/Berlin）</th><th>变化</th><th>结果</th></tr></thead><tbody><tr><td>2026-03-29 02:00 CET</td><td>拨快到 03:00 CEST</td><td><code>02:00–02:59</code> <strong>不存在</strong></td></tr><tr><td>2026-10-25 03:00 CEST</td><td>拨慢到 02:00 CET</td><td><code>02:00–02:59</code> <strong>出现两次</strong></td></tr></tbody></table></div>
+<p>于是 <code>2026-03-29 02:30</code> 对应 <strong>0 个</strong> instant，<code>2026-10-25 02:30</code> 对应 <strong>2 个</strong>（先 +02:00 后 +01:00）。<code>time.Date</code> 会归一化，但官方明确「时区选择与最终时刻不做保证」：</p>
+<pre><code class="lang-go">loc, _ := time.LoadLocation("Europe/Berlin")
+// 不存在的 02:30：当前实现向后落到 03:30 CEST
+fmt.Println(time.Date(2026, 3, 29, 2, 30, 0, 0, loc)) // 2026-03-29 03:30:00 +0200 CEST
+// 重复的 02:30：Go 1.27 实测取第二次，即标准时间那次
+fmt.Println(time.Date(2026, 10, 25, 2, 30, 0, 0, loc)) // 2026-10-25 02:30:00 +0100 CET</code></pre>
+<p>工程做法：定时任务避开 <code>02:00–03:00</code>；必须在此窗口执行的先判断 civil 值是否存在；重复钟点靠幂等键去重，而不是假设「不会跑两次」；绝不用 <code>FixedZone("CET", 3600)</code> 表示柏林，它没有 DST 规则，半年全错。另外，偏移不一定整小时（<code>Asia/Kathmandu</code> +05:45、<code>Australia/Eucla</code> +08:45），历史 LMT 甚至带秒，任何 <code>offset/3600</code> 取整的代码都是错的。</p>
+<h3 id="35-格式化与解析layout-是参考时刻">3.5 格式化与解析：layout 是参考时刻</h3>
+<p>Go 用固定参考时刻做模板（<code>Mon Jan _2 15:04:05 MST 2006</code>），常用常量有 <code>RFC3339</code>、<code>RFC3339Nano</code>、<code>DateOnly</code>、<code>TimeOnly</code>、<code>DateTime</code>（后三者 Go 1.20+）。解析有三条铁律：</p>
+<ol><li><strong><code>time.Parse</code> 在 layout 不含时区时返回 UTC</strong>，不是本地时间；</li><li><strong>要按某时区解释必须用 <code>ParseInLocation</code></strong>；</li><li><strong><code>Z07:00</code> 同时接受 <code>Z</code> 与 <code>+08:00</code>，<code>-07:00</code> 只接受数字偏移</strong>。</li></ol>
+<pre><code class="lang-go">t1, _ := time.Parse("2006-01-02 15:04:05", "2026-11-16 09:00:00") // UTC 9 点
+loc, _ := time.LoadLocation("Europe/Berlin")
+t2, _ := time.ParseInLocation("2006-01-02 15:04:05", "2026-11-16 09:00:00", loc)
+fmt.Println(t1.Format(time.RFC3339)) // 2026-11-16T09:00:00Z
+fmt.Println(t2.Format(time.RFC3339)) // 2026-11-16T09:00:00+01:00</code></pre>
+<p><code>RFC3339Nano</code> 会去掉小数末尾的零，既非定宽也不可按字典序排序：整秒时间不带小数段，而 <code>'Z'(0x5A)</code> 大于 <code>'.'(0x2E)</code>，所以 <code>...09:00:00Z</code> 会排在 <code>...09:00:00.5Z</code> 之后。需要排序就转 UTC 固定 9 位，或直接存整数。</p>
+<h3 id="36-数据库里的时间语义由列类型决定">3.6 数据库里的时间：语义由列类型决定</h3>
+<p><strong>MySQL</strong></p>
+<div class="table-wrap"><table><thead><tr><th></th><th><code>TIMESTAMP</code></th><th><code>DATETIME</code></th></tr></thead><tbody><tr><td>存什么</td><td>内部按 UTC 存，读写用<strong>会话 <code>time_zone</code></strong> 换算</td><td>原样存字面墙上时间</td></tr><tr><td>范围</td><td>1970-01-01 ~ <strong>2038-01-19</strong> UTC</td><td>1000-01-01 ~ 9999-12-31</td></tr><tr><td>语义</td><td>接近 instant</td><td>接近 civil，但不带时区名</td></tr></tbody></table></div>
+<p>驱动的两个参数分工常被搞混：<code>parseTime=true</code> 决定结果集是否扫成 <code>time.Time</code>；<code>loc=UTC</code> 决定驱动<strong>编码参数、解析结果字符串</strong>时用的时区。而 <code>TIMESTAMP</code> 的换算发生在<strong>服务端</strong>，由会话 <code>time_zone</code> 决定——只设 <code>loc</code> 不设 <code>time_zone</code>，就会出现「写进去对、读出来差 8 小时」。正确姿势是两边钉死：</p>
+<pre><code class="lang-text"># %27%2B00%3A00%27 是 '+00:00' 的 URL 编码
+user:pass@tcp(127.0.0.1:3306)/app?parseTime=true&amp;loc=UTC&amp;time_zone=%27%2B00%3A00%27</code></pre>
+<p><strong>PostgreSQL</strong>：<code>timestamptz</code> 存绝对时刻（微秒），<strong>不保存</strong>你写入时的时区，只保存瞬间；<code>timestamp</code> 存字面墙上时间，无时区语义。<code>timestamptz</code> 的文本输出按会话 <code>TimeZone</code> 渲染，所以 PgBouncer 事务池下不要依赖会话级 <code>SET TIME ZONE</code>，只存 <code>timestamptz</code>。驱动扫描出的 <code>Location</code> 只是约定（pgx v5 可用 <code>TimestamptzCodec.ScanLocation</code> 指定），<strong>不能当业务时区</strong>，更不能对 <code>timestamp</code> 调 <code>.In()</code>——那只是给无时区的数硬贴标签。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<p>场景：同一服务同时服务中国站（<code>Asia/Shanghai</code>）与德国站（<code>Europe/Berlin</code>）。事件存 UTC，报表按<strong>站点本地日</strong>统计，任务按<strong>站点本地时间</strong>触发。</p>
+<h3 id="41-站点模型与本地日-utc-区间">4.1 站点模型与「本地日 → UTC 区间」</h3>
+<p>以下 4.1–4.4 同属一个 <code>timesvc</code> 包，后三节只列新增函数，省略 package 与 import。</p>
+<pre><code class="lang-go">package timesvc
+
+import (
+	"context"
+	"database/sql"
+	"time"
+)
+
+type Site struct {
+	Code string
+	Loc  *time.Location
+}
+
+func NewSite(code, tz string) (Site, error) {
+	loc, err := time.LoadLocation(tz)
+	return Site{Code: code, Loc: loc}, err
+}
+
+// DayRange 把站点本地的某一天翻译成 UTC 半开区间 [start, end)。
+func (s Site) DayRange(day string) (time.Time, time.Time, error) {
+	d, err := time.ParseInLocation(time.DateOnly, day, s.Loc)
+	if err != nil {
+		return time.Time{}, time.Time{}, err
+	}
+	return d.UTC(), d.AddDate(0, 0, 1).UTC(), nil
+}</code></pre>
+<p><code>AddDate(0, 0, 1)</code> 加的是<strong>日历日</strong>，跨 DST 仍落在次日 00:00 本地；用 <code>Add(24*time.Hour)</code> 在切换日会偏一小时。柏林站点 <code>DayRange("2026-11-16")</code> 得到 <code>[2026-11-15T23:00Z, 2026-11-16T23:00Z)</code>，上海站点则是 <code>[2026-11-15T16:00Z, 2026-11-16T16:00Z)</code>。</p>
+<h3 id="42-写入utc-时刻-冗余本地日期">4.2 写入：UTC 时刻 + 冗余本地日期</h3>
+<pre><code class="lang-sql">CREATE TABLE orders (
+  id           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  site         VARCHAR(8)      NOT NULL,
+  amount_cents BIGINT          NOT NULL,
+  created_at   DATETIME(6)     NOT NULL COMMENT 'UTC 时刻',
+  created_date DATE            NOT NULL COMMENT '站点本地日',
+  PRIMARY KEY (id), KEY idx_site_created (site, created_at), KEY idx_site_date (site, created_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;</code></pre>
+<pre><code class="lang-go">func (s Site) InsertOrder(ctx context.Context, db *sql.DB, amountCents int64, at time.Time) error {
+	utc := at.UTC().Truncate(time.Microsecond) // 对齐 DATETIME(6)，避免纳秒被静默截断
+	_, err := db.ExecContext(ctx,
+		`INSERT INTO orders (site, amount_cents, created_at, created_date) VALUES (?, ?, ?, ?)`,
+		s.Code, amountCents, utc, at.In(s.Loc).Format(time.DateOnly))
+	return err
+}</code></pre>
+<p>这里 <code>Format(time.DateOnly)</code> 是<strong>正确用法</strong>：回答「这个时刻在当地是几号」。<code>created_date</code> 是写时冗余——多 3 字节，换掉每次查询的时区换算，并让按日聚合直接走索引；代价是业务日口径变更时需回填。</p>
+<h3 id="43-读取展示与按本地日统计">4.3 读取、展示与按本地日统计</h3>
+<pre><code class="lang-go">func (s Site) LoadOrder(ctx context.Context, db *sql.DB, id int64) (time.Time, int64, error) {
+	var at time.Time
+	var amount int64
+	err := db.QueryRowContext(ctx,
+		`SELECT amount_cents, created_at FROM orders WHERE id = ?`, id).Scan(&amp;amount, &amp;at)
+	return at.In(s.Loc), amount, err // 驱动按 loc=UTC 解析，这里只转展示
+}</code></pre>
+<p>对外 API 统一输出 RFC3339，并额外给 <code>"timezone"</code> 与 <code>"local_date"</code> 字段。前端用 <code>Intl.DateTimeFormat(..., { timeZone })</code> 渲染，<strong>不要在前端做日期加减</strong>——浏览器时区是用户设备的，不是站点的。统计复用同一套边界，只是把单条查询换成聚合：</p>
+<pre><code class="lang-go">func (s Site) DailyTotal(ctx context.Context, db *sql.DB, day string) (int64, error) {
+	start, end, err := s.DayRange(day)
+	if err != nil {
+		return 0, err
+	}
+	var total int64
+	err = db.QueryRowContext(ctx,
+		`SELECT COALESCE(SUM(amount_cents), 0) FROM orders
+		  WHERE site = ? AND created_at &gt;= ? AND created_at &lt; ?`,
+		s.Code, start, end).Scan(&amp;total)
+	return total, err
+}</code></pre>
+<p>三条纪律：<strong>半开区间</strong> <code>&gt;= start AND &lt; end</code>（<code>BETWEEN</code> 闭区间易多算）；<strong>不要 <code>DATE(created_at) = ?</code></strong>（函数包住列，索引失效）；<strong>不要 <code>CONVERT_TZ(...)</code></strong>（依赖 MySQL 时区表，托管实例常没导入，会静默返回 <code>NULL</code>，同样无法走索引）。量大时直接聚合冗余列：<code>SELECT created_date, SUM(amount_cents) ... GROUP BY created_date</code>。PostgreSQL 侧只需把列定义为 <code>timestamptz</code>，<code>$2/$3</code> 传 Go 算好的 UTC 边界。</p>
+<h3 id="44-跨时区定时任务civil-触发-去重">4.4 跨时区定时任务：civil 触发 + 去重</h3>
+<p><strong><code>@every 24h</code> / <code>time.Ticker</code> 是绝对间隔</strong>，跨过 DST 后本地钟点会漂一小时；「每天本地 09:30」是 civil 规则，必须每次重新计算：</p>
+<pre><code class="lang-go">// NextDaily 返回 loc 时区中严格晚于 after 的下一个 hour:min。
+func NextDaily(after time.Time, loc *time.Location, hour, min int) time.Time {
+	local := after.In(loc)
+	next := time.Date(local.Year(), local.Month(), local.Day(), hour, min, 0, 0, loc)
+	if !next.After(local) { // day+1 由 time.Date 处理月末与年末
+		next = time.Date(local.Year(), local.Month(), local.Day()+1, hour, min, 0, 0, loc)
+	}
+	return next
+}</code></pre>
+<p>循环里用 <code>time.NewTimer(time.Until(next))</code>，触发后<strong>重新计算</strong>，不要累加 24 小时。用 robfig/cron 则给每个站点一个带时区的调度器，或写 <code>CRON_TZ=Europe/Berlin 30 9 * * *</code>。<strong>多副本才是难点</strong>：N 个 Pod 各跑一份就是 N 次触发，用唯一键在入口抢锁：</p>
+<pre><code class="lang-sql">CREATE TABLE job_runs (
+  job VARCHAR(64) NOT NULL, biz_date DATE NOT NULL, site VARCHAR(8) NOT NULL,
+  started_at DATETIME(6) NOT NULL, PRIMARY KEY (job, biz_date, site)
+);
+INSERT INTO job_runs VALUES (?, ?, ?, UTC_TIMESTAMP(6))
+ON DUPLICATE KEY UPDATE job = job;   -- 已存在则影响行数为 0</code></pre>
+<p><code>RowsAffected() == 1</code> 才执行，<code>0</code> 说明别的副本已经跑过。PostgreSQL 用 <code>ON CONFLICT ... DO NOTHING</code>。<strong>漏跑</strong>另说：进程 09:30 挂了、10:00 才起，这次触发就没了。补偿是存「上次成功水位」，启动时扫应跑未跑的日期补齐；补跑同样走幂等表，天然不重复。</p>
+<h3 id="45-dst-边界的表驱动测试">4.5 DST 边界的表驱动测试</h3>
+<pre><code class="lang-go">package timesvc
+
+import (
+	"testing"
+	"time"
+)
+
+func TestBerlinDST(t *testing.T) {
+	loc, err := time.LoadLocation("Europe/Berlin")
+	if err != nil {
+		t.Fatalf("load tz: %v", err)
+	}
+	cases := []struct {
+		name       string
+		in         time.Time
+		wantHour   int
+		wantOffset int
+	}{
+		{"春季跳变前 01:30", time.Date(2026, 3, 29, 1, 30, 0, 0, loc), 1, 3600},
+		{"不存在的 02:30", time.Date(2026, 3, 29, 2, 30, 0, 0, loc), 3, 7200},
+		{"秋季重复的 02:30", time.Date(2026, 10, 25, 2, 30, 0, 0, loc), 2, 3600},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if _, off := tc.in.Zone(); off != tc.wantOffset || tc.in.Hour() != tc.wantHour {
+				t.Fatalf("offset=%d hour=%d, want %d/%d", off, tc.in.Hour(), tc.wantOffset, tc.wantHour)
+			}
+		})
+	}
+	// 日切：2026-10-25 在柏林有 25 小时，若改成 Add(24h) 这里会失败
+	start, end, _ := (Site{Code: "de", Loc: loc}).DayRange("2026-10-25")
+	if got := end.Sub(start); got != 25*time.Hour {
+		t.Fatalf("day length = %v, want 25h", got)
+	}
+}</code></pre>
+<hr>
+
+<div class="callout info"><p><b>实战要点：</b>跨时区服务统一用 UTC 存储与传输，接口层用 RFC3339 带偏移；日切统计显式指定时区，不要依赖服务器 Local。</p></div>
+</section>
+<section data-anchor="5-版本演进">
+<h2 id="5-版本演进">5. 版本演进<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>与时间处理相关的要点</th></tr></thead><tbody><tr><td>Go 1.15</td><td>新增 <code>time/tzdata</code>，可把 IANA 数据库编进二进制，解决 <code>scratch</code> 镜像无法 <code>LoadLocation</code></td></tr><tr><td>Go 1.17</td><td><code>UnixMilli</code>/<code>UnixMicro</code> 落地；<code>Time.IsDST</code> 可判断夏令时</td></tr><tr><td>Go 1.20</td><td>新增 <code>DateOnly</code>/<code>TimeOnly</code>/<code>DateTime</code> 三个 layout 常量与 <code>Time.Compare</code></td></tr><tr><td>Go 1.23</td><td>定时器通道改为<strong>默认同步（无缓冲）</strong>，旧行为需 <code>GODEBUG=asynctimerchan=1</code> 回退</td></tr><tr><td>Go 1.25</td><td><code>testing/synctest</code> 转正，可用虚拟时钟测试超时与定时逻辑</td></tr><tr><td><strong>Go 1.27</strong></td><td><strong><code>asynctimerchan</code> 永久移除</strong>，<code>time</code> 创建的通道恒为同步无缓冲</td></tr></tbody></table></div>
+<p>Go 1.27 是本文唯一需要改代码的变更：依赖 <code>timer.C</code> 缓冲行为、或在 <code>select</code> 里假设发送不阻塞的写法会失效，且不一定在编译期报错，运行期表现为卡住。时区数据侧，截至 2026-11 IANA 上游最新为 <strong>2026f（2026-10-27）</strong>（古巴取消 2026-11-01 回拨、闰秒表不再过期）；标准库内嵌的是<strong>发布时快照</strong>，通常滞后且无运行时 API 可查，<strong>不要假设「升级 Go 就换了 tzdata」</strong>。</p>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>用 <code>==</code> 比较 <code>time.Time</code></strong>：<code>loc</code> 指针与单调读数让同一瞬间判不等，DB 往返必踩。用 <code>Equal</code>/<code>Before</code>/<code>After</code>/<code>Compare</code>。</li><li><strong>用 <code>t.Format("2006-01-02")</code> 做业务日切</strong>：它输出 <code>t</code> 所在时区的日历日，而 <code>t</code> 常是 UTC 或 <code>Local</code>。<code>WHERE created_at &gt;= '2026-11-16'</code> 在柏林站会多算/少算 1 小时。必须用 <code>time.Date(..., siteLoc)</code> 算 UTC 边界。</li><li><strong><code>time.Parse</code> 丢时区</strong>：layout 不含 <code>Z07:00</code> 时返回 UTC，后续格式化「差 8 小时」。有明确时区语义时用 <code>ParseInLocation</code>。</li><li><strong><code>Local</code> 当业务时区</strong>：它取决于 <code>TZ</code> 或宿主机配置，同一镜像在不同机器可能不同。业务时区写死 IANA 名并显式 <code>LoadLocation</code>。</li><li><strong>容器缺 tzdata</strong>：<code>scratch</code>/<code>distroless/static</code> 没有 <code>/usr/share/zoneinfo</code>，<code>LoadLocation("Asia/Shanghai")</code> 报 <code>unknown time zone Asia/Shanghai</code>。主程序 <code>import _ "time/tzdata"</code>、<code>-tags timetzdata</code>、或镜像装 <code>tzdata</code> 并固定 <code>ZONEINFO</code>。</li><li><strong>以为内嵌 tzdata 会覆盖系统数据</strong>：顺序是 <code>ZONEINFO</code> → 系统目录 → 内嵌 → GOROOT zip。镜像自带旧数据时内嵌再新也不用；要么删系统数据，要么在流水线里显式更新并记录版本。</li><li><strong><code>time.Sleep</code>/<code>Ticker</code> 当「每天几点」</strong>：<code>24h</code> 跨 DST 偏一小时，<code>Ticker</code> 还会累积漂移；<code>Sleep</code> 本身走单调时钟，不受改系统时间影响，但从 DB 读出的 deadline 没有单调读数，<code>Sub</code> 会退化成墙钟。定点任务用 <code>NextDaily</code> 每次重算 + <code>Timer</code>。</li><li><strong><code>Duration</code> 溢出</strong>：int64 纳秒上限约 292 年，<code>days * 24 * time.Hour</code> 大数下会静默回绕成负数。乘法前判上限，<code>Add</code> 后校验结果方向。</li><li><strong>数据库存字符串时间</strong>：<code>VARCHAR</code> 无时区、无范围校验，<code>ORDER BY</code> 只能字典序，混入偏移或毫秒位就乱。用 <code>DATETIME(6)</code>/<code>timestamptz</code> 或 <code>BIGINT</code> epoch 毫秒。</li><li><strong>MySQL <code>TIMESTAMP</code> 的 2038 与隐式换算</strong>：上限 2038-01-19，读写受会话 <code>time_zone</code> 影响；只设 <code>loc</code> 不设 <code>time_zone</code> 会「写对读错」。两个都设 UTC，或改用 <code>DATETIME(6)</code>。</li><li><strong>对 <code>timestamp</code>（无时区）调 <code>.In()</code></strong>：它存的是墙上时间，扫描结果的 <code>Location</code> 只是驱动默认值，转换等于给无时区的数硬贴标签。要时刻就用 <code>timestamptz</code>。</li><li><strong>精度不对齐</strong>：<code>time.Now()</code> 是纳秒，MySQL <code>DATETIME</code> 默认秒、<code>DATETIME(6)</code> 微秒，PG 微秒。写入前 <code>Truncate</code>，否则「刚写就查」也不相等。</li><li><strong><code>time.Tick</code> 不 Stop</strong>：无法停止，Go 1.23 前连 GC 都回收不了。用 <code>NewTicker</code> + <code>defer ticker.Stop()</code>。</li></ol>
+<hr>
+
+<div class="callout warning"><p><b>生产警示：</b>time.Parse 不带时区会得到 UTC；用 Format("2006-01-02") 做业务日切，在跨时区与 DST 下会错位；基础镜像常缺 tzdata。</p></div>
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<p>时区问题没有「最佳实践」，只有<strong>读性能、可解释性、跨时区能力</strong>之间的取舍。先选存储表示：</p>
+<div class="table-wrap"><table><thead><tr><th>方案</th><th>表达方式</th><th>优点</th><th>代价</th><th>适用</th></tr></thead><tbody><tr><td><strong>UTC 时刻（推荐）</strong></td><td><code>DATETIME(6)</code> / <code>timestamptz</code> 存 UTC</td><td>排序比较一致、索引友好</td><td>展示需转换；本地日查询要算边界</td><td>绝大多数事件、日志、审计</td></tr><tr><td><strong>UTC + 冗余本地日</strong></td><td>上者 + <code>created_date DATE</code></td><td>日切/月结走索引，报表最简单</td><td>多一列；口径变更需回填</td><td>多站点订单、流水</td></tr><tr><td><strong>本地时间 + 时区名</strong></td><td><code>09:00</code> + <code>Europe/Berlin</code></td><td>保留原始约定</td><td>无法直接排序；重复钟点有歧义</td><td>营业时间、预约、合同</td></tr><tr><td><strong>epoch 整数</strong></td><td><code>BIGINT</code> 毫秒/微秒</td><td>无歧义、跨语言、体积小</td><td>可读性差、单位易错</td><td>高频时序、跨语言协议</td></tr></tbody></table></div>
+<ul><li><strong>默认存 UTC 时刻，展示时按站点 IANA 时区转换</strong>；只有「本地日聚合」是刚需时才加 <code>created_date</code>，并把它当成业务口径写进文档。跨语言、高频事件流用 epoch 毫秒 <code>BIGINT</code>，单位写进列名（<code>created_at_ms</code>）。</li><li><strong>要保留「当地钟表约定的那个点」</strong>（营业时间、预约）→ 本地时间 + 时区名两列一起存。</li><li><strong>时区数据</strong> → 主程序内嵌兜底 + 镜像内显式管理版本，前者保命，后者保鲜。不要用 <code>carbon</code>、<code>now</code> 之类解决时区问题：它们只是语法糖，底层仍是同一份 <code>time.Location</code>，DST 坑一个不少。</li></ul>
+<blockquote><p>所有时区事故的复盘几乎都能归成一句话：<strong>某处把一个「时刻」当成了「墙上时间」，或反过来</strong>。写代码时对每个时间变量问一句「instant 还是 civil」，比记住任何 API 都管用。</p></blockquote>
+<p>参考：<a href="https://pkg.go.dev/time">https://pkg.go.dev/time</a> · <a href="https://pkg.go.dev/time/tzdata">https://pkg.go.dev/time/tzdata</a> · <a href="https://www.iana.org/time-zones">https://www.iana.org/time-zones</a></p>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>
