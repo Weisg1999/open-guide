@@ -1,6 +1,6 @@
 # open-guide
 
-[![Docs](https://img.shields.io/badge/docs-30%20guides-16a34a)](./README_EN.md)
+[![Docs](https://img.shields.io/badge/docs-35%20guides-16a34a)](./README_EN.md)
 [![Language](https://img.shields.io/badge/topic-Go%20ecosystem-00ADD8?logo=go)](https://go.dev)
 [![Format](https://img.shields.io/badge/format-Markdown%20%2B%20HTML-orange)](./README_EN.md)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
@@ -9,7 +9,7 @@
 > **A collection of in-depth, hands-on guides for the Go backend ecosystem.**
 > Not another Hello World — these are manuals you can actually read, search, and copy working code from.
 >
-> 30 long-form guides · ~11,800 lines of Markdown · each one ships as **Markdown** *and* a **single-file HTML** page (sidebar TOC + syntax highlighting, just open it in a browser).
+> 35 long-form guides · ~13,500 lines of Markdown · each one ships as **Markdown** *and* a **single-file HTML** page (sidebar TOC + syntax highlighting, just open it in a browser).
 
 <div align="center">
 
@@ -25,7 +25,7 @@
 
 | 📚 Guides | 📝 Text | 📄 Offline manuals | 🖼️ Diagrams | ✅ Writing rules | ⚖️ License |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| **30** | **≈ 11,800 lines** | **30 pages** | **72 SVG** | **7 required elements** | **MIT** |
+| **35** | **≈ 13,500 lines** | **35 pages** | **92 SVG** | **7 required elements** | **MIT** |
 
 </div>
 
@@ -57,7 +57,7 @@
 
 | 🔤 Language | 🌐 Frameworks | 🗄️ Data & Search | 📨 Messaging | 🔭 Observability | 🐳 Deployment |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| **3** | **4** | **11** | **6** | **5** | **1** |
+| **3** | **6** | **13** | **6** | **6** | **1** |
 
 </div>
 
@@ -71,7 +71,7 @@ Every guide ships as `MD` (searchable, copyable, PR-friendly) and `HTML` (a depe
 | **Go Reflection** | The three laws of reflection, `reflect.Type` / `reflect.Value`, dynamic invocation & mutation, struct tags in depth (how `encoding/json` and ORMs work), performance cost, reflection vs. generics | [MD](./go-reflection/go-reflection-tutorial.md) · [HTML](./go-reflection/go-reflection-tutorial.html) |
 | **samber/lo** | The Lodash-style generics toolkit: the full slice / map / channel / string / function helper catalog, and how it relates to the stdlib `slices` / `maps` packages | [MD](./samber-lo/samber-lo-guide.md) · [HTML](./samber-lo/samber-lo-guide.html) |
 
-### 🌐 Web & Microservice Frameworks <sub>4 guides</sub>
+### 🌐 Web, Microservices & Governance <sub>6 guides</sub>
 
 | Topic | What's covered | Files |
 | --- | --- | --- |
@@ -79,8 +79,10 @@ Every guide ships as `MD` (searchable, copyable, PR-friendly) and `HTML` (a depe
 | **Kratos** (Bilibili) | API-first / Protobuf-driven development, unified HTTP + gRPC transport, pluggable components (registry / config / log / middleware), v3.0 highlights and the v2 migration path | [MD](./kratos/kratos-guide.md) · [HTML](./kratos/kratos-guide.html) |
 | **go-zero** (TAL) | `.api` DSL + `goctl` code generation, built-in adaptive circuit breaking / rate limiting / load shedding, web and RPC in one framework | [MD](./go-zero/go-zero-guide.md) · [HTML](./go-zero/go-zero-guide.html) |
 | **gRPC-Go** | HTTP/2 multiplexing and Protobuf encoding, `.proto` contracts and codegen, four streaming modes, interceptor chains, deadline propagation, resolver/balancer | [MD](./grpc/grpc-guide.md) · [HTML](./grpc/grpc-guide.html) |
+| **Viper** | Configuration precedence (Set / flag / env / file / remote KV / defaults), `AutomaticEnv` and key replacers, `Unmarshal` + mapstructure, `WatchConfig` hot reload, concurrency and zero-value traps | [MD](./viper/viper-guide.md) · [HTML](./viper/viper-guide.html) |
+| **Casbin** | The PERM meta-model and evaluation flow, ACL / RBAC / ABAC / RESTful, `g` role inheritance and multi-tenant domains, adapters and watchers for policy sync, enforcer concurrency and caching, boundaries with OPA | [MD](./casbin/casbin-guide.md) · [HTML](./casbin/casbin-guide.html) |
 
-### 🗄️ Data Stores & Search <sub>11 guides</sub>
+### 🗄️ Data Stores & Search <sub>13 guides</sub>
 
 | Topic | What's covered | Files |
 | --- | --- | --- |
@@ -95,6 +97,8 @@ Every guide ships as `MD` (searchable, copyable, PR-friendly) and `HTML` (a depe
 | **Elasticsearch** | Inverted index and `text`/`keyword` fields, analyzers and IK for Chinese, NRT refresh and segment merge, shard routing and BM25, Bool Query DSL and aggregations, `search_after` + PIT, Alias/Rollover/ILM for time-series indices | [MD](./elasticsearch/elasticsearch-guide.md) · [HTML](./elasticsearch/elasticsearch-guide.html) |
 | **MongoDB** | BSON document model and `bson.D` ordering, WiredTiger document-level concurrency, replica sets and oplog, shard-key rules and routing, aggregation pipelines and ESR indexes, transactions and Change Streams | [MD](./mongodb/mongodb-guide.md) · [HTML](./mongodb/mongodb-guide.html) |
 | **ClickHouse** | MergeTree parts and background merges, sparse primary index and data-skipping indexes, `ORDER BY` design, vectorized execution, materialized views, `PrepareBatch` bulk writes, `ReplacingMergeTree` eventual dedup, and the FDAP comparison with InfluxDB 3 | [MD](./clickhouse/clickhouse-guide.md) · [HTML](./clickhouse/clickhouse-guide.html) |
+| **OpenSearch** | The ES 7.10 fork and Apache-2.0 licensing, Lucene inverted index and NRT, shard routing, k-NN vector search, ISM and Data Streams, the `opensearch-go` client, compatibility boundaries with Elasticsearch | [MD](./opensearch/opensearch-guide.md) · [HTML](./opensearch/opensearch-guide.html) |
+| **TimescaleDB** | Hypertables and automatic chunk partitioning, `time_bucket`, continuous aggregates, columnar compression with segmentby / orderby, retention and tiering, why unique indexes must include the time column, boundaries with InfluxDB / ClickHouse | [MD](./timescaledb/timescaledb-guide.md) · [HTML](./timescaledb/timescaledb-guide.html) |
 
 > 💡 Elasticsearch wears two hats: business full-text search and log search. For logs, pair the `trace_id` from the [Zap guide](./zap/zap-guide.md) with [OpenTelemetry](./opentelemetry/opentelemetry-guide.md) traces.
 
@@ -111,7 +115,7 @@ Every guide ships as `MD` (searchable, copyable, PR-friendly) and `HTML` (a depe
 
 > 💡 The five messaging / task guides (Kafka / NATS / asynq / RabbitMQ·RocketMQ / Temporal) each end with a **head-to-head comparison table** — start there if you're making a technology decision.
 
-### 🔭 Observability <sub>5 guides</sub>
+### 🔭 Observability <sub>6 guides</sub>
 
 | Topic | What's covered | Files |
 | --- | --- | --- |
@@ -120,6 +124,7 @@ Every guide ships as `MD` (searchable, copyable, PR-friendly) and `HTML` (a depe
 | **Prometheus** | Pull model and labelled time series, the four metric types and `rate()`, TSDB inverted index, PromQL / recording rules / Alertmanager, the high-cardinality trap, boundaries with InfluxDB and OTel Metrics | [MD](./prometheus/prometheus-guide.md) · [HTML](./prometheus/prometheus-guide.html) |
 | **OpenTelemetry** | Trace/Span model and W3C `traceparent` propagation, Sampler / BatchSpanProcessor / OTLP, Resource and semantic conventions, Gin/gRPC/asynq instrumentation, writing `trace_id` into Zap logs | [MD](./opentelemetry/opentelemetry-guide.md) · [HTML](./opentelemetry/opentelemetry-guide.html) |
 | **Grafana Loki** | Label-only indexing cost model, chunks + TSDB index on object storage, Distributor/Ingester/Querier paths, two-stage LogQL and parsers, the high-cardinality trap, compactor and retention, Alloy collection | [MD](./loki/loki-guide.md) · [HTML](./loki/loki-guide.html) |
+| **VictoriaMetrics / Thanos** | Prometheus local-TSDB retention and single-node limits, VM single-binary vs. cluster (vminsert / vmselect / vmstorage), MetricsQL, Thanos Sidecar / Store / Query / Compactor, object-storage downsampling and replica dedup, how to choose | [MD](./victoriametrics/victoriametrics-guide.md) · [HTML](./victoriametrics/victoriametrics-guide.html) |
 
 > 💡 `Zap` / `slog` produce logs, `Loki` retrieves them, `Prometheus` handles metrics and `OpenTelemetry` traces — all linked by a shared `service.name` and `trace_id`.
 
@@ -137,33 +142,35 @@ Every guide ships as `MD` (searchable, copyable, PR-friendly) and `HTML` (a depe
 
 | 🧱 Services track | 💾 Data / IoT track | ⚡ Async & scheduling |
 | :---: | :---: | :---: |
-| `Gin` → `gRPC` | `MySQL` / `PostgreSQL` | `robfig/cron` |
+| `Gin` → `gRPC` → `Viper` / `Casbin` | `MySQL` / `PostgreSQL` | `robfig/cron` |
 | `Kratos` · `go-zero` → `etcd` | `GORM` → `go-redis` | `asynq` |
-| `ES` · `MongoDB` (search / docs) | `InfluxDB` → `MinIO` → `ClickHouse` | `Kafka` · `NATS` · `RabbitMQ` → `Temporal` |
+| `ES` / `OpenSearch` · `MongoDB` (search / docs) | `InfluxDB` / `TimescaleDB` → `MinIO` → `ClickHouse` | `Kafka` · `NATS` · `RabbitMQ` → `Temporal` |
 
-**Shared foundation**　`Go Generics` → `Reflection` → `samber/lo`　·　`Zap` / `slog` · `Prometheus` · `OpenTelemetry` · `Loki`　·　`Docker / K8s`
+**Shared foundation**　`Go Generics` → `Reflection` → `samber/lo`　·　`Zap` / `slog` · `Prometheus` · `VictoriaMetrics / Thanos` · `OpenTelemetry` · `Loki`　·　`Docker / K8s`
 
 </div>
 
-> 🔭 **Cross-cutting**: `gRPC-Go` belongs to the services track; `MySQL` / `PostgreSQL` / `go-redis` / `ClickHouse` to the data track (OLTP → KV → OLAP), with `Elasticsearch` / `MongoDB` as the search and document branches; `RabbitMQ / RocketMQ` / `Temporal` to async and scheduling; `Zap` / `slog` / `Prometheus` / `OpenTelemetry` / `Loki` as the shared observability foundation; and `Docker / K8s` as the deployment layer every guide eventually lands on.
+> 🔭 **Cross-cutting**: `gRPC-Go` belongs to the services track, with `Viper` and `Casbin` as its configuration and authorization base; `MySQL` / `PostgreSQL` / `TimescaleDB` / `go-redis` / `ClickHouse` to the data track (OLTP → time-series → KV → OLAP), with `Elasticsearch` / `OpenSearch` / `MongoDB` as the search and document branches; `RabbitMQ / RocketMQ` / `Temporal` to async and scheduling; `Zap` / `slog` / `Prometheus` / `VictoriaMetrics · Thanos` / `OpenTelemetry` / `Loki` as the shared observability foundation; and `Docker / K8s` as the deployment layer every guide eventually lands on.
 
 | Your goal | Suggested order |
 | --- | --- |
 | Solidify Go fundamentals | Generics → Reflection → samber/lo |
-| Ship your first API service | Gin → **MySQL** → GORM → robfig/cron → **Zap** (establish logging conventions early) |
-| Build microservices | Gin → **gRPC-Go** → Kratos *and* go-zero (read them side by side) → etcd → asynq |
+| Ship your first API service | **Viper** (configuration first) → Gin → **MySQL** → GORM → robfig/cron → **Zap** (establish logging conventions early) |
+| Build microservices | Gin → **gRPC-Go** → Kratos *and* go-zero (read them side by side) → etcd → asynq → **Casbin** (centralize authorization) |
 | Solidify the data layer | **MySQL** (indexes / transactions / locks) → GORM → **go-redis** |
 | Add caching / distributed locks | **go-redis** → then asynq / etcd to understand the boundaries between cache, task queue and strong-consistency coordination |
-| Build search / log retrieval | **Elasticsearch** → pair with Zap `trace_id` and OpenTelemetry traces |
+| Build search / log retrieval | **Elasticsearch** / **OpenSearch** (read the fork and licence differences first) → pair with Zap `trace_id` and OpenTelemetry traces |
 | Store semi-structured, fast-changing data | **MongoDB** → alongside MySQL (source of truth) and ES (search replica) |
-| Build IoT / monitoring / time-series | InfluxDB 2.x → InfluxDB 3 (to see the evolution) → MinIO → Kafka / NATS |
-| Set up observability | **Zap** → **Prometheus** → **OpenTelemetry** (logs / metrics / traces, linked by `trace_id`) |
+| Build IoT / monitoring / time-series | InfluxDB 2.x → InfluxDB 3 (to see the evolution) → **TimescaleDB** (when you need JOINs with business tables) → MinIO → Kafka / NATS |
+| Set up observability | **Zap** → **Prometheus** → **OpenTelemetry** (logs / metrics / traces, linked by `trace_id`) → **VictoriaMetrics / Thanos** (when retention outgrows local disks) |
 | Build OLAP analytics / log detail | **ClickHouse** → ingest with the Kafka table engine |
 | Decouple services / ordered and transactional messages | **RabbitMQ / RocketMQ** → split work with asynq (job execution) |
 | Ship and release a service | **Docker / K8s** → with Zap stdout logs, Prometheus probes and graceful shutdown |
 | Use PostgreSQL as the primary store | **PostgreSQL** → compare isolation levels with the MySQL guide, then GORM's PG dialect |
 | Build low-cost log retrieval | **slog / Zap** (output) → **Loki** (retrieval) → jump to OpenTelemetry traces via `trace_id` |
 | Orchestrate long-running business flows | **Temporal** → draw the line with asynq (single async jobs) |
+| Add permissions / multi-tenancy | **Casbin** → PERM model and domain isolation, then compare the boundaries with OPA / ReBAC |
+| Keep Prometheus metrics long-term | **VictoriaMetrics / Thanos** → decide between "scale one node" and "query across clusters" first |
 | Make a technology decision | Jump straight to the "Comparison" section at the end of each guide, especially Kafka vs. NATS vs. asynq |
 
 ---
@@ -202,7 +209,7 @@ The builder uses only the Python 3 standard library — no third-party packages.
 | File | Purpose |
 |---|---|
 | [`tools/themes.json`](./tools/themes.json) | Per-guide colours, hero subtitle and tags |
-| [`tools/fragments.json`](./tools/fragments.json) | SVG architecture diagrams, feature cards and callouts that have no Markdown equivalent, injected by chapter anchor (274 blocks / 72 diagrams) |
+| [`tools/fragments.json`](./tools/fragments.json) | SVG architecture diagrams, feature cards and callouts that have no Markdown equivalent, injected by chapter anchor (354 blocks / 92 diagrams) |
 | [`tools/anchor_map.json`](./tools/anchor_map.json) | Legacy semantic anchors -> heading slugs, so links inside those blocks keep working |
 
 A new topic needs no build configuration: the script auto-discovers `*/ *.md` and assigns a stable palette from the directory name. CI ([`.github/workflows/check-html.yml`](./.github/workflows/check-html.yml)) runs `--check --audit` on every push / PR, which mechanically prevents MD/HTML drift.
@@ -237,38 +244,43 @@ The original convention was a strict "7-section" layout. In practice, a deep man
 ## 6. Upstream Projects & Versions
 
 <details>
-<summary><b>Expand the full version table (30 entries)</b></summary>
+<summary><b>Expand the full version table (35 entries)</b></summary>
 
 | Guide | Upstream repo | Version documented |
 | --- | --- | --- |
 | asynq | [hibiken/asynq](https://github.com/hibiken/asynq) | v0.26.0 · asynqmon v0.7.x |
-| etcd | [etcd-io/etcd](https://github.com/etcd-io/etcd) | v3.6 |
+| etcd | [etcd-io/etcd](https://github.com/etcd-io/etcd) | v3.7 |
 | Gin | [gin-gonic/gin](https://github.com/gin-gonic/gin) | v1.12.0 |
 | go-zero | [zeromicro/go-zero](https://github.com/zeromicro/go-zero) | v1.10.3 |
 | GORM | [go-gorm/gorm](https://github.com/go-gorm/gorm) | v1.31.2 |
-| InfluxDB | [influxdata/influxdb](https://github.com/influxdata/influxdb) | 2.7 / 3 Core (GA 2025-04) |
+| InfluxDB | [influxdata/influxdb](https://github.com/influxdata/influxdb) | 2.9.1（2.x 维护线）/ 3 Core（3.12） |
 | Kafka | [apache/kafka](https://github.com/apache/kafka) | 4.x |
 | Kratos | [go-kratos/kratos](https://github.com/go-kratos/kratos) | v3.0.0 |
-| MinIO | [minio/minio](https://github.com/minio/minio) | Community Edition (AGPLv3) |
-| NATS | [nats-io/nats-server](https://github.com/nats-io/nats-server) | v2.11 |
+| MinIO | [minio/minio](https://github.com/minio/minio) | 社区版已归档（2026-04，最后 2025-10-15） |
+| NATS | [nats-io/nats-server](https://github.com/nats-io/nats-server) | v2.15 |
 | robfig/cron | [robfig/cron](https://github.com/robfig/cron) | v3 |
 | samber/lo | [samber/lo](https://github.com/samber/lo) | v1 |
 | go-redis | [redis/go-redis](https://github.com/redis/go-redis) | v9 (module path `/v9`) |
 | gRPC-Go | [grpc/grpc-go](https://github.com/grpc/grpc-go) | v1.x (stable API, continuous releases) |
-| Zap | [uber-go/zap](https://github.com/uber-go/zap) | v1.27.x |
-| MySQL | [mysql/mysql-server](https://github.com/mysql/mysql-server) | 8.0 / 8.4 LTS · go-sql-driver/mysql v1.x |
+| Zap | [uber-go/zap](https://github.com/uber-go/zap) | v1.28.x |
+| MySQL | [mysql/mysql-server](https://github.com/mysql/mysql-server) | 9.7 LTS / 26.x Innovation · go-sql-driver v1.x |
 | Prometheus | [prometheus/prometheus](https://github.com/prometheus/prometheus) | 3.x · client_golang v1.x |
 | OpenTelemetry | [open-telemetry/opentelemetry-go](https://github.com/open-telemetry/opentelemetry-go) | Go SDK v1.x · OTLP |
-| Elasticsearch | [elastic/elasticsearch](https://github.com/elastic/elasticsearch) | 8.x / 9.x · go-elasticsearch v8 |
-| MongoDB | [mongodb/mongo](https://github.com/mongodb/mongo) | 7.0 / 8.0 · mongo-go-driver v1.x |
-| ClickHouse | [ClickHouse/ClickHouse](https://github.com/ClickHouse/ClickHouse) | 25.x · clickhouse-go v2 |
-| Docker / Kubernetes | [kubernetes/kubernetes](https://github.com/kubernetes/kubernetes) | Engine 27+ / K8s 1.3x · client-go v0.3x |
+| Elasticsearch | [elastic/elasticsearch](https://github.com/elastic/elasticsearch) | 9.x · go-elasticsearch v9 |
+| MongoDB | [mongodb/mongo](https://github.com/mongodb/mongo) | 9.0 · mongo-go-driver v2.x |
+| ClickHouse | [ClickHouse/ClickHouse](https://github.com/ClickHouse/ClickHouse) | 26.x · clickhouse-go v2 |
+| Docker / Kubernetes | [kubernetes/kubernetes](https://github.com/kubernetes/kubernetes) | Engine 29+ / K8s 1.37 · client-go v0.37 |
 | RabbitMQ / RocketMQ | [rabbitmq/rabbitmq-server](https://github.com/rabbitmq/rabbitmq-server) | 4.x / 5.x · amqp091-go / rocketmq-client-go v2 |
 | PostgreSQL | [postgres/postgres](https://github.com/postgres/postgres) | 16 / 17 / 18 · pgx v5 |
 | Loki | [grafana/loki](https://github.com/grafana/loki) | 3.x · Grafana Alloy |
-| Temporal | [temporalio/temporal](https://github.com/temporalio/temporal) | Server 1.2x · sdk-go v1.x |
+| Temporal | [temporalio/temporal](https://github.com/temporalio/temporal) | Server 1.3x · sdk-go v1.x |
 | log/slog | [pkg.go.dev/log/slog](https://pkg.go.dev/log/slog) | Go 1.21+ (stdlib) |
 | Go Generics / Reflection | [Official Go proposal & blog](https://go.dev/blog/laws-of-reflection) | Go 1.18+ |
+| Viper | [spf13/viper](https://github.com/spf13/viper) | v1.21.0 |
+| OpenSearch | [opensearch-project/OpenSearch](https://github.com/opensearch-project/OpenSearch) | 3.9.0 (Apache-2.0) |
+| VictoriaMetrics / Thanos | [VictoriaMetrics](https://github.com/VictoriaMetrics/VictoriaMetrics) · [thanos-io/thanos](https://github.com/thanos-io/thanos) | v1.156.0 / v0.42.5 |
+| TimescaleDB | [timescale/timescaledb](https://github.com/timescale/timescaledb) | 2.31.0 (PG 16 / 17 / 18) |
+| Casbin | [casbin/casbin](https://github.com/casbin/casbin) | v3.11.0 |
 
 </details>
 
@@ -282,7 +294,7 @@ Contributions are very welcome, especially:
 
 | Type | Details |
 | --- | --- |
-| 🆕 New topics | Viper, OpenSearch, VictoriaMetrics / Thanos (long-term metrics storage), TimescaleDB, Casbin, circuit breaking & rate limiting, Cobra / sqlc, … |
+| 🆕 New topics | Cobra / sqlc, OpenTelemetry Collector, circuit breaking & rate limiting, Iceberg / Paimon, Zanzibar-style ReBAC, … |
 | 🔄 Version bumps | Sync a guide after an upstream release |
 | 🐛 Corrections | Wrong internals, broken code, outdated conclusions |
 | 🛠 Build script | Improve parsing/rendering in `tools/build_html.py` (never hand-edit HTML) |

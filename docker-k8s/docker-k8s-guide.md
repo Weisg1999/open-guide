@@ -1,7 +1,7 @@
 # Docker 与 Kubernetes 技术介绍与使用指南（Go 服务部署视角）
 
 > 容器与编排的事实标准：镜像分层与多阶段构建、Pod / Deployment / Service 抽象、探针与滚动发布、优雅下线——从 Go 服务视角讲清「怎么被正确打包、正确调度、正确停止」。
-> 上游：<https://github.com/moby/moby> · <https://github.com/kubernetes/kubernetes>　|　主线：**Docker Engine 27+ / Kubernetes 1.3x**（整理于 2026-11）　|　Go 客户端：[kubernetes/client-go](https://github.com/kubernetes/client-go) v0.3x
+> 上游：<https://github.com/moby/moby> · <https://github.com/kubernetes/kubernetes>　|　主线：**Docker Engine 29+ / Kubernetes 1.37**（整理于 2026-11）　|　Go 客户端：[kubernetes/client-go](https://github.com/kubernetes/client-go) v0.37
 > 协议：Apache-2.0；client-go 版本须与集群 minor 版本匹配，具体以上游最新 release 为准。
 
 ---
@@ -429,12 +429,12 @@ kubectl get pdb                         # 是否有 PodDisruptionBudget
 | Docker 早期 | Swarm 编排、经典 builder；`docker-compose` 独立命令 |
 | Docker 近年 | **BuildKit 成为默认构建器**（`RUN --mount=type=cache` 等语法）、Compose V2 并入 `docker compose`、containerd 从 Docker 中拆出成为 CRI 运行时、镜像清单支持多架构 |
 | K8s 1.20~1.24 | **1.24 移除 dockershim**：节点运行时改为 containerd / CRI-O，Docker 镜像仍可用（镜像格式是 OCI 标准），但 kubelet 不再直接调 Docker |
-| K8s 1.2x~1.3x | HPA `autoscaling/v2` GA、Ingress API 冻结并由 **Gateway API** 接棒、PodDisruptionBudget / StatefulSet 增强、原地调整 Pod 资源（in-place resize）逐步可用、Sidecar 容器原生支持 |
+| K8s 1.3x~1.37 | HPA `autoscaling/v2` GA、Ingress API 冻结并由 **Gateway API** 接棒、PodDisruptionBudget / StatefulSet 增强、原地调整 Pod 资源（in-place resize）逐步可用、Sidecar 容器原生支持 |
 
 **迁移注意**：
 
 - `extensions/v1beta1`、`apps/v1beta1` 等旧 API 已移除，老清单必须改 `apiVersion`（`kubectl convert` / `kubectl api-resources` 辅助）
-- `client-go` 版本与集群 minor 对齐（如集群 1.3x 用 `v0.3x`），跨太多版本会有字段不兼容
+- `client-go` 版本与集群 minor 对齐（如集群 1.37 用 `v0.37`），跨太多版本会有字段不兼容
 - Ingress 新项目建议直接上 Gateway API；存量 Ingress 可继续用但不再有新特性
 - 从 `docker-compose` 迁 K8s 时，先确认有状态组件（DB、MQ）是否真的适合上 K8s，别为了「全栈 K8s」强行迁
 

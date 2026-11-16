@@ -1,7 +1,7 @@
 # MySQL 技术介绍与使用指南（Go 后端视角）
 
 > 后端最核心的关系型数据库：B+ 树索引、MVCC 与事务隔离、锁机制、执行计划与主从复制——从 Go 应用视角讲清「为什么慢、为什么死锁、为什么读到了旧数据」。
-> 上游：<https://github.com/mysql/mysql-server>　|　服务端主线：**8.0 / 8.4 LTS**（整理于 2026-11）　|　Go 驱动：[go-sql-driver/mysql](https://github.com/go-sql-driver/mysql) v1.x
+> 上游：<https://github.com/mysql/mysql-server>　|　服务端主线：**9.7 LTS / 26.10 Innovation**（8.0 已于 2026-04 EOL；整理于 2026-11）　|　Go 驱动：[go-sql-driver/mysql](https://github.com/go-sql-driver/mysql) v1.x
 > 协议：服务端 GPLv2（含 FOSS 例外）/ 驱动 MPL-2.0；具体版本以上游最新 release 为准。
 
 ---
@@ -316,9 +316,10 @@ func BulkInsert(ctx context.Context, db *sql.DB, rows []User) error {
 | 版本 | 关键变化与迁移注意点 |
 |---|---|
 | 5.7 | 广泛使用的旧主线；默认 `utf8`（实为 utf8mb3）、查询缓存仍存在；**已停止官方支持** |
-| **8.0** | 默认字符集改 `utf8mb4`；默认认证插件改 `caching_sha2_password`（**老驱动连不上**）；**移除查询缓存**；引入窗口函数、CTE、降序索引、不可见索引、原子 DDL、JSON 增强、角色管理 |
-| **8.4 LTS** | 长期支持版本，收紧废弃参数、调整 InnoDB 默认值与复制相关术语；适合新项目与 5.7 迁移终点 |
-| 9.x（创新版） | 快速迭代分支，新特性先行，**不建议生产长期跟踪**；生产选 LTS |
+| **8.0** | 默认字符集改 `utf8mb4`；默认认证插件改 `caching_sha2_password`（**老驱动连不上**）；**移除查询缓存**；引入窗口函数、CTE、降序索引、不可见索引、原子 DDL、JSON 增强、角色管理；**已于 2026-04 EOL** |
+| **8.4 LTS** | 长期支持版本，收紧废弃参数、调整 InnoDB 默认值与复制相关术语；仍在维护，适合存量系统升级 |
+| **9.7 LTS** | 2026.04 起的新 LTS 线：复制可观测性、Group Replication 治理、JSON Duality Views 的 DML、Hypergraph Optimizer 进入社区版；**新项目首选** |
+| **26.x（创新版）** | 2026.07 起改用日历版本号（YY.MM）季度发布，新特性先行，**不建议生产长期跟踪**；生产选 LTS |
 
 **Go 驱动侧**：v1.x 长期稳定；8.0 之后必须确认驱动版本支持 `caching_sha2_password`（较新的 v1.x 均已支持），否则报 `Authentication plugin 'caching_sha2_password' cannot be loaded`。`allowNativePasswords=false` 与 TLS 配置在多版本间行为有差异，升级前读 CHANGELOG。
 

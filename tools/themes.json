@@ -35,7 +35,7 @@
   },
   "etcd": {
     "title": "etcd",
-    "ver": "v3.6",
+    "ver": "v3.7",
     "subtitle": "分布式强一致 KV 存储 · K8s 心脏",
     "tags": [
       "Raft 共识",
@@ -235,10 +235,10 @@
   },
   "influxdb-v2": {
     "title": "InfluxDB 2.x",
-    "ver": "v2.7",
+    "ver": "v2.9",
     "subtitle": "时序数据库 · TSM + Flux",
     "tags": [
-      "v2.7（维护期）",
+      "v2.9（维护线）",
       "TSM 引擎",
       "Flux 语言",
       "Line Protocol",
@@ -368,10 +368,10 @@
   },
   "minio": {
     "title": "MinIO",
-    "ver": "2025",
+    "ver": "已归档",
     "subtitle": "S3 兼容高性能对象存储",
     "tags": [
-      "S3 100% 兼容",
+      "社区版 2026-04 归档",
       "纠删码 + bit-rot 防护",
       "Go 实现 · 单二进制",
       "云原生 · K8s Operator",
@@ -401,7 +401,7 @@
   },
   "nats": {
     "title": "NATS",
-    "ver": "v2.11",
+    "ver": "v2.15",
     "subtitle": "JetStream 消息系统指南",
     "tags": [
       "单二进制 ~15MB",
@@ -567,7 +567,7 @@
   },
   "zap": {
     "title": "Zap",
-    "ver": "v1.27",
+    "ver": "v1.28",
     "subtitle": "Uber 结构化日志 · 零分配热路径",
     "intro": "Uber 开源的结构化日志库：强类型 Field、可组合的 zapcore 管线、采样与多目的地分流，兼顾极致性能与工程可控性。",
     "tags": [
@@ -601,11 +601,11 @@
   },
   "mysql": {
     "title": "MySQL",
-    "ver": "8.4 LTS",
+    "ver": "9.7 LTS",
     "subtitle": "Go 后端视角 · 索引 / 事务 / 锁",
     "intro": "后端最核心的关系型数据库：B+ 树索引、MVCC 与事务隔离、锁机制、执行计划与主从复制，从 Go 应用视角讲清为什么慢、为什么死锁、为什么读到旧数据。",
     "tags": [
-      "8.0 / 8.4 LTS",
+      "9.7 LTS / 26.x Innovation",
       "InnoDB 聚簇索引",
       "MVCC + ReadView",
       "临键锁与死锁",
@@ -703,7 +703,7 @@
   },
   "elasticsearch": {
     "title": "Elasticsearch",
-    "ver": "8.x / 9.x",
+    "ver": "9.x",
     "subtitle": "倒排索引 · 全文检索与日志分析",
     "intro": "基于 Lucene 的分布式搜索与分析引擎：倒排索引、分片与副本、近实时刷新、Query DSL 与聚合，同时承担全文检索与日志检索两副担子。",
     "tags": [
@@ -737,7 +737,7 @@
   },
   "mongodb": {
     "title": "MongoDB",
-    "ver": "7.0 / 8.0",
+    "ver": "9.0",
     "subtitle": "BSON 文档 · 副本集与分片",
     "intro": "面向文档的分布式数据库：BSON 灵活 schema、WiredTiger 文档级并发、副本集与分片、聚合管道与多文档事务，讲清什么时候该用文档模型以及片键选错的代价。",
     "tags": [
@@ -772,7 +772,7 @@
   },
   "clickhouse": {
     "title": "ClickHouse",
-    "ver": "25.x",
+    "ver": "26.x",
     "subtitle": "列式 OLAP · MergeTree 与向量化执行",
     "intro": "列式 OLAP 数据库：MergeTree 存储引擎、向量化执行、稀疏主键索引与数据跳过索引，把亿级明细秒级聚合变成常规操作。",
     "tags": [
@@ -806,11 +806,11 @@
   },
   "docker-k8s": {
     "title": "Docker / K8s",
-    "ver": "1.3x",
+    "ver": "1.37",
     "subtitle": "Go 服务部署 · 容器与编排",
     "intro": "容器与编排的事实标准：镜像分层与多阶段构建、Pod / Deployment / Service 抽象、探针与滚动发布、优雅下线，从 Go 服务视角讲清怎么被正确打包、正确调度、正确停止。",
     "tags": [
-      "多阶段构建 + distroless",
+      "K8s 1.37 / Engine 29+",
       "namespace / cgroups",
       "声明式 Reconcile Loop",
       "liveness / readiness / startup",
@@ -942,7 +942,7 @@
   },
   "temporal": {
     "title": "Temporal",
-    "ver": "1.2x",
+    "ver": "1.3x",
     "subtitle": "Durable Execution · 工作流编排",
     "intro": "把长事务、重试、超时、补偿从业务代码里抽出来：用代码定义工作流，服务端持久化执行历史，进程崩溃后自动重放恢复。",
     "tags": [
@@ -1007,5 +1007,175 @@
       "bg": "#f4fafb",
       "code-bg": "#04222b"
     }
+  },
+  "viper": {
+    "title": "Viper",
+    "ver": "v1.21",
+    "subtitle": "配置管理 · 优先级链",
+    "tags": [
+      "v1.21.0 · 2025.09 发布",
+      "MIT License",
+      "flag / env / 文件 / 远程四层来源",
+      "Unmarshal + mapstructure",
+      "WatchConfig 热更新",
+      "并发与零值陷阱"
+    ],
+    "colors": {
+      "accent": "#16a34a",
+      "accent-light": "#dcfce7",
+      "accent-dark": "#166534",
+      "bg": "#f4faf5",
+      "card": "#ffffff",
+      "border": "#e3e9f2",
+      "text": "#1e293b",
+      "muted": "#64748b",
+      "ok": "#059669",
+      "warn": "#d97706",
+      "danger": "#dc2626",
+      "code-bg": "#052e16",
+      "kw": "#93c5fd",
+      "str": "#86efac",
+      "cmt": "#64748b",
+      "num": "#fbbf24",
+      "fn": "#f472b6",
+      "typ": "#67e8f9"
+    },
+    "intro": "Go 生态最流行的配置管理库：把 flag、环境变量、配置文件与远程 KV 收口成一条优先级链，业务只调 Get* 而不关心值来自哪一层。"
+  },
+  "opensearch": {
+    "title": "OpenSearch",
+    "ver": "3.9",
+    "subtitle": "Apache-2.0 搜索与分析套件",
+    "tags": [
+      "3.9.0 · 2026.09 发布",
+      "Apache-2.0",
+      "Elasticsearch 7.10 分叉",
+      "k-NN 向量检索",
+      "ISM + Data Streams",
+      "opensearch-go"
+    ],
+    "colors": {
+      "accent": "#2563eb",
+      "accent-light": "#dbeafe",
+      "accent-dark": "#1e40af",
+      "bg": "#f5f8fd",
+      "card": "#ffffff",
+      "border": "#e3e9f2",
+      "text": "#1e293b",
+      "muted": "#64748b",
+      "ok": "#059669",
+      "warn": "#d97706",
+      "danger": "#dc2626",
+      "code-bg": "#0f172a",
+      "kw": "#93c5fd",
+      "str": "#86efac",
+      "cmt": "#64748b",
+      "num": "#fbbf24",
+      "fn": "#f472b6",
+      "typ": "#67e8f9"
+    },
+    "intro": "从 Elasticsearch 7.10 分叉、全程 Apache-2.0 的搜索与分析套件：Lucene 检索内核，外加安全、SQL/PPL、ISM 与向量检索。"
+  },
+  "victoriametrics": {
+    "title": "VictoriaMetrics / Thanos",
+    "ver": "v1.156 · v0.42",
+    "subtitle": "Prometheus 长期存储两条路线",
+    "tags": [
+      "VM v1.156.0 · 2026.11",
+      "Thanos v0.42.5 · 2026.10",
+      "Apache-2.0",
+      "MetricsQL",
+      "对象存储 + 降采样",
+      "全局查询视图"
+    ],
+    "colors": {
+      "accent": "#ea580c",
+      "accent-light": "#ffedd5",
+      "accent-dark": "#9a3412",
+      "bg": "#fdf9f5",
+      "card": "#ffffff",
+      "border": "#e3e9f2",
+      "text": "#1e293b",
+      "muted": "#64748b",
+      "ok": "#059669",
+      "warn": "#d97706",
+      "danger": "#dc2626",
+      "code-bg": "#241408",
+      "kw": "#93c5fd",
+      "str": "#86efac",
+      "cmt": "#64748b",
+      "num": "#fbbf24",
+      "fn": "#f472b6",
+      "typ": "#67e8f9"
+    },
+    "intro": "Prometheus 长期存储与全局查询的两条路线：VM 走单二进制/集群的高压缩路线，Thanos 走对象存储加 Sidecar 的联邦路线。"
+  },
+  "timescaledb": {
+    "title": "TimescaleDB",
+    "ver": "2.31",
+    "subtitle": "PostgreSQL 时序扩展",
+    "tags": [
+      "2.31.0 · 2026.10 发布",
+      "Apache-2.0 核心 + TSL",
+      "hypertable 自动分区",
+      "列式压缩",
+      "连续聚合",
+      "PG 16 / 17 / 18"
+    ],
+    "colors": {
+      "accent": "#0d9488",
+      "accent-light": "#ccfbf1",
+      "accent-dark": "#115e59",
+      "bg": "#f4faf9",
+      "card": "#ffffff",
+      "border": "#e3e9f2",
+      "text": "#1e293b",
+      "muted": "#64748b",
+      "ok": "#059669",
+      "warn": "#d97706",
+      "danger": "#dc2626",
+      "code-bg": "#03211d",
+      "kw": "#93c5fd",
+      "str": "#86efac",
+      "cmt": "#64748b",
+      "num": "#fbbf24",
+      "fn": "#f472b6",
+      "typ": "#67e8f9"
+    },
+    "intro": "长在 PostgreSQL 里的时序扩展：按时间自动分区、列式压缩、连续聚合与生命周期策略，全部用原生 SQL 表达。"
+  },
+  "casbin": {
+    "title": "Casbin",
+    "ver": "v3.11",
+    "subtitle": "嵌入式授权判定引擎",
+    "tags": [
+      "v3.11.0 · 2026.08 发布",
+      "Apache-2.0",
+      "PERM 元模型",
+      "ACL / RBAC / ABAC",
+      "多租户 domain",
+      "Adapter + Watcher"
+    ],
+    "colors": {
+      "accent": "#7c3aed",
+      "accent-light": "#ede9fe",
+      "accent-dark": "#5b21b6",
+      "bg": "#f8f7fc",
+      "card": "#ffffff",
+      "border": "#e3e9f2",
+      "text": "#1e293b",
+      "muted": "#64748b",
+      "ok": "#059669",
+      "warn": "#d97706",
+      "danger": "#dc2626",
+      "code-bg": "#1a1033",
+      "kw": "#93c5fd",
+      "str": "#86efac",
+      "cmt": "#64748b",
+      "num": "#fbbf24",
+      "fn": "#f472b6",
+      "typ": "#67e8f9"
+    },
+    "intro": "把「谁能对什么做什么」从硬编码里抽出来的嵌入式授权引擎：一份 model.conf 加一组策略，覆盖 ACL、RBAC、ABAC 与 RESTful。"
   }
 }

@@ -92,7 +92,7 @@
 <body>
 <div class="layout">
 <nav class="sidebar">
-  <div class="logo">etcd<span class="ver">v3.6</span></div>
+  <div class="logo">etcd<span class="ver">v3.7</span></div>
   <div class="sub">分布式强一致 KV 存储 · K8s 心脏</div>
   <a href="#1-项目简介">1. 项目简介</a>
   <a class="sub-link" href="#部署形态">部署形态</a>
@@ -110,7 +110,7 @@
   <a class="sub-link" href="#43-lease-注册服务发现骨架">4.3 Lease + 注册：服务发现骨架</a>
   <a class="sub-link" href="#44-事务分布式锁的核心concurrency-包">4.4 事务：分布式锁的核心（concurrency 包）</a>
   <a class="sub-link" href="#45-运维常用命令">4.5 运维常用命令</a>
-  <a href="#5-v36-版本要点20255">5. v3.6 版本要点（2025.5）</a>
+  <a href="#5-版本要点v37-v3620255202610">5. 版本要点：v3.7 / v3.6（2025.5–2026.10）</a>
   <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
   <a href="#7-选型对比">7. 选型对比</a>
 </nav>
@@ -121,7 +121,7 @@
 <p style="opacity:.8;font-size:13.5px">分布式强一致 KV 存储 · K8s 心脏</p>
 <div class="meta"><span>Raft 共识</span><span>MVCC 多版本</span><span>bbolt B+ 树</span><span>K8s 心脏</span><span>主线 v3.6 · 2025.5</span><span>强一致 · 高可用</span></div>
 </div>
-<blockquote><p>分布式强一致 KV 存储，Kubernetes 控制平面的心脏。Raft 共识 + MVCC 多版本 + bbolt B+ 树。 仓库：<a href="https://github.com/etcd-io/etcd">https://github.com/etcd-io/etcd</a>　|　当前主线：v3.6（2025.5.15 发布，距 v3.5 近四年）</p></blockquote>
+<blockquote><p>分布式强一致 KV 存储，Kubernetes 控制平面的心脏。Raft 共识 + MVCC 多版本 + bbolt B+ 树。 仓库：<a href="https://github.com/etcd-io/etcd">https://github.com/etcd-io/etcd</a>　|　当前主线：v3.7（2026.10 发布；v3.6 为 2025.5）</p></blockquote>
 <section data-anchor="1-项目简介">
 <h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
 <p>etcd 名字来源于 "/etc 分布式"——一个分布式的配置目录。它是<strong>分布式、强一致的键值存储</strong>，专为分布式系统中最关键的数据设计：集群元数据、服务发现、配置分发、 leader 选举、分布式锁。</p>
@@ -549,8 +549,13 @@ etcdctl defrag                             # 碎片整理</code></pre>
 <hr>
 
 </section>
-<section data-anchor="5-v36-版本要点20255">
-<h2 id="5-v36-版本要点20255">5. v3.6 版本要点（2025.5）<span class="lvl b">版本</span></h2><div class="timeline">
+<section data-anchor="5-版本要点v37-v3620255202610">
+<h2 id="5-版本要点v37-v3620255202610">5. 版本要点：v3.7 / v3.6（2025.5–2026.10）<span class="lvl b">版本</span></h2>
+<ul><li><strong>v3.7（2026.10）</strong>：延续 v3.6 的存储与内存优化，主要在稳定性、运维接口与客户端兼容性上迭代；新集群直接上 v3.7，v3.6 → v3.7 属小版本升级；</li><li><strong>v2 存储正式退场</strong>（v3.6）：<code>--enable-v2</code> 等标志移除，成员数据全部迁入 v3store（v3.6 内部完成迁移）；</li><li><strong>内存减半</strong>：<code>--snapshot-count</code> 默认从 100000 降到 10000，快照保留更少的历史，平均内存占用下降 50%+；</li><li><strong>livez/readyz</strong>：新增 K8s 风格健康检查端点，<code>/livez</code> 判进程是否需重启、<code>/readyz</code> 判是否可服务流量；</li><li><strong>官方支持降级（downgrade）</strong>：升级出问题可在限定版本间回退；</li><li><strong>Feature Gates 机制</strong>：实验特性显式开关；</li><li><strong>治理变化</strong>：etcd 移交 Kubernetes 社区成为 SIG-etcd；raft 库独立为 <code>github.com/etcd-io/raft</code>，依赖 bbolt 1.4；</li><li>破坏性变更：<strong>peer 端口(2380)不再响应客户端请求</strong>、旧版本二进制与新版 schema 不兼容（升级需逐节点滚动、不可跨大版本跳跃）。</li></ul>
+<p>版本线：v3.4 已 EOL，v3.5 维护中（K8s 1.22–1.33 可用），<strong>新集群建议 v3.6</strong>。</p>
+<hr>
+
+<div class="timeline">
     <div class="tl"><b>2025.5.15 · v3.6.0 发布</b><p>距 v3.5 近四年的主线大版本。</p></div>
     <div class="tl"><b>v2 存储正式退场</b><p><code>--enable-v2</code> 等标志移除，成员数据全部迁入 v3store（v3.6 内部完成迁移）。</p></div>
     <div class="tl"><b>内存减半</b><p><code>--snapshot-count</code> 默认从 100000 降到 10000，快照保留更少的历史，平均内存占用下降 50%+。</p></div>
@@ -561,10 +566,6 @@ etcdctl defrag                             # 碎片整理</code></pre>
     <div class="tl"><b>破坏性变更</b><p>peer 端口(2380) 不再响应客户端请求；旧版本二进制与新版 schema 不兼容（升级需逐节点滚动、不可跨大版本跳跃）。</p></div>
   </div>
 <div class="tip"><b>💡 版本线：</b><span>v3.4 已 EOL，v3.5 维护中（K8s 1.22–1.33 可用），<b>新集群建议 v3.6</b>。</span></div>
-<ul><li><strong>v2 存储正式退场</strong>：<code>--enable-v2</code> 等标志移除，成员数据全部迁入 v3store（v3.6 内部完成迁移）；</li><li><strong>内存减半</strong>：<code>--snapshot-count</code> 默认从 100000 降到 10000，快照保留更少的历史，平均内存占用下降 50%+；</li><li><strong>livez/readyz</strong>：新增 K8s 风格健康检查端点，<code>/livez</code> 判进程是否需重启、<code>/readyz</code> 判是否可服务流量；</li><li><strong>官方支持降级（downgrade）</strong>：升级出问题可在限定版本间回退；</li><li><strong>Feature Gates 机制</strong>：实验特性显式开关；</li><li><strong>治理变化</strong>：etcd 移交 Kubernetes 社区成为 SIG-etcd；raft 库独立为 <code>github.com/etcd-io/raft</code>，依赖 bbolt 1.4；</li><li>破坏性变更：<strong>peer 端口(2380)不再响应客户端请求</strong>、旧版本二进制与新版 schema 不兼容（升级需逐节点滚动、不可跨大版本跳跃）。</li></ul>
-<p>版本线：v3.4 已 EOL，v3.5 维护中（K8s 1.22–1.33 可用），<strong>新集群建议 v3.6</strong>。</p>
-<hr>
-
 </section>
 <section data-anchor="6-常见坑与最佳实践">
 <h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2><div class="danger"><b>🚫 容量红线：</b><span>默认 2GiB 配额，超限进入只读 alarm。存大 value（&gt;1MB 禁止，建议 &lt;100KB）是误用——etcd 是元数据存储不是数据湖。</span></div>

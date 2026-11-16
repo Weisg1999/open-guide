@@ -1,7 +1,7 @@
 # Elasticsearch 技术介绍与使用指南（Go 后端视角）
 
 > 基于 Lucene 的分布式搜索与分析引擎：倒排索引、分片与副本、近实时刷新、Query DSL 与聚合——同时承担全文检索与日志检索（ELK）两副担子。
-> 上游：<https://github.com/elastic/elasticsearch>　|　服务端主线：**8.x / 9.x**（整理于 2026-11）　|　Go 客户端：[elastic/go-elasticsearch](https://github.com/elastic/go-elasticsearch) v8
+> 上游：<https://github.com/elastic/elasticsearch>　|　服务端主线：**9.x**（9.5；8.x 维护中；整理于 2026-11）　|　Go 客户端：[elastic/go-elasticsearch](https://github.com/elastic/go-elasticsearch) v9
 > 协议：服务端 Elastic License 2.0（另提供 AGPLv3 选项）/ Go 客户端 Apache-2.0；具体版本以上游最新 release 为准。
 
 ---
@@ -415,6 +415,7 @@ if res.IsError() {
 
 - 6.x → 7.x：拆 type、改客户端（`/v7`）、检查 `include_type_name` 相关 API
 - 7.x → 8.x：**必须配置 TLS/认证或显式关闭**，否则客户端连不上；Go 客户端从 `github.com/elastic/go-elasticsearch/v7` 换到 `/v8`，`esapi` 请求构造方式变化
+- 8.x → 9.x：Go 客户端切到 `/v9`，部分 deprecated API 被移除；升级前用 Deprecation API 清理调用点
 - 服务端与客户端大版本要对齐；跨大版本混用会出现兼容性头校验失败
 
 ---

@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenSearch · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#2563eb; --accent-light:#dbeafe; --accent-dark:#1e40af;
+    --bg:#f5f8fd; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#0f172a; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#1e40af 0%,#2563eb 58%,#1e40af 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">OpenSearch<span class="ver">3.9</span></div>
+  <div class="sub">Apache-2.0 搜索与分析套件</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#安装与本地起服务">安装与本地起服务</a>
+  <a href="#2-功能特性总览">2. 功能特性总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-与-es-共用的-lucene-内核简述">3.1 与 ES 共用的 Lucene 内核（简述）</a>
+  <a class="sub-link" href="#32-集群分片路由与副本">3.2 集群、分片路由与副本</a>
+  <a class="sub-link" href="#33-k-nn-向量检索">3.3 k-NN 向量检索</a>
+  <a class="sub-link" href="#34-神经网络搜索与混合检索">3.4 神经网络搜索与混合检索</a>
+  <a class="sub-link" href="#35-ism-与-data-streams">3.5 ISM 与 Data Streams</a>
+  <a class="sub-link" href="#36-分叉后的内置能力securitysqlppl-与可搜索快照">3.6 分叉后的内置能力：Security、SQL/PPL 与可搜索快照</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-客户端与差异">4.1 客户端与差异</a>
+  <a class="sub-link" href="#42-初始化与探活">4.2 初始化与探活</a>
+  <a class="sub-link" href="#43-建索引bulk-写入与查询">4.3 建索引、Bulk 写入与查询</a>
+  <a class="sub-link" href="#44-aws-sigv4-签名请求">4.4 AWS SigV4 签名请求</a>
+  <a href="#5-版本演进与要点">5. 版本演进与要点</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>OpenSearch 技术介绍与使用指南</h1>
+<p>从 Elasticsearch 7.10 分叉、全程 Apache-2.0 的搜索与分析套件：Lucene 检索内核，外加安全、SQL/PPL、ISM 与向量检索。</p>
+<p style="opacity:.8;font-size:13.5px">Apache-2.0 搜索与分析套件</p>
+<div class="meta"><span>3.9.0 · 2026.09 发布</span><span>Apache-2.0</span><span>Elasticsearch 7.10 分叉</span><span>k-NN 向量检索</span><span>ISM + Data Streams</span><span>opensearch-go</span></div>
+</div>
+<blockquote><p>从 Elasticsearch 7.10.2 分叉、全程 Apache-2.0 的社区驱动搜索与分析套件：保留 Lucene 检索内核，把安全、SQL/PPL、ISM、向量与神经检索做成开箱即用的内置插件。 仓库：<a href="https://github.com/opensearch-project/OpenSearch">https://github.com/opensearch-project/OpenSearch</a>　|　当前主线：<strong>3.x</strong>（最新稳定 <strong>3.9.0</strong>，2026-09-29 发布，Apache-2.0 协议）</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p><a href="../elasticsearch/elasticsearch-guide.html">ES 篇</a> 讲「Lucene 引擎怎么工作」——倒排索引、segment、NRT、分片与 Query DSL；本篇讲<strong>同一套代码在 2021 年分叉之后归谁治理、多了什么、该怎么选</strong>：内核同源，差异几乎都在许可、插件体系与演进路线上，原理层请直接读 ES 篇第 3 章，本篇不重复。</p>
+<p><strong>分叉来龙去脉</strong>：2021 年 1 月 Elastic 宣布自 7.11 起把 ES/Kibana 从 Apache-2.0 改为 <strong>SSPL + Elastic License 2.0 双许可</strong>，动机是阻止云厂商把 ES 当托管服务售卖。4 月，AWS 联合 Red Hat、SAP、Capital One、Logz.io 等，从<strong>最后一个 Apache-2.0 版本 ES 7.10.2 / Kibana 7.10.2</strong> 创建分支，命名 OpenSearch / OpenSearch Dashboards，全栈 <strong>Apache-2.0</strong>，并把 Open Distro for Elasticsearch 的插件（Security、Alerting、Anomaly Detection、SQL、ISM）整体迁入。7 月 12 日发布 <strong>1.0 GA</strong>（首个生产就绪版，含 Data Streams），9 月 Amazon Elasticsearch Service 更名 Amazon OpenSearch Service。2024 年 9 月治理权移交 <strong>Linux 基金会旗下 OpenSearch Software Foundation</strong>。一句话概括：<strong>OpenSearch = ES 7.10 内核 + 原 Open Distro 企业插件 + Apache-2.0 + 独立演进路线</strong>。</p>
+<ul><li><strong>适用</strong>：要求纯 Apache-2.0 合规、把搜索嵌入自有产品或对外提供托管服务、自建且希望安全/RBAC/告警/SQL/CCR 零授权费、向量检索与 RAG、日志与可观测性</li><li><strong>不适合</strong>：依赖 ES 8/9 独占特性（ES|QL、<code>semantic_text</code>、ELSER、原厂 APM/SIEM）、要原厂商业支持、需与上游版本同步迭代</li></ul>
+<h3 id="安装与本地起服务">安装与本地起服务</h3>
+<pre><code class="lang-bash">go get github.com/opensearch-project/opensearch-go/v2
+docker run --rm -d --name os-dev -p 9200:9200 \
+  -e "discovery.type=single-node" \
+  -e "OPENSEARCH_INITIAL_ADMIN_PASSWORD=YourStr0ng!Pass" \
+  -e "OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g" \
+  opensearchproject/opensearch:3.9.0
+curl -ku admin:'YourStr0ng!Pass' https://localhost:9200</code></pre>
+<blockquote><p>镜像标签仅为示例，请换当前 3.x 最新补丁版。<strong>3.x 起初始管理员口令必须经环境变量设置</strong>，不再有固定 <code>admin/admin</code>；<code>-k</code> 仅用于本地自签证书，生产配 CA。</p></blockquote>
+<hr>
+
+</section>
+<section data-anchor="2-功能特性总览">
+<h2 id="2-功能特性总览">2. 功能特性总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>检索内核</td><td>Apache Lucene（9.x 代起），倒排索引 + <code>doc_values</code> + <code>_source</code>；与 ES 同源</td></tr><tr><td>字段类型</td><td><code>text</code> / <code>keyword</code> / 数值 / 日期 / <code>nested</code> / <code>geo_point</code> / <code>knn_vector</code> / <code>rank_feature</code></td></tr><tr><td>查询 DSL</td><td>对齐 ES 7.10：<code>match</code> / <code>term</code> / <code>range</code> / <code>bool</code> / <code>multi_match</code> / <code>nested</code>；聚合、深分页同构</td></tr><tr><td>向量检索</td><td><strong>k-NN 插件</strong>：<code>knn_vector</code> + <code>knn</code>；HNSW / IVF，Faiss / NMSLIB / Lucene 三引擎，PQ/SQ 量化</td></tr><tr><td>神经与混合检索</td><td><strong>ML Commons + Neural Search</strong>：<code>text_embedding</code> processor、<code>neural</code> 查询、search pipeline 归一化 + RRF、neural sparse（3.9 原生 SEISMIC 引擎）</td></tr><tr><td>查询语言</td><td><strong>SQL 插件</strong>（<code>SELECT</code>、JDBC/ODBC）与 <strong>PPL</strong>（管道式日志分析，3.x 默认 Apache Calcite 引擎）</td></tr><tr><td>索引治理</td><td><strong>ISM</strong>（对应 ES 的 ILM 但 API 不同）、索引模板、Rollover、<strong>Data Streams</strong></td></tr><tr><td>分层存储</td><td><strong>可搜索快照</strong>：直接搜索远程对象存储中的快照，无需先 restore</td></tr><tr><td>安全</td><td><strong>Security 插件</strong>内置免费：TLS、RBAC、文档级/字段级安全（DLS/FLS）、字段脱敏、审计日志、多租户、LDAP/SAML/OIDC</td></tr><tr><td>可观测与告警</td><td>Alerting、Anomaly Detection、Trace Analytics、Observability、Query Insights、CCR；OpenSearch Dashboards（Kibana 7.10.2 分叉）</td></tr><tr><td>Go 客户端</td><td><code>opensearch-go</code>（分叉自 <code>go-elasticsearch</code> v7 时代）；与 v8 不通用，含 AWS SigV4 signer</td></tr><tr><td>许可与治理</td><td>全栈 <strong>Apache-2.0</strong>；Linux 基金会下社区治理，可自由嵌入、转售、作为托管服务提供</td></tr></tbody></table></div>
+<hr>
+
+<div class="features">
+  <div class="feature"><div class="fh"><h4>分叉与许可</h4></div><p>从 ES 7.10 分叉，全程 Apache-2.0，API 兼容但有边界</p></div>
+  <div class="feature"><div class="fh"><h4>检索能力</h4></div><p>倒排 + k-NN + 混合检索，SQL/PPL 降低分析门槛</p></div>
+  <div class="feature"><div class="fh"><h4>运维治理</h4></div><p>ISM 管索引生命周期，Data Streams 管时序写入</p></div>
+</div>
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-与-es-共用的-lucene-内核简述">3.1 与 ES 共用的 Lucene 内核（简述）</h3>
+<p>倒排索引（term → posting list、FST 词典）、<code>doc_values</code>、<code>_source</code>、分析器三段式、<code>text</code>/<code>keyword</code> 区别，以及 <code>refresh_interval</code> → 可搜索 segment → translog → flush → segment merge 的 <strong>NRT 写入链路</strong>，两者<strong>完全一致</strong>。「写后查不到」「删除是标记」「生产别逐条 refresh」原样成立。<strong>分叉没有改内核，改的是内核之外的东西</strong>——细节见 <a href="../elasticsearch/elasticsearch-guide.html">ES 篇 3.1–3.3</a>。</p>
+<h3 id="32-集群分片路由与副本">3.2 集群、分片路由与副本</h3>
+<p><code>shard = hash(_routing) % 主分片数</code>、主分片数创建后不可改、副本随时改、scatter/gather 的 query-then-fetch 两阶段——同样与 ES 一致（见 <a href="../elasticsearch/elasticsearch-guide.html">ES 篇 3.4</a>）。差异在<strong>复制方式</strong>：除默认<strong>文档复制</strong>（主分片转发文档给副本各自重放索引）外，OpenSearch 提供 <strong>segment replication（段复制）</strong>，主分片 merge 后把成品段文件拷给副本，副本不再重复分词建索引：副本 CPU 更低、写入吞吐更高，代价是故障切换与可见性延迟略高。</p>
+<h3 id="33-k-nn-向量检索">3.3 k-NN 向量检索</h3><div class="figure">
+  <svg viewBox="0 0 880 268" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-opensearch" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#1e40af">k-NN 检索链路</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">向量字段走独立索引结构，查询时在分片内做近似最近邻</text>
+    <rect x="36" y="82" width="175" height="80" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="124" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#1e40af">Query</text>
+    <text x="124" y="136" text-anchor="middle" font-size="11" fill="#1e40af">向量 + k + filter</text>
+    <line x1="215" y1="122" x2="241" y2="122" stroke="#2563eb" stroke-width="2" marker-end="url(#m-opensearch)"/>
+    <rect x="247" y="82" width="175" height="80" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="334" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#1e40af">Coordinator</text>
+    <text x="334" y="136" text-anchor="middle" font-size="11" fill="#1e40af">按分片路由并广播</text>
+    <line x1="426" y1="122" x2="452" y2="122" stroke="#2563eb" stroke-width="2" marker-end="url(#m-opensearch)"/>
+    <rect x="458" y="82" width="175" height="80" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="546" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#1e40af">Shard：HNSW</text>
+    <text x="546" y="136" text-anchor="middle" font-size="11" fill="#1e40af">近似最近邻召回 top-k</text>
+    <line x1="637" y1="122" x2="663" y2="122" stroke="#2563eb" stroke-width="2" marker-end="url(#m-opensearch)"/>
+    <rect x="669" y="82" width="175" height="80" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="756" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#1e40af">Merge</text>
+    <text x="756" y="136" text-anchor="middle" font-size="11" fill="#1e40af">归并各分片结果</text>
+    <rect x="40" y="186" width="800" height="58" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="210" font-size="12.5" fill="#1e293b">HNSW 用召回率换延迟；filter 尽量下推，否则会先全量近邻再过滤，结果可能不足 k </text>
+    <text x="60" y="230" font-size="12.5" fill="#1e293b">条。</text>
+  </svg>
+  <figcaption>k-NN 检索链路</figcaption>
+</div>
+<p>OpenSearch 2019 年即在搜索引擎中率先支持 k-NN，分叉后继续加码。核心是 <code>knn_vector</code> 字段 + <code>knn</code> 查询：</p>
+<pre><code class="lang-json">PUT /rag-docs
+{
+  "settings": { "index": { "knn": true, "number_of_shards": 2, "number_of_replicas": 1 } },
+  "mappings": { "dynamic": "strict", "properties": {
+    "title":     { "type": "text" },
+    "tenant":    { "type": "keyword" },
+    "embedding": { "type": "knn_vector", "dimension": 768,
+      "method": { "name": "hnsw", "engine": "faiss", "space_type": "l2",
+                  "parameters": { "ef_construction": 256, "m": 16 } } }
+  } }
+}</code></pre>
+<ul><li><strong>精确 vs 近似</strong>：<code>script_score</code> 暴力余弦/L2 是精确 k-NN；<strong>ANN</strong> 靠 HNSW/IVF，亿级向量仍可毫秒级返回，代价是召回率 &lt; 100%。</li><li><strong>HNSW</strong>：分层近邻图，<code>m</code>（每节点连接数 2–100）、<code>ef_construction</code>（建图候选集）、<code>ef_search</code>（查询候选集）；内存换质量，默认首选。</li><li><strong>IVF</strong>：聚类分桶（<code>nlist</code>），查询只扫 <code>nprobes</code> 个桶；<strong>需 Train API 训练模型</strong>，内存更省、索引更快，质量略低。</li><li><strong>三引擎</strong>：<strong>Faiss</strong>（大规模首选，支持 HNSW/IVF 与 PQ/SQ 量化）、<strong>Lucene</strong>（千万级以下延迟与体积更优、支持智能过滤）、<strong>NMSLIB</strong>（早期实现，3.x 已 <strong>deprecated</strong>，新项目别选）。</li><li><strong>量化与过滤</strong>：<code>fp16</code> 省一半内存、<code>byte</code> 省 3/4、PQ 更省但有损，3.x 另有 1/2/4-bit 标量量化；2.4 起 adaptive filtering 自动在 pre/post-filter 与精确 k-NN 间择优。</li></ul>
+<pre><code class="lang-json">POST /rag-docs/_search
+{ "query": { "knn": { "embedding": { "vector": [0.12, 0.48, "..."], "k": 10 } } } }</code></pre>
+<blockquote><p><code>dimension</code> 必须与嵌入模型输出维度一致；<code>space_type</code>（<code>l2</code>/<code>cosinesimil</code>/<code>innerproduct</code>）要与模型训练口径一致，否则排序系统性偏差。每个分片、每个 segment 各返回 <code>k</code> 条再汇聚，<code>size</code> 才是最终条数。</p></blockquote>
+<h3 id="34-神经网络搜索与混合检索">3.4 神经网络搜索与混合检索</h3>
+<p>k-NN 要调用方自算查询向量；<strong>Neural Search</strong> 把「生成向量」搬进集群：ML Commons 托管嵌入模型，ingest pipeline 用 <code>text_embedding</code> processor 建索引时把文本转向量，<code>neural</code> 查询只传原始文本即可语义检索。</p>
+<pre><code class="lang-json">PUT /_ingest/pipeline/embedding-pipeline
+{ "processors": [{ "text_embedding": { "model_id": "&lt;id&gt;", "field_map": { "title": "title_vec" } } }] }
+POST /rag-docs/_search
+{ "query": { "neural": { "title_vec": { "query_text": "Go 并发编程", "k": 10 } } } }</code></pre>
+<p><strong>混合检索</strong>（BM25 + 向量）把 <code>match</code> 与 <code>neural</code> 同放 <code>hybrid.queries</code>，用 <code>search_pipeline</code> 挂 <code>normalization-processor</code> 以 <strong>RRF（Reciprocal Rank Fusion）</strong> 或 z-score 归一化融合两路结果，通常比单一路更稳。另有 <strong>neural sparse</strong>（学习式稀疏检索），3.9 起用 C++ 原生 <strong>SEISMIC</strong> 引擎，堆占用更小、吞吐更高。这整套是 OpenSearch 相对 ES 7.10 最显著的增量。</p>
+<h3 id="35-ism-与-data-streams">3.5 ISM 与 Data Streams</h3>
+<p><strong>ISM（Index State Management）</strong>来自 Open Distro，对应 ES 的 <strong>ILM</strong> 但 API/策略格式完全不同——迁移不能照抄 ILM。策略是状态机：每个 state 带 <code>actions</code>（<code>rollover</code>、<code>force_merge</code>、<code>read_only</code>、<code>replica_count</code>、<code>snapshot</code>、<code>delete</code> 等）与 <code>transitions</code>（条件如 <code>min_index_age</code>/<code>min_doc_count</code>/<code>min_size</code> 满足才进入下一状态），由 Job Scheduler 周期调度，用 <code>ism_template</code> 自动套到新索引。</p>
+<pre><code class="lang-json">PUT _plugins/_ism/policies/logs-policy
+{ "policy": { "default_state": "hot", "states": [
+  { "name": "hot", "actions": [{ "rollover": { "min_size": "50gb", "min_index_age": "1d" } }],
+    "transitions": [{ "state_name": "warm", "conditions": { "min_index_age": "7d" } }] },
+  { "name": "warm", "actions": [{ "force_merge": { "max_num_segments": 1 } }],
+    "transitions": [{ "state_name": "delete", "conditions": { "min_index_age": "30d" } }] },
+  { "name": "delete", "actions": [{ "delete": {} }] }
+], "ism_template": [{ "index_patterns": ["app-logs-*"], "priority": 100 }] } }</code></pre>
+<p><strong>Data Streams</strong>（1.0 引入）面向只追加时序数据：写入固定名称，背后是隐藏 <code>.ds-*</code> 后备索引 + 写别名，配合 ISM <code>rollover</code> 自动滚动。日志场景应「Data Stream + 固定写别名 + ISM」，别让应用按天拼索引名。</p>
+<h3 id="36-分叉后的内置能力securitysqlppl-与可搜索快照">3.6 分叉后的内置能力：Security、SQL/PPL 与可搜索快照</h3>
+<ul><li><strong>Security 插件</strong>：默认随发行版启用（HTTPS + 认证），配置在 <code>plugins.security.*</code>，核心是 <code>internal_users</code>/<code>roles</code>/<code>roles_mapping</code>/<code>action_groups</code> 四张表；特色是<strong>细粒度访问控制</strong>（DLS 文档级、FLS 字段级、字段脱敏）与 Dashboards 多租户且<strong>全部免费</strong>（ES 侧多属付费订阅），外部认证支持 LDAP/AD、SAML、OIDC、Kerberos、代理认证，并有审计日志。</li><li><strong>SQL 与 PPL</strong>：SQL 插件把 <code>SELECT ... FROM index</code> 翻译成 DSL，提供 JDBC/ODBC；<strong>PPL</strong> 用管道语法面向日志探索，3.x 以 <strong>Apache Calcite</strong> 为默认引擎：</li></ul>
+<pre><code class="lang-sql">SELECT tenant, count(*) AS cnt FROM rag-docs WHERE tenant = 'acme' GROUP BY tenant ORDER BY cnt DESC LIMIT 10</code></pre>
+<pre><code class="lang-text">source = app-logs-* | where level = 'ERROR' | stats count() by service | sort - count | head 20</code></pre>
+<ul><li><strong>可搜索快照</strong>：把快照仓库（S3/GCS/Azure）中的索引直接挂成可搜索索引，按需从对象存储拉取并本地缓存，不必先 restore。冷数据降本关键，常配 ISM 冷阶段；<strong>只适合低频查询</strong>，别当热数据用。</li></ul>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-客户端与差异">4.1 客户端与差异</h3>
+<p><code>opensearch-go</code> 分叉自 <code>go-elasticsearch</code> v7 时代代码，保留 <code>opensearch.Config</code> / <code>opensearchapi.*Request</code> / <code>.Do(ctx, client)</code>。与 v8 的关键差异：<strong>v8 客户端握手做 product check</strong>（<code>X-Elastic-Product: Elasticsearch</code>），连 OpenSearch 直接报错，反之亦然——<strong>必须用配套客户端且大版本对齐</strong>。<code>Request</code> 接口只有 <code>Do(ctx, Transport) (*Response, error)</code>，<code>Transport</code> 只要求 <code>Perform(*http.Request)</code>；<code>*opensearch.Client</code> 同时充当两者，故既能用结构化请求对象，也能用 <code>client.Transport.Perform</code> 发任意 REST 请求。复用同一个 <code>Client</code>（内部持有连接池），别每次新建，所有 <code>Response.Body</code> 都 <code>defer Close()</code>。</p>
+<h3 id="42-初始化与探活">4.2 初始化与探活</h3>
+<pre><code class="lang-go">package main
+
+import (
+    "crypto/tls"
+    "fmt"
+    "log"
+    "net/http"
+    "github.com/opensearch-project/opensearch-go/v2"
+)
+
+func main() {
+    client, err := opensearch.NewClient(opensearch.Config{
+        Addresses: []string{"https://localhost:9200"},
+        Username:  "admin",
+        Password:  "YourStr0ng!Pass", // 生产改环境变量 / 密钥管理
+        Transport: &amp;http.Transport{TLSClientConfig: &amp;tls.Config{
+            InsecureSkipVerify: true}}, // 仅本地自签证书；生产配 CA
+    })
+    if err != nil { log.Fatal(err) }
+    res, err := client.Info()
+    if err != nil { log.Fatal(err) }
+    defer res.Body.Close()
+    if res.IsError() { log.Fatalf("info: %s", res.String()) }
+    fmt.Println("cluster:", res.Status())
+}</code></pre>
+<h3 id="43-建索引bulk-写入与查询">4.3 建索引、Bulk 写入与查询</h3>
+<pre><code class="lang-go">package main
+
+import (
+    "bytes"
+    "context"
+    "encoding/json"
+    "fmt"
+    "io"
+    "log"
+    "net/http"
+    "strings"
+    "github.com/opensearch-project/opensearch-go/v2"
+    "github.com/opensearch-project/opensearch-go/v2/opensearchapi"
+)
+const mapping = `{"mappings":{"dynamic":"strict","properties":{
+  "title":{"type":"text"},"tenant":{"type":"keyword"}}}}`
+func main() {
+    client, err := opensearch.NewClient(opensearch.Config{
+        Addresses: []string{"http://localhost:9200"}, // 本地关闭 Security 插件时
+    })
+    if err != nil { log.Fatal(err) }
+    ctx := context.Background()
+    create := opensearchapi.IndicesCreateRequest{Index: "articles", Body: strings.NewReader(mapping)}
+    if res, err := create.Do(ctx, client); err != nil { log.Fatal(err) } else {
+        defer res.Body.Close()
+        if res.IsError() { log.Fatalf("create: %s", res.String()) }
+    }
+    // Bulk 是 NDJSON：每两行一组（动作行 + 数据行）
+    var buf bytes.Buffer
+    for _, d := range []map[string]any{{"title": "Go 并发编程", "tenant": "acme"}, {"title": "Go Web 开发", "tenant": "acme"}} {
+        meta, _ := json.Marshal(map[string]any{"index": map[string]any{"_index": "articles"}})
+        buf.Write(meta); buf.WriteByte('\n')
+        _ = json.NewEncoder(&amp;buf).Encode(d)
+    }
+    req, _ := http.NewRequestWithContext(ctx, http.MethodPost, "/_bulk?refresh=wait_for", &amp;buf)
+    req.Header.Set("Content-Type", "application/x-ndjson")
+    resp, err := client.Transport.Perform(req)
+    if err != nil { log.Fatal(err) }
+    defer resp.Body.Close()
+    body, _ := io.ReadAll(resp.Body)
+    if resp.StatusCode &gt;= 300 { log.Fatalf("bulk: %s", body) }
+    var br struct{ Errors bool `json:"errors"` } // 200 也可能是部分失败
+    if err := json.Unmarshal(body, &amp;br); err != nil || br.Errors { log.Fatalf("bulk: %s", body) }
+    q := `{"size":10,"query":{"bool":{"must":[{"match":{"title":"Go"}}],"filter":[{"term":{"tenant":"acme"}}]}}}`
+    search := opensearchapi.SearchRequest{Index: []string{"articles"}, Body: strings.NewReader(q)}
+    sres, err := search.Do(ctx, client)
+    if err != nil { log.Fatal(err) }
+    defer sres.Body.Close()
+    if sres.IsError() { log.Fatalf("search: %s", sres.String()) }
+    fmt.Println("search:", sres.Status())
+}</code></pre>
+<p><code>dynamic: "strict"</code> 防 mapping 爆炸；Bulk 单批 5–15MB、遇 429 指数退避；纯过滤放 <code>filter</code> 不评分可缓存。判错要点：<code>IsError()</code> 判 4xx/5xx、Bulk 即使 200 也要解析 <code>errors</code>/<code>items</code>、用 <code>errors.As(err, &amp;opensearchapi.Error{})</code> 拿结构化错误做幂等容忍。生产批量写入建议用 <code>opensearchutil.NewBulkIndexer</code> 自动分批与重试，其余见 <a href="../elasticsearch/elasticsearch-guide.html">ES 篇第 4 章</a>。</p>
+<h3 id="44-aws-sigv4-签名请求">4.4 AWS SigV4 签名请求</h3>
+<p>连 Amazon OpenSearch Service 必须用 <strong>AWS Signature Version 4</strong> 签名。<code>signer/awsv2</code>（配 aws-sdk-go-v2）注入 <code>Config.Signer</code>，凭据走默认凭据链（环境变量 / <code>~/.aws</code> / IAM Role）：</p>
+<pre><code class="lang-go">package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+    "github.com/aws/aws-sdk-go-v2/config"
+    "github.com/opensearch-project/opensearch-go/v2"
+    requestsigner "github.com/opensearch-project/opensearch-go/v2/signer/awsv2"
+)
+
+func main() {
+    ctx := context.Background()
+    awsCfg, err := config.LoadDefaultConfig(ctx, config.WithRegion("us-east-1"))
+    if err != nil { log.Fatal(err) }
+    // 托管域 service 名 "es"；Amazon OpenSearch Serverless 用 "aoss"
+    signer, err := requestsigner.NewSignerWithService(awsCfg, "es")
+    if err != nil { log.Fatal(err) }
+    client, err := opensearch.NewClient(opensearch.Config{
+        Addresses: []string{"https://search-xxx.us-east-1.es.amazonaws.com"},
+        Signer:    signer,
+    })
+    if err != nil { log.Fatal(err) }
+    res, err := client.Info()
+    if err != nil { log.Fatal(err) }
+    defer res.Body.Close()
+    fmt.Println("signed info:", res.Status())
+}</code></pre>
+<blockquote><p>用 AWS SDK v1 时换 <code>signer/aws</code> 与 <code>session.Options</code>；<strong>service 名写错（<code>es</code>/<code>aoss</code>）会直接 403</strong>，这是最常见的接入故障。</p></blockquote>
+<hr>
+
+<div class="callout info"><p><b>实战要点：</b>向量维度与引擎（Lucene / Faiss / NMSLIB）在建索引时就要定下来；混合检索用归一化后的分数加权，别直接相加原始分值。</p></div>
+</section>
+<section data-anchor="5-版本演进与要点">
+<h2 id="5-版本演进与要点">5. 版本演进与要点<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>时间 / 版本</th><th>关键变化与迁移注意点</th></tr></thead><tbody><tr><td>2021-01</td><td>Elastic 宣布 7.11 起把 ES/Kibana 由 Apache-2.0 改为 <strong>SSPL + ELv2</strong> 双许可，触发分叉</td></tr><tr><td><strong>2021-04</strong></td><td>AWS 等从 <strong>ES 7.10.2 / Kibana 7.10.2</strong>（最后 ALv2 版本）fork，全栈 <strong>Apache-2.0</strong>，迁入 Open Distro 插件</td></tr><tr><td>1.x（2021-07 <strong>1.0 GA</strong>）</td><td>首个生产就绪版；Data Streams、ISM、Security、SQL/PPL、k-NN、Alerting 随发行版提供；API 对齐 ES 7.10</td></tr><tr><td>2.x（2022–2024）</td><td>可搜索快照、Lucene 9 k-NN 引擎与 adaptive filtering、segment replication、Neural Search / 混合检索</td></tr><tr><td>2024-08 / 09</td><td>Elastic 追加 <strong>AGPLv3</strong> 第三许可选项；OpenSearch 治理移交 <strong>Linux 基金会 OpenSearch Software Foundation</strong></td></tr><tr><td><strong>3.0（2025）</strong></td><td>向量/性能/安全增强，Apache Calcite 成为 PPL 默认引擎、gRPC、pull-based ingestion、面向 RAG/Agent 的 ML Commons</td></tr><tr><td><strong>3.x 主线（2026）</strong></td><td>3.2–3.9 快速迭代；<strong>3.9.0（2026-09-29）</strong> 引入 neural sparse 原生 SEISMIC 引擎、统一告警视图 GA、自适应并发限制、Resource Sharing GA</td></tr></tbody></table></div>
+<p><strong>许可决策影响</strong>（选型的硬约束，不只是法务问题）：</p>
+<ul><li><strong>Apache-2.0</strong>（OpenSearch）：OSI 认证宽松许可，可自由使用、修改、嵌入商业产品、<strong>作为托管/SaaS 服务提供</strong>、转售，无开源回馈义务、无 copyleft 传染——这是 AWS/Aiven 等能合法运营 OpenSearch 托管服务的原因。<strong>要把搜索能力做成对外产品/服务、或需完全自主可控的二次分发，它是唯一无附加义务的选项</strong>。</li><li><strong>ELv2</strong>：核心是<strong>禁止把软件作为托管服务提供给第三方</strong>、禁止绕过 license key 暴露付费功能、禁止移除许可声明；自建内部使用无碍。</li><li><strong>SSPL</strong>：要求把「提供该服务所涉及的整套软件」一并开源，争议最大，未被 OSI 认定为开源许可证；<strong>AGPLv3</strong> 则是强 copyleft，网络服务触发源码提供义务。纯内部自建且依赖 ES 生态时 ELv2 通常够用，引入 SSPL/AGPLv3 组件前务必做合规评审。</li></ul>
+<p><strong>API 兼容边界</strong>：与 <strong>ES 7.10</strong> 高度兼容，7.x 应用换客户端后基本可迁；<strong>ES 8/9 应用不能直接搬</strong>——product check 头、客户端 API 差异、ES|QL/<code>semantic_text</code>/ELSER 独占特性、8.x 索引格式都不兼容；两边<strong>插件互不通用</strong>，自定义插件需重写。升级前读官方 upgrade guide，客户端与服务端大版本对齐。</p>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>拿 go-elasticsearch v8 连 OpenSearch</strong>：product check 直接拒绝。对策：改用 <code>opensearch-go</code> 且大版本对齐，别指望「REST 兼容所以客户端能混用」。</li><li><strong>沿用默认认证 / <code>admin/admin</code> 上生产</strong>：3.x 起必须用 <code>OPENSEARCH_INITIAL_ADMIN_PASSWORD</code> 设初始口令。对策：强口令 + TLS CA 校验 + 最小权限 roles + 网络隔离 + 审计日志。</li><li><strong>按 ES 8.x 教程写 OpenSearch</strong>：ES|QL、<code>semantic_text</code>、ELSER、新聚合都不存在。对策：把 <strong>7.10 API 当基线</strong>，语义检索用 <code>neural</code>/k-NN，分析用 SQL/PPL。</li><li><strong>k-NN 忘了 <code>index.knn: true</code> 或 <code>dimension</code> 与模型不符</strong>：报错或打分失真。对策：先定嵌入模型维度与 <code>space_type</code> 再写 mapping，显式开 <code>index.knn</code>。</li><li><strong>引擎与参数乱选</strong>：选了 3.x 已废弃的 NMSLIB、HNSW 的 <code>m</code>/<code>ef_construction</code> 拍脑袋、Faiss IVF 忘训练。对策：千万级以下用 Lucene，大规模用 Faiss；IVF 先走 Train API 生成 model；用 PQ/SQ/fp16 量化压内存。</li><li><strong>neural 查询没配 ingest pipeline</strong>：查询文本没被向量化，召回为空。对策：<code>text_embedding</code> processor + <code>neural</code> query + 混合检索 search pipeline（RRF）三者配套。</li><li><strong><code>knn</code> 结果被过滤吃掉</strong>：过滤条件放错位置导致召回不足。对策：用 <code>knn</code> 内的 <code>filter</code> 或 adaptive filtering。</li><li><strong>照抄 ES 的 ILM 配置</strong>：OpenSearch 是 <strong>ISM</strong>，路径 <code>_plugins/_ism/policies</code>、策略格式与状态机都不同。对策：重写策略，用 <code>ism_template</code> 自动绑定新索引。</li><li><strong>不配 ISM / retention、或让应用按天拼索引名</strong>：时序索引无限增长、难回滚。对策：Data Streams + 固定写别名 + ISM rollover + delete，第 1 天就上。</li><li><strong>把可搜索快照当热数据用</strong>：延迟高、依赖对象存储与本地缓存。对策：只用于冷/温数据降本，与 ISM 冷阶段配合。</li><li><strong>SigV4 service 名写错 / 凭据链没配</strong>：托管域返回 403。对策：托管域用 <code>"es"</code>、Serverless 用 <code>"aoss"</code>，凭据交默认凭据链，别硬编码 AK/SK。</li><li><strong>Bulk 只判 HTTP 200</strong>：部分失败被吞。对策：解析 <code>errors</code>/<code>items</code>，遇 429 指数退避，单批 5–15MB；动态 mapping 爆炸、<code>text</code> 做 terms 聚合、深翻页、中文分词等通用坑见 <a href="../elasticsearch/elasticsearch-guide.html">ES 篇第 6 章</a>。</li></ol>
+<hr>
+
+<div class="callout warning"><p><b>生产警示：</b>分片数建索引后不可改，k-NN 索引的内存开销随段数增长；大量小 segment 会让查询变慢，写入后要靠 force merge 收敛。</p></div>
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>OpenSearch</th><th>Elasticsearch</th><th>Solr</th><th>ZincSearch</th><th>Loki</th><th>ClickHouse</th></tr></thead><tbody><tr><td>定位</td><td>ES 7.10 的 ALv2 分叉，搜索 + 日志 + 向量</td><td>原厂搜索与分析平台</td><td>传统企业搜索</td><td>轻量全文检索</td><td>日志检索（只索引标签）</td><td>列存 OLAP</td></tr><tr><td>许可</td><td><strong>Apache-2.0</strong></td><td>ELv2 / SSPL / AGPLv3</td><td>Apache-2.0</td><td>Apache-2.0</td><td>AGPLv3</td><td>Apache-2.0</td></tr><tr><td>治理</td><td>Linux 基金会 / 社区</td><td>Elastic 公司</td><td>Apache 基金会</td><td>社区</td><td>Grafana Labs</td><td>社区 / 公司</td></tr><tr><td>检索内核</td><td>Lucene + 倒排</td><td>Lucene + 倒排</td><td>Lucene</td><td>倒排（Go 实现）</td><td>无正文索引</td><td>列存 + 跳数索引</td></tr><tr><td>相关性 / DSL</td><td>强（对齐 ES 7.10）</td><td><strong>最成熟</strong>（8/9 代）</td><td>强</td><td>中</td><td>无全文相关性</td><td>弱</td></tr><tr><td>向量 / AI</td><td><strong>强</strong>（k-NN 多引擎、neural、RAG）</td><td>强（ELSER、<code>semantic_text</code>）</td><td>中</td><td>弱</td><td>无</td><td>有向量但非主业</td></tr><tr><td>聚合分析</td><td>强 + SQL/PPL</td><td>强 + ES|QL</td><td>中</td><td>弱</td><td>弱（LogQL）</td><td><strong>极强（SQL）</strong></td></tr><tr><td>日志检索</td><td>强（全文）</td><td>强（全文）</td><td>中</td><td>可用</td><td><strong>成本最优</strong></td><td>强（报表向）</td></tr><tr><td>资源占用</td><td>高（JVM）</td><td>高（JVM）</td><td>高</td><td><strong>低（Go）</strong></td><td><strong>低</strong></td><td>中</td></tr><tr><td>运维复杂度</td><td>中～高</td><td>中～高</td><td>高</td><td><strong>低</strong></td><td>低～中</td><td>中</td></tr><tr><td>Go 客户端</td><td><code>opensearch-go</code>（含 SigV4）</td><td><code>go-elasticsearch</code> v8/v9</td><td>无官方强绑定</td><td>HTTP/REST</td><td>标准库 HTTP</td><td>clickhouse-go</td></tr></tbody></table></div>
+<p><strong>一句话决策结论</strong>：许可合规要求纯 Apache-2.0、要把搜索能力嵌进自有产品或对外提供托管服务、且希望安全/RBAC/告警/SQL/ISM/CCR 零授权费，就选 <strong>OpenSearch</strong>；其余按「生态 vs 成本 vs 分析」在 ES、Loki、ClickHouse 间取舍。</p>
+<ul><li><strong>要原厂商业支持、Elastic 全家桶（APM/SIEM/ES|QL）、或必须跟 ES 8/9 新特性</strong> → Elasticsearch，接受 ELv2 条款与订阅成本。</li><li><strong>已有 Grafana + Prometheus、日志按服务/时间查、极致省钱</strong> → <strong>Loki</strong>（见 <a href="../loki/loki-guide.html">Loki 篇</a>），只索引标签；<strong>主要跑 SQL 聚合报表</strong> → <strong>ClickHouse</strong>。</li><li><strong>中小站一个搜索框、不想碰 JVM</strong> → ZincSearch（Go 单二进制）或 Meilisearch / Typesense；<strong>存量 Solr 栈</strong>留在 Solr，别为「新」而迁。</li></ul>
+<p><strong>何时不该用 OpenSearch</strong>：① 主数据存储与事务、强一致、频繁逐字段更新（用 <a href="../mysql/mysql-guide.html">MySQL</a>）；② 只需要 K8s 日志且成本敏感（Loki 更省）；③ 主要诉求是 OLAP 报表（ClickHouse 更合适）；④ 深度绑定 Elastic 付费生态或官方支持合同；⑤ 团队无法承担 JVM 调优、分片规划、ISM/Security 配置与升级运维；⑥ 强依赖 ES 8.x+ 独占特性，迁移改造成本高于收益。</p>
+<p>参考：<a href="https://github.com/opensearch-project/OpenSearch">https://github.com/opensearch-project/OpenSearch</a>　|　<a href="https://opensearch.org/docs/latest/">https://opensearch.org/docs/latest/</a>　|　<a href="https://github.com/opensearch-project/opensearch-go">https://github.com/opensearch-project/opensearch-go</a>　|　<a href="https://aws.amazon.com/blogs/opensource/introducing-opensearch/">https://aws.amazon.com/blogs/opensource/introducing-opensearch/</a></p>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

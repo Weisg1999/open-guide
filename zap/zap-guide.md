@@ -1,7 +1,7 @@
 # Zap 技术介绍与使用指南
 
 > Uber 开源的 Go 结构化日志库：零分配热路径、`Logger` / `SugaredLogger` 双 API、可组合的 `zapcore` 管线，兼顾极致性能与工程可控性。
-> 仓库：<https://github.com/uber-go/zap>　|　主线版本：**v1.27.x**（API 稳定；整理于 2026-11）　|　协议：MIT
+> 仓库：<https://github.com/uber-go/zap>　|　主线版本：**v1.28.x**（API 稳定；整理于 2026-11）　|　协议：MIT
 
 ---
 

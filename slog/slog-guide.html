@@ -167,10 +167,39 @@ func main() {
 <div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>四层抽象</td><td><code>Logger</code> → <code>Record</code> → <code>Handler</code> → <code>io.Writer</code>；<code>Handler</code> 接口四个方法可自定义</td></tr><tr><td>级别</td><td><code>Debug</code> / <code>Info</code> / <code>Warn</code> / <code>Error</code>；<code>LevelVar</code> 支持运行时动态调整</td></tr><tr><td>内置 Handler</td><td><code>JSONHandler</code>（生产）/ <code>TextHandler</code>（开发，key=value）</td></tr><tr><td>结构化字段</td><td><code>slog.String</code> / <code>Int</code> / <code>Bool</code> / <code>Duration</code> / <code>Time</code> / <code>Group</code> / <code>Any</code>；强类型 <code>Attr</code></td></tr><tr><td>上下文</td><td><code>Logger.With(...)</code> 绑定公共字段、<code>WithGroup</code> 命名空间、<code>SetDefault</code> 全局默认</td></tr><tr><td>改写</td><td><code>HandlerOptions.ReplaceAttr</code> 统一改名、脱敏、格式转换</td></tr><tr><td>桥接</td><td><code>slog.SetDefault</code> + <code>log.SetOutput</code> 接管标准库 <code>log</code>；<code>NewLogLogger</code> 反向桥接</td></tr><tr><td>生态</td><td><code>sloglint</code> 静态检查、<code>tint</code> / <code>charmbracelet/log</code> 彩色 Handler、<code>zapslog</code> 接 Zap</td></tr><tr><td>性能</td><td>内置 Handler 无反射；<code>slog.Any</code> 走反射，热路径应避免</td></tr></tbody></table></div>
 <hr>
 
+<div class="features">
+  <div class="feature"><div class="fh"><h4>四个抽象</h4></div><p>Logger / Handler / Record / Attr 各司其职，可任意组合</p></div>
+  <div class="feature"><div class="fh"><h4>运行期调级</h4></div><p>LevelVar 让日志级别支持热更新，无需重启进程</p></div>
+  <div class="feature"><div class="fh"><h4>生态桥接</h4></div><p>ReplaceAttr 脱敏、Fanout 多输出、zapslog 与 OTel 桥接</p></div>
+</div>
 </section>
 <section data-anchor="3-核心概念与原理">
 <h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
-<h3 id="31-handler-接口四个方法都要实现">3.1 Handler 接口：四个方法都要实现</h3>
+<h3 id="31-handler-接口四个方法都要实现">3.1 Handler 接口：四个方法都要实现</h3><div class="figure">
+  <svg viewBox="0 0 880 376" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-slog" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0e7490"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#155e75">Handler 四层职责</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">Logger 只负责构造 Record，真正的行为由 Handler 决定</text>
+    <rect x="90" y="84" width="700" height="52" rx="10" fill="#cffafe" stroke="#0e7490" stroke-width="1.5"/>
+    <circle cx="122" cy="110" r="14" fill="#0e7490"/>
+    <text x="122" y="110" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">1</text>
+    <text x="150" y="110" dominant-baseline="central" font-size="13" fill="#155e75">Logger 生成 Record（时间、级别、消息、PC）</text>
+    <line x1="440" y1="138" x2="440" y2="154" stroke="#0e7490" stroke-width="2" marker-end="url(#m-slog)"/>
+    <rect x="90" y="158" width="700" height="52" rx="10" fill="#cffafe" stroke="#0e7490" stroke-width="1.5"/>
+    <circle cx="122" cy="184" r="14" fill="#0e7490"/>
+    <text x="122" y="184" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">2</text>
+    <text x="150" y="184" dominant-baseline="central" font-size="13" fill="#155e75">WithAttrs / WithGroup 预绑定结构化属性与命名空间</text>
+    <line x1="440" y1="212" x2="440" y2="228" stroke="#0e7490" stroke-width="2" marker-end="url(#m-slog)"/>
+    <rect x="90" y="232" width="700" height="52" rx="10" fill="#cffafe" stroke="#0e7490" stroke-width="1.5"/>
+    <circle cx="122" cy="258" r="14" fill="#0e7490"/>
+    <text x="122" y="258" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">3</text>
+    <text x="150" y="258" dominant-baseline="central" font-size="13" fill="#155e75">Handler.Enabled / Handle 判定级别并序列化输出</text>
+    <rect x="40" y="300" width="800" height="54" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="324" font-size="12.5" fill="#1e293b">自定义 ContextHandler 可在 Handle 时从 context 注入 tra</text>
+    <text x="60" y="344" font-size="12.5" fill="#1e293b">ce_id，弥补标准库不传 ctx 的缺口。</text>
+  </svg>
+  <figcaption>Handler 四层职责</figcaption>
+</div>
 <pre><code class="lang-go">type Handler interface {
     Enabled(context.Context, slog.Level) bool
     Handle(context.Context, slog.Record) error
@@ -373,6 +402,7 @@ sloglint ./...</code></pre>
 <p>在配置里打开三类检查（<strong>具体 flag 名以所用 sloglint 版本的 README 为准</strong>）：强制只用 <code>InfoContext</code> 等带 ctx 的调用、禁止把裸 key-value 与 <code>slog.Attr</code> 混用、要求键名遵循统一命名规范。这三条能把「字段名不统一 / 忘传 ctx / 用 <code>slog.Any</code> 打大对象」拦在 CI 阶段。</p>
 <hr>
 
+<div class="callout info"><p><b>实战要点：</b>把 trace_id 放进 ContextHandler 而不是每条日志手传；Value 尽量用具体类型方法，避免 AnyValue 走反射。</p></div>
 </section>
 <section data-anchor="5-版本演进速览">
 <h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
@@ -387,6 +417,7 @@ sloglint ./...</code></pre>
 <ol><li><strong>用 <code>fmt.Sprintf</code> 拼消息</strong>：<code>slog.Info(fmt.Sprintf("user %s login", u))</code> 把结构化字段压回字符串，既慢又不可检索。改成 <code>slog.String("user", u)</code>。</li><li><strong>热路径滥用 <code>slog.Any</code></strong>：大对象走反射与 JSON 编码，可能成为 CPU 与 GC 热点。用具体类型 Field，或只挑关键字段。</li><li><strong>自定义 Handler 漏实现 <code>WithAttrs</code> / <code>WithGroup</code></strong>：<code>logger.With("service", ...)</code> 的字段静默丢失，是最难查的一类 bug。包装 Handler 时必须转发这两个方法（并同样转发 <code>Enabled</code>）。</li><li><strong>只用 <code>slog.Info</code> 不传 ctx</strong>：自定义 ContextHandler 拿不到 ctx，<code>trace_id</code> 永远为空。用 <code>InfoContext</code> + <code>sloglint -ctx-only</code> 强制。</li><li><strong>库代码里调 <code>SetDefault</code></strong>：污染宿主应用的日志配置。库应接收 <code>*slog.Logger</code> 注入，或使用 <code>slog.Default()</code> 但由宿主决定。</li><li><strong>忘记 <code>SetDefault</code></strong>：标准库 <code>log.Printf</code> 与部分第三方库仍走旧格式，日志两套并存。应用入口统一设置。</li><li><strong>字段名不统一</strong>：<code>userID</code> / <code>user_id</code> / <code>UserID</code> 混用，下游聚合要写三套查询。制定字段词典并用 <code>sloglint -enforce-keys</code> 约束。</li><li><strong><code>Error</code> 级别滥用</strong>：用户输入不合法打成 Error 会让告警全是噪音。约定 Error = 需人介入的系统故障，Warn = 可自愈，Info = 关键业务事件。</li><li><strong>敏感信息进 attrs</strong>：密码、token、身份证。用 <code>ReplaceAttr</code> 集中脱敏；同时禁止把敏感值拼进 <code>msg</code>。</li><li><strong>每请求新建 Logger / Handler</strong>：<code>slog.New</code> 与 <code>NewJSONHandler</code> 有构造成本。全局建一次，用 <code>logger.With(...)</code> 派生轻量子 Logger。</li><li><strong>不设 <code>AddSource</code> 或 caller 层级错</strong>：封装一层后 <code>source</code> 指向封装文件。自己封装时用 <code>runtime.Callers</code> 调整，或干脆在字段里显式写 <code>component</code>。</li><li><strong>同步写文件不加锁</strong>：多 goroutine 写同一个 <code>io.Writer</code> 会行交错、JSON 被撕坏。用 <code>os.File</code>（并发安全）或 <code>sync.Mutex</code> 包装；容器优先 stdout。</li><li><strong>把日志当指标或链路</strong>：<code>duration</code> 字段可以辅助排障，但 SLO 交给 <a href="../prometheus/prometheus-guide.html">Prometheus</a>，跨服务调用链交给 <a href="../opentelemetry/opentelemetry-guide.html">OpenTelemetry</a>。</li><li><strong>不设采样</strong>：下游故障时循环重试能瞬间写满磁盘。slog 没有内建采样，需自己写 <code>SamplingHandler</code>（按消息+级别在窗口内限流）或依赖采集端限流。</li><li><strong>时间格式 / 单位不一致</strong>：<code>slog.Duration</code> 输出秒（float64），与 Prometheus 的 <code>_seconds</code> 一致；别再自定义一个 <code>duration_ms</code> 混用。</li><li><strong>Handler 里做慢操作</strong>：<code>Handle</code> 在调用方 goroutine 同步执行，慢 writer（网络、无缓冲文件）会直接拖慢业务。需要异步落盘时自己加有界队列并处理丢弃策略。</li><li><strong>忽略 <code>Enabled</code> 快速路径</strong>：自定义 Handler 不做级别判断，被禁用的 Debug 日志仍会完整编码，零成本过滤失效。</li></ol>
 <hr>
 
+<div class="callout warning"><p><b>生产警示：</b>Record.Clone 需要 Go 1.23+，旧版本要手工拷贝；Handler 必须正确处理 Group 嵌套与空 Attr，否则结构化输出会静默丢字段。</p></div>
 </section>
 <section data-anchor="7-选型对比">
 <h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>

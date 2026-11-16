@@ -92,7 +92,7 @@
 <body>
 <div class="layout">
 <nav class="sidebar">
-  <div class="logo">NATS<span class="ver">v2.11</span></div>
+  <div class="logo">NATS<span class="ver">v2.15</span></div>
   <div class="sub">JetStream 消息系统指南</div>
   <a href="#1-项目简介">1. 项目简介</a>
   <a class="sub-link" href="#启动">启动</a>
@@ -109,7 +109,7 @@
   <a class="sub-link" href="#43-jetstream持久消费者生产范式">4.3 JetStream：持久消费者（生产范式）</a>
   <a class="sub-link" href="#44-kv一行配置中心">4.4 KV：一行配置中心</a>
   <a class="sub-link" href="#45-cli-常用命令">4.5 CLI 常用命令</a>
-  <a href="#5-nats-211-版本要点20253">5. NATS 2.11 版本要点（2025.3）</a>
+  <a href="#5-nats-21x-版本要点211-起">5. NATS 2.1x 版本要点（2.11 起）</a>
   <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
   <a href="#7-选型对比">7. 选型对比</a>
 </nav>
@@ -120,7 +120,7 @@
 <p style="opacity:.8;font-size:13.5px">JetStream 消息系统指南</p>
 <div class="meta"><span>单二进制 ~15MB</span><span>Subject 寻址</span><span>v2.11 · 2025.3</span><span>KV + Object Store</span><span>at-most-once → exactly-once</span></div>
 </div>
-<blockquote><p>云原生时代的轻量级消息系统：单二进制、Subject 寻址、核心即双向消息总线，JetStream 补齐持久化。 仓库：<a href="https://github.com/nats-io/nats-server">https://github.com/nats-io/nats-server</a>　|　当前主线：v2.11（2025.3.19）</p></blockquote>
+<blockquote><p>云原生时代的轻量级消息系统：单二进制、Subject 寻址、核心即双向消息总线，JetStream 补齐持久化。 仓库：<a href="https://github.com/nats-io/nats-server">https://github.com/nats-io/nats-server</a>　|　当前主线：v2.15（2026.11；v2.11 为 2025.3）</p></blockquote>
 <section data-anchor="1-项目简介">
 <h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2><div class="tip"><b>💡 与 Kafka 的取舍：</b><span>NATS 胜在<b>运维成本几乎为零、协议简单、延迟低</b>；Kafka 胜在<b>超大规模吞吐、生态连接器、流处理</b>。中小规模微服务 / AI Agent 总线，NATS 是当下热门选择。</span></div>
 <p>NATS 起源于 2010 年（被 Apcera 捐赠，后成立 Synadia 维护），设计哲学是<strong>极简与性能</strong>：</p>
@@ -621,9 +621,9 @@ nats bench --pub 8 orders.test --size 1KB --msgs 100000   # 压测</code></pre>
 <hr>
 
 </section>
-<section data-anchor="5-nats-211-版本要点20253">
-<h2 id="5-nats-211-版本要点20253">5. NATS 2.11 版本要点（2025.3）<span class="lvl b">版本</span></h2>
-<ul><li><strong>按消息 TTL</strong>：<code>Nats-TTL</code> 头让单条消息独立于流限制过期（ADR-43）；</li><li><strong>分布式消息追踪</strong>：<code>Nats-Trace-Dest</code> 头开启消息级追踪，事件回报 ingress/映射/路由全链路；</li><li><strong>Pull 消费者优先级组</strong>：主备消费者故障转移（pinning/overflow 策略）；</li><li><strong>消费者暂停</strong>：<code>PauseUntil</code>——维护窗口挂起投递，到点自动恢复；</li><li><strong>流摄入限速</strong>：<code>max_buffered_msgs/size</code> 防过载；</li><li><strong><code>cluster_traffic</code> 隔离</strong>：Raft 复制流量可隔离到资产所在 account，避免多租户头阻塞；</li><li>其他：MQTT 3.1.1/5 支持、Windows TPM 密钥存储、配置摘要指纹（<code>-t</code>）。</li></ul>
+<section data-anchor="5-nats-21x-版本要点211-起">
+<h2 id="5-nats-21x-版本要点211-起">5. NATS 2.1x 版本要点（2.11 起）<span class="lvl b">版本</span></h2>
+<ul><li><strong>2.15（2026.11）</strong>：当前主线，延续 JetStream 的优先级组、暂停投递与消息追踪能力，重点在稳定性与运维接口；新集群直接上 2.15，2.11 → 2.15 属小版本升级；</li><li><strong>按消息 TTL</strong>：<code>Nats-TTL</code> 头让单条消息独立于流限制过期（ADR-43）；</li><li><strong>分布式消息追踪</strong>：<code>Nats-Trace-Dest</code> 头开启消息级追踪，事件回报 ingress/映射/路由全链路；</li><li><strong>Pull 消费者优先级组</strong>：主备消费者故障转移（pinning/overflow 策略）；</li><li><strong>消费者暂停</strong>：<code>PauseUntil</code>——维护窗口挂起投递，到点自动恢复；</li><li><strong>流摄入限速</strong>：<code>max_buffered_msgs/size</code> 防过载；</li><li><strong><code>cluster_traffic</code> 隔离</strong>：Raft 复制流量可隔离到资产所在 account，避免多租户头阻塞；</li><li>其他：MQTT 3.1.1/5 支持、Windows TPM 密钥存储、配置摘要指纹（<code>-t</code>）。</li></ul>
 <hr>
 
 </section>

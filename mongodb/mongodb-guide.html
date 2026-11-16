@@ -92,7 +92,7 @@
 <body>
 <div class="layout">
 <nav class="sidebar">
-  <div class="logo">MongoDB<span class="ver">7.0 / 8.0</span></div>
+  <div class="logo">MongoDB<span class="ver">9.0</span></div>
   <div class="sub">BSON 文档 · 副本集与分片</div>
   <a href="#1-项目简介">1. 项目简介</a>
   <a class="sub-link" href="#安装与本地起服务">安装与本地起服务</a>
@@ -124,7 +124,7 @@
 <p style="opacity:.8;font-size:13.5px">BSON 文档 · 副本集与分片</p>
 <div class="meta"><span>BSON 文档模型</span><span>WiredTiger 文档级锁</span><span>副本集 + oplog</span><span>片键三要素</span><span>writeConcern / readConcern</span><span>Change Streams</span><span>mongo-go-driver v1.x</span></div>
 </div>
-<blockquote><p>面向文档的分布式数据库：BSON 灵活 schema、WiredTiger 文档级并发、副本集与分片、聚合管道与多文档事务——讲清「什么时候该用文档模型，以及片键选错的代价」。 上游：<a href="https://github.com/mongodb/mongo">https://github.com/mongodb/mongo</a>　|　服务端主线：<strong>7.0 / 8.0</strong>（整理于 2026-11）　|　Go 驱动：<a href="https://github.com/mongodb/mongo-go-driver">mongodb/mongo-go-driver</a> v1.x 协议：服务端 <strong>SSPL</strong>（4.0 起）/ Go 驱动 Apache-2.0；具体版本以上游最新 release 为准。</p></blockquote>
+<blockquote><p>面向文档的分布式数据库：BSON 灵活 schema、WiredTiger 文档级并发、副本集与分片、聚合管道与多文档事务——讲清「什么时候该用文档模型，以及片键选错的代价」。 上游：<a href="https://github.com/mongodb/mongo">https://github.com/mongodb/mongo</a>　|　服务端主线：<strong>9.0</strong>（2026.9；7.0 / 8.0 仍在支持期；整理于 2026-11）　|　Go 驱动：<a href="https://github.com/mongodb/mongo-go-driver">mongodb/mongo-go-driver</a> v2.x（本文示例仍以 v1.x API 为主） 协议：服务端 <strong>SSPL</strong>（4.0 起）/ Go 驱动 Apache-2.0；具体版本以上游最新 release 为准。</p></blockquote>
 <section data-anchor="1-项目简介">
 <h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
 <p><a href="../mysql/mysql-guide.html">MySQL 篇</a>存「行 + 表 + 外键」，<a href="../redis/redis-guide.html">go-redis 篇</a>存「键 + 值」，MongoDB 存的是<strong>自描述的 BSON 文档</strong>：一个用户连同他的地址数组、偏好对象、标签列表，全在一条文档里，读取时一次 I/O 拿全。这是它最大的优势，也是最容易滥用的地方。</p>
@@ -179,6 +179,11 @@ func main() {
 <div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>数据模型</td><td>BSON 文档（最大 16MB）、嵌套文档与数组、<code>_id</code> 与 ObjectId、Schema Validation</td></tr><tr><td>CRUD</td><td><code>InsertOne/Many</code>、<code>Find</code>、<code>UpdateOne/Many</code> + 更新运算符（<code>$set</code> / <code>$inc</code> / <code>$push</code> / <code>$addToSet</code>）、Upsert、<code>FindOneAndUpdate</code></td></tr><tr><td>查询</td><td>丰富的查询运算符（<code>$eq</code> / <code>$in</code> / <code>$elemMatch</code> / <code>$expr</code>）、投影、排序、<code>explain()</code></td></tr><tr><td>聚合管道</td><td><code>$match</code> → <code>$project</code> → <code>$group</code> → <code>$sort</code> → <code>$lookup</code> → <code>$facet</code>、<code>$merge</code>、窗口函数</td></tr><tr><td>索引</td><td>单键/复合/多键/唯一/稀疏/部分/TTL/文本/地理/哈希/通配符；ESR 规则</td></tr><tr><td>高可用</td><td>副本集（Primary/Secondary/Arbiter）、oplog、自动选举与故障转移</td></tr><tr><td>水平扩展</td><td>分片集群（mongos / config server / shard）、片键、chunk 分裂与均衡</td></tr><tr><td>一致性</td><td><code>writeConcern</code>（w / j）、<code>readConcern</code>（local / majority / snapshot / linearizable）、<code>readPreference</code></td></tr><tr><td>事务</td><td>多文档 ACID 事务（副本集 4.0+ / 分片 4.2+），快照隔离</td></tr><tr><td>变更流</td><td>Change Streams（基于 oplog，可续传 resume token）</td></tr><tr><td>其他</td><td>GridFS 大文件、时序集合、Atlas Search / Vector Search、可查询加密</td></tr><tr><td>Go 驱动</td><td><code>bson.M</code> / <code>bson.D</code> / 结构体 tag、连接池配置、Session、重试写、<code>CommandError</code></td></tr></tbody></table></div>
 <hr>
 
+<div class="features">
+  <div class="feature"><div class="fh"><h4>文档模型</h4></div><p>BSON 文档天然聚合，bson.D 保序对命令与索引定义很关键</p></div>
+  <div class="feature"><div class="fh"><h4>WiredTiger</h4></div><p>文档级并发 + 压缩，oplog 是有上限的 capped collection</p></div>
+  <div class="feature"><div class="fh"><h4>分片与聚合</h4></div><p>片键决定水平扩展上限；聚合管道遵循 ESR 索引规则</p></div>
+</div>
 </section>
 <section data-anchor="3-核心概念与原理">
 <h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
@@ -197,7 +202,28 @@ func main() {
       ──► Journal（预写日志，默认每 100ms / 提交时刷盘）
       ──► Checkpoint（每 60s 把一致性快照落盘）</code></pre>
 <ul><li><strong>文档级锁</strong>：不同文档可并发写，粒度比 MySQL 的行锁相近但实现不同；同一文档的两个 <code>$inc</code> 是原子的</li><li>默认 <strong>snappy 压缩</strong>（可换 zstd），索引前缀压缩</li><li>MVCC：读操作看到某个快照，不被写阻塞</li><li>Cache 默认约 <code>(RAM - 1GB) / 2</code>，容器里务必设内存限制，否则容易被 OOM</li></ul>
-<h3 id="33-副本集选举与-oplog">3.3 副本集、选举与 oplog</h3>
+<h3 id="33-副本集选举与-oplog">3.3 副本集、选举与 oplog</h3><div class="figure">
+  <svg viewBox="0 0 880 268" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-mongodb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#047857"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#064e3b">副本集与 oplog 同步</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">主节点写 oplog，从节点拉取并重放，选举保证故障转移</text>
+    <rect x="142" y="82" width="175" height="80" rx="12" fill="#d1fae5" stroke="#047857" stroke-width="1.5"/>
+    <text x="229" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#064e3b">Primary 写入</text>
+    <text x="229" y="136" text-anchor="middle" font-size="11" fill="#064e3b">写文档 + 记录 oplog</text>
+    <line x1="320" y1="122" x2="346" y2="122" stroke="#047857" stroke-width="2" marker-end="url(#m-mongodb)"/>
+    <rect x="352" y="82" width="175" height="80" rx="12" fill="#d1fae5" stroke="#047857" stroke-width="1.5"/>
+    <text x="440" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#064e3b">Secondary 拉取</text>
+    <text x="440" y="136" text-anchor="middle" font-size="11" fill="#064e3b">tailable cursor 增量同步</text>
+    <line x1="532" y1="122" x2="558" y2="122" stroke="#047857" stroke-width="2" marker-end="url(#m-mongodb)"/>
+    <rect x="564" y="82" width="175" height="80" rx="12" fill="#d1fae5" stroke="#047857" stroke-width="1.5"/>
+    <text x="651" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#064e3b">重放与选举</text>
+    <text x="651" y="136" text-anchor="middle" font-size="11" fill="#064e3b">心跳超时触发新主选举</text>
+    <rect x="40" y="186" width="800" height="58" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="210" font-size="12.5" fill="#1e293b">读偏好与 writeConcern 共同决定一致性：默认读主，读从节点要接受复制延迟带来的陈</text>
+    <text x="60" y="230" font-size="12.5" fill="#1e293b">旧数据。</text>
+  </svg>
+  <figcaption>副本集与 oplog 同步</figcaption>
+</div>
 <pre><code class="lang-text">            ┌──────────► Primary（所有写）
             │                 │ oplog（capped collection，幂等的操作日志）
    App ─────┤                 ▼
@@ -385,10 +411,11 @@ for cs.Next(ctx) {
 }</code></pre>
 <hr>
 
+<div class="callout info"><p><b>实战要点：</b>片键要同时满足高基数、写分散、查询可定向；用单调递增字段做片键会把写入全部压在最后一个 chunk 上。</p></div>
 </section>
 <section data-anchor="5-版本演进速览">
 <h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
-<div class="table-wrap"><table><thead><tr><th>版本</th><th>关键变化与迁移注意点</th></tr></thead><tbody><tr><td>3.6 / 4.0</td><td>WiredTiger 成为默认；<strong>4.0 引入副本集多文档事务</strong>；许可从 AGPL 改为 <strong>SSPL</strong></td></tr><tr><td>4.2</td><td><strong>分片集群多文档事务</strong>、按需物化视图、<code>$merge</code>；分布式事务代价仍高</td></tr><tr><td>4.4</td><td><code>refineCollectionShardKey</code> 可给片键加后缀、可隐藏索引、聚合 <code>$unionWith</code></td></tr><tr><td>5.0</td><td><strong>时序集合</strong>（time-series collections）、<code>$setWindowFields</code> 窗口函数、Stable API（版本化 API，降低升级破坏风险）</td></tr><tr><td>6.0 / 7.0</td><td>查询与分片性能改进、可查询加密（Queryable Encryption）、change stream 增强、复合片键与均衡优化</td></tr><tr><td>8.0</td><td>批量写入与 <code>$lookup</code> 性能大幅提升、查询与复制优化、默认配置调整</td></tr></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>关键变化与迁移注意点</th></tr></thead><tbody><tr><td>3.6 / 4.0</td><td>WiredTiger 成为默认；<strong>4.0 引入副本集多文档事务</strong>；许可从 AGPL 改为 <strong>SSPL</strong></td></tr><tr><td>4.2</td><td><strong>分片集群多文档事务</strong>、按需物化视图、<code>$merge</code>；分布式事务代价仍高</td></tr><tr><td>4.4</td><td><code>refineCollectionShardKey</code> 可给片键加后缀、可隐藏索引、聚合 <code>$unionWith</code></td></tr><tr><td>5.0</td><td><strong>时序集合</strong>（time-series collections）、<code>$setWindowFields</code> 窗口函数、Stable API（版本化 API，降低升级破坏风险）</td></tr><tr><td>6.0 / 7.0</td><td>查询与分片性能改进、可查询加密（Queryable Encryption）、change stream 增强、复合片键与均衡优化</td></tr><tr><td>8.0</td><td>批量写入与 <code>$lookup</code> 性能大幅提升、查询与复制优化、默认配置调整</td></tr><tr><td>9.0</td><td>2026.09 发布：向量检索进入社区版、查询与复制继续优化；驱动 v2 成为主线，新项目建议直接上 v2</td></tr></tbody></table></div>
 <p><strong>升级注意</strong>：</p>
 <ul><li>升级前用 <strong>Stable API</strong>（<code>serverApi</code> + <code>SetServerAPIOptions</code>）锁定 API 版本，可显著降低跨大版本的兼容性风险</li><li>驱动 v1.x → <strong>v2</strong> 已发布：模块路径变为 <code>go.mongodb.org/mongo-driver/v2/...</code>，<code>bson</code> / <code>options</code> 包路径与部分构造 API 有变化，<strong>不是简单改 import 就能升</strong>；本文示例基于 v1.x</li><li>特性版本（feature compatibility version, FCV）需按官方路径逐级升级，不能跨大版本直接跳</li><li><strong>SSPL 许可</strong>：自建内部使用通常没问题，但把 MongoDB 作为服务对外提供需核对条款；这也是很多团队选 PostgreSQL <code>jsonb</code> 或兼容方案的原因之一</li></ul>
 <hr>
@@ -399,6 +426,7 @@ for cs.Next(ctx) {
 <ol><li><strong><code>bson.M</code> 用于有序场景</strong>：命令、索引键、排序、聚合管道必须用 <code>bson.D</code>。用 map 会导致字段顺序随机，索引前缀失效甚至命令语义错误。</li><li><strong>无界数组 / 文档超 16MB</strong>：把评论、日志、事件无限 <code>$push</code> 进一个文档。拆成独立集合，用引用 + 分页。</li><li><strong>片键选错且不可改</strong>：单调递增字段 → 写入热点；低基数字段 → jumbo chunk；不带片键的查询 → 广播所有分片。上线前用真实数据分布压测。</li><li><strong>读 Secondary 读到旧数据</strong>：默认异步复制；报表类可接受，写后读自己必须 <code>readPreference=primary</code>。</li><li><strong><code>writeConcern</code> 用 <code>w:1</code></strong>：主从切换时可能丢已确认的写。关键数据用 <code>w:majority, j:true</code>，代价是延迟略升。</li><li><strong>事务当万能药</strong>：事务默认 60s、跨分片代价高、写冲突要重试。优先用单文档原子更新（<code>$inc</code> / <code>$set</code>）与内嵌建模。</li><li><strong>事务闭包里用错 ctx</strong>：必须用 <code>SessionContext sc</code>，否则操作不在事务里，看似成功实则裸写。</li><li><strong>深分页用 <code>skip</code></strong>：与 MySQL <code>LIMIT offset</code> 同理，越深越慢。用 <code>_id</code> 或稳定排序字段做游标。</li><li><strong>无索引排序 / 大聚合不打 <code>$match</code></strong>：触发 100MB 内存上限。<code>allowDiskUse</code> 只是兜底，正解是加符合 ESR 的复合索引并把 <code>$match</code> 前置。</li><li><strong><code>$where</code> / <code>$expr</code> / 前缀正则</strong>：无法用索引，全集合扫描。用具体运算符与预计算字段。</li><li><strong><code>$lookup</code> 滥用</strong>：把它当关系型 JOIN 写多层管道，分片集群上会很慢。文档模型应该靠内嵌减少关联。</li><li><strong>唯一索引与 <code>null</code> / 稀疏字段</strong>：稀疏或部分索引的行为与 MySQL 不同，唯一性在缺字段时可能不符预期，用 <code>partialFilterExpression</code> 明确定义。</li><li><strong>时间类型与时区</strong>：Go 的 <code>time.Time</code> 以 UTC 存入 BSON Date；不要把时间存成字符串再比较，也不要在应用层混用本地时区。</li><li><strong>不设 Context 超时 / 不检查游标 <code>Err()</code></strong>：网络抖动挂住连接池；<code>for cur.Next()</code> 循环结束必须检查 <code>cur.Err()</code>，否则迭代中的错误被静默吞掉。</li><li><strong>连接池与容器内存</strong>：<code>MaxPoolSize × 副本数</code> 超服务端上限；WiredTiger cache 默认吃一半内存，容器里不设 limit 容易 OOM。</li><li><strong>Change Stream 没存 resume token</strong>：进程重启后从「现在」开始监听，中间变更永久丢失。</li><li><strong>把 MongoDB 当搜索或缓存</strong>：<code>$text</code> 能力有限（用 <a href="../elasticsearch/elasticsearch-guide.html">Elasticsearch</a>）；高频 KV 用 <a href="../redis/redis-guide.html">go-redis</a>。</li></ol>
 <hr>
 
+<div class="callout warning"><p><b>生产警示：</b>多文档事务代价高，能单文档原子更新就不要开事务；Change Streams 依赖 oplog，oplog 窗口小于从节点宕机时长会导致无法增量恢复，只能全量同步。</p></div>
 </section>
 <section data-anchor="7-选型对比">
 <h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>

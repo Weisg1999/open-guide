@@ -1,7 +1,7 @@
 # MongoDB 技术介绍与使用指南（Go 后端视角）
 
 > 面向文档的分布式数据库：BSON 灵活 schema、WiredTiger 文档级并发、副本集与分片、聚合管道与多文档事务——讲清「什么时候该用文档模型，以及片键选错的代价」。
-> 上游：<https://github.com/mongodb/mongo>　|　服务端主线：**7.0 / 8.0**（整理于 2026-11）　|　Go 驱动：[mongodb/mongo-go-driver](https://github.com/mongodb/mongo-go-driver) v1.x
+> 上游：<https://github.com/mongodb/mongo>　|　服务端主线：**9.0**（2026.9；7.0 / 8.0 仍在支持期；整理于 2026-11）　|　Go 驱动：[mongodb/mongo-go-driver](https://github.com/mongodb/mongo-go-driver) v2.x（本文示例仍以 v1.x API 为主）
 > 协议：服务端 **SSPL**（4.0 起）/ Go 驱动 Apache-2.0；具体版本以上游最新 release 为准。
 
 ---
@@ -381,6 +381,7 @@ for cs.Next(ctx) {
 | 5.0 | **时序集合**（time-series collections）、`$setWindowFields` 窗口函数、Stable API（版本化 API，降低升级破坏风险） |
 | 6.0 / 7.0 | 查询与分片性能改进、可查询加密（Queryable Encryption）、change stream 增强、复合片键与均衡优化 |
 | 8.0 | 批量写入与 `$lookup` 性能大幅提升、查询与复制优化、默认配置调整 |
+| 9.0 | 2026.09 发布：向量检索进入社区版、查询与复制继续优化；驱动 v2 成为主线，新项目建议直接上 v2 |
 
 **升级注意**：
 

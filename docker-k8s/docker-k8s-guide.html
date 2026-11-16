@@ -92,7 +92,7 @@
 <body>
 <div class="layout">
 <nav class="sidebar">
-  <div class="logo">Docker / K8s<span class="ver">1.3x</span></div>
+  <div class="logo">Docker / K8s<span class="ver">1.37</span></div>
   <div class="sub">Go 服务部署 · 容器与编排</div>
   <a href="#1-项目简介">1. 项目简介</a>
   <a class="sub-link" href="#安装与本地集群">安装与本地集群</a>
@@ -120,9 +120,9 @@
   <h1>Docker 与 Kubernetes 技术介绍与使用指南（Go 服务部署视角）</h1>
 <p>容器与编排的事实标准：镜像分层与多阶段构建、Pod / Deployment / Service 抽象、探针与滚动发布、优雅下线，从 Go 服务视角讲清怎么被正确打包、正确调度、正确停止。</p>
 <p style="opacity:.8;font-size:13.5px">Go 服务部署 · 容器与编排</p>
-<div class="meta"><span>多阶段构建 + distroless</span><span>namespace / cgroups</span><span>声明式 Reconcile Loop</span><span>liveness / readiness / startup</span><span>SIGTERM 优雅关闭</span><span>client-go 与 RBAC</span></div>
+<div class="meta"><span>K8s 1.37 / Engine 29+</span><span>namespace / cgroups</span><span>声明式 Reconcile Loop</span><span>liveness / readiness / startup</span><span>SIGTERM 优雅关闭</span><span>client-go 与 RBAC</span></div>
 </div>
-<blockquote><p>容器与编排的事实标准：镜像分层与多阶段构建、Pod / Deployment / Service 抽象、探针与滚动发布、优雅下线——从 Go 服务视角讲清「怎么被正确打包、正确调度、正确停止」。 上游：<a href="https://github.com/moby/moby">https://github.com/moby/moby</a> · <a href="https://github.com/kubernetes/kubernetes">https://github.com/kubernetes/kubernetes</a>　|　主线：<strong>Docker Engine 27+ / Kubernetes 1.3x</strong>（整理于 2026-11）　|　Go 客户端：<a href="https://github.com/kubernetes/client-go">kubernetes/client-go</a> v0.3x 协议：Apache-2.0；client-go 版本须与集群 minor 版本匹配，具体以上游最新 release 为准。</p></blockquote>
+<blockquote><p>容器与编排的事实标准：镜像分层与多阶段构建、Pod / Deployment / Service 抽象、探针与滚动发布、优雅下线——从 Go 服务视角讲清「怎么被正确打包、正确调度、正确停止」。 上游：<a href="https://github.com/moby/moby">https://github.com/moby/moby</a> · <a href="https://github.com/kubernetes/kubernetes">https://github.com/kubernetes/kubernetes</a>　|　主线：<strong>Docker Engine 29+ / Kubernetes 1.37</strong>（整理于 2026-11）　|　Go 客户端：<a href="https://github.com/kubernetes/client-go">kubernetes/client-go</a> v0.37 协议：Apache-2.0；client-go 版本须与集群 minor 版本匹配，具体以上游最新 release 为准。</p></blockquote>
 <section data-anchor="1-项目简介">
 <h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
 <p>这篇在仓库里位置特殊：其余篇目讲的是「Go 代码里 import 什么库」，容器与编排讲的是「Go 进程运行在哪里、被谁管理」。它仍是后端工程师的必备知识——线上 80% 的「服务莫名重启」「发布期间 502」「容器被 OOMKilled」都出在这一层，而不是业务代码。</p>
@@ -193,6 +193,11 @@ curl localhost:8080/healthz</code></pre>
 <div class="table-wrap"><table><thead><tr><th>层</th><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>Docker</td><td>分层镜像</td><td>UnionFS + 写时复制；指令顺序决定构建缓存命中率</td></tr><tr><td>Docker</td><td>多阶段构建</td><td>编译环境与运行环境分离，<code>distroless</code> / <code>scratch</code> 可把镜像压到 10~20MB</td></tr><tr><td>Docker</td><td>隔离与限制</td><td>namespace（PID/NET/MNT/USER…）+ cgroups（CPU/内存/IO）</td></tr><tr><td>Docker</td><td>网络与存储</td><td>bridge / host 网络、Volume 与 bind mount、Compose 编排本地多服务</td></tr><tr><td>K8s</td><td>工作负载</td><td>Pod（最小调度单元）、Deployment（无状态）、StatefulSet（有状态）、DaemonSet、Job / CronJob</td></tr><tr><td>K8s</td><td>服务暴露</td><td>Service（ClusterIP / NodePort / LoadBalancer）、Ingress / Gateway API、DNS</td></tr><tr><td>K8s</td><td>配置</td><td>ConfigMap、Secret、Downward API、环境变量与卷挂载</td></tr><tr><td>K8s</td><td>自愈</td><td>liveness / readiness / startup 探针、重启策略、节点驱逐与重调度</td></tr><tr><td>K8s</td><td>发布</td><td>滚动更新（maxSurge / maxUnavailable）、回滚、PDB、HPA / VPA</td></tr><tr><td>K8s</td><td>权限与配额</td><td>RBAC、ServiceAccount、ResourceQuota、LimitRange、NetworkPolicy</td></tr><tr><td>Go 生态</td><td>client-go</td><td>在程序里 List / Watch / 创建资源；Operator / 控制器开发基础</td></tr></tbody></table></div>
 <hr>
 
+<div class="features">
+  <div class="feature"><div class="fh"><h4>镜像与隔离</h4></div><p>分层缓存 + 多阶段构建，namespace 做视图隔离、cgroups 做资源限制</p></div>
+  <div class="feature"><div class="fh"><h4>工作负载</h4></div><p>Deployment / StatefulSet / Service / ConfigMap / Secret</p></div>
+  <div class="feature"><div class="fh"><h4>发布与运维</h4></div><p>滚动更新、三类探针、QoS 等级、优雅下线</p></div>
+</div>
 </section>
 <section data-anchor="3-核心概念与原理">
 <h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
@@ -204,7 +209,30 @@ curl localhost:8080/healthz</code></pre>
   └─ 最终二进制层
 容器 = 镜像层 + 一个可写层（Container Layer）+ namespace + cgroups</code></pre>
 <ul><li><strong>容器不是虚拟机</strong>：它和宿主机共享内核，只是一个被隔离、被限流的进程；所以 <code>scratch</code> 镜像里没有 shell、没有时区文件、没有 CA 证书，需要显式拷入</li><li>每条 Dockerfile 指令生成一层，<strong>把变化频繁的指令放最后</strong>才能用好缓存</li><li><code>CGO_ENABLED=0</code> 生成静态二进制，是能跑在 <code>scratch</code> / <code>distroless</code> 里的前提</li></ul>
-<h3 id="32-pod-与声明式协调循环">3.2 Pod 与声明式协调循环</h3>
+<h3 id="32-pod-与声明式协调循环">3.2 Pod 与声明式协调循环</h3><div class="figure">
+  <svg viewBox="0 0 880 376" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-docker-k8s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1e40af"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#1e3a8a">声明式协调循环</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">控制器持续比较期望状态与实际状态，并把差异收敛掉</text>
+    <rect x="90" y="84" width="700" height="52" rx="10" fill="#dbeafe" stroke="#1e40af" stroke-width="1.5"/>
+    <circle cx="122" cy="110" r="14" fill="#1e40af"/>
+    <text x="122" y="110" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">1</text>
+    <text x="150" y="110" dominant-baseline="central" font-size="13" fill="#1e3a8a">用户提交 Deployment（期望副本数、镜像版本）</text>
+    <line x1="440" y1="138" x2="440" y2="154" stroke="#1e40af" stroke-width="2" marker-end="url(#m-docker-k8s)"/>
+    <rect x="90" y="158" width="700" height="52" rx="10" fill="#dbeafe" stroke="#1e40af" stroke-width="1.5"/>
+    <circle cx="122" cy="184" r="14" fill="#1e40af"/>
+    <text x="122" y="184" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">2</text>
+    <text x="150" y="184" dominant-baseline="central" font-size="13" fill="#1e3a8a">Controller Manager 创建 ReplicaSet 并维持 Pod 数量</text>
+    <line x1="440" y1="212" x2="440" y2="228" stroke="#1e40af" stroke-width="2" marker-end="url(#m-docker-k8s)"/>
+    <rect x="90" y="232" width="700" height="52" rx="10" fill="#dbeafe" stroke="#1e40af" stroke-width="1.5"/>
+    <circle cx="122" cy="258" r="14" fill="#1e40af"/>
+    <text x="122" y="258" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">3</text>
+    <text x="150" y="258" dominant-baseline="central" font-size="13" fill="#1e3a8a">Scheduler 选节点 -&gt; kubelet 拉起容器 -&gt; Service 暴露访问入口</text>
+    <rect x="40" y="300" width="800" height="54" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="324" font-size="12.5" fill="#1e293b">不是「下发命令」而是「声明目标」：删掉一个 Pod，控制器会立刻补一个新的。</text>
+  </svg>
+  <figcaption>声明式协调循环</figcaption>
+</div>
 <pre><code class="lang-text">用户提交 Deployment (期望: replicas=3, image=v2)
    │
    ▼
@@ -433,12 +461,13 @@ kubectl get endpoints app               # 确认就绪 Pod 是否登记
 kubectl get pdb                         # 是否有 PodDisruptionBudget</code></pre>
 <hr>
 
+<div class="callout info"><p><b>实战要点：</b>容器日志写 stdout 交给采集侧；镜像用非 root 用户与固定 digest，滚动发布时配合 preStop + terminationGracePeriodSeconds 才不会丢连接。</p></div>
 </section>
 <section data-anchor="5-版本演进速览">
 <h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
-<div class="table-wrap"><table><thead><tr><th>阶段</th><th>关键变化与迁移注意点</th></tr></thead><tbody><tr><td>Docker 早期</td><td>Swarm 编排、经典 builder；<code>docker-compose</code> 独立命令</td></tr><tr><td>Docker 近年</td><td><strong>BuildKit 成为默认构建器</strong>（<code>RUN --mount=type=cache</code> 等语法）、Compose V2 并入 <code>docker compose</code>、containerd 从 Docker 中拆出成为 CRI 运行时、镜像清单支持多架构</td></tr><tr><td>K8s 1.20~1.24</td><td><strong>1.24 移除 dockershim</strong>：节点运行时改为 containerd / CRI-O，Docker 镜像仍可用（镜像格式是 OCI 标准），但 kubelet 不再直接调 Docker</td></tr><tr><td>K8s 1.2x~1.3x</td><td>HPA <code>autoscaling/v2</code> GA、Ingress API 冻结并由 <strong>Gateway API</strong> 接棒、PodDisruptionBudget / StatefulSet 增强、原地调整 Pod 资源（in-place resize）逐步可用、Sidecar 容器原生支持</td></tr></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>阶段</th><th>关键变化与迁移注意点</th></tr></thead><tbody><tr><td>Docker 早期</td><td>Swarm 编排、经典 builder；<code>docker-compose</code> 独立命令</td></tr><tr><td>Docker 近年</td><td><strong>BuildKit 成为默认构建器</strong>（<code>RUN --mount=type=cache</code> 等语法）、Compose V2 并入 <code>docker compose</code>、containerd 从 Docker 中拆出成为 CRI 运行时、镜像清单支持多架构</td></tr><tr><td>K8s 1.20~1.24</td><td><strong>1.24 移除 dockershim</strong>：节点运行时改为 containerd / CRI-O，Docker 镜像仍可用（镜像格式是 OCI 标准），但 kubelet 不再直接调 Docker</td></tr><tr><td>K8s 1.3x~1.37</td><td>HPA <code>autoscaling/v2</code> GA、Ingress API 冻结并由 <strong>Gateway API</strong> 接棒、PodDisruptionBudget / StatefulSet 增强、原地调整 Pod 资源（in-place resize）逐步可用、Sidecar 容器原生支持</td></tr></tbody></table></div>
 <p><strong>迁移注意</strong>：</p>
-<ul><li><code>extensions/v1beta1</code>、<code>apps/v1beta1</code> 等旧 API 已移除，老清单必须改 <code>apiVersion</code>（<code>kubectl convert</code> / <code>kubectl api-resources</code> 辅助）</li><li><code>client-go</code> 版本与集群 minor 对齐（如集群 1.3x 用 <code>v0.3x</code>），跨太多版本会有字段不兼容</li><li>Ingress 新项目建议直接上 Gateway API；存量 Ingress 可继续用但不再有新特性</li><li>从 <code>docker-compose</code> 迁 K8s 时，先确认有状态组件（DB、MQ）是否真的适合上 K8s，别为了「全栈 K8s」强行迁</li></ul>
+<ul><li><code>extensions/v1beta1</code>、<code>apps/v1beta1</code> 等旧 API 已移除，老清单必须改 <code>apiVersion</code>（<code>kubectl convert</code> / <code>kubectl api-resources</code> 辅助）</li><li><code>client-go</code> 版本与集群 minor 对齐（如集群 1.37 用 <code>v0.37</code>），跨太多版本会有字段不兼容</li><li>Ingress 新项目建议直接上 Gateway API；存量 Ingress 可继续用但不再有新特性</li><li>从 <code>docker-compose</code> 迁 K8s 时，先确认有状态组件（DB、MQ）是否真的适合上 K8s，别为了「全栈 K8s」强行迁</li></ul>
 <hr>
 
 </section>
@@ -447,6 +476,7 @@ kubectl get pdb                         # 是否有 PodDisruptionBudget</code></
 <ol><li><strong><code>latest</code> 标签</strong>：镜像内容变了但 K8s 不会重新拉取（配合 <code>imagePullPolicy: Always</code> 才有机会），且无法回滚。钉语义化版本，生产用 digest。</li><li><strong><code>ENTRYPOINT</code> 用 shell 形式</strong>：PID 1 是 shell，SIGTERM 不转发 → 优雅关闭失效、每次发布都有 502。一律用 exec 数组形式。</li><li><strong>不处理 SIGTERM</strong>：Go 进程被直接 SIGKILL，在途请求丢失。用 <code>signal.NotifyContext</code> + <code>Server.Shutdown</code> + <code>readiness</code> 置 false。</li><li><strong>缺 <code>preStop</code> / readiness 收敛时间</strong>：Endpoints 摘除是异步的，旧 Pod 仍会收到请求。加 <code>sleep 5</code> 并把 <code>terminationGracePeriodSeconds</code> 设得比「sleep + 最长请求」更长。</li><li><strong>liveness 探针查下游</strong>：DB 抖动 → 全体 Pod 重启 → 雪崩。liveness 只查本进程存活。</li><li><strong>没配 <code>startupProbe</code></strong>：启动要 30s 的服务被 liveness 反复杀掉，陷入 CrashLoopBackOff。</li><li><strong>不设 resources</strong>：BestEffort QoS 最先被驱逐；或超 limit 被 OOMKilled。Go 服务额外设 <code>GOMEMLIMIT</code> 略低于 memory limit。</li><li><strong>单副本 + <code>maxUnavailable: 1</code></strong>：滚动更新期间容量归零。至少 2 副本并设 <code>maxUnavailable: 0</code>，再配 PDB 防节点驱逐。</li><li><strong>日志写文件</strong>：容器重启日志即丢，采集器也拿不到。<a href="../zap/zap-guide.html">Zap 篇</a> 明确建议容器里只输出 stdout。</li><li><strong>Secret 当加密用</strong>：Secret 只是 base64，需启用 etcd 静态加密、RBAC 最小权限，敏感信息优先接外部密钥管理。</li><li><strong>ConfigMap 改了不生效</strong>：挂载为环境变量的不会热更新；用卷挂载（会同步但有延迟）或 checksum 注解触发滚动。</li><li><strong><code>scratch</code> 镜像缺 CA 证书 / 时区</strong>：HTTPS 调用报 <code>x509: certificate signed by unknown authority</code>。从构建阶段拷 <code>ca-certificates.crt</code> 与 <code>zoneinfo</code>。</li><li><strong>Dockerfile 层顺序拖慢构建</strong>：先 <code>COPY . .</code> 再 <code>go mod download</code>，源码一改就重下依赖。先拷 <code>go.mod</code>/<code>go.sum</code>。</li><li><strong>镜像里带 shell / 包管理器 / 源码</strong>：攻击面与体积都变大。多阶段构建 + distroless + 非 root + <code>readOnlyRootFilesystem</code>。</li><li><strong>容器里跑多进程</strong>：PID 1 不会转发信号、子进程变僵尸。一个容器一个主进程，或引入 <code>tini</code> 作 init。</li><li><strong>用 Deployment 跑有状态服务</strong>：Pod 名与存储不稳定。用 StatefulSet + PVC，或干脆用托管数据库。</li><li><strong>连接串写死 IP</strong>：Pod IP 会变，一律用 Service DNS 名；并注意 <a href="../grpc/grpc-guide.html">gRPC</a> 的客户端负载均衡需要配 headless Service 或 resolver。</li><li><strong>client-go 权限过大</strong>：直接用 <code>cluster-admin</code> 的 ServiceAccount。按 <code>verbs</code> 最小授权，并注意 Watch 需要 <code>watch</code> 权限。</li></ol>
 <hr>
 
+<div class="callout warning"><p><b>生产警示：</b>livenessProbe 配得太激进会在启动慢或 GC 停顿期反复重启；没设 requests/limits 的 Pod 是 BestEffort，节点内存紧张时第一个被 OOMKilled。</p></div>
 </section>
 <section data-anchor="7-选型对比">
 <h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>

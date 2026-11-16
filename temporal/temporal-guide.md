@@ -1,7 +1,7 @@
 # Temporal 技术介绍与使用指南（Go 工作流编排）
 
 > 把「长事务、重试、超时、补偿」从业务代码里抽出来：用代码定义工作流，服务端持久化执行历史，进程崩溃后自动重放恢复。
-> 上游：<https://github.com/temporalio/temporal>　|　主线：Server **1.2x** / Go SDK [temporalio/sdk-go](https://github.com/temporalio/sdk-go) v1.x（整理于 2026-11）
+> 上游：<https://github.com/temporalio/temporal>　|　主线：Server **1.3x** / Go SDK [temporalio/sdk-go](https://github.com/temporalio/sdk-go) v1.x（整理于 2026-11）
 > 协议：MIT（Server 早期为 MPL-2.0，以官方 LICENSE 为准）；具体版本以上游最新 release 为准。
 
 ---

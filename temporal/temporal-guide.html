@@ -92,7 +92,7 @@
 <body>
 <div class="layout">
 <nav class="sidebar">
-  <div class="logo">Temporal<span class="ver">1.2x</span></div>
+  <div class="logo">Temporal<span class="ver">1.3x</span></div>
   <div class="sub">Durable Execution · 工作流编排</div>
   <a href="#1-项目简介">1. 项目简介</a>
   <a class="sub-link" href="#安装与本地起服务">安装与本地起服务</a>
@@ -125,7 +125,7 @@
 <p style="opacity:.8;font-size:13.5px">Durable Execution · 工作流编排</p>
 <div class="meta"><span>事件历史与重放</span><span>确定性约束</span><span>持久计时器</span><span>Signal / Query / Update</span><span>Saga 补偿</span><span>GetVersion / Continue-As-New</span></div>
 </div>
-<blockquote><p>把「长事务、重试、超时、补偿」从业务代码里抽出来：用代码定义工作流，服务端持久化执行历史，进程崩溃后自动重放恢复。 上游：<a href="https://github.com/temporalio/temporal">https://github.com/temporalio/temporal</a>　|　主线：Server <strong>1.2x</strong> / Go SDK <a href="https://github.com/temporalio/sdk-go">temporalio/sdk-go</a> v1.x（整理于 2026-11） 协议：MIT（Server 早期为 MPL-2.0，以官方 LICENSE 为准）；具体版本以上游最新 release 为准。</p></blockquote>
+<blockquote><p>把「长事务、重试、超时、补偿」从业务代码里抽出来：用代码定义工作流，服务端持久化执行历史，进程崩溃后自动重放恢复。 上游：<a href="https://github.com/temporalio/temporal">https://github.com/temporalio/temporal</a>　|　主线：Server <strong>1.3x</strong> / Go SDK <a href="https://github.com/temporalio/sdk-go">temporalio/sdk-go</a> v1.x（整理于 2026-11） 协议：MIT（Server 早期为 MPL-2.0，以官方 LICENSE 为准）；具体版本以上游最新 release 为准。</p></blockquote>
 <section data-anchor="1-项目简介">
 <h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
 <p><a href="../asynq/asynq技术文档与使用手册.html">asynq 篇</a> 解决「可靠地执行一个异步作业」，<a href="../kafka/kafka-guide.html">Kafka 篇</a> 解决「可靠地传递一条事件」，Temporal 解决的是第三层问题：<strong>一个要跑几小时到几个月、跨多个服务、中间会失败且必须能续跑的业务流程</strong>（订单履约、退款审批、数据迁移、订阅计费）。</p>
@@ -198,10 +198,38 @@ func main() {
 <div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>核心对象</td><td>Workflow（编排逻辑）/ Activity（外部 IO）/ Worker（执行器）/ Task Queue（任务队列）</td></tr><tr><td>持久化执行</td><td>服务端记录<strong>事件历史</strong>，worker 崩溃后从历史重放恢复，无需业务存状态机</td></tr><tr><td>持久计时器</td><td><code>workflow.Sleep</code> / <code>workflow.Await</code> 可等待数小时到数月，计时由服务端持久化</td></tr><tr><td>重试</td><td>Activity 级 <code>RetryPolicy</code>（次数、退避、不可重试错误类型）、超时分层</td></tr><tr><td>交互</td><td><strong>Signal</strong>（异步投递事件）、<strong>Query</strong>（只读查状态）、<strong>Update</strong>（有返回、可等待）</td></tr><tr><td>组合</td><td>Child Workflow、<code>Continue-As-New</code>（重置历史）、Side Effect / Mutable Side Effect</td></tr><tr><td>版本化</td><td><code>workflow.GetVersion</code> / Worker Versioning，保证在途实例能按旧逻辑重放</td></tr><tr><td>调度</td><td>Schedule（cron 式周期启动工作流，带重叠策略与暂停）</td></tr><tr><td>可观测</td><td>Web UI 看事件历史、搜索属性（Search Attributes）按业务 ID 检索、Replay 检测非确定性</td></tr><tr><td>测试</td><td><code>testsuite.TestWorkflowEnvironment</code> 本地跑工作流、时间跳跃、mock Activity、历史重放</td></tr><tr><td>服务端</td><td>Frontend / History / Matching / Worker Service + 持久化（Cassandra / MySQL / PostgreSQL）+ Visibility（ES 或 SQL）</td></tr></tbody></table></div>
 <hr>
 
+<div class="features">
+  <div class="feature"><div class="fh"><h4>持久化执行</h4></div><p>事件历史 + 持久计时器，进程重启后工作流继续</p></div>
+  <div class="feature"><div class="fh"><h4>交互原语</h4></div><p>Signal 异步通知、Query 只读查询、Update 可等待的变更</p></div>
+  <div class="feature"><div class="fh"><h4>演进与测试</h4></div><p>GetVersion 兼容旧历史、Continue-As-New 截断历史、WorkflowReplayer 回归</p></div>
+</div>
 </section>
 <section data-anchor="3-核心概念与原理">
 <h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
-<h3 id="31-durable-execution重放不是重跑">3.1 durable execution：重放不是「重跑」</h3>
+<h3 id="31-durable-execution重放不是重跑">3.1 durable execution：重放不是「重跑」</h3><div class="figure">
+  <svg viewBox="0 0 880 376" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-temporal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#334155"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#1e293b">事件历史与重放</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">Workflow 的每一次决策都写进事件历史，恢复时靠重放重建状态</text>
+    <rect x="90" y="84" width="700" height="52" rx="10" fill="#e2e8f0" stroke="#334155" stroke-width="1.5"/>
+    <circle cx="122" cy="110" r="14" fill="#334155"/>
+    <text x="122" y="110" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">1</text>
+    <text x="150" y="110" dominant-baseline="central" font-size="13" fill="#1e293b">Workflow 代码执行 -&gt; 产生 command（调度 Activity、启动 Timer）</text>
+    <line x1="440" y1="138" x2="440" y2="154" stroke="#334155" stroke-width="2" marker-end="url(#m-temporal)"/>
+    <rect x="90" y="158" width="700" height="52" rx="10" fill="#e2e8f0" stroke="#334155" stroke-width="1.5"/>
+    <circle cx="122" cy="184" r="14" fill="#334155"/>
+    <text x="122" y="184" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">2</text>
+    <text x="150" y="184" dominant-baseline="central" font-size="13" fill="#1e293b">Server 把事件追加到不可变历史，通过 Task Queue 派发</text>
+    <line x1="440" y1="212" x2="440" y2="228" stroke="#334155" stroke-width="2" marker-end="url(#m-temporal)"/>
+    <rect x="90" y="232" width="700" height="52" rx="10" fill="#e2e8f0" stroke="#334155" stroke-width="1.5"/>
+    <circle cx="122" cy="258" r="14" fill="#334155"/>
+    <text x="122" y="258" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">3</text>
+    <text x="150" y="258" dominant-baseline="central" font-size="13" fill="#1e293b">Worker 崩溃后重放历史，跳过已完成的 Activity 结果继续推进</text>
+    <rect x="40" y="300" width="800" height="54" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="324" font-size="12.5" fill="#1e293b">重放不会重新执行 Activity：结果已经记在历史里，这正是确定性约束存在的原因。</text>
+  </svg>
+  <figcaption>事件历史与重放</figcaption>
+</div>
 <pre><code class="lang-text">Workflow 代码（看似同步顺序执行）
    │ worker 执行到 await 点 → 产生 Command（ScheduleActivity / StartTimer / ...）
    ▼
@@ -349,6 +377,7 @@ temporal workflow signal --workflow-id order-A1001 --name payment-confirmed</cod
 <p>在 <code>StartWorkflowOptions.TypedSearchAttributes</code> 里写入业务 ID，才能在 Web UI 里按订单号检索——否则只能靠 workflow ID 猜。</p>
 <hr>
 
+<div class="callout info"><p><b>实战要点：</b>Activity 必须幂等：它是 at-least-once，重试与超时重投都会造成重复执行；重试策略按 Activity 分层，别把业务错误设成无限重试。</p></div>
 </section>
 <section data-anchor="5-版本演进速览">
 <h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
@@ -363,6 +392,7 @@ temporal workflow signal --workflow-id order-A1001 --name payment-confirmed</cod
 <ol><li><strong>Workflow 里做 IO / 用 <code>time.Now</code> / <code>rand</code></strong>：非确定性，重放时 <code>NonDeterminismError</code>，工作流直接卡住。所有副作用进 Activity，时间用 <code>workflow.Now</code>，随机用 <code>SideEffect</code>。</li><li><strong>直接改 Workflow 代码不做版本化</strong>：在途实例用新代码重放旧历史，Command 序列对不上。用 <code>GetVersion</code> 或 Worker Versioning，并长期保留标记。</li><li><strong>Activity 不幂等</strong>：at-least-once + 超时重试 + 结果回报丢失 = 重复扣款。用业务 ID 做幂等键，配合 <a href="../postgresql/postgresql-guide.html">PostgreSQL 篇</a> 的唯一约束或 <a href="../redis/redis-guide.html">go-redis 篇</a> 的 <code>SET NX</code>。</li><li><strong>大 payload 进参数 / 结果</strong>：事件历史会永久保存输入与输出（默认有大小限制，约 2MB）。大对象放外部存储，只传 ID/引用。</li><li><strong>事件历史无限增长</strong>：无限循环里反复 ExecuteActivity 会让历史越滚越大、重放越来越慢。用 <code>Continue-As-New</code> 重置，或把循环体移到单个带心跳的 Activity。</li><li><strong>超时只配一半</strong>：只设 <code>WorkflowExecutionTimeout</code> 不设 <code>StartToCloseTimeout</code>，Activity 挂住会一直占着工作流。分层配置齐全。</li><li><strong>混淆 Signal / Query / Update</strong>：Query 里做 IO 或改状态会破坏确定性；Signal handler 里阻塞会卡死事件循环。</li><li><strong>重试策略无上限 / 不区分错误类型</strong>：参数非法这类永久错误被无限重试。设 <code>MaximumAttempts</code> 与 <code>NonRetryableErrorTypes</code>。</li><li><strong>长 Activity 不报心跳</strong>：worker 被杀后服务端要等满 <code>StartToCloseTimeout</code> 才判定失败，恢复极慢。<code>RecordHeartbeat</code> + <code>HeartbeatTimeout</code> + 续跑。</li><li><strong>忽略取消</strong>：Activity 不检查 <code>ctx.Done()</code>，工作流取消后仍在跑副作用。长循环必须响应取消并保存现场。</li><li><strong>Task Queue 名混乱 / 多版本 worker 混跑</strong>：旧代码 worker 领到新工作流会重放失败。用版本化部署或分队列灰度。</li><li><strong>把 Temporal 当消息队列 / 任务队列</strong>：为每条消息起一个工作流的成本高、延迟也高。简单作业用 <a href="../asynq/asynq技术文档与使用手册.html">asynq</a>，事件广播用 <a href="../kafka/kafka-guide.html">Kafka</a>。</li><li><strong>dev server 上生产</strong>：<code>temporal server start-dev</code> 是内存存储、单进程、无 HA。生产需外部持久化（MySQL/PostgreSQL/Cassandra）、多副本与备份。</li><li><strong>不跑重放检测</strong>：代码改动上线前用 <code>WorkflowReplayer</code> 对生产历史做一次重放，能提前发现非确定性，比线上卡住再修便宜得多。</li><li><strong>不建搜索属性 / Workflow ID 设计随意</strong>：出事时按业务单号查不到工作流。ID 用稳定业务键（天然幂等），并写 <code>TypedSearchAttributes</code>。</li><li><strong>补偿没做幂等 / 没重试策略</strong>：Saga 的反向操作同样会失败，需要与正向操作同等级的重试和幂等设计。</li><li><strong>Workflow 里用 map 迭代或依赖外部可变配置</strong>：迭代顺序不确定、配置变更导致重放分歧。排序遍历，配置在启动时作为入参固化。</li></ol>
 <hr>
 
+<div class="callout warning"><p><b>生产警示：</b>Workflow 代码里禁止直接调用时间、随机数、网络或读文件，否则重放结果漂移；修改已上线的工作流代码必须走 GetVersion，否则历史重放会直接失败。</p></div>
 </section>
 <section data-anchor="7-选型对比">
 <h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>

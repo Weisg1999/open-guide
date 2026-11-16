@@ -92,7 +92,7 @@
 <body>
 <div class="layout">
 <nav class="sidebar">
-  <div class="logo">MySQL<span class="ver">8.4 LTS</span></div>
+  <div class="logo">MySQL<span class="ver">9.7 LTS</span></div>
   <div class="sub">Go 后端视角 · 索引 / 事务 / 锁</div>
   <a href="#1-项目简介">1. 项目简介</a>
   <a class="sub-link" href="#安装与连接">安装与连接</a>
@@ -122,9 +122,9 @@
   <h1>MySQL 技术介绍与使用指南（Go 后端视角）</h1>
 <p>后端最核心的关系型数据库：B+ 树索引、MVCC 与事务隔离、锁机制、执行计划与主从复制，从 Go 应用视角讲清为什么慢、为什么死锁、为什么读到旧数据。</p>
 <p style="opacity:.8;font-size:13.5px">Go 后端视角 · 索引 / 事务 / 锁</p>
-<div class="meta"><span>8.0 / 8.4 LTS</span><span>InnoDB 聚簇索引</span><span>MVCC + ReadView</span><span>临键锁与死锁</span><span>EXPLAIN 慢查询</span><span>go-sql-driver/mysql v1.x</span></div>
+<div class="meta"><span>9.7 LTS / 26.x Innovation</span><span>InnoDB 聚簇索引</span><span>MVCC + ReadView</span><span>临键锁与死锁</span><span>EXPLAIN 慢查询</span><span>go-sql-driver/mysql v1.x</span></div>
 </div>
-<blockquote><p>后端最核心的关系型数据库：B+ 树索引、MVCC 与事务隔离、锁机制、执行计划与主从复制——从 Go 应用视角讲清「为什么慢、为什么死锁、为什么读到了旧数据」。 上游：<a href="https://github.com/mysql/mysql-server">https://github.com/mysql/mysql-server</a>　|　服务端主线：<strong>8.0 / 8.4 LTS</strong>（整理于 2026-11）　|　Go 驱动：<a href="https://github.com/go-sql-driver/mysql">go-sql-driver/mysql</a> v1.x 协议：服务端 GPLv2（含 FOSS 例外）/ 驱动 MPL-2.0；具体版本以上游最新 release 为准。</p></blockquote>
+<blockquote><p>后端最核心的关系型数据库：B+ 树索引、MVCC 与事务隔离、锁机制、执行计划与主从复制——从 Go 应用视角讲清「为什么慢、为什么死锁、为什么读到了旧数据」。 上游：<a href="https://github.com/mysql/mysql-server">https://github.com/mysql/mysql-server</a>　|　服务端主线：<strong>9.7 LTS / 26.10 Innovation</strong>（8.0 已于 2026-04 EOL；整理于 2026-11）　|　Go 驱动：<a href="https://github.com/go-sql-driver/mysql">go-sql-driver/mysql</a> v1.x 协议：服务端 GPLv2（含 FOSS 例外）/ 驱动 MPL-2.0；具体版本以上游最新 release 为准。</p></blockquote>
 <section data-anchor="1-项目简介">
 <h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
 <p><a href="../gorm/gorm-guide.html">GORM 篇</a>讲的是<strong>怎么用 ORM 写 DAO</strong>，本文讲的是<strong>数据库本身</strong>：一条 SQL 进去之后索引怎么走、事务之间谁看得见谁、锁加在哪、为什么同一个查询昨天 5ms 今天 5s。这两件事的边界要分清——慢查询绝大多数不是 ORM 的问题，是索引、执行计划或事务没设计好。</p>
@@ -172,6 +172,11 @@ func main() {
 <div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>存储引擎</td><td>InnoDB（默认，事务/行锁/MVCC）；另有 Memory、Archive 等特殊用途引擎</td></tr><tr><td>事务</td><td>ACID，四种隔离级别（默认 <strong>REPEATABLE READ</strong>），Savepoint，XA</td></tr><tr><td>索引</td><td>B+ 树聚簇索引 + 二级索引、联合索引、唯一索引、前缀索引、全文索引、降序索引、不可见索引</td></tr><tr><td>并发控制</td><td>MVCC（undo log + ReadView）、共享/排他锁、意向锁、记录/间隙/临键锁、死锁自动检测</td></tr><tr><td>持久与恢复</td><td>redo log（WAL）、undo log、binlog、两阶段提交、崩溃恢复</td></tr><tr><td>复制</td><td>基于 binlog 的异步 / 半同步复制、GTID、组复制（Group Replication）、读写分离</td></tr><tr><td>SQL 能力</td><td>JOIN、子查询、窗口函数、CTE、JSON 类型与函数、生成列、分区表</td></tr><tr><td>运维</td><td>在线 DDL、<code>EXPLAIN</code> / <code>EXPLAIN ANALYZE</code>、<code>performance_schema</code>、<code>sys</code> schema、慢查询日志</td></tr><tr><td>Go 侧</td><td><code>database/sql</code> 连接池、Context 超时传播、预编译语句、驱动错误码（<code>*mysql.MySQLError</code>）</td></tr></tbody></table></div>
 <hr>
 
+<div class="features">
+  <div class="feature"><div class="fh"><h4>聚簇索引</h4></div><p>数据按主键物理排序，一张表只有一个聚簇索引，主键宜短且单调递增</p></div>
+  <div class="feature"><div class="fh"><h4>MVCC 与锁</h4></div><p>ReadView 实现一致性读；RR 下临键锁防幻读，也最容易引发死锁</p></div>
+  <div class="feature"><div class="fh"><h4>复制与连接池</h4></div><p>binlog 主从复制存在延迟；database/sql 连接池需按负载调节上限与生命周期</p></div>
+</div>
 </section>
 <section data-anchor="3-核心概念与原理">
 <h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
@@ -182,7 +187,27 @@ func main() {
           └─ 页 (page，默认 16KB)  ← 磁盘与内存交换的最小单位
               └─ 行 (record)</code></pre>
 <p>页是 I/O 基本单位，这解释了两条工程经验：<strong>主键尽量短且单调递增</strong>（二级索引叶子节点存的是主键值，长主键会让所有二级索引膨胀）；<strong>随机主键（UUID）会导致页分裂与碎片</strong>，写放大明显。</p>
-<h3 id="32-b-树索引聚簇与回表">3.2 B+ 树索引：聚簇与回表</h3>
+<h3 id="32-b-树索引聚簇与回表">3.2 B+ 树索引：聚簇与回表</h3><div class="figure">
+  <svg viewBox="0 0 880 268" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-mysql" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0369a1"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#075985">InnoDB 索引与回表</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">聚簇索引叶子节点存整行，二级索引叶子节点只存主键值</text>
+    <rect x="142" y="82" width="175" height="80" rx="12" fill="#e0f2fe" stroke="#0369a1" stroke-width="1.5"/>
+    <text x="229" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#075985">二级索引 idx_name</text>
+    <text x="229" y="136" text-anchor="middle" font-size="11" fill="#075985">按 name 定位主键 id</text>
+    <line x1="320" y1="122" x2="346" y2="122" stroke="#0369a1" stroke-width="2" marker-end="url(#m-mysql)"/>
+    <rect x="352" y="82" width="175" height="80" rx="12" fill="#e0f2fe" stroke="#0369a1" stroke-width="1.5"/>
+    <text x="440" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#075985">回表</text>
+    <text x="440" y="136" text-anchor="middle" font-size="11" fill="#075985">拿 id 再查聚簇索引</text>
+    <line x1="532" y1="122" x2="558" y2="122" stroke="#0369a1" stroke-width="2" marker-end="url(#m-mysql)"/>
+    <rect x="564" y="82" width="175" height="80" rx="12" fill="#e0f2fe" stroke="#0369a1" stroke-width="1.5"/>
+    <text x="651" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#075985">聚簇索引 B+ 树</text>
+    <text x="651" y="136" text-anchor="middle" font-size="11" fill="#075985">叶子节点即数据页</text>
+    <rect x="40" y="186" width="800" height="58" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="210" font-size="12.5" fill="#1e293b">覆盖索引让二级索引直接返回所需列，省掉回表；这是 SELECT * 最常见的隐性代价。</text>
+  </svg>
+  <figcaption>InnoDB 索引与回表</figcaption>
+</div>
 <pre><code class="lang-text">聚簇索引（主键）              二级索引 idx_name
       [P1|P2|P3]                  [P1|P2|P3]
        /   |   \                   /  |  \
@@ -316,10 +341,11 @@ SELECT * FROM users WHERE status = 1 AND id &gt; ? ORDER BY id LIMIT 20;</code><
 <blockquote><p>单条 INSERT 循环是最常见的性能反模式。批量大小控制在 500~1000，避免超过 <code>max_allowed_packet</code> 与单事务过大。表结构变更用 <code>golang-migrate</code> / <code>goose</code> 管理版本化迁移；大表加字段用 <code>gh-ost</code> / <code>pt-online-schema-change</code> 在线变更，不要直接 <code>ALTER TABLE</code> 锁表。</p></blockquote>
 <hr>
 
+<div class="callout info"><p><b>实战要点：</b>慢查询先 EXPLAIN 看 type、key、rows、Extra，再决定加索引还是改写法；索引不是越多越好，每个索引都要付出写入与空间成本。</p></div>
 </section>
 <section data-anchor="5-版本演进速览">
 <h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
-<div class="table-wrap"><table><thead><tr><th>版本</th><th>关键变化与迁移注意点</th></tr></thead><tbody><tr><td>5.7</td><td>广泛使用的旧主线；默认 <code>utf8</code>（实为 utf8mb3）、查询缓存仍存在；<strong>已停止官方支持</strong></td></tr><tr><td><strong>8.0</strong></td><td>默认字符集改 <code>utf8mb4</code>；默认认证插件改 <code>caching_sha2_password</code>（<strong>老驱动连不上</strong>）；<strong>移除查询缓存</strong>；引入窗口函数、CTE、降序索引、不可见索引、原子 DDL、JSON 增强、角色管理</td></tr><tr><td><strong>8.4 LTS</strong></td><td>长期支持版本，收紧废弃参数、调整 InnoDB 默认值与复制相关术语；适合新项目与 5.7 迁移终点</td></tr><tr><td>9.x（创新版）</td><td>快速迭代分支，新特性先行，<strong>不建议生产长期跟踪</strong>；生产选 LTS</td></tr></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>关键变化与迁移注意点</th></tr></thead><tbody><tr><td>5.7</td><td>广泛使用的旧主线；默认 <code>utf8</code>（实为 utf8mb3）、查询缓存仍存在；<strong>已停止官方支持</strong></td></tr><tr><td><strong>8.0</strong></td><td>默认字符集改 <code>utf8mb4</code>；默认认证插件改 <code>caching_sha2_password</code>（<strong>老驱动连不上</strong>）；<strong>移除查询缓存</strong>；引入窗口函数、CTE、降序索引、不可见索引、原子 DDL、JSON 增强、角色管理；<strong>已于 2026-04 EOL</strong></td></tr><tr><td><strong>8.4 LTS</strong></td><td>长期支持版本，收紧废弃参数、调整 InnoDB 默认值与复制相关术语；仍在维护，适合存量系统升级</td></tr><tr><td><strong>9.7 LTS</strong></td><td>2026.04 起的新 LTS 线：复制可观测性、Group Replication 治理、JSON Duality Views 的 DML、Hypergraph Optimizer 进入社区版；<strong>新项目首选</strong></td></tr><tr><td><strong>26.x（创新版）</strong></td><td>2026.07 起改用日历版本号（YY.MM）季度发布，新特性先行，<strong>不建议生产长期跟踪</strong>；生产选 LTS</td></tr></tbody></table></div>
 <p><strong>Go 驱动侧</strong>：v1.x 长期稳定；8.0 之后必须确认驱动版本支持 <code>caching_sha2_password</code>（较新的 v1.x 均已支持），否则报 <code>Authentication plugin 'caching_sha2_password' cannot be loaded</code>。<code>allowNativePasswords=false</code> 与 TLS 配置在多版本间行为有差异，升级前读 CHANGELOG。</p>
 <blockquote><p>服务端版本比 Go 库更容易漂移：文首固定「服务端 + 驱动」两个版本，压测与结论才有意义。</p></blockquote>
 <hr>
@@ -330,6 +356,7 @@ SELECT * FROM users WHERE status = 1 AND id &gt; ? ORDER BY id LIMIT 20;</code><
 <ol><li><strong><code>sql.Open</code> 不当建连</strong>：不做 <code>Ping</code> 探活，服务启动「成功」但首个请求全失败。</li><li><strong>索引失效</strong>：对索引列用函数/运算（<code>WHERE DATE(created_at)=?</code>）、隐式类型转换（字符串列传数字）、前导模糊 <code>LIKE '%x'</code>、<code>OR</code> 混用未索引列、联合索引不满足最左前缀。一律用 <code>EXPLAIN</code> 验证，不要凭感觉。</li><li><strong><code>SELECT *</code></strong>：无法走覆盖索引、多回表、网络传输放大，且表加字段后业务代码可能意外依赖新列。明确列清单。</li><li><strong>深分页 <code>LIMIT 100000, 20</code></strong>：MySQL 要先扫描并丢弃前 10 万行。改游标分页或延迟关联。</li><li><strong>长事务</strong>：事务里做 HTTP 调用、等用户输入、大批量循环不提交 → undo log 膨胀、锁长期不释放、主从延迟。把事务缩到纯 DB 操作。</li><li><strong>RR 下间隙锁引发死锁</strong>：<code>WHERE</code> 条件没走索引会锁大量间隙；并发更新多行时<strong>按固定主键顺序</strong>更新；捕获 1213 并重试。</li><li><strong>混用 <code>db.</code> 与 <code>tx.</code></strong>：代码看似在事务里，实际部分操作另取连接，破坏原子性甚至自锁。</li><li><strong>DSN 漏 <code>parseTime</code> / <code>loc</code></strong>：时间字段 Scan 成 <code>[]byte</code> 报错，或时间整体偏移 8 小时。</li><li><strong>连接池参数与服务端不匹配</strong>：<code>MaxOpenConns × 副本数 &gt; max_connections</code>；<code>ConnMaxLifetime &gt; wait_timeout</code> 导致偶发 <code>invalid connection</code>。</li><li><strong>所有查询不带超时</strong>：慢 SQL 打满连接池 → 整个服务雪崩。所有 DB 调用走 <code>Context</code> 并设置合理 deadline。</li><li><strong>主从延迟下读从库</strong>：写后立刻读拿到旧值。关键读走主库，或用 <a href="../gorm/gorm-guide.html">GORM 篇</a> 的 <code>dbresolver</code> 按会话强制主库。</li><li><strong>动态拼 SQL</strong>：字符串拼接是注入入口；占位符只覆盖「值」，表名/列名/排序方向走白名单。</li><li><strong>唯一索引与 NULL</strong>：MySQL 唯一索引允许多个 NULL，「唯一约束」因此可能失效；用 <code>NOT NULL DEFAULT ''</code> 或生成列兜底。</li><li><strong>大表直接 DDL / 无备份改数据</strong>：<code>ALTER TABLE</code>、无 <code>WHERE</code> 的 <code>UPDATE</code> 是生产事故高发区。先备份、先在从库演练、用在线变更工具。</li><li><strong>把 MySQL 当队列 / 缓存 / 搜索引擎</strong>：轮询 <code>SELECT ... WHERE status=0</code> 做任务队列会锁竞争（用 <a href="../asynq/asynq技术文档与使用手册.html">asynq</a>）；高频 KV 用 <a href="../redis/redis-guide.html">go-redis</a>；模糊搜索用 Elasticsearch。</li></ol>
 <hr>
 
+<div class="callout warning"><p><b>生产警示：</b>长事务会拖住 purge 线程，导致 undo 膨胀与历史版本链变长；上线前务必给事务设置超时，并避免事务里做 RPC、文件 IO 等长耗时操作。</p></div>
 </section>
 <section data-anchor="7-选型对比">
 <h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>

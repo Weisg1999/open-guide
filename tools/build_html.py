@@ -743,6 +743,9 @@ def build_page(md_path: Path, topic: str, themes: dict) -> tuple[str, dict]:
         "anchors": [a for _, _, a in headings],
         "internal_links": re.findall(r"\]\(#([^)]+)\)", raw),
         "titles": [text for _, text, _ in headings],
+        "h2_titles": [text for lv, text, _ in headings if lv == 2],
+        "quote": quote,
+        "fences": re.findall(r"^```([^`\n]*)$", raw, re.M),
         "lead": "\n".join(lines[:10]),
         "lines": len(lines),
     }
@@ -779,6 +782,130 @@ def audit_elements(st: dict) -> list[str]:
 
 
 # --------------------------------------------------------------------------
+# Structural audit: form rules that keyword matching cannot express
+# --------------------------------------------------------------------------
+
+TAIL_E6_RE = re.compile(r"坑|最佳实践|注意事项|陷阱", re.I)
+TAIL_E7_RE = re.compile(r"选型|对比|如何取舍|如何选择", re.I)
+LEAD_VERSION_RE = re.compile(r"v?\d+\.\d+|Go 1\.\d+|主线版本|对应版本|20\d\d", re.I)
+
+
+def audit_structure(st: dict) -> list[str]:
+    """Check README section 5 form rules for a single guide."""
+    problems: list[str] = []
+    h2 = st["h2_titles"]
+    i6 = [i for i, title in enumerate(h2) if TAIL_E6_RE.search(title)]
+    i7 = [i for i, title in enumerate(h2) if TAIL_E7_RE.search(title)]
+    if not i6:
+        problems.append("S6 缺少独立的「坑与最佳实践」章节")
+    if not i7:
+        problems.append("S7 缺少独立的「选型对比」章节")
+    if i6 and i7:
+        a, b = i6[-1], i7[-1]
+        if a >= b:
+            problems.append("S6 未排在 S7 之前")
+        if len(h2) - 1 - b > 2:
+            problems.append("S7 未置于文末")
+        if b - a > 2:
+            problems.append("S6 与 S7 之间夹了其他主题章节")
+
+    quote = st.get("quote", "")
+    if not quote:
+        problems.append("文首缺少 > 引用块")
+    else:
+        if not re.search(r"https?://|www\.", quote):
+            problems.append("文首引用块缺少上游链接")
+        if not LEAD_VERSION_RE.search(quote):
+            problems.append("文首引用块缺少版本信息")
+
+    fences = st["fences"]
+    if len(fences) % 2:
+        problems.append("代码围栏未配对")
+    for lang in fences[::2]:
+        lang = (lang or "text").strip().lower()
+        if lang and lang not in LANG_LABELS:
+            problems.append("未登记的代码语言: %s" % lang)
+    return problems
+
+
+def audit_repository(paths: list[Path], themes: dict, fragments: dict):
+    """Check both READMEs, theme coverage and visual-block stats."""
+    problems: list[str] = []
+    notes: list[str] = []
+    actual = len(paths)
+    topics = {p.parent.name for p in paths}
+    expected_md = {p.relative_to(ROOT).as_posix() for p in paths}
+    html_count = len(list(ROOT.glob("*/*.html")))
+    svg_count = sum(1 for items in fragments.values()
+                    for block in items if "<svg" in block.get("html", ""))
+    block_count = sum(len(items) for items in fragments.values())
+
+    cat_row = re.compile(
+        r"\| \*\*(\d+)\*\* \| \*\*(\d+)\*\* \| \*\*(\d+)\*\* \| "
+        r"\*\*(\d+)\*\* \| \*\*(\d+)\*\* \| \*\*(\d+)\*\* \|")
+
+    specs = {
+        "README.md": [
+            (r"badge/docs-(\d+)%20", 1, actual, "徽章篇数"),
+            (r"\| \*\*(\d+) 篇\*\* \|", 1, actual, "概览篇数"),
+            (r"\| \*\*(\d+) 份\*\* \|", 1, html_count, "HTML 份数"),
+            (r"\*\*(\d+) 张 SVG\*\*", 1, svg_count, "SVG 张数"),
+            (r"展开完整对照表（(\d+) 项）", 1, actual, "版本表条目数"),
+            (r"共 (\d+) 块 / (\d+) 张图", 1, block_count, "片段块数"),
+            (r"共 \d+ 块 / (\d+) 张图", 1, svg_count, "说明中的图数"),
+        ],
+        "README_EN.md": [
+            (r"badge/docs-(\d+)%20", 1, actual, "徽章篇数"),
+            (r"\| \*\*(\d+)\*\* \| \*\*≈", 1, actual, "概览篇数"),
+            (r"\| \*\*(\d+) pages\*\* \|", 1, html_count, "HTML 页数"),
+            (r"\*\*(\d+) SVG\*\*", 1, svg_count, "SVG 张数"),
+            (r"version table \((\d+) entries\)", 1, actual, "版本表条目数"),
+            (r"\((\d+) blocks / \d+ diagrams\)", 1, block_count, "片段块数"),
+            (r"\(\d+ blocks / (\d+) diagrams\)", 1, svg_count, "说明中的图数"),
+        ],
+    }
+
+    for name, checks in specs.items():
+        path = ROOT / name
+        if not path.exists():
+            problems.append("缺少 %s" % name)
+            continue
+        text = path.read_text(encoding="utf-8")
+        for pattern, group, expected, label in checks:
+            m = re.search(pattern, text)
+            if not m:
+                problems.append("%s 缺少 %s 计数" % (name, label))
+            elif int(m.group(group)) != expected:
+                problems.append("%s %s = %s，应为 %d"
+                                % (name, label, m.group(group), expected))
+
+        row = cat_row.search(text)
+        if not row or sum(int(x) for x in row.groups()) != actual:
+            problems.append("%s 分类速览合计 ≠ %d" % (name, actual))
+        subs = [int(x) for x in re.findall(
+            r"<sub>(\d+)\s*(?:篇|guides?)</sub>", text)]
+        if not subs or sum(subs) != actual:
+            problems.append("%s 分类标题合计 %s ≠ %d" % (name, sum(subs), actual))
+
+        linked = set(re.findall(r"\]\(\./([^)#]+\.md)\)", text))
+        missing = sorted(expected_md - linked)
+        if missing:
+            problems.append("%s 目录缺少: %s" % (name, ", ".join(missing)))
+        dead = sorted(link for link in linked if not (ROOT / link).exists())
+        if dead:
+            problems.append("%s 目录存在死链: %s" % (name, ", ".join(dead)))
+
+    missing_themes = sorted(topics - set(themes))
+    if missing_themes:
+        problems.append("themes.json 缺少: %s" % ", ".join(missing_themes))
+    no_frag = sorted(topics - set(fragments))
+    notes.append("视觉增强覆盖 %d/%d 篇 · %d 块 / %d 张 SVG%s"
+                 % (len(topics) - len(no_frag), actual, block_count, svg_count,
+                    "" if not no_frag else " · 未覆盖: " + ", ".join(no_frag)))
+    return problems, notes
+
+
+# --------------------------------------------------------------------------
 # CLI
 # --------------------------------------------------------------------------
 
@@ -797,7 +924,8 @@ def main() -> int:
     args = ap.parse_args()
 
     themes = load_themes()
-    paths = discover()
+    all_paths = discover()
+    paths = all_paths
     if args.topic:
         paths = [p for p in paths if p.parent.name == args.topic]
         if not paths:
@@ -827,6 +955,9 @@ def main() -> int:
         stats_rows.append(st)
 
     audit_missing = [(st["topic"], st["missing"]) for st in stats_rows if st["missing"]]
+    structural_bad = [(st["topic"], audit_structure(st)) for st in stats_rows]
+    structural_bad = [(topic, probs) for topic, probs in structural_bad if probs]
+    repo_problems, repo_notes = audit_repository(all_paths, themes, load_fragments())
     if args.audit:
         print("\n=== Required-element audit (README section 5) ===")
         names = [n.split()[0] for n, _ in ELEMENT_PATTERNS]
@@ -841,6 +972,26 @@ def main() -> int:
                 print("  %-16s %s" % (topic, ", ".join(miss)))
         else:
             print("\nOK: all guides cover the 7 required elements.")
+
+        print("\n=== Structural audit (form rules) ===")
+        for st in stats_rows:
+            probs = dict(structural_bad).get(st["topic"])
+            print("%-16s %s" % (st["topic"], "ok" if not probs else "; ".join(probs)))
+        if not structural_bad:
+            print("\nOK: 6/7 chapters, opening quote and code languages are valid.")
+
+        print("\n=== Repository audit ===")
+        for note in repo_notes:
+            print("  note: %s" % note)
+        if repo_problems:
+            for problem in repo_problems:
+                print("  FAIL: %s" % problem)
+        else:
+            print("  OK: README counters, index coverage and themes are in sync.")
+
+    if not args.audit and (structural_bad or repo_problems):
+        print("\nStructural/repository issues found; run with --audit for details.",
+              file=sys.stderr)
 
     if args.stats or args.check:
         print("\n%-16s %4s %4s %5s %6s %7s" % ("topic", "h2", "h3", "code", "tables", "broken"))
@@ -864,7 +1015,7 @@ def main() -> int:
     bad = [(st["topic"], st["broken"]) for st in stats_rows if st["broken"]]
     if bad:
         print("Warning: unresolved internal anchors: %s" % bad, file=sys.stderr)
-    return 1 if (stale or audit_missing) else 0
+    return 1 if (stale or audit_missing or structural_bad or repo_problems) else 0
 
 
 if __name__ == "__main__":

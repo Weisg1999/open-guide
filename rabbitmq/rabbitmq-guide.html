@@ -180,10 +180,36 @@ func main() {
 <div class="table-wrap"><table><thead><tr><th>能力</th><th>RabbitMQ 4.x</th><th>RocketMQ 5.x</th></tr></thead><tbody><tr><td>核心模型</td><td>Producer → Exchange → Binding → Queue → Consumer</td><td>Producer → Topic → MessageQueue → Consumer Group</td></tr><tr><td>路由</td><td><strong>direct / topic / fanout / headers 交换机</strong>，路由键与绑定极灵活</td><td>Topic + Tag 过滤，路由相对简单</td></tr><tr><td>顺序</td><td>单队列单消费者可保序（并发消费者不保序）</td><td><strong>分区顺序消息</strong>（同业务 ID 进同一 MessageQueue）+ 顺序消费锁</td></tr><tr><td>事务</td><td>生产者事务（性能差）/ Publisher Confirm</td><td><strong>事务消息</strong>（半消息 + 本地事务 + 回查），金融级常用</td></tr><tr><td>定时/延时</td><td>延迟交换机插件 / TTL + DLX（有队头阻塞问题）</td><td><strong>原生定时/延时消息</strong>（5.x 支持任意精度定时）</td></tr><tr><td>重试与死信</td><td>DLX 死信交换机 + <code>nack(requeue)</code></td><td><code>%RETRY%</code> 重试队列（16 级退避）+ <code>%DLQ%</code> 死信队列</td></tr><tr><td>确认机制</td><td>手动 <code>ack</code> / <code>nack</code> / <code>reject</code> + <code>prefetch</code></td><td>消费位点提交（集群/广播模式），失败返回 <code>RECONSUME_LATER</code></td></tr><tr><td>持久化</td><td>队列/消息 durable + Publisher Confirm</td><td>CommitLog 顺序写 + 同步/异步刷盘 + 主从复制</td></tr><tr><td>高可用</td><td><strong>Quorum Queue</strong>（Raft）替代已移除的镜像队列</td><td>NameServer 无状态发现 + Broker 主从 / DLedger 控制器</td></tr><tr><td>协议</td><td>AMQP 0-9-1、STOMP、MQTT、Stream 插件</td><td>自有 Remoting 协议 / 5.x gRPC Proxy</td></tr><tr><td>管理</td><td>Web 管理台、Prometheus 插件、丰富 CLI</td><td>Dashboard、ACL、轨迹（消息轨迹追踪）</td></tr><tr><td>典型场景</td><td>复杂路由、企业集成、多语言混部</td><td>交易链路、顺序事件、海量堆积、事务消息</td></tr></tbody></table></div>
 <hr>
 
+<div class="features">
+  <div class="feature"><div class="fh"><h4>可靠投递</h4></div><p>Publisher Confirm + 持久化队列 + 消息持久化 + 手动 ACK</p></div>
+  <div class="feature"><div class="fh"><h4>死信与重试</h4></div><p>DLX 承接失败消息，Quorum Queue 提供复制一致性</p></div>
+  <div class="feature"><div class="fh"><h4>顺序与事务</h4></div><p>RocketMQ 的 CommitLog、顺序消息、事务消息与定时消息</p></div>
+</div>
 </section>
 <section data-anchor="3-核心概念与原理">
 <h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
-<h3 id="31-rabbitmq交换机模型">3.1 RabbitMQ：交换机模型</h3>
+<h3 id="31-rabbitmq交换机模型">3.1 RabbitMQ：交换机模型</h3><div class="figure">
+  <svg viewBox="0 0 880 268" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-rabbitmq" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c026d3"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#86198f">Exchange 到 Queue 的路由</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">生产者只发给 exchange，路由规则决定消息落在哪些队列</text>
+    <rect x="142" y="82" width="175" height="80" rx="12" fill="#fae8ff" stroke="#c026d3" stroke-width="1.5"/>
+    <text x="229" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#86198f">Publisher</text>
+    <text x="229" y="136" text-anchor="middle" font-size="11" fill="#86198f">带 routing key 投递到 exchange</text>
+    <line x1="320" y1="122" x2="346" y2="122" stroke="#c026d3" stroke-width="2" marker-end="url(#m-rabbitmq)"/>
+    <rect x="352" y="82" width="175" height="80" rx="12" fill="#fae8ff" stroke="#c026d3" stroke-width="1.5"/>
+    <text x="440" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#86198f">Exchange</text>
+    <text x="440" y="136" text-anchor="middle" font-size="11" fill="#86198f">direct / topic / fanout / headers 匹配</text>
+    <line x1="532" y1="122" x2="558" y2="122" stroke="#c026d3" stroke-width="2" marker-end="url(#m-rabbitmq)"/>
+    <rect x="564" y="82" width="175" height="80" rx="12" fill="#fae8ff" stroke="#c026d3" stroke-width="1.5"/>
+    <text x="651" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#86198f">Queue -&gt; Consumer</text>
+    <text x="651" y="136" text-anchor="middle" font-size="11" fill="#86198f">绑定后按规则投递并手动 ACK</text>
+    <rect x="40" y="186" width="800" height="58" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="210" font-size="12.5" fill="#1e293b">RocketMQ 走的是 CommitLog 顺序写 + 索引的路线，与 RabbitMQ </text>
+    <text x="60" y="230" font-size="12.5" fill="#1e293b">的 exchange 模型是两种世界观。</text>
+  </svg>
+  <figcaption>Exchange 到 Queue 的路由</figcaption>
+</div>
 <pre><code class="lang-text">Producer ──(routing key)──► Exchange
                               │ 按类型 + Binding 规则
              ┌────────────────┼────────────────┐
@@ -361,6 +387,7 @@ sh mqadmin consumerProgress -n 127.0.0.1:9876 -g order-consumer
 # 关键指标：消息堆积量（diff）、消费 TPS、发送 RT、DLQ 数量</code></pre>
 <hr>
 
+<div class="callout info"><p><b>实战要点：</b>消费端一律手动 ACK，处理成功后再确认；重试要配合幂等键与最大重试次数，否则 DLX 里的消息会成为永远没人认领的孤儿。</p></div>
 </section>
 <section data-anchor="5-版本演进速览">
 <h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
@@ -375,6 +402,7 @@ sh mqadmin consumerProgress -n 127.0.0.1:9876 -g order-consumer
 <ol><li><strong>只做一半持久化</strong>：队列或消息没设 <code>durable</code>，或没开 Publisher Confirm，Broker 重启即丢消息。三道闸门必须齐全。</li><li><strong><code>mandatory=false</code> 静默丢消息</strong>：routing key 写错 / 无绑定队列时消息被直接丢弃，生产毫无察觉。设 <code>true</code> 并监听 Return。</li><li><strong>自动 ACK</strong>：<code>autoAck=true</code> 时消息一发出就算完成，处理失败直接丢失。一律手动 ACK。</li><li><strong>无脑 <code>nack(requeue=true)</code></strong>：失败消息立刻重投，形成无限循环打满 Broker。用 DLX + 重试次数计数 + 退避，或交给 asynq 这类任务队列。</li><li><strong>prefetch 设置不当</strong>：太大导致单个消费者堆积、负载不均；太小吞吐不足。按处理耗时压测，常从 10~100 起步。</li><li><strong>Channel 跨 goroutine 共享</strong>：AMQP Channel 非线程安全。每个 goroutine 用自己的 Channel，共享 Connection。</li><li><strong>队列无限堆积</strong>：不设 <code>x-max-length</code> / 不监控深度，磁盘打满导致整个 Broker 停写。设上限 + 告警 + 降级（转储或丢弃非关键消息）。</li><li><strong>TTL+DLX 做精确延时</strong>：队头阻塞导致延时不准。用延迟交换机插件、RocketMQ 定时消息，或 <a href="../asynq/asynq技术文档与使用手册.html">asynq</a> 的 <code>ProcessIn</code>。</li><li><strong>RabbitMQ 还在用镜像队列</strong>：4.x 已移除，且镜像队列在脑裂与同步阻塞上有已知问题。迁 Quorum Queue。</li><li><strong>顺序消息与重试冲突</strong>：RocketMQ 顺序消费失败会阻塞整个 MessageQueue。要么快速失败进死信由人工处理，要么业务层自己保证幂等后用并发消费。</li><li><strong>扩容 MessageQueue 破坏顺序</strong>：队列数变化会改变分片映射，同一业务 ID 可能落到不同队列。顺序场景中途扩队列要谨慎。</li><li><strong>事务消息不实现回查</strong>：<code>checkLocalTransaction</code> 缺失或返回结果不可靠，半消息会一直挂起。必须落本地事务状态表供回查。</li><li><strong>消费不幂等</strong>：at-least-once 是默认语义，网络抖动、Rebalance、消费者重启都会重复。用消费记录表与业务写入同事务（见 4.4）。</li><li><strong>消息体过大</strong>：大对象塞进消息（图片、整张订单快照）会拖慢 Broker 与复制。只传 ID + 事件类型，详情回落存储。</li><li><strong>用 MQ 替代分布式事务</strong>：发了消息就当事务提交成功。正确姿势是本地消息表 / 事务消息 / Saga，并接受最终一致。</li><li><strong>消费者组位点配置错误</strong>：RocketMQ 广播模式不保存位点、重启丢进度；<code>ConsumeFromWhere</code> 在新 Group 首次启动时才生效，别指望它"重放"历史。</li><li><strong>只监控 Broker 不监控消费延迟</strong>：堆积量（diff）与消费 TPS 才是业务是否健康的信号，配合 <a href="../prometheus/prometheus-guide.html">Prometheus</a> 与 <a href="../opentelemetry/opentelemetry-guide.html">OpenTelemetry</a> 把消息链路串起来。</li><li><strong>连接不关闭 / 不复用</strong>：每次发布新建 Connection，握手开销大且耗尽句柄。全局复用 Connection，Channel 按 goroutine 创建并关闭。</li></ol>
 <hr>
 
+<div class="callout warning"><p><b>生产警示：</b>队列堆积会吃满内存并触发流控，务必设置 prefetch 与队列长度限制；RabbitMQ 不保证全局严格顺序，多个消费者并发时顺序必然被打散。</p></div>
 </section>
 <section data-anchor="7-选型对比">
 <h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>

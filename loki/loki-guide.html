@@ -166,6 +166,11 @@ func main() {
 <div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>索引模型</td><td><strong>只索引标签</strong>；标签集唯一确定一条「流（stream）」，正文不建倒排</td></tr><tr><td>存储</td><td>chunk（压缩的日志块）放对象存储（S3 / GCS / Azure / <a href="../minio/minio-guide.html">MinIO</a>）；index（TSDB）记录 label → chunk 映射</td></tr><tr><td>写入路径</td><td>Distributor → Ingester（内存 chunk + WAL）→ flush 到对象存储</td></tr><tr><td>查询路径</td><td>Query Frontend / Querier：按标签定位 chunk → 下载 → 查询时过滤正文，可并行与分片</td></tr><tr><td>查询语言</td><td><strong>LogQL</strong>：流选择器 + 行过滤器 + 解析器 + 标签/行格式化；另有指标查询</td></tr><tr><td>解析器</td><td><code>json</code> / <code>logfmt</code> / <code>regexp</code> / <code>pattern</code> / <code>unpack</code>，在查询时把正文提取成临时标签</td></tr><tr><td>指标能力</td><td><code>rate</code> / <code>count_over_time</code> / <code>sum by(...)</code> 直接对日志算速率，可生成告警</td></tr><tr><td>生命周期</td><td>compactor 合并索引、retention 按流/全局过期删除、schema 分版本演进</td></tr><tr><td>多租户</td><td><code>X-Scope-OrgID</code> 租户隔离；<code>auth_enabled: true</code> 时必填</td></tr><tr><td>部署形态</td><td>单二进制（all-in-one，开发）/ <strong>可伸缩微服务模式</strong>（生产）</td></tr><tr><td>生态</td><td>Grafana 数据源、logcli、Alertmanager 规则、原生 OTLP 日志摄入（3.x）</td></tr></tbody></table></div>
 <hr>
 
+<div class="features">
+  <div class="feature"><div class="fh"><h4>成本模型</h4></div><p>只索引标签、不索引正文，索引比 ES 小几个数量级</p></div>
+  <div class="feature"><div class="fh"><h4>LogQL 两段式</h4></div><p>流选择器 + 行过滤器 / 解析器 / 聚合</p></div>
+  <div class="feature"><div class="fh"><h4>生命周期</h4></div><p>compactor 合并索引、retention 按流配置删除</p></div>
+</div>
 </section>
 <section data-anchor="3-核心概念与原理">
 <h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
@@ -179,7 +184,30 @@ func main() {
 正文全部压缩进 chunk，躺在对象存储里</code></pre>
 <ul><li><strong>写放大极小</strong>：不需要像 ES 那样为正文分词、构建倒排、维护 doc_values</li><li><strong>存储成本低一个数量级</strong>：压缩日志块 + 便宜的对象存储</li><li><strong>代价</strong>：查 <code>|= "error"</code> 时要把候选 chunk 拉出来做 grep 式过滤；没有标签剪枝就等于全量扫描</li></ul>
 <p>所以 Loki 的性能公式是：<strong>候选 chunk 数量 ≈ 标签选择度 × 时间范围</strong>。标签选得越宽、时间越长，查询越慢。</p>
-<h3 id="32-数据路径">3.2 数据路径</h3>
+<h3 id="32-数据路径">3.2 数据路径</h3><div class="figure">
+  <svg viewBox="0 0 880 376" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-loki" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#db2777"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#9d174d">只索引标签的数据路径</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">日志正文不建索引，只按标签流 chunk 化后写对象存储</text>
+    <rect x="90" y="84" width="700" height="52" rx="10" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <circle cx="122" cy="110" r="14" fill="#db2777"/>
+    <text x="122" y="110" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">1</text>
+    <text x="150" y="110" dominant-baseline="central" font-size="13" fill="#9d174d">Distributor 按标签流做哈希与限流，分发到 Ingester</text>
+    <line x1="440" y1="138" x2="440" y2="154" stroke="#db2777" stroke-width="2" marker-end="url(#m-loki)"/>
+    <rect x="90" y="158" width="700" height="52" rx="10" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <circle cx="122" cy="184" r="14" fill="#db2777"/>
+    <text x="122" y="184" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">2</text>
+    <text x="150" y="184" dominant-baseline="central" font-size="13" fill="#9d174d">Ingester 内存攒 chunk，flush 成压缩块写对象存储</text>
+    <line x1="440" y1="212" x2="440" y2="228" stroke="#db2777" stroke-width="2" marker-end="url(#m-loki)"/>
+    <rect x="90" y="232" width="700" height="52" rx="10" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <circle cx="122" cy="258" r="14" fill="#db2777"/>
+    <text x="122" y="258" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">3</text>
+    <text x="150" y="258" dominant-baseline="central" font-size="13" fill="#9d174d">Querier 先按标签筛流，再对 chunk 做 LogQL 过滤</text>
+    <rect x="40" y="300" width="800" height="54" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="324" font-size="12.5" fill="#1e293b">便宜的代价是：查询必须先命中标签，全文扫描只能靠并行 brute force。</text>
+  </svg>
+  <figcaption>只索引标签的数据路径</figcaption>
+</div>
 <pre><code class="lang-text">采集器 (Alloy / Fluent Bit)
    │ 批量 push  /loki/api/v1/push
    ▼
@@ -355,6 +383,7 @@ logcli query '{app="checkout-api"} |= "error"' --since=1h --limit=50
 logcli labels app</code></pre>
 <hr>
 
+<div class="callout info"><p><b>实战要点：</b>标签只放低基数的稳定维度（app、env、cluster、level），把高基数信息放进结构化元数据或日志正文，用解析器在查询时提取。</p></div>
 </section>
 <section data-anchor="5-版本演进速览">
 <h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
@@ -369,6 +398,7 @@ logcli labels app</code></pre>
 <ol><li><strong>高基数标签</strong>：把 <code>trace_id</code> / <code>user_id</code> / <code>request_id</code> / 原始 URL 做标签 → 流爆炸、内存打满、丢日志。高基数字段放正文或结构化元数据，标签只放低基数枚举。</li><li><strong>正文当标签</strong>：<code>stage.labels</code> 里提升动态字段，等于把每条日志变成一条新流。采集端要显式白名单。</li><li><strong>拿 Loki 做全文搜索引擎</strong>：<code>{app=~".*"} |= "xxx"</code> 是全量扫描。先用标签把范围缩到单个服务 + 短时间窗。</li><li><strong>查询必带流选择器</strong>：LogQL 要求至少一个标签匹配器；<code>{}</code> 或只写 <code>|=</code> 会报错或被拒。</li><li><strong>时间范围过大 / 无 <code>limit</code></strong>：一次拉 30 天日志会打爆 Querier。拆分时间片、加 <code>limit</code>、用 Query Frontend 的并发与缓存限制。</li><li><strong>保留策略没配</strong>：不设 <code>retention_period</code> + 不开 <code>compactor.retention_enabled</code>，对象存储无限增长。</li><li><strong>本地 filesystem 后端上生产</strong>：单点、无法水平扩展。用 S3 / <a href="../minio/minio-guide.html">MinIO</a> 等对象存储 + 可伸缩部署模式。</li><li><strong>单二进制模式上生产</strong>：<code>replication_factor: 1</code> + <code>inmemory ring</code> 无高可用。生产用微服务模式 + 3 副本 + 外部 KV。</li><li><strong>乱序写入 / 时间戳错误</strong>：采集器时间未同步或解析了错误的时间字段，会触发 <code>entry out of order</code> 丢弃。统一 NTP，多行日志正确设置时间戳。</li><li><strong>多行日志没合并</strong>：异常栈被拆成几十条独立日志，检索与计数全错。在采集端配 <code>stage.multiline</code>。</li><li><strong>单行过大 / 单行超长</strong>：超 <code>max_line_size</code> 会被截断或丢弃；大 payload 应只记 ID 与摘要，别把整个请求体写进日志（参见 <a href="../zap/zap-guide.html">Zap 篇</a>）。</li><li><strong>ingestion rate limit 误配</strong>：<code>ingestion_rate_mb</code> / <code>per_stream_rate_limit</code> 过小会在流量高峰静默丢日志。压测并监控 <code>loki_discarded_samples_total</code>。</li><li><strong>日志不是结构化 JSON</strong>：纯文本导致每次查询都要 <code>regexp</code> 解析，慢且易错。应用侧输出 JSON，字段名与 <a href="../slog/slog-guide.html">slog 篇</a> 的词典统一。</li><li><strong>标签规范与 Prometheus 不一致</strong>：指标叫 <code>service_name</code>、日志叫 <code>app</code>，Grafana 里无法联动。给 OTel 的 <code>service.name</code> 定一条固定映射（如统一映射为 <code>app</code>），并让指标、日志、链路三套系统用同一套 <code>app</code> / <code>env</code> / <code>cluster</code> 值。</li><li><strong>采集器不带 K8s 元数据</strong>：查不到「哪个 Pod / 哪个 namespace」，排障价值大减。用 <code>discovery.kubernetes</code> 自动附加。</li><li><strong>敏感信息进日志</strong>：Loki 长期留存且检索方便，密码/token/身份证必须脱敏（采集端 <code>stage.replace</code> 或应用侧过滤）。</li><li><strong>把 Loki 当指标或链路存储</strong>：趋势与告警用 <a href="../prometheus/prometheus-guide.html">Prometheus</a>，跨服务调用链用 <a href="../opentelemetry/opentelemetry-guide.html">OpenTelemetry</a>；Loki 的 metric query 只适合从日志临时算速率。</li></ol>
 <hr>
 
+<div class="callout warning"><p><b>生产警示：</b>把 trace_id、user_id、URL 当标签会直接把索引打爆，这是 Loki 的头号事故；标签值里有小数点或空格会破坏查询语法，命名要统一映射。</p></div>
 </section>
 <section data-anchor="7-选型对比">
 <h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>

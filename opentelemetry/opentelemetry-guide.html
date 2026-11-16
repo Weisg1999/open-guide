@@ -169,6 +169,11 @@ func main() {
 <div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>三类信号</td><td>Trace（稳定）/ Metrics（稳定）/ Logs（逐步稳定），共用 Resource 与 Context</td></tr><tr><td>核心对象</td><td><code>TracerProvider</code>、<code>Tracer</code>、<code>Span</code>、<code>SpanContext</code>、<code>MeterProvider</code>、<code>LoggerProvider</code></td></tr><tr><td>Span 语义</td><td>名称、Kind、Attributes、Events、Links、Status、Exception、起止时间</td></tr><tr><td>上下文传播</td><td>进程内 <code>context.Context</code>；跨进程 W3C <code>traceparent</code> / <code>tracestate</code> / <code>baggage</code></td></tr><tr><td>采样</td><td><code>AlwaysSample</code> / <code>NeverSample</code> / <code>TraceIDRatioBased</code> / <code>ParentBased</code>，Collector 可做尾部采样</td></tr><tr><td>处理管线</td><td><code>SpanProcessor</code>：<code>SimpleSpanProcessor</code>（同步）/ <code>BatchSpanProcessor</code>（生产默认）</td></tr><tr><td>导出</td><td>OTLP over gRPC(4317) / HTTP(4318)、stdout、Jaeger / Zipkin 兼容端点</td></tr><tr><td>Resource</td><td><code>service.name</code> / <code>service.version</code> / <code>deployment.environment</code> —— 三支柱关联的统一身份</td></tr><tr><td>语义约定</td><td>Semantic Conventions：<code>http.route</code>、<code>db.system</code>、<code>rpc.method</code> 等统一字段命名</td></tr><tr><td>自动埋点</td><td><code>otelhttp</code>、<code>otelgrpc</code>、数据库与主流框架 instrumentation（contrib 仓库）</td></tr><tr><td>Collector</td><td>receiver → processor（batch / tail_sampling / attributes）→ exporter，与语言无关</td></tr></tbody></table></div>
 <hr>
 
+<div class="features">
+  <div class="feature"><div class="fh"><h4>数据模型</h4></div><p>Trace 是一棵 Span 树，属性、事件、状态与链接构成上下文</p></div>
+  <div class="feature"><div class="fh"><h4>SDK 管线</h4></div><p>Sampler -&gt; SpanProcessor（Batch）-&gt; Exporter（OTLP）</p></div>
+  <div class="feature"><div class="fh"><h4>三支柱关联</h4></div><p>Resource 标注 service.name，trace_id 串联日志与指标 exemplar</p></div>
+</div>
 </section>
 <section data-anchor="3-核心概念与原理">
 <h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
@@ -179,7 +184,27 @@ func main() {
     │   └── Span C  [DB SELECT]       parent=B
     └── Span D  [asynq send_email]    parent=A  ← 通过消息队列传播</code></pre>
 <p>每个 Span 的 <code>SpanContext</code> 包含 <code>trace_id</code>、<code>span_id</code>、trace flags（采样位）与 tracestate。<strong>父子关系不靠推断，靠显式把父 Span 放进 <code>context.Context</code></strong>——这是 Go 埋点最容易出错的地方。</p>
-<h3 id="32-跨进程传播traceparent">3.2 跨进程传播：traceparent</h3>
+<h3 id="32-跨进程传播traceparent">3.2 跨进程传播：traceparent</h3><div class="figure">
+  <svg viewBox="0 0 880 268" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-opentelemetry" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7e22ce"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#581c87">Trace 跨进程传播</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">W3C traceparent 头把 trace_id 与 span 父子关系带过网络边界</text>
+    <rect x="142" y="82" width="175" height="80" rx="12" fill="#f3e8ff" stroke="#7e22ce" stroke-width="1.5"/>
+    <text x="229" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#581c87">服务 A 起 Span</text>
+    <text x="229" y="136" text-anchor="middle" font-size="11" fill="#581c87">Inject 写入 traceparent / tracestate</text>
+    <line x1="320" y1="122" x2="346" y2="122" stroke="#7e22ce" stroke-width="2" marker-end="url(#m-opentelemetry)"/>
+    <rect x="352" y="82" width="175" height="80" rx="12" fill="#f3e8ff" stroke="#7e22ce" stroke-width="1.5"/>
+    <text x="440" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#581c87">HTTP / gRPC 传输</text>
+    <text x="440" y="136" text-anchor="middle" font-size="11" fill="#581c87">Header 或 metadata 透传</text>
+    <line x1="532" y1="122" x2="558" y2="122" stroke="#7e22ce" stroke-width="2" marker-end="url(#m-opentelemetry)"/>
+    <rect x="564" y="82" width="175" height="80" rx="12" fill="#f3e8ff" stroke="#7e22ce" stroke-width="1.5"/>
+    <text x="651" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#581c87">服务 B Extract</text>
+    <text x="651" y="136" text-anchor="middle" font-size="11" fill="#581c87">以同一 trace_id 创建子 Span</text>
+    <rect x="40" y="186" width="800" height="58" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="210" font-size="12.5" fill="#1e293b">传播与采样是两件事：即使被采样丢弃，trace_id 仍应向下游透传，日志才能串起来。</text>
+  </svg>
+  <figcaption>Trace 跨进程传播</figcaption>
+</div>
 <pre><code class="lang-text">traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01
              │  └──────── trace_id ────────┘ └─ parent span_id ─┘ └flags
              └─ 版本                                              01 = sampled</code></pre>
@@ -389,6 +414,7 @@ require.Len(t, spans, 1)
 require.Equal(t, "CreateOrder", spans[0].Name())</code></pre>
 <hr>
 
+<div class="callout info"><p><b>实战要点：</b>生产环境一律用 BatchSpanProcessor + 合理的队列与批大小；把 trace_id 写进 Zap / slog 日志字段，排障时才能一键跳转。</p></div>
 </section>
 <section data-anchor="5-版本演进速览">
 <h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
@@ -403,6 +429,7 @@ require.Equal(t, "CreateOrder", spans[0].Name())</code></pre>
 <ol><li><strong>忘记 <code>SetTextMapPropagator</code></strong>：进程内 Span 正常，一跨服务就断链。这是排查「链路只有一段」的第一检查项。</li><li><strong>忘记 <code>Shutdown</code></strong>：<code>BatchSpanProcessor</code> 有缓冲，进程退出丢最后一批 Span，恰好常是出错的那批。</li><li><strong>用 <code>context.Background()</code> 起 Span</strong>：父子关系全断，看板上是一堆孤立 Span。所有函数签名都要传 <code>ctx</code>。</li><li><strong>不 <code>defer span.End()</code> 或提前 End</strong>：Span 时长错误，甚至在 goroutine 里使用已结束的 Span。异步任务要显式管理生命周期。</li><li><strong>每请求创建 <code>TracerProvider</code></strong>：初始化极重且会泄漏 exporter。<code>TracerProvider</code> 全局单例，<code>Tracer</code> 可按模块获取。</li><li><strong>库代码直接调 <code>otel.Tracer()</code> 全局</strong>：应接收 <code>trace.Tracer</code> 作为依赖注入，便于单测与替换；只有应用入口装配全局 Provider。</li><li><strong>高基数 Attribute</strong>：<code>user_id</code>、原始 URL、SQL 全文、大 payload。Span 属性同样有成本，且后端按属性建索引。用 <code>http.route</code> 模板而非具体路径。</li><li><strong>Span 里记敏感信息</strong>：密码、token、身份证、完整请求体。OTLP 是明文或 TLS，但后端长期留存，脱敏要在 SDK 或 Collector <code>attributes</code> processor 做。</li><li><strong>采样率不用 <code>ParentBased</code></strong>：各服务各自按 10% 采样，一条 Trace 大概率只剩残缺片段。</li><li><strong><code>SimpleSpanProcessor</code> 上生产</strong>：每个 Span 同步网络导出，直接把延迟打到业务路径上。生产一律 <code>BatchSpanProcessor</code>。</li><li><strong>Batch 队列打满静默丢 Span</strong>：按 QPS 调 <code>MaxQueueSize</code> / <code>BatchTimeout</code>，并监控 Collector 的 dropped 指标。</li><li><strong>Resource 不设 <code>service.name</code></strong>：后端显示 <code>unknown_service</code>，多服务混在一起无法区分。</li><li><strong>属性命名各自为政</strong>：<code>userID</code> / <code>user_id</code> / <code>User.Id</code> 混用，看板聚合失效。遵循 Semantic Conventions。</li><li><strong>异步链路不传播</strong>：Kafka / asynq / 定时任务默认断链，必须手动 Inject/Extract 到消息头或 payload。</li><li><strong>把 Trace 当日志/指标用</strong>：在 Span 里塞长文本、拿 Span 数量算 QPS。明细用<a href="../zap/zap-guide.html">日志</a>，趋势用<a href="../prometheus/prometheus-guide.html">指标</a>。</li><li><strong>上来就全量采样</strong>：链路数据量大、后端成本高。从 1%~10% + 错误/慢请求尾部采样起步。</li></ol>
 <hr>
 
+<div class="callout warning"><p><b>生产警示：</b>进程退出前必须调用 Shutdown，否则队列里的 Span 全部丢失；不要在 Span 属性里放高基数或敏感数据，头部采样与尾部采样不能混着配。</p></div>
 </section>
 <section data-anchor="7-选型对比">
 <h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>

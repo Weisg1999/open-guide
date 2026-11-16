@@ -1,7 +1,7 @@
 # MinIO 技术介绍与使用指南
 
 > 高性能 S3 兼容对象存储：单二进制、纠删码数据保护、云原生与 AI 数据湖首选的自托管对象存储。
-> 仓库：<https://github.com/minio/minio>　|　主线：社区版（`RELEASE.YYYY-MM-DD` 时间戳版本，持续发布；整理于 2026-11）　|　许可证：AGPLv3（2025 起双产品线，见 §6）
+> 仓库：<https://github.com/minio/minio>　|　状态：社区版已归档停维（2026-04；最后版本 RELEASE.2025-10-15，仅源码分发）　|　许可证：AGPLv3
 
 ---
 
@@ -185,17 +185,19 @@ mc event add local/mybucket arn:minio:sqs::1:kafka \
 
 ---
 
-## 6. 版本与产品线（2025 起重要变化）
+## 6. 版本与产品线（2025–2026 重大变化）
 
 | 产品 | 许可证 | 定位 |
 |---|---|---|
 | **MinIO Object Store（社区版）** | AGPLv3 | 开源主体，S3 兼容核心能力完整（EC、版本、复制、ILM、加密） |
 | **MinIO AIStor（商业）** | 商业许可 | promptObject（LLM 问对象）、AIHub、S3-over-RDMA、Catalog/Firewall/KMS/Cache/全局控制台等企业特性 |
 
-社区版 2025 年的调整（务必知悉）：
+2025–2026 年的三步收缩（务必知悉）：
 
-- **内置 Web Console 收缩为只读 object-browser**；LDAP/OIDC 外部身份源登录移入商业版，社区版 UI 主要用于浏览与基础操作（IAM 等经 mc/API 管理）；
-- 功能迭代重心转向商业版；社区版继续接收安全与缺陷修复（例如 2025.10 修复的 service-account 权限提升 CVE，社区版同步可用）；
+- **2025.05**：内置 Web Console 收缩为只读 object-browser；LDAP/OIDC 外部身份源登录移入商业版，社区版 UI 只用于浏览与基础操作（IAM 等经 mc/API 管理）；
+- **2025.10**：停止发布社区版 Docker 镜像与预编译二进制，最后一个社区版本为 `RELEASE.2025-10-15T17-29-55Z`（安全修复版，需自行从源码构建镜像）；
+- **2026.04**：`minio/minio` 仓库正式归档为只读，README 标注 "THIS REPOSITORY IS NO LONGER MAINTAINED"——不再有新特性、评审补丁或安全更新；
+- 商业版 **AIStor** 继续演进；自建场景应评估 Garage、SeaweedFS、RustFS、Ceph RGW 等仍在维护的 S3 兼容替代，别把归档版本当作长期基础设施。
 - **AGPLv3 的含义**：网络服务化使用也需开源派生作品，商业集成前评估合规；S3 API 兼容使替换/共存容易。
 
 替代生态（选型时对照）：Ceph RGW（一体化存储平台、重）、SeaweedFS（轻量、性能好）、Garage（地理分布式轻量）、OpenIO/Scality 等。
@@ -211,7 +213,7 @@ mc event add local/mybucket arn:minio:sqs::1:kafka \
 5. **大文件分片并行**：SDK 默认 part size 16MiB；超 GB 级对象调大 partSize/并发，吞吐翻倍；
 6. **别拿 MinIO 当文件系统**：高频小文件随机改写是反模式；真正需要 POSIX 挂载时评估 S3-FS 网关的延迟代价；
 7. **监控磁盘与 healing**：`mc admin heal`、Prometheus 指标（磁盘离线、healing 队列）告警必须有；
-8. **升级前读 release note**：社区版个别版本标记 Breaking（如 2025-05-24），滚动升级前备份数据目录元信息。
+8. **先确认版本是否还在维护**：社区版已于 2026-04 归档，最后版本为 `RELEASE.2025-10-15`；新部署请直接选仍维护的替代，存量升级前备份数据目录元信息。
 
 ---
 
@@ -219,8 +221,9 @@ mc event add local/mybucket arn:minio:sqs::1:kafka \
 
 | 场景 | 建议 |
 |---|---|
-| K8s/云原生应用附件、备份（Velero） | MinIO 社区版，几乎默认选择 |
-| 数据湖 / Parquet / DuckDB-Trino 查询底座 | MinIO（S3 协议 + 高吞吐） |
-| AI 训练数据集分发 | MinIO / AIStor（看重 promptObject 等则商业版） |
+| K8s/云原生应用附件、备份（Velero） | MinIO 存量集群可继续用；**新部署选 Garage / SeaweedFS / Ceph RGW** |
+| 数据湖 / Parquet / DuckDB-Trino 查询底座 | MinIO 存量 / AIStor；新项目评估 SeaweedFS、RustFS |
+| AI 训练数据集分发 | AIStor（商业支持）；自建评估 RustFS / SeaweedFS |
 | 超大规模多协议（块/文件/对象一体） | Ceph |
 | 极轻量边缘 | SeaweedFS / Garage |
+| 新自建对象存储（无历史包袱） | **Garage**（轻量、地理分布）/ SeaweedFS / Ceph RGW |

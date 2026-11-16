@@ -92,7 +92,7 @@
 <body>
 <div class="layout">
 <nav class="sidebar">
-  <div class="logo">ClickHouse<span class="ver">25.x</span></div>
+  <div class="logo">ClickHouse<span class="ver">26.x</span></div>
   <div class="sub">列式 OLAP · MergeTree 与向量化执行</div>
   <a href="#1-项目简介">1. 项目简介</a>
   <a class="sub-link" href="#安装与本地起服务">安装与本地起服务</a>
@@ -123,7 +123,7 @@
 <p style="opacity:.8;font-size:13.5px">列式 OLAP · MergeTree 与向量化执行</p>
 <div class="meta"><span>MergeTree part 合并</span><span>稀疏主键索引</span><span>ORDER BY 决定一切</span><span>批量 PrepareBatch</span><span>物化视图预聚合</span><span>ReplacingMergeTree 最终一致</span></div>
 </div>
-<blockquote><p>列式 OLAP 数据库：MergeTree 存储引擎、向量化执行、稀疏主键索引与数据跳过索引，把「亿级明细秒级聚合」变成常规操作。 上游：<a href="https://github.com/ClickHouse/ClickHouse">https://github.com/ClickHouse/ClickHouse</a>　|　服务端主线：<strong>25.x</strong>（按年/月编号，月度发布；整理于 2026-11）　|　Go 客户端：<a href="https://github.com/ClickHouse/clickhouse-go">ClickHouse/clickhouse-go</a> v2 协议：Apache-2.0；具体版本以上游最新 release 为准。</p></blockquote>
+<blockquote><p>列式 OLAP 数据库：MergeTree 存储引擎、向量化执行、稀疏主键索引与数据跳过索引，把「亿级明细秒级聚合」变成常规操作。 上游：<a href="https://github.com/ClickHouse/ClickHouse">https://github.com/ClickHouse/ClickHouse</a>　|　服务端主线：<strong>26.x</strong>（26.10，按年/月编号，月度发布；整理于 2026-11）　|　Go 客户端：<a href="https://github.com/ClickHouse/clickhouse-go">ClickHouse/clickhouse-go</a> v2 协议：Apache-2.0；具体版本以上游最新 release 为准。</p></blockquote>
 <section data-anchor="1-项目简介">
 <h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
 <p><a href="../mysql/mysql-guide.html">MySQL 篇</a> 面向「一行一行地改」，<a href="../elasticsearch/elasticsearch-guide.html">Elasticsearch 篇</a> 面向「一段文本怎么找到」，ClickHouse 面向的是第三种问题：<strong>几亿行明细，按若干维度聚合出一张报表，还要够快</strong>。它是 OLAP（分析型）数据库，不是 OLTP。</p>
@@ -189,6 +189,11 @@ func main() {
 <div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>存储引擎</td><td><code>MergeTree</code> 家族：<code>ReplacingMergeTree</code>（去重）/ <code>SummingMergeTree</code>（预聚合）/ <code>AggregatingMergeTree</code> / <code>CollapsingMergeTree</code> / <code>Replicated*</code> 副本</td></tr><tr><td>列式存储</td><td>每列独立文件 + 压缩（LZ4 / ZSTD）、只读涉及列、向量化执行与 SIMD</td></tr><tr><td>索引</td><td><strong>稀疏主键索引</strong>（granule + mark）、数据跳过索引（minmax / set / bloom_filter / tokenbf_v1）、Projection</td></tr><tr><td>分区与生命周期</td><td><code>PARTITION BY</code>（通常按月）、TTL 自动过期、分区级 DROP / MOVE 到冷热存储</td></tr><tr><td>预计算</td><td>物化视图（写入时增量聚合）、Projection、<code>AggregatingMergeTree</code></td></tr><tr><td>分布式</td><td><code>Distributed</code> 表引擎 + 本地表、分片键、副本与 ClickHouse Keeper（替代 ZooKeeper）</td></tr><tr><td>数据摄入</td><td>原生批量 INSERT、<code>async_insert</code>、Kafka / S3 / HDFS 表引擎、Parquet/CSV/JSON 文件导入</td></tr><tr><td>查询</td><td>类 SQL 方言、<code>PREWHERE</code>、<code>SAMPLE</code> 近似查询、数组/Map/JSON 类型、窗口函数、CTE</td></tr><tr><td>Go SDK</td><td><code>clickhouse-go/v2</code>：<code>PrepareBatch</code> 批量写、<code>database/sql</code> 兼容接口、结构体反射扫描、异步插入</td></tr><tr><td>可运维</td><td><code>system.parts</code> / <code>system.query_log</code> / <code>system.merges</code>、<code>EXPLAIN</code>、查询配额与资源组</td></tr></tbody></table></div>
 <hr>
 
+<div class="features">
+  <div class="feature"><div class="fh"><h4>列式与向量化</h4></div><p>按列读取与向量化执行，聚合查询只触碰需要的列</p></div>
+  <div class="feature"><div class="fh"><h4>跳过索引</h4></div><p>minmax / set / bloom_filter 跳过无关 granule，减少 IO</p></div>
+  <div class="feature"><div class="fh"><h4>批量写入</h4></div><p>PrepareBatch + Append + Send，绝不要单行 INSERT</p></div>
+</div>
 </section>
 <section data-anchor="3-核心概念与原理">
 <h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
@@ -200,7 +205,30 @@ func main() {
                → 只读 age 这一段连续数据；同类型值压缩比可达 10~20 倍
                → 连续数组可直接喂 SIMD，一次处理数百个值</code></pre>
 <p>代价也很直接：<strong>按主键取一整行很慢</strong>（要拼多个列文件），<strong>更新一行几乎不可能</strong>（要重写整个 part）。所以 ClickHouse 的设计前提就是「追加写、批量读」。</p>
-<h3 id="32-mergetreepartgranule-与合并">3.2 MergeTree：part、granule 与合并</h3>
+<h3 id="32-mergetreepartgranule-与合并">3.2 MergeTree：part、granule 与合并</h3><div class="figure">
+  <svg viewBox="0 0 880 376" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-clickhouse" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#b45309"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#78350f">MergeTree 写入与合并</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">每次写入生成一个 part，后台持续合并成更大的有序 part</text>
+    <rect x="90" y="84" width="700" height="52" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+    <circle cx="122" cy="110" r="14" fill="#b45309"/>
+    <text x="122" y="110" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">1</text>
+    <text x="150" y="110" dominant-baseline="central" font-size="13" fill="#78350f">INSERT -&gt; 独立 data part（按 ORDER BY 排序）</text>
+    <line x1="440" y1="138" x2="440" y2="154" stroke="#b45309" stroke-width="2" marker-end="url(#m-clickhouse)"/>
+    <rect x="90" y="158" width="700" height="52" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+    <circle cx="122" cy="184" r="14" fill="#b45309"/>
+    <text x="122" y="184" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">2</text>
+    <text x="150" y="184" dominant-baseline="central" font-size="13" fill="#78350f">稀疏主键索引 + granule（默认 8192 行）定位数据块</text>
+    <line x1="440" y1="212" x2="440" y2="228" stroke="#b45309" stroke-width="2" marker-end="url(#m-clickhouse)"/>
+    <rect x="90" y="232" width="700" height="52" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+    <circle cx="122" cy="258" r="14" fill="#b45309"/>
+    <text x="122" y="258" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">3</text>
+    <text x="150" y="258" dominant-baseline="central" font-size="13" fill="#78350f">后台 merge：多个小 part 合成大 part，真正删除重复与标记删除</text>
+    <rect x="40" y="300" width="800" height="54" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="324" font-size="12.5" fill="#1e293b">ORDER BY 决定数据物理顺序与稀疏索引效果；高基数列放前面往往适得其反。</text>
+  </svg>
+  <figcaption>MergeTree 写入与合并</figcaption>
+</div>
 <pre><code class="lang-text">INSERT 批次
    │ 按 PARTITION BY 分区，按 ORDER BY 排序
    ▼
@@ -333,10 +361,11 @@ SELECT * FROM events_queue;</code></pre>
 <blockquote class="warn"><p>Kafka 引擎表是「消费者」，读一次就消费掉；数据落在 <code>TO</code> 指定的目标表。生产要监控消费 lag，且注意 <strong>Kafka 表引擎本身不可直接 SELECT 排查</strong>（会消费数据）。</p></blockquote>
 <hr>
 
+<div class="callout info"><p><b>实战要点：</b>ReplacingMergeTree 的去重只在 merge 后生效，想读时确定去重请用 FINAL 或 argMax；物化视图把聚合成本前移到写入侧。</p></div>
 </section>
 <section data-anchor="5-版本演进速览">
 <h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
-<div class="table-wrap"><table><thead><tr><th>阶段</th><th>关键变化与迁移注意点</th></tr></thead><tbody><tr><td>早期（20.x 前）</td><td>MergeTree 成熟，ZooKeeper 承担副本协调；版本号改为「年.月」式月度发布</td></tr><tr><td>21~23.x</td><td>投影（Projection）、窗口函数、轻量 <code>DELETE</code>、异步插入、ClickHouse Keeper 逐步替代 ZooKeeper</td></tr><tr><td>24.x</td><td>JSON 类型与动态子列、Parquet/数据湖集成增强、倒排/全文索引实验、查询并行度优化</td></tr><tr><td>25.x</td><td>继续强化 JOIN / 聚合性能、对象存储与存算分离、可观测性系统表、共享 MergeTree 等能力</td></tr></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>阶段</th><th>关键变化与迁移注意点</th></tr></thead><tbody><tr><td>早期（20.x 前）</td><td>MergeTree 成熟，ZooKeeper 承担副本协调；版本号改为「年.月」式月度发布</td></tr><tr><td>21~23.x</td><td>投影（Projection）、窗口函数、轻量 <code>DELETE</code>、异步插入、ClickHouse Keeper 逐步替代 ZooKeeper</td></tr><tr><td>24.x</td><td>JSON 类型与动态子列、Parquet/数据湖集成增强、倒排/全文索引实验、查询并行度优化</td></tr><tr><td>25.x</td><td>继续强化 JOIN / 聚合性能、对象存储与存算分离、可观测性系统表、共享 MergeTree 等能力</td></tr><tr><td>26.x</td><td>当前主线（26.10）：延续月度发布，重点在存算分离、JSON 类型与查询并行度；升级前逐条核对 Breaking Changes</td></tr></tbody></table></div>
 <p><strong>迁移注意</strong>：</p>
 <ul><li>ClickHouse 是<strong>月度发布</strong>，小版本迭代快、废弃项多。生产钉死具体版本，升级前逐条读 CHANGELOG 的 Breaking Changes</li><li><strong>Keeper 替代 ZooKeeper</strong>：新集群直接用 ClickHouse Keeper，老集群迁移需按官方步骤</li><li><code>clickhouse-go</code> <strong>v1 → v2</strong> 是破坏性升级：包路径改 <code>/v2</code>、原生 <code>driver.Conn</code> API 与 <code>database/sql</code> 接口分离、<code>PrepareBatch</code> 用法变化</li><li>服务端与客户端大版本不必严格一致，但新语法（如参数化数组、JSON 类型）需要较新的客户端</li></ul>
 <hr>
@@ -347,6 +376,7 @@ SELECT * FROM events_queue;</code></pre>
 <ol><li><strong>逐条 INSERT</strong>：每次生成一个 part → <code>Too many parts (300)</code> 报错、合并线程打满。批量 1 万行起，客户端攒批。</li><li><strong>ORDER BY 选错</strong>：把高基数 <code>ts</code> 放首位、或把查询几乎不用的字段放首位，稀疏索引形同虚设。按「高频过滤、低基数优先」设计，并与实际查询一起压测。</li><li><strong>把 <code>ReplacingMergeTree</code> 当唯一约束</strong>：去重发生在后台合并、且只在分片内。用 <code>argMax</code> / <code>GROUP BY</code> 或查询加 <code>FINAL</code>（评估读放大）。</li><li><strong>滥用 <code>FINAL</code></strong>：它会在查询时合并所有 part，大表上可能慢一个数量级。优先改查询写法。</li><li><strong>用 UPDATE/DELETE 做业务更新</strong>：mutation 是异步重写整个 part，无法回滚、不即时可见。ClickHouse 是追加写系统，要改数据就重新导入分区。</li><li><strong>分区粒度过细</strong>：<code>PARTITION BY toYYYYMMDDhh(ts)</code> 按小时分区会产生海量分区，元数据与合并成本爆炸。通常按月（数据量极大才按天）。</li><li><strong><code>Nullable</code> 滥用</strong>：每列多一个 null mask 文件、有额外开销。能用默认值（<code>''</code> / <code>0</code>）表达就不要用 Nullable。</li><li><strong>低基数字段用 String</strong>：<code>event</code>、<code>status</code> 这类用 <code>LowCardinality(String)</code> 或 <code>Enum</code>，压缩与过滤收益明显。</li><li><strong>高基数 GROUP BY OOM</strong>：设 <code>max_bytes_before_external_group_by</code> 允许溢写磁盘，或用物化视图预聚合。</li><li><strong>JOIN 右表过大</strong>：ClickHouse 默认把右表载入内存构建 hash。用维度表 <code>dictionary</code>、预聚合或 <code>join_algorithm</code> 调优。</li><li><strong><code>SELECT *</code></strong>：列存下虽然会跳过无关列文件，但宽表上仍会读回大量无用数据。明确列清单。</li><li><strong>无查询配额</strong>：一个即席查询吃光内存拖垮集群。按用户/角色设 <code>max_memory_usage</code>、<code>max_execution_time</code>、并发限制。</li><li><strong>物化视图不回填历史</strong>：只对创建后的写入生效，且 <code>SummingMergeTree</code> 查询仍需 <code>sum()</code>。</li><li><strong>副本与 DDL 不同步</strong>：单机 <code>CREATE TABLE</code> 只在一个节点生效；集群环境用 <code>ON CLUSTER</code>，并确认 Keeper 健康。</li><li><strong>时区与精度</strong>：<code>DateTime</code> 秒级、<code>DateTime64(3)</code> 毫秒级；Go <code>time.Time</code> 与服务端时区不一致会让分区落错月份。统一 UTC 并在写入侧显式转换。</li><li><strong>拿它当 OLTP / 缓存 / 搜索引擎</strong>：无事务、无点查优势、无相关性排序。分别用 <a href="../mysql/mysql-guide.html">MySQL</a> / <a href="../redis/redis-guide.html">go-redis</a> / <a href="../elasticsearch/elasticsearch-guide.html">ES</a>。</li><li><strong>不监控 parts 与 merges</strong>：<code>system.parts</code> 的 part 数、<code>system.merges</code> 的积压是写入健康的第一指标，比 CPU 更早报警。</li></ol>
 <hr>
 
+<div class="callout warning"><p><b>生产警示：</b>Kafka 表引擎与物化视图出错会静默丢数据，必须监控 system.kafka / 视图异常；JOIN 大表前先想清楚右表是否全量驻留内存。</p></div>
 </section>
 <section data-anchor="7-选型对比">
 <h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>

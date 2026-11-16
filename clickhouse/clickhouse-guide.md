@@ -1,7 +1,7 @@
 # ClickHouse 技术介绍与使用指南（Go OLAP 视角）
 
 > 列式 OLAP 数据库：MergeTree 存储引擎、向量化执行、稀疏主键索引与数据跳过索引，把「亿级明细秒级聚合」变成常规操作。
-> 上游：<https://github.com/ClickHouse/ClickHouse>　|　服务端主线：**25.x**（按年/月编号，月度发布；整理于 2026-11）　|　Go 客户端：[ClickHouse/clickhouse-go](https://github.com/ClickHouse/clickhouse-go) v2
+> 上游：<https://github.com/ClickHouse/ClickHouse>　|　服务端主线：**26.x**（26.10，按年/月编号，月度发布；整理于 2026-11）　|　Go 客户端：[ClickHouse/clickhouse-go](https://github.com/ClickHouse/clickhouse-go) v2
 > 协议：Apache-2.0；具体版本以上游最新 release 为准。
 
 ---
@@ -322,6 +322,7 @@ SELECT * FROM events_queue;
 | 21~23.x | 投影（Projection）、窗口函数、轻量 `DELETE`、异步插入、ClickHouse Keeper 逐步替代 ZooKeeper |
 | 24.x | JSON 类型与动态子列、Parquet/数据湖集成增强、倒排/全文索引实验、查询并行度优化 |
 | 25.x | 继续强化 JOIN / 聚合性能、对象存储与存算分离、可观测性系统表、共享 MergeTree 等能力 |
+| 26.x | 当前主线（26.10）：延续月度发布，重点在存算分离、JSON 类型与查询并行度；升级前逐条核对 Breaking Changes |
 
 **迁移注意**：
 

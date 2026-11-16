@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Casbin · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#7c3aed; --accent-light:#ede9fe; --accent-dark:#5b21b6;
+    --bg:#f8f7fc; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#1a1033; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#5b21b6 0%,#7c3aed 58%,#5b21b6 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">Casbin<span class="ver">v3.11</span></div>
+  <div class="sub">嵌入式授权判定引擎</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#安装与最小示例">安装与最小示例</a>
+  <a href="#2-功能特性总览">2. 功能特性总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-perm-元模型五段配置">3.1 PERM 元模型：五段配置</a>
+  <a class="sub-link" href="#32-一次-enforce-的求值过程">3.2 一次 Enforce 的求值过程</a>
+  <a class="sub-link" href="#33-五种主流-model-的写法与差异">3.3 五种主流 model 的写法与差异</a>
+  <a class="sub-link" href="#34-g-角色继承与-g2-资源层级">3.4 g 角色继承与 g2 资源层级</a>
+  <a class="sub-link" href="#35-matcher-的表达力内置函数自定义函数abac-结构体">3.5 matcher 的表达力：内置函数、自定义函数、ABAC 结构体</a>
+  <a class="sub-link" href="#36-策略爆炸判据写进-matcher-还是-policy">3.6 策略爆炸：判据写进 matcher 还是 policy</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-rbac-角色继承完整可运行">4.1 RBAC + 角色继承（完整可运行）</a>
+  <a class="sub-link" href="#42-matcher-表达力自定义函数与-abac-结构体">4.2 matcher 表达力：自定义函数与 ABAC 结构体</a>
+  <a class="sub-link" href="#43-adapter-与-watcher">4.3 Adapter 与 Watcher</a>
+  <a class="sub-link" href="#44-loadpolicy-savepolicy-autosave-与性能">4.4 LoadPolicy / SavePolicy / AutoSave 与性能</a>
+  <a class="sub-link" href="#45-api-权限中间件与-gin-集成">4.5 API 权限中间件与 Gin 集成</a>
+  <a href="#5-版本演进与要点">5. 版本演进与要点</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>Casbin 技术介绍与使用指南</h1>
+<p>把「谁能对什么做什么」从硬编码里抽出来的嵌入式授权引擎：一份 model.conf 加一组策略，覆盖 ACL、RBAC、ABAC 与 RESTful。</p>
+<div class="meta"><span>v3.11.0 · 2026.08 发布</span><span>Apache-2.0</span><span>PERM 元模型</span><span>ACL / RBAC / ABAC</span><span>多租户 domain</span><span>Adapter + Watcher</span></div>
+</div>
+<blockquote><p>把「谁能对什么做什么」从硬编码里抽出来、用一份 CONF 模型加一组策略规则描述的嵌入式授权判定引擎，同一套语义覆盖 ACL / RBAC / ABAC / RESTful 并跨十余种语言。 仓库：<a href="https://github.com/casbin/casbin">https://github.com/casbin/casbin</a>　|　当前主线：<strong>v3.11.0</strong>（2026.8.20 发布，Apache-2.0 协议）</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p>Casbin（现为 Apache 孵化器项目，主仓库迁至 <code>apache/casbin</code>，旧链接自动跳转）是 Go 生态事实标准的<strong>授权（authorization）库</strong>：模型用 <code>.conf</code> 描述请求形状、策略形状、匹配与裁决，策略是一条条 <code>p, alice, data1, read</code> 规则。换授权机制 = 改配置，不动业务代码。</p>
+<p><strong>只做授权判定（<code>sub</code> 能否对 <code>obj</code> 执行 <code>act</code>），不做认证</strong>：不校验密码、不签发 token、不管理用户与角色目录（用户表、组织架构由业务系统自己维护），只为 RBAC 保存「用户↔角色」映射。认证交给 JWT / OIDC / Session，Casbin 接在认证之后。核心卖点：</p>
+<ul><li><strong>PERM 元模型</strong>：五段配置任意组合出 ACL、RBAC、多租户、ABAC、RESTful、拒绝优先、优先级模型；</li><li><strong>多语言同构</strong>：Go/Java/Node/PHP/Python/.NET/C++/Rust 共享同一套 model 与 policy 语义；</li><li><strong>存储与同步解耦</strong>：Adapter 管持久化（文件/DB/对象存储数十种），Watcher 管多实例同步；</li><li><strong>运行时可改策略 + 轻量嵌入</strong>：<code>AddPolicy</code> 即时生效，无外部依赖，判定在进程内微秒级完成。</li></ul>
+<p>适用：后台 RBAC、多租户 SaaS、API 网关与微服务统一鉴权。<strong>不适用</strong>：关系图谱式授权（Zanzibar/ReBAC）或需独立策略控制面的场景（见第 7 章）。</p>
+<h3 id="安装与最小示例">安装与最小示例</h3>
+<pre><code class="lang-bash">go get github.com/casbin/casbin/v3
+# 存量 v2 用 .../v2，API 一致，仅 module path 不同</code></pre>
+<pre><code class="lang-go">package main
+import (
+	"fmt"
+	"log"
+	"github.com/casbin/casbin/v3"
+)
+func main() {
+	e, err := casbin.NewEnforcer("model.conf", "policy.csv")
+	if err != nil { log.Fatal(err) }
+	ok, err := e.Enforce("alice", "data1", "read") // (bool, error)，别丢 error
+	if err != nil { log.Fatal(err) }
+	fmt.Println("alice read data1 =&gt;", ok)
+}</code></pre>
+<p><code>model.conf</code> 见 3.1，<code>policy.csv</code> 两行：<code>p, alice, data1, read</code> 与 <code>p, bob, data2, write</code>。</p>
+<hr>
+
+</section>
+<section data-anchor="2-功能特性总览">
+<h2 id="2-功能特性总览">2. 功能特性总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>访问控制模型</td><td>ACL、超级用户、无用户/无资源 ACL、RBAC、资源角色、多域 RBAC、ABAC、RESTful、拒绝优先、优先级；<code>r</code>/<code>p</code> 字段可任意扩展（<code>dom</code>、<code>ip</code>）</td></tr><tr><td>匹配函数</td><td>内置 <code>keyMatch</code>/<code>keyMatch2</code>/<code>keyMatch3</code>/<code>keyMatch4</code>、<code>regexMatch</code>、<code>ipMatch</code>、<code>globMatch</code>；<code>AddFunction</code> 注册自定义函数</td></tr><tr><td>角色管理</td><td><code>g</code> 用户→角色、<code>g2</code> 资源层级、多级继承、域隔离、条件角色链接、外部 RoleManager（LDAP/Okta）</td></tr><tr><td>策略存储与同步</td><td>默认文件 Adapter；GORM/MySQL/Pg/Mongo/Redis/S3 等数十种；FilteredAdapter 按需加载；Watcher（etcd/Redis/pub-sub）、WatcherEx、Dispatcher 跨节点同步</td></tr><tr><td>管理与判定 API</td><td><code>AddPolicy</code>/<code>RemovePolicy</code>/<code>UpdatePolicy</code>/<code>GetPolicy</code> 全套；<code>Enforce</code>、<code>EnforceWithMatcher</code>、<code>EnforceEx</code>、<code>BatchEnforce</code>、<code>EnforceContext</code>；<code>SetLogger</code>、<code>Explain()</code>（v3.10+ 借 LLM 解释判定）、环检测 detector；生态有在线 Editor、Casdoor、Gin/Echo 中间件、Casbin.js</td></tr><tr><td>性能与并发</td><td><code>CachedEnforcer</code> 决策缓存、<code>EnableCache</code>、<code>InvalidateCache</code>、matcher 编译缓存、<code>SyncedEnforcer</code> 带锁</td></tr></tbody></table></div>
+<hr>
+
+<div class="features">
+  <div class="feature"><div class="fh"><h4>PERM 元模型</h4></div><p>request / policy / matcher / effect 五段配置描述一类授权</p></div>
+  <div class="feature"><div class="fh"><h4>模型族</h4></div><p>ACL、RBAC、RBAC with domains、ABAC、RESTful 共用一套求值器</p></div>
+  <div class="feature"><div class="fh"><h4>工程化</h4></div><p>Adapter 持久化策略，Watcher 同步多实例，Enforcer 缓存加速</p></div>
+</div>
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-perm-元模型五段配置">3.1 PERM 元模型：五段配置</h3>
+<p>PERM 取 <strong>P</strong>olicy、<strong>E</strong>ffect、<strong>R</strong>equest、<strong>M</strong>atchers 首字母，落地为 <code>model.conf</code> 的五个 section：</p>
+<div class="table-wrap"><table><thead><tr><th>section</th><th>记号</th><th>含义</th></tr></thead><tbody><tr><td><code>[request_definition]</code></td><td><code>r</code></td><td><strong>Request</strong>：请求字段元组，如 <code>sub, obj, act</code></td></tr><tr><td><code>[policy_definition]</code></td><td><code>p</code></td><td><strong>Policy</strong>：规则字段元组，通常与 <code>r</code> 同构</td></tr><tr><td><code>[role_definition]</code></td><td><code>g</code></td><td>角色/分组映射（RBAC 才有），<code>g = _, _</code> 或带域 <code>g = _, _, _</code></td></tr><tr><td><code>[policy_effect]</code></td><td><code>e</code></td><td><strong>Effect</strong>：多条规则命中后如何归约成最终裁决</td></tr><tr><td><code>[matchers]</code></td><td><code>m</code></td><td><strong>Matcher</strong>：请求与规则逐条求值的布尔表达式</td></tr></tbody></table></div>
+<p>最简 ACL 模型（即 1 章引用的 <code>model.conf</code>）：</p>
+<pre><code class="lang-ini">[request_definition]
+r = sub, obj, act
+[policy_definition]
+p = sub, obj, act
+[policy_effect]
+e = some(where (p.eft == allow))
+[matchers]
+m = r.sub == p.sub &amp;&amp; r.obj == p.obj &amp;&amp; r.act == p.act</code></pre>
+<p><code>r</code> 与 <code>p</code> 只是形状声明，值分别来自 <code>Enforce(...)</code> 与 policy 文件，<code>m</code> 用 <code>r.xxx</code>/<code>p.xxx</code> 引用。模型与策略分离，是「改配置就换模型」的根本。</p>
+<h3 id="32-一次-enforce-的求值过程">3.2 一次 Enforce 的求值过程</h3><div class="figure">
+  <svg viewBox="0 0 880 268" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-casbin" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7c3aed"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#5b21b6">一次 Enforce 的求值</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">请求先过 matcher，再按 effect 归并命中策略的结论</text>
+    <rect x="36" y="82" width="175" height="80" rx="12" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+    <text x="124" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#5b21b6">Request</text>
+    <text x="124" y="136" text-anchor="middle" font-size="11" fill="#5b21b6">sub, obj, act</text>
+    <line x1="215" y1="122" x2="241" y2="122" stroke="#7c3aed" stroke-width="2" marker-end="url(#m-casbin)"/>
+    <rect x="247" y="82" width="175" height="80" rx="12" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+    <text x="334" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#5b21b6">Matcher</text>
+    <text x="334" y="136" text-anchor="middle" font-size="11" fill="#5b21b6">g / keyMatch2 / 自定义函数</text>
+    <line x1="426" y1="122" x2="452" y2="122" stroke="#7c3aed" stroke-width="2" marker-end="url(#m-casbin)"/>
+    <rect x="458" y="82" width="175" height="80" rx="12" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+    <text x="546" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#5b21b6">Policy + Effect</text>
+    <text x="546" y="136" text-anchor="middle" font-size="11" fill="#5b21b6">allow / deny / 优先级</text>
+    <line x1="637" y1="122" x2="663" y2="122" stroke="#7c3aed" stroke-width="2" marker-end="url(#m-casbin)"/>
+    <rect x="669" y="82" width="175" height="80" rx="12" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+    <text x="756" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#5b21b6">Decision</text>
+    <text x="756" y="136" text-anchor="middle" font-size="11" fill="#5b21b6">bool + 可选 explains</text>
+    <rect x="40" y="186" width="800" height="58" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="210" font-size="12.5" fill="#1e293b">matcher 决定表达能力，effect 决定冲突消解；判据放 policy 还是 mat</text>
+    <text x="60" y="230" font-size="12.5" fill="#1e293b">cher 是权限设计的核心权衡。</text>
+  </svg>
+  <figcaption>一次 Enforce 的求值</figcaption>
+</div>
+<p><code>e = some(where (p.eft == allow))</code> 意为「存在一条命中且 effect 为 allow 的规则就放行」。链路：① <code>Enforce("alice","data1","read")</code> 把实参绑定到 <code>r.sub/r.obj/r.act</code>（个数不符返回 <code>invalid request size</code> 错误）；② 遍历 <code>p</code> 每行代入 matcher，由 govaluate 求值；③ 命中的行贡献 effect（声明 <code>p_eft</code> 时取行尾 <code>allow</code>/<code>deny</code>，否则恒 <code>allow</code>）；④ <code>e</code> 经 effector 归约、命中即短路；⑤ 返回 <code>(bool, error)</code>。函数未注册、字段类型不符、<code>in</code> 数组过短都走 <code>error</code> 而非静默失败——这就是别丢第二个返回值的理由。变体：<code>!some(where (p.eft == deny))</code>（拒绝优先）、<code>some(where (p.eft == allow)) &amp;&amp; !some(where (p.eft == deny))</code>（deny-override）、<code>priority(p.eft) || deny</code>（按优先级，policy 需带 priority 列）。</p>
+<h3 id="33-五种主流-model-的写法与差异">3.3 五种主流 model 的写法与差异</h3>
+<p>差异集中在 <code>[role_definition]</code> 与 <code>m</code> 两行（<code>r</code>/<code>p</code> 形状随模型调整）：</p>
+<div class="table-wrap"><table><thead><tr><th>模型</th><th>关键定义</th><th>matcher 核心</th></tr></thead><tbody><tr><td>ACL</td><td>无 <code>g</code></td><td><code>r.sub == p.sub &amp;&amp; r.obj == p.obj &amp;&amp; r.act == p.act</code></td></tr><tr><td>RBAC</td><td><code>g = _, _</code></td><td><code>g(r.sub, p.sub) &amp;&amp; r.obj == p.obj &amp;&amp; r.act == p.act</code></td></tr><tr><td>RBAC with domains</td><td><code>g = _, _, _</code>，<code>r = sub, dom, obj, act</code></td><td><code>g(r.sub, p.sub, r.dom) &amp;&amp; r.dom == p.dom &amp;&amp; r.obj == p.obj &amp;&amp; r.act == p.act</code></td></tr><tr><td>ABAC</td><td>可无策略行</td><td><code>r.sub.Age &gt;= 18 &amp;&amp; r.obj.Owner == r.sub.Name</code></td></tr><tr><td>RESTful</td><td>无 <code>g</code></td><td><code>r.sub == p.sub &amp;&amp; keyMatch2(r.obj, p.obj) &amp;&amp; regexMatch(r.act, p.act)</code></td></tr></tbody></table></div>
+<p>RBAC 把 <code>p</code> 写成「角色→权限」、<code>g</code> 写成「用户→角色」，用户数与资源数解耦；domains 让 <code>alice</code> 在 <code>tenant1</code> 是 admin、在 <code>tenant2</code> 只是 viewer；ABAC 请求直接传结构体、matcher 反射取属性，策略可为空；RESTful 用 <code>keyMatch2</code> 支持 <code>/api/orders/:id</code> 占位与 <code>*</code>、<code>regexMatch</code> 让 <code>p.act</code> 写 <code>(GET)|(POST)</code> 正则——<code>keyMatch</code> 只认 <code>*</code>，路径参数必须用 2/3/4 代。</p>
+<h3 id="34-g-角色继承与-g2-资源层级">3.4 <code>g</code> 角色继承与 <code>g2</code> 资源层级</h3>
+<p><code>[role_definition]</code> 可声明多组：<code>g = _, _</code>（用户→角色）、<code>g2 = _, _</code>（资源→资源组），matcher 里分别调用 <code>g(r.sub, p.sub)</code> 与 <code>g2(r.obj, p.obj)</code>。角色支持多级继承：<code>g, alice, admin</code> 加 <code>g, admin, super</code> 使 alice 继承 super 全部权限（默认 RoleManager 有层级上限，可 <code>SetRoleManager</code> 替换）；资源层级同理，<code>g2, data1, dataset_a</code> 后对 <code>dataset_a</code> 授权即覆盖其下资源。带域用 <code>g = _, _, _</code>，第三列为 domain，继承只在同域内生效。</p>
+<h3 id="35-matcher-的表达力内置函数自定义函数abac-结构体">3.5 matcher 的表达力：内置函数、自定义函数、ABAC 结构体</h3>
+<p><code>m</code> 跑在 govaluate 上，除 <code>==</code>/<code>&amp;&amp;</code>/<code>||</code>/<code>in</code> 还能调内置与自定义函数。<code>e.AddFunction(name, func(args ...interface{}) (interface{}, error))</code> 把无法用表达式书写的逻辑（网段判断、外部查询）封装进 matcher，<strong>必须在首次 <code>Enforce</code> 前注册</strong>——matcher 表达式会被缓存。ABAC 更进一步：<code>Enforce</code> 直接传结构体，matcher 用 <code>r.sub.Age</code>、<code>r.obj.Owner</code> 点号路径取字段，策略退化为零行；代价是决策缓存失效（<code>GetCacheKey</code> 只接受 <code>string</code> 或实现 <code>CacheableParam</code> 的类型），字段类型错误要到运行时才暴露。</p>
+<h3 id="36-策略爆炸判据写进-matcher-还是-policy">3.6 策略爆炸：判据写进 matcher 还是 policy</h3>
+<p>这是最重要的设计权衡。判据写 <strong>policy</strong>（<code>p, alice, /api/orders, GET</code>）是数据驱动：运营可运行时改、无需发版，但行数随「用户 × 资源 × 动作」线性膨胀；写 <strong>matcher</strong>（<code>r.obj.Owner == r.sub.Name</code>）是模型驱动：策略行数 O(1)，但改逻辑要改 <code>.conf</code> 并回归测试。三条收敛手段：RBAC 用 <code>g</code> 把 N×M 压成 N+M；RESTful 用 <code>keyMatch2</code> 把 <code>/orders/1</code>、<code>/orders/2</code> 收敛成一条 <code>/orders/:id</code>；ABAC 把「只能改自己的单」「成年才能下单」等稳定不变量上移 matcher。准则：<strong>会随运营变动的放 policy，稳定的业务不变量放 matcher</strong>，二者可混用（RBAC + ABAC 条件同处一个模型）。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-rbac-角色继承完整可运行">4.1 RBAC + 角色继承（完整可运行）</h3>
+<p>用 <code>model.NewModelFromString</code> 内联模型；无 Adapter 时必须 <code>EnableAutoSave(false)</code>，否则 <code>autoSave</code> 默认 true 会向 nil Adapter 落盘而 panic。</p>
+<pre><code class="lang-go">package main
+import (
+	"fmt"
+	"log"
+	"github.com/casbin/casbin/v3"
+	"github.com/casbin/casbin/v3/model"
+)
+const mText = `
+[request_definition]
+r = sub, obj, act
+[policy_definition]
+p = sub, obj, act
+[role_definition]
+g = _, _
+[policy_effect]
+e = some(where (p.eft == allow))
+[matchers]
+m = g(r.sub, p.sub) &amp;&amp; r.obj == p.obj &amp;&amp; r.act == p.act
+`
+func main() {
+	m, err := model.NewModelFromString(mText)
+	if err != nil { log.Fatal(err) }
+	e, err := casbin.NewEnforcer(m)
+	if err != nil { log.Fatal(err) }
+	e.EnableAutoSave(false)
+	if _, err = e.AddPolicy("admin", "data1", "read"); err != nil { log.Fatal(err) }
+	if _, err = e.AddGroupingPolicy("alice", "admin"); err != nil { log.Fatal(err) }
+	ok, err := e.Enforce("alice", "data1", "read") // 经 g 继承拿到 admin 权限
+	if err != nil { log.Fatal(err) }
+	fmt.Println("alice read data1 =&gt;", ok)
+}</code></pre>
+<h3 id="42-matcher-表达力自定义函数与-abac-结构体">4.2 matcher 表达力：自定义函数与 ABAC 结构体</h3>
+<p><code>net_model.conf</code> 的 matcher 为 <code>m = r.sub == p.sub &amp;&amp; ipInRange(r.ip, p.cidr) &amp;&amp; r.obj == p.obj &amp;&amp; r.act == p.act</code>（<code>r = sub, ip, obj, act</code>），<code>net_policy.csv</code> 一行 <code>p, alice, 10.0.0.0/8, /admin, read</code>；<code>abac_model.conf</code> 的 matcher 为 <code>m = r.sub.Age &gt;= 18 &amp;&amp; r.obj.Owner == r.sub.Name &amp;&amp; r.act == "read"</code>，策略留空。<code>AddFunction</code> 无返回值，注册须早于首次判定。</p>
+<pre><code class="lang-go">package main
+import (
+	"fmt"
+	"log"
+	"net"
+	"github.com/casbin/casbin/v3"
+)
+type User struct { Name string; Age int }
+type Doc struct{ Owner string }
+func main() {
+	e1, err := casbin.NewEnforcer("net_model.conf", "net_policy.csv")
+	if err != nil { log.Fatal(err) }
+	e1.AddFunction("ipInRange", func(args ...interface{}) (interface{}, error) {
+		ip := net.ParseIP(args[0].(string))
+		_, cidr, err := net.ParseCIDR(args[1].(string))
+		if err != nil { return false, err }
+		return ip != nil &amp;&amp; cidr.Contains(ip), nil
+	})
+	ok1, err := e1.Enforce("alice", "10.1.2.3", "/admin", "read")
+	if err != nil { log.Fatal(err) }
+	e2, err := casbin.NewEnforcer("abac_model.conf", "empty.csv")
+	if err != nil { log.Fatal(err) }
+	ok2, err := e2.Enforce(User{Name: "alice", Age: 20}, Doc{Owner: "alice"}, "read")
+	if err != nil { log.Fatal(err) }
+	fmt.Println("custom func =&gt;", ok1, "| abac struct =&gt;", ok2)
+}</code></pre>
+<h3 id="43-adapter-与-watcher">4.3 Adapter 与 Watcher</h3>
+<p>Adapter 只管策略<strong>存取</strong>，不含模型与判定。默认文件 Adapter（<code>NewEnforcer("m.conf","p.csv")</code>）适合单机；生产用数据库 Adapter。注意 v2 与 v3 的 <code>model.Model</code> 是不同 Go 类型，<strong>Adapter 的 major 版本必须与 casbin 主版本一致</strong>（<code>gorm-adapter/v3</code> 配 <code>casbin/v3</code>）。</p>
+<pre><code class="lang-go">package main
+import (
+	"log"
+	"github.com/casbin/casbin/v3"
+	gormadapter "github.com/casbin/gorm-adapter/v3"
+	_ "github.com/go-sql-driver/mysql"
+)
+func main() {
+	a, err := gormadapter.NewAdapter("mysql", "root:pass@tcp(127.0.0.1:3306)/casbin")
+	if err != nil { log.Fatal(err) }
+	e, err := casbin.NewEnforcer("rbac_model.conf", a)
+	if err != nil { log.Fatal(err) }
+	if _, err = e.AddPolicy("alice", "data1", "read"); err != nil { log.Fatal(err) }
+	if err = e.SavePolicy(); err != nil { log.Fatal(err) }
+}</code></pre>
+<p>自定义 Adapter 实现 <code>persist.Adapter</code>（<code>Add</code>/<code>Remove</code>/<code>RemoveFiltered</code> 增量写，<code>SavePolicy</code> 全量覆盖）；大数据量用 <code>FilteredAdapter</code> + <code>LoadFilteredPolicy</code> 只载入本租户策略，代价是该实例不能再 <code>SavePolicy</code>。Watcher 解决多实例同步：<strong>任一实例 <code>AddPolicy</code>/<code>SavePolicy</code> 时广播消息，其余实例回调 <code>LoadPolicy()</code> 重载</strong>；etcd-watcher 监听 revision/租约、redis-watcher 走 Pub/Sub。<code>SetWatcher(w)</code> 自动注册 <code>LoadPolicy</code> 回调（WatcherEx 需自行 <code>SetUpdateCallback</code>），<code>EnableAutoNotifyWatcher(false)</code> 可改手工 <code>Update()</code>；Watcher 是<strong>最终一致</strong>，短暂窗口内各实例判定可能不同。两个接口：</p>
+<pre><code class="lang-text">Adapter: LoadPolicy(model.Model) error / SavePolicy(model.Model) error
+         AddPolicy(sec, ptype string, rule []string) error
+         RemovePolicy(sec, ptype string, rule []string) error
+         RemoveFilteredPolicy(sec, ptype string, idx int, values ...string) error
+Watcher: SetUpdateCallback(func(string)) error / Update() error / Close()</code></pre>
+<h3 id="44-loadpolicy-savepolicy-autosave-与性能">4.4 LoadPolicy / SavePolicy / AutoSave 与性能</h3>
+<p><code>LoadPolicy()</code> 从 Adapter <strong>全量重载</strong>并重建角色继承链（清空旧策略，Watcher 回调默认就是它）；<code>SavePolicy()</code> <strong>全量覆盖写回</strong>并触发 Watcher 广播，过滤加载的实例调用报 <code>cannot save a filtered policy</code>；<code>AutoSave</code>（<code>EnableAutoSave</code>，默认 true）让每次增删改立即增量写库，批量导入时应先关、改内存、最后一次性 <code>SavePolicy</code>。并发上：普通 <code>*Enforcer</code> 的只读 <code>Enforce</code> 并发安全（matcher 表达式缓存在 <code>sync.Map</code>），写 API 与读并发需外部锁或换 <code>NewSyncedEnforcer</code>；<code>Enforce</code> 遍历全部匹配策略、复杂度 O(策略行数)、单次约微秒量级，策略上万行应靠 RBAC/过滤加载收敛。<code>NewCachedEnforcer</code> 缓存 <code>(请求参数 → bool)</code>，用内部 <code>policyVersion</code> 自动失效，外部直接改库时版本号不变，需 Watcher 触发 <code>LoadPolicy</code> 或手动 <code>InvalidateCache()</code>。批量判定用 <code>BatchEnforce</code>；高基数入参（UUID、动态路径）让 <code>g</code> 函数缓存无界增长，可 <code>EnableGFunctionCache(false)</code> 关闭。</p>
+<pre><code class="lang-go">package main
+import (
+	"fmt"
+	"log"
+	"github.com/casbin/casbin/v3"
+)
+func main() {
+	e, err := casbin.NewCachedEnforcer("rbac_model.conf", "policy.csv")
+	if err != nil { log.Fatal(err) }
+	e.EnableAutoSave(false)                        // 批量导入不逐条落盘
+	if _, err = e.AddPolicy("bob", "data2", "write"); err != nil { log.Fatal(err) }
+	if err = e.SavePolicy(); err != nil { log.Fatal(err) } // 全量写回
+	if err = e.LoadPolicy(); err != nil { log.Fatal(err) } // 重载并重建 g
+	e.EnableCache(true)                           // 决策缓存，默认已开
+	ok, err := e.Enforce("alice", "data1", "read")
+	if err != nil { log.Fatal(err) }
+	fmt.Println("single =&gt;", ok)
+	res, err := e.BatchEnforce([][]interface{}{
+		{"alice", "data1", "read"}, {"bob", "data2", "write"},
+	})
+	if err != nil { log.Fatal(err) }
+	fmt.Println("batch =&gt;", res)
+	if err = e.InvalidateCache(); err != nil { log.Fatal(err) }
+}</code></pre>
+<h3 id="45-api-权限中间件与-gin-集成">4.5 API 权限中间件与 Gin 集成</h3>
+<p>链路：认证中间件解析 token → <code>c.Set</code> 注入用户 → 授权中间件取 <code>sub</code>、<code>URL.Path</code> 作 <code>obj</code>、<code>Method</code> 作 <code>act</code> → <code>Enforce</code> → 403 短路。配 3.3 的 RESTful 模型，一条 <code>/api/orders/:id</code> 规则覆盖所有订单详情；<strong>认证由上游负责，Casbin 只接最后一棒</strong>。</p>
+<pre><code class="lang-go">package main
+import (
+	"log"
+	"github.com/casbin/casbin/v3"
+	"github.com/gin-gonic/gin"
+)
+func Authz(e *casbin.Enforcer) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ok, err := e.Enforce(c.GetString("user"), c.Request.URL.Path, c.Request.Method)
+		if err != nil { c.AbortWithStatusJSON(500, gin.H{"code": "AUTHZ_ERROR"}); return }
+		if !ok { c.AbortWithStatusJSON(403, gin.H{"code": "FORBIDDEN"}); return }
+		c.Next()
+	}
+}
+func main() {
+	e, err := casbin.NewEnforcer("restful_model.conf", "policy.csv")
+	if err != nil { log.Fatal(err) }
+	r := gin.New()
+	r.Use(gin.Recovery())
+	r.Use(func(c *gin.Context) { c.Set("user", c.GetHeader("X-User")); c.Next() }) // 占位：换成 JWT/OIDC
+	r.Use(Authz(e))
+	r.GET("/api/orders/:id", func(c *gin.Context) { c.JSON(200, gin.H{"ok": true}) })
+	if err := r.Run(":8080"); err != nil { log.Fatal(err) }
+}</code></pre>
+<hr>
+
+<div class="callout info"><p><b>实战要点：</b>策略按「角色 → 权限」组织，别把用户 ID 直接写进 policy；多租户用 domain 维度隔离，比给每个租户建一个 enforcer 更省内存。</p></div>
+</section>
+<section data-anchor="5-版本演进与要点">
+<h2 id="5-版本演进与要点">5. 版本演进与要点<span class="lvl b">版本</span></h2>
+<p>截至 2026-11 主线为 <strong>v3.11.0（2026.8.20 发布，Apache-2.0 协议）</strong>。项目 2025 年捐赠 Apache 孵化器，仓库由 <code>casbin/casbin</code> 迁至 <code>apache/casbin</code>，Go module path 随之从 <code>/v2</code> 升到 <code>/v3</code>。</p>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>时间</th><th>要点</th></tr></thead><tbody><tr><td>v1.x</td><td>2017–2019</td><td>无版本后缀的初始形态，PERM 元模型与 ACL/RBAC 定型</td></tr><tr><td>v2.x（v2.1–v2.13x）</td><td>2019–2025</td><td>module <code>github.com/casbin/casbin/v2</code>，minor 号滚动累加；Adapter/Watcher/FilteredAdapter、ABAC、多域、缓存、GORM 生态在此期间成熟，是存量最大的主线</td></tr><tr><td>v3.0.0</td><td>2025.12</td><td>捐赠后首个大版本。<strong>破坏性变更只有 module path 改为 <code>github.com/casbin/casbin/v3</code></strong>：核心 API、model/policy 语法、Adapter 接口、性能特征全部与 v2 一致，迁移仅改 import 与 go.mod</td></tr><tr><td>v3.7–v3.9</td><td>2026</td><td><code>SetLogger</code> 自定义日志；<code>GetAllUsers()</code> 区分用户与角色；内置角色层级环检测防循环授权</td></tr><tr><td>v3.10.0</td><td>2026.1.26</td><td><code>Explain()</code> API，调用 LLM 用自然语言解释授权结论</td></tr><tr><td>v3.11.0</td><td>2026.8.20</td><td>当前主线：RBAC + ABAC 条件示例、<code>SavePolicy</code> CSV 逗号字段转义、域条件角色链接传递修复、Apache 孵化合规文件（DISCLAIMER/NOTICE/.asf.yaml）</td></tr></tbody></table></div>
+<p>升级提示：v2 与 v3 的 <code>model.Model</code> 是不同 Go 类型，Adapter、Watcher、中间件必须同步换对应 major 版本，否则编译期类型不兼容。新项目直接用 v3；存量 v2 可长期不动，官方保持兼容承诺。</p>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>丢弃 <code>Enforce</code> 的 error</strong>：<code>ok, _ :=</code> 会把函数未注册、字段类型不符等错误吞成 <code>false</code>，表现为「莫名没权限」。对策：全链路检查 <code>err</code>，失败记日志返回 500，不与「拒绝」混淆；</li><li><strong>把 Casbin 当认证用</strong>：它不校验密码、不存用户表、不管 token。对策：认证用 JWT/OIDC/Session，认证后把用户标识注入上下文，Casbin 只接最后一棒；</li><li><strong>自定义函数注册太晚</strong>：matcher 表达式在首次 <code>Enforce</code> 时编译并缓存，之后再 <code>AddFunction</code> 对已缓存表达式无效。对策：初始化阶段、任何判定前完成全部注册；</li><li><strong><code>in</code> 数组长度为 1 会 panic</strong>：<code>r.obj in ('data2')</code> 在 Go 版触发 panic。对策：数组至少两元素，或改写成 <code>r.obj == 'data2' || ...</code>；</li><li><strong>无 Adapter 时调 <code>AddPolicy</code></strong>：<code>autoSave</code> 默认 true，会向 nil Adapter 增量写而 panic。对策：挂 Adapter，或先 <code>EnableAutoSave(false)</code>；</li><li><strong>多实例策略不同步</strong>：A 改了库，B/C 仍是旧内存副本。对策：接 Watcher（etcd/redis），确认 <code>autoNotifyWatcher</code> 开启，变更走 <code>SavePolicy</code>/<code>AddPolicy</code> 而非直接改表；</li><li><strong>决策缓存与外部改库</strong>：直接 UPDATE 策略表不触发 <code>policyVersion</code> 变化，缓存不失效。对策：变更经 Enforcer API + Watcher 广播 <code>LoadPolicy</code>，必要时 <code>InvalidateCache()</code>；</li><li><strong>策略爆炸</strong>：给每用户逐条写 <code>p, alice, /menu/x, GET</code>，十万用户 × 百菜单压垮判定与存储。对策：RBAC 用 <code>g</code> 收敛、RESTful 用 <code>keyMatch2</code> 收敛路径、稳定判据上移 matcher，大租户上 <code>FilteredAdapter</code>；</li><li><strong><code>keyMatch</code> 与 <code>keyMatch2</code> 混用</strong>：<code>keyMatch</code> 只认 <code>*</code>，<code>/res/:id</code> 必须 <code>keyMatch2</code>（或 3/4），否则路径参数永远匹配不上。对策：RESTful 模型统一 <code>keyMatch2</code>；</li><li><strong>读写并发无保护</strong>：普通 Enforcer 的写 API 与 <code>Enforce</code> 并发会数据竞争。对策：写操作集中到初始化或加外部锁，或改用 <code>NewSyncedEnforcer</code>；只读 <code>Enforce</code> 可放心并发。另注意 <code>EnableEnforce(false)</code> 会让 <code>Enforce</code> 恒返回 true（仅测试用），过滤加载的实例 <code>SavePolicy</code> 会报 <code>cannot save a filtered policy</code>（需读写分离）；</li></ol>
+<hr>
+
+<div class="callout warning"><p><b>生产警示：</b>Enforcer 不是并发安全的，多 goroutine 共享要加锁或用 SyncedEnforcer；AutoSave 会在每次变更后全量落盘，策略多时性能会塌方。</p></div>
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>Casbin</th><th>OPA / Rego</th><th>Casdoor</th><th>自研 RBAC</th><th>Keycloak</th><th>Zanzibar 风格（OpenFGA/SpiceDB）</th></tr></thead><tbody><tr><td>定位</td><td>嵌入式授权库</td><td>通用策略引擎</td><td>IAM（认证+授权+后台）</td><td>业务代码里的权限表</td><td>企业 IAM / SSO</td><td>关系型授权（ReBAC）服务</td></tr><tr><td>策略表达</td><td>PERM CONF + CSV/DB 规则</td><td>Rego 声明式语言</td><td>内嵌 Casbin 模型</td><td>SQL / if-else</td><td>策略 + 权限服务</td><td>关系元组 <code>user:alice viewer doc:1</code></td></tr><tr><td>部署形态</td><td>进程内，零依赖</td><td>sidecar / 嵌入 / 服务</td><td>独立服务</td><td>无</td><td>独立服务（较重）</td><td>独立服务 / 云</td></tr><tr><td>是否做认证</td><td><strong>否（只授权）</strong></td><td>否</td><td><strong>是</strong></td><td>常混在一起</td><td><strong>是</strong></td><td>否</td></tr><tr><td>关系图谱/传递闭包</td><td>有限（<code>g</code> 层级）</td><td>可表达</td><td>有限</td><td>弱</td><td>一般</td><td><strong>最强</strong></td></tr><tr><td>学习成本</td><td>低-中</td><td>中-高（要学 Rego）</td><td>低（开箱即用）</td><td>低</td><td>高</td><td>高</td></tr><tr><td>适合</td><td>应用内 RBAC/ABAC、多租户、网关鉴权</td><td>跨系统、K8s 准入、复杂策略</td><td>要现成登录/用户管理</td><td>权限极简且不演化</td><td>企业级 SSO/联邦身份</td><td>十亿级细粒度关系（文档共享、组织继承）</td></tr></tbody></table></div>
+<p>一句话决策：<strong>应用内嵌、模型清晰、要快速落地的 RBAC/ABAC 选 Casbin；策略逻辑复杂且要跨服务统一上 OPA；要现成登录与用户管理看 Casdoor/Keycloak；权限本质是「谁能看谁的文档」这类关系图谱时上 ReBAC（OpenFGA/SpiceDB）</strong>。</p>
+<p>何时不该用 Casbin：需要认证、用户目录或 SSO（它是授权层，不是身份系统）；授权依赖大规模关系传递与反向查询（「列出 alice 能看的所有文档」）——这是 ReBAC 的领域；要求集中式策略控制面、跨多语言服务统一审计灰度；以及策略一致性必须强一致而非 Watcher 的最终一致。反之，只要判据能收敛成「模型 + 少量规则」，Casbin 的成本几乎总是最低的。</p>
+<p>参考：<a href="https://casbin.org/">Apache Casbin 官网</a>、<a href="https://github.com/apache/casbin/releases">GitHub 仓库与 Releases</a>、<a href="https://casbin.org/docs/upgrading-casbin-go-v2-to-v3/">v2 → v3 迁移指南</a>、<a href="https://pkg.go.dev/github.com/casbin/casbin/v3">pkg.go.dev API</a>。</p>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

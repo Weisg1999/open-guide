@@ -163,10 +163,35 @@ message WatchRequest  { string name = 1; }</code></pre>
 <div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>四种流模式</td><td>Unary / Server streaming / Client streaming / Bidirectional streaming</td></tr><tr><td>代码生成</td><td><code>protoc-gen-go</code>（消息）+ <code>protoc-gen-go-grpc</code>（Client/Server 接口）</td></tr><tr><td>错误模型</td><td><code>status.Status</code> + 标准 <code>codes</code>（<code>NotFound</code> / <code>InvalidArgument</code> / <code>Unavailable</code>…），可带 <code>details</code></td></tr><tr><td>截止时间</td><td><code>context.WithTimeout</code> 自动转成 <code>grpc-timeout</code> 头，跨进程传播并逐跳扣减</td></tr><tr><td>元数据</td><td><code>metadata.MD</code>，类似 HTTP header；<code>-bin</code> 后缀自动 base64 编码二进制值</td></tr><tr><td>拦截器</td><td><code>UnaryClientInterceptor</code> / <code>StreamClientInterceptor</code> / 服务端对应版本，可组合成链</td></tr><tr><td>传输安全</td><td>TLS / mTLS、<code>grpc.WithTransportCredentials</code>、ALPN 协商 h2</td></tr><tr><td>服务治理</td><td>Resolver（DNS / etcd / xDS）→ Balancer（<code>round_robin</code> / <code>pick_first</code>）→ Picker</td></tr><tr><td>可运维</td><td>health check 协议、server reflection（grpcurl 可免 proto 调试）、channelz 连接诊断</td></tr><tr><td>流控与压缩</td><td>HTTP/2 WINDOW_UPDATE 背压；gzip 等 compressor 可插拔</td></tr><tr><td>消息边界</td><td>默认单条消息 4 MiB 上限，可配置（但不建议放大到几十 MB）</td></tr></tbody></table></div>
 <hr>
 
+<div class="features">
+  <div class="feature"><div class="fh"><h4>契约优先</h4></div><p>.proto 定义服务与消息，protoc 生成强类型客户端与服务端</p></div>
+  <div class="feature"><div class="fh"><h4>四种流模式</h4></div><p>Unary / Server streaming / Client streaming / Bidi streaming</p></div>
+  <div class="feature"><div class="fh"><h4>治理能力</h4></div><p>拦截器链、deadline 跨进程传播、resolver 与 balancer</p></div>
+</div>
 </section>
 <section data-anchor="3-核心概念与原理">
 <h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
-<h3 id="31-一次-unary-调用发生了什么">3.1 一次 Unary 调用发生了什么</h3>
+<h3 id="31-一次-unary-调用发生了什么">3.1 一次 Unary 调用发生了什么</h3><div class="figure">
+  <svg viewBox="0 0 880 268" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-grpc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6d28d9"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#4c1d95">Unary 调用链路</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">从桩代码到 HTTP/2 帧，再到服务端拦截器与业务 handler</text>
+    <rect x="142" y="82" width="175" height="80" rx="12" fill="#ede9fe" stroke="#6d28d9" stroke-width="1.5"/>
+    <text x="229" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#4c1d95">Client Stub</text>
+    <text x="229" y="136" text-anchor="middle" font-size="11" fill="#4c1d95">方法调用 + metadata + deadline</text>
+    <line x1="320" y1="122" x2="346" y2="122" stroke="#6d28d9" stroke-width="2" marker-end="url(#m-grpc)"/>
+    <rect x="352" y="82" width="175" height="80" rx="12" fill="#ede9fe" stroke="#6d28d9" stroke-width="1.5"/>
+    <text x="440" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#4c1d95">Protobuf 编码</text>
+    <text x="440" y="136" text-anchor="middle" font-size="11" fill="#4c1d95">二进制序列化为 HTTP/2 DATA 帧</text>
+    <line x1="532" y1="122" x2="558" y2="122" stroke="#6d28d9" stroke-width="2" marker-end="url(#m-grpc)"/>
+    <rect x="564" y="82" width="175" height="80" rx="12" fill="#ede9fe" stroke="#6d28d9" stroke-width="1.5"/>
+    <text x="651" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#4c1d95">Server 拦截器链</text>
+    <text x="651" y="136" text-anchor="middle" font-size="11" fill="#4c1d95">解码 -&gt; 中间件 -&gt; handler</text>
+    <rect x="40" y="186" width="800" height="58" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="210" font-size="12.5" fill="#1e293b">一个 HTTP/2 连接上可并发多个 stream，多路复用消除了应用层的连接队头阻塞。</text>
+  </svg>
+  <figcaption>Unary 调用链路</figcaption>
+</div>
 <pre><code class="lang-text">Client                                             Server
   │ ① hello.SayHello(ctx, req)                       │
   │ ② proto.Marshal(req) → []byte                   │
@@ -326,6 +351,7 @@ grpcurl -plaintext localhost:50051 list
 grpcurl -plaintext -d '{"name":"world"}' localhost:50051 greeter.v1.GreeterService/SayHello</code></pre>
 <hr>
 
+<div class="callout info"><p><b>实战要点：</b>每个 RPC 都设置 deadline 并在下游透传 context；没有超时的调用会一直占着 stream 与服务端 goroutine，故障时被级联拖垮。</p></div>
 </section>
 <section data-anchor="5-版本演进速览">
 <h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
@@ -340,6 +366,7 @@ grpcurl -plaintext -d '{"name":"world"}' localhost:50051 greeter.v1.GreeterServi
 <ol><li><strong>不设 deadline</strong>：客户端不设超时，服务端挂住就会永久占用 goroutine 与连接，级联拖垮调用方。每个 RPC 都 <code>context.WithTimeout</code>，并由入口统一传递剩余预算。</li><li><strong>每请求 <code>Dial</code></strong>：<code>ClientConn</code> 是长连接资源，全局复用；重复 Dial 会让 HTTP/2 多路复用彻底失效。</li><li><strong>用 <code>errors.Is</code> 判断 gRPC 错误</strong>：一律用 <code>status.Code(err)</code> / <code>status.FromError(err)</code>；<code>codes.Unavailable</code> 通常可重试，<code>InvalidArgument</code> 不能。</li><li><strong>忘加 Recovery 拦截器</strong>：handler panic 直接杀进程。</li><li><strong>消息超过 4 MiB</strong>：默认 <code>MaxRecvMsgSize</code> 会报 <code>ResourceExhausted</code>。正确做法是分片/流式传输或改用对象存储传 URL，而不是无脑调大上限。</li><li><strong>Proto 兼容性</strong>：字段号<strong>永不复用</strong>，删除字段要 <code>reserved 3, 5;</code> + <code>reserved "old_name";</code>；改类型、改字段号、把 <code>singular</code> 改成 <code>repeated</code> 都是破坏性变更。新增字段用新号，读取侧一律用 <code>GetXxx()</code> 拿零值安全。</li><li><strong>流式调用并发 Send</strong>：一个 stream 上<strong>不允许并发 <code>SendMsg</code></strong>（会数据竞争），也不允许同时一个 goroutine Send、另一个 Recv 之外的复杂组合；需要双向并发时各用一个 goroutine 并串行化 Send。</li><li><strong>忽略 <code>io.EOF</code></strong>：客户端 <code>Recv()</code> 返回 <code>io.EOF</code> 是流正常结束，不是错误；把它当错误上报会污染监控。</li><li><strong>Metadata key 非法</strong>：key 只能含小写字母、数字、<code>-</code>、<code>_</code>、<code>.</code>，二进制值必须用 <code>-bin</code> 后缀。大写 key 会被静默丢弃。</li><li><strong>直接关停</strong>：用 <code>GracefulStop()</code> 等待在途 RPC 结束（配超时后降级 <code>Stop()</code>），否则发布期间会出现大量 <code>Unavailable</code>。</li><li><strong>只看 HTTP 状态码</strong>：gRPC 几乎总是 200，真正的状态在 trailer。抓包/网关排障要看 <code>grpc-status</code>。</li><li><strong>重试放大</strong>：拦截器里无节流地重试会在故障时形成重试风暴。用 gRPC 官方 retry policy + token bucket 节流，且只对幂等方法重试。</li><li><strong>浏览器直连</strong>：浏览器无法直接发 gRPC（需要 HTTP/2 trailer 控制），要用 grpc-web / Connect 或 <a href="../gin/gin-guide.html">Gin</a> 等网关做协议转换。</li></ol>
 <hr>
 
+<div class="callout warning"><p><b>生产警示：</b>Protobuf 字段编号一旦上线不可复用，删字段要 reserved；消息体过大要分页或流式传输，默认 4MB 接收上限会直接报 ResourceExhausted。</p></div>
 </section>
 <section data-anchor="7-选型对比">
 <h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>

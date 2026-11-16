@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VictoriaMetrics / Thanos · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#ea580c; --accent-light:#ffedd5; --accent-dark:#9a3412;
+    --bg:#fdf9f5; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#241408; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#9a3412 0%,#ea580c 58%,#9a3412 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">VictoriaMetrics / Thanos<span class="ver">v1.156 · v0.42</span></div>
+  <div class="sub">Prometheus 长期存储两条路线</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a href="#2-功能特性总览">2. 功能特性总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-共同起点prometheus-tsdb-block">3.1 共同起点：Prometheus TSDB block</a>
+  <a class="sub-link" href="#32-victoriametrics一体化存储与集群数据流">3.2 VictoriaMetrics：一体化存储与集群数据流</a>
+  <a class="sub-link" href="#33-victoriametrics压缩metricsql-与内存磁盘取舍">3.3 VictoriaMetrics：压缩、MetricsQL 与内存/磁盘取舍</a>
+  <a class="sub-link" href="#34-thanosblock-上传与-store-api-联邦查询">3.4 Thanos：block 上传与 Store API 联邦查询</a>
+  <a class="sub-link" href="#35-thanosdownsampling副本去重与-compactor">3.5 Thanos：downsampling、副本去重与 Compactor</a>
+  <a class="sub-link" href="#36-两种架构的本质分野">3.6 两种架构的本质分野</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-部署victoriametrics单节点-集群-vmagent">4.1 部署：VictoriaMetrics（单节点 / 集群 / vmagent）</a>
+  <a class="sub-link" href="#42-部署thanossidecar-store-query-compactor">4.2 部署：Thanos（Sidecar / Store / Query / Compactor）</a>
+  <a class="sub-link" href="#43-采集端prometheus-配置与-go-应用埋点">4.3 采集端：Prometheus 配置与 Go 应用埋点</a>
+  <a class="sub-link" href="#44-go一套代码查询两条路线的全局视图">4.4 Go：一套代码查询两条路线的全局视图</a>
+  <a class="sub-link" href="#45-thanos-receivepush-形态与告警组件">4.5 Thanos Receive（push 形态）与告警组件</a>
+  <a href="#5-版本演进与要点">5. 版本演进与要点</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>VictoriaMetrics / Thanos 技术介绍与使用指南</h1>
+<p>Prometheus 长期存储与全局查询的两条路线：VM 走单二进制/集群的高压缩路线，Thanos 走对象存储加 Sidecar 的联邦路线。</p>
+<p style="opacity:.8;font-size:13.5px">Prometheus 长期存储两条路线</p>
+<div class="meta"><span>VM v1.156.0 · 2026.11</span><span>Thanos v0.42.5 · 2026.10</span><span>Apache-2.0</span><span>MetricsQL</span><span>对象存储 + 降采样</span><span>全局查询视图</span></div>
+</div>
+<blockquote><p>Prometheus 长期存储与全局查询的两条路线：二者解决的是同一个问题——本地 TSDB 保留期有限、单机不可扩展、多集群没有统一视图；但架构完全不同，VictoriaMetrics 是自研一体化时序库直接承接写入与查询，Thanos 是把 Prometheus 原生 TSDB block 搬进对象存储再叠一层联邦查询层。 上游：<a href="https://github.com/VictoriaMetrics/VictoriaMetrics">https://github.com/VictoriaMetrics/VictoriaMetrics</a> · <a href="https://github.com/thanos-io/thanos">https://github.com/thanos-io/thanos</a>　|　主线：VictoriaMetrics <strong>v1.156.0</strong>（1.x，2026-11-09）/ Thanos <strong>v0.42.5</strong>（0.42.x，2026-10-27），整理于 2026-11　|　协议：社区版均为 Apache-2.0（VictoriaMetrics 企业版功能另需商业许可；Thanos 为 CNCF Incubating 项目）</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p><a href="../prometheus/prometheus-guide.html">Prometheus 篇</a>讲清了「怎么拉、怎么存、怎么查、怎么告」，但它的本地 TSDB 有三条硬边界，正是二者存在的理由：<strong>保留期有限</strong>（默认 <code>--storage.tsdb.retention.time=15d</code>，只落本地盘，无廉价归档）；<strong>单机无副本无分片</strong>（重启期间不可查、盘坏即丢，HA 靠跑两个实例各拉一份但查询时数据重复）；<strong>联邦不等于长期存储</strong>（上层只拉下层算好的瞬时值，不做历史归档、跨集群去重与全局 PromQL）。</p>
+<div class="table-wrap"><table><thead><tr><th>共同问题</th><th>VictoriaMetrics 的答案</th><th>Thanos 的答案</th></tr></thead><tbody><tr><td>存得久、存得省</td><td>自研 TSDB + 高压缩比，本地盘即可，一个二进制起全套</td><td>block 上传对象存储（S3/MinIO/COS），近乎无限保留</td></tr><tr><td>多集群统一查询</td><td>数据进同一套 vmselect，天然全局</td><td>Query 通过 Store API 联邦 Sidecar 与 Store Gateway</td></tr><tr><td>HA 去重</td><td>写入侧打标签、查询侧 <code>dedup</code></td><td><code>--query.replica-label</code> 在查询时合并副本</td></tr><tr><td>接入方式</td><td>remote write 接收为主，也能自己抓（vmagent）</td><td>外挂 Sidecar（pull 不动采集链路）或 Receive（push 收 remote write）</td></tr></tbody></table></div>
+<p><strong>定位差异一句话</strong>：VictoriaMetrics 是「换一个更强的存储与查询引擎」，可替掉 Prometheus 的远端；Thanos 是「给已有 Prometheus 加一层」，采集链路原封不动。前者求极简运维与资源效率，后者求零侵入与无限容量。</p>
+<ul><li><strong>适用</strong>：跨集群/跨地域统一视图、年级容量与 SLO 趋势、HA 去重、降低单机资源占用、多租户隔离</li><li><strong>不适合</strong>：单集群且保留期几周内（直接调大 <code>retention.time</code>）、日志与单条请求上下文（用 <a href="../loki/loki-guide.html">Loki 篇</a>）、SQL 明细分析（用 <a href="../clickhouse/clickhouse-guide.html">ClickHouse 篇</a>）、业务时序与精确计费（用 <a href="../influxdb-v3/influxdb-v3-guide.html">InfluxDB v3 篇</a>）</li></ul>
+<blockquote><p>对象存储是 Thanos 的地基，自建参照 <a href="../minio/minio-guide.html">MinIO 篇</a>：bucket 容量、请求次数、跨区流量直接决定账单与查询延迟，这在 VictoriaMetrics 路线上是不存在的成本项。</p></blockquote>
+<hr>
+
+</section>
+<section data-anchor="2-功能特性总览">
+<h2 id="2-功能特性总览">2. 功能特性总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>VictoriaMetrics</th><th>Thanos</th></tr></thead><tbody><tr><td>核心思路</td><td>自研 TSDB 一体化替换/承接存储</td><td>复用 Prometheus TSDB block + 联邦查询层</td></tr><tr><td>部署形态</td><td>单节点 <code>victoria-metrics-prod</code> 单二进制；集群版 <code>vmstorage</code>/<code>vminsert</code>/<code>vmselect</code></td><td>Sidecar / Store Gateway / Query / Query Frontend / Compactor / Ruler / Receive</td></tr><tr><td>数据落点</td><td>本地盘或网络块存储（<code>-storageDataPath</code>）</td><td>对象存储 bucket（TSDB block）+ 各组件本地缓存</td></tr><tr><td>写入协议</td><td>remote write、Influx line、Graphite、OpenTSDB、OTLP、文本导入</td><td>Sidecar 上传 block；Receive 收 remote write</td></tr><tr><td>查询语言</td><td><strong>MetricsQL</strong>（PromQL 超集，兼容 Grafana）</td><td>标准 <strong>PromQL</strong>（Prometheus Query API 兼容）</td></tr><tr><td>保留期</td><td><code>-retentionPeriod</code>（如 <code>12months</code>），单机/集群统一语义</td><td>Compactor 按分辨率设 raw/5m/1h 保留，理论无限</td></tr><tr><td>降采样</td><td>社区版无（企业版特性），靠高压缩比省空间</td><td><strong>原生</strong>：Compactor 生成 5m / 1h 降采样 block</td></tr><tr><td>HA 去重</td><td>写入侧标签 + 查询侧 <code>dedup</code> / 集群副本</td><td><code>--query.replica-label</code> 在 Query 层合并副本</td></tr><tr><td>多租户</td><td>集群版以 <code>accountID</code>/<code>projectID</code> 路径前缀隔离</td><td>Receive + 租户标签 + hash 环，需自行规划</td></tr><tr><td>告警/预计算</td><td><code>vmalert</code>（规则 + Alertmanager）</td><td><code>Ruler</code>（规则）+ Query Frontend（缓存/拆分）</td></tr><tr><td>运维复杂度</td><td><strong>低</strong>：单节点零运维，集群版三类节点</td><td><strong>高</strong>：组件多 + bucket 生命周期 + compaction</td></tr><tr><td>外部依赖</td><td>无（单节点）；集群版仅自身节点</td><td>必须有对象存储（可用 <a href="../minio/minio-guide.html">MinIO</a>）</td></tr></tbody></table></div>
+<hr>
+
+<div class="features">
+  <div class="feature"><div class="fh"><h4>两条路线</h4></div><p>VM 是替代型 TSDB，Thanos 是 Prometheus 的联邦与长期存储层</p></div>
+  <div class="feature"><div class="fh"><h4>压缩与查询</h4></div><p>VM 高压缩比 + MetricsQL 扩展；Thanos 依赖对象存储与降采样</p></div>
+  <div class="feature"><div class="fh"><h4>运维复杂度</h4></div><p>VM 组件少、单机即可跑；Thanos 组件多但复用现有 Prometheus</p></div>
+</div>
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-共同起点prometheus-tsdb-block">3.1 共同起点：Prometheus TSDB block</h3>
+<p>Thanos 搬运的就是 Prometheus 每 2 小时从内存 Head 落盘的不可变 block：</p>
+<pre><code class="lang-text">&lt;ULID&gt;/
+├── chunks/      # 压缩样本（XOR + 时间戳 delta-of-delta）
+├── index        # 倒排索引：label=value -&gt; series ID
+├── meta.json    # ULID、[minTime,maxTime]、compaction 层级
+└── tombstones   # 删除标记</code></pre>
+<p>block 自包含、不可变，天然适合整体上传与缓存——Thanos 全靠这一点；VictoriaMetrics 完全不复用 block，而把样本按自己的结构重排，故压缩率、查询路径、扩容方式从根上不同。</p>
+<h3 id="32-victoriametrics一体化存储与集群数据流">3.2 VictoriaMetrics：一体化存储与集群数据流</h3><div class="figure">
+  <svg viewBox="0 0 880 268" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-victoriametrics" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#ea580c"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#9a3412">VictoriaMetrics 集群数据流</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">写入按 series 哈希分片，查询由 vmselect 聚合各 vmstorage</text>
+    <rect x="36" y="82" width="175" height="80" rx="12" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+    <text x="124" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#9a3412">vmagent / remote write</text>
+    <text x="124" y="136" text-anchor="middle" font-size="11" fill="#9a3412">抓取或接收 Prometheus 数据</text>
+    <line x1="215" y1="122" x2="241" y2="122" stroke="#ea580c" stroke-width="2" marker-end="url(#m-victoriametrics)"/>
+    <rect x="247" y="82" width="175" height="80" rx="12" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+    <text x="334" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#9a3412">vminsert</text>
+    <text x="334" y="136" text-anchor="middle" font-size="11" fill="#9a3412">按 series 哈希路由到分片</text>
+    <line x1="426" y1="122" x2="452" y2="122" stroke="#ea580c" stroke-width="2" marker-end="url(#m-victoriametrics)"/>
+    <rect x="458" y="82" width="175" height="80" rx="12" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+    <text x="546" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#9a3412">vmstorage</text>
+    <text x="546" y="136" text-anchor="middle" font-size="11" fill="#9a3412">列式压缩 + 倒排索引</text>
+    <line x1="637" y1="122" x2="663" y2="122" stroke="#ea580c" stroke-width="2" marker-end="url(#m-victoriametrics)"/>
+    <rect x="669" y="82" width="175" height="80" rx="12" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+    <text x="756" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#9a3412">vmselect</text>
+    <text x="756" y="136" text-anchor="middle" font-size="11" fill="#9a3412">MetricsQL 聚合与返回</text>
+    <rect x="40" y="186" width="800" height="58" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="210" font-size="12.5" fill="#1e293b">Thanos 走的是另一条路：Prometheus 本地 block 上传对象存储，靠 St</text>
+    <text x="60" y="230" font-size="12.5" fill="#1e293b">ore API 做全局联邦查询。</text>
+  </svg>
+  <figcaption>VictoriaMetrics 集群数据流</figcaption>
+</div>
+<p>单节点把采集、存储、查询、UI（<code>vmui</code>）塞进一个二进制，靠 flag 配置；集群版拆成三类节点：</p>
+<pre><code class="lang-text"> scrape / remote write ─► vmagent（抓取、relabel、WAL 队列）
+                            │ remote write
+                            ▼
+ 写入 ─► vminsert（无状态，按 accountID 一致性哈希选 vmstorage）
+                            │
+      ┌─────────────────────┼─────────────────────┐
+      ▼                     ▼                     ▼
+ vmstorage(shard)     vmstorage(shard)     vmstorage(shard) ← 唯一有状态、保存数据
+      └─────────────────────┼─────────────────────┘
+                            ▼
+ 查询 ─► vmselect（无状态，扇出、合并、去重）──► Grafana / vmalert</code></pre>
+<ul><li><code>vmstorage</code> 有状态且不可随意替换，扩容要改 <code>-storageNode</code> 并做数据再平衡；<code>vminsert</code>/<code>vmselect</code>/<code>vmagent</code> 无状态，可随意水平扩。</li><li>多租户靠 URL 前缀：<code>/insert/42/prometheus/api/v1/write</code> 与 <code>/select/42/prometheus/api/v1/query</code> 中的 <code>42</code> 即 <code>accountID</code>；<strong>集群只认数字 ID</strong>，名称、鉴权、配额要放前置网关（vmauth）。</li><li><code>vmalert</code> 单独评估 recording/alerting rules 并回写结果、发 Alertmanager，相当于 Prometheus 的 rule evaluator + Thanos Ruler。</li></ul>
+<h3 id="33-victoriametrics压缩metricsql-与内存磁盘取舍">3.3 VictoriaMetrics：压缩、MetricsQL 与内存/磁盘取舍</h3>
+<p>高压缩比来自按 metricName 聚簇存储使重复标签字典化、时间戳与值分别 delta/XOR 变长编码、索引与数据按时间分区。代价是<strong>用内存换磁盘</strong>：活跃 series 索引、TSID 缓存、merge 缓冲区常驻内存，内存不足不会优雅降级而是 OOM。</p>
+<ul><li>容量规划要按 <strong>active series 数</strong>估内存，而非磁盘容量；<code>-retentionPeriod=12months</code> 是全局滚动删除，<strong>按整月分区、非精确到秒</strong>，社区版只有单一保留期（多级保留/自动降采样是企业版能力）。</li><li><strong>MetricsQL</strong> 是 PromQL 超集：<code>WITH</code> 模板、<code>rollup_*</code> 系列、<code>label_match</code>/<code>label_mismatch</code>、<code>*_over_time</code> 扩展。关键行为差异：<code>increase()</code>/<code>rate()</code> <strong>不做外推</strong>，同一 counter 在 VM 与 Prometheus/Thanos 上可能差几个百分点——迁移 SLO 阈值必须重新校准。</li></ul>
+<pre><code class="lang-promql"># MetricsQL 专属：WITH 模板函数抽取公共聚合
+WITH (common = {job="app", env="prod"}, rps(m) = sum(rate(m[5m])) by (cluster))
+rps(app_http_requests_total{common})
+# rollup_* 系列：在整个 lookbehind 窗口上聚合而非逐点计算
+rollup_rate(app_http_requests_total[5m])
+# 纯 PromQL 子集：两条路线都能跑，Grafana 面板直接复用
+sum by (cluster) (rate(app_http_requests_total[5m]))</code></pre>
+<h3 id="34-thanosblock-上传与-store-api-联邦查询">3.4 Thanos：block 上传与 Store API 联邦查询</h3>
+<p>Thanos 不改采集，外挂一组组件，组件间用 gRPC <strong>Store API</strong> 通信：</p>
+<pre><code class="lang-text"> Prometheus ──(本地 TSDB)──► Sidecar ──上传 block──► 对象存储 bucket
+      │ Sidecar 同时把「近 2h 热数据」通过 StoreAPI 暴露（否则刚产生的数据查不到）
+      │                                  │ 读历史 block
+      │                                  ▼
+      │                        Store Gateway（索引缓存 + 惰性加载 chunks）
+      │                                  │ Store API (gRPC)
+      └──────────► Query / Query Frontend（扇出全部后端、合并、去重）──► Grafana</code></pre>
+<ul><li><strong>Query Frontend</strong> 在 Query 前做查询拆分、步骤对齐与结果缓存，是长区间查询必配；Grafana 只当它是一个 Prometheus 数据源。</li><li><strong>push 形态</strong>：用 <strong>Receive</strong> 替代 Sidecar，直接收 remote write、本地攒成 block 再上传，适合不想每集群跑 Prometheus 或跨网络边界；代价是丢了拉取模型自带的 <code>up</code> 健康探测，且要自己设计 hash 环与副本。</li></ul>
+<h3 id="35-thanosdownsampling副本去重与-compactor">3.5 Thanos：downsampling、副本去重与 Compactor</h3>
+<p><strong>Compactor</strong> 串行处理单个 bucket：压缩小 block、应用保留策略、生成降采样数据。</p>
+<pre><code class="lang-text"> raw block（原始精度）──保留 --retention.resolution-raw
+      ├─► 5m 降采样 ──保留 resolution-5m
+      └─► 1h 降采样 ──保留 resolution-1h
+ 查 90 天曲线自动选 1h 数据：扫描样本降到 1/120，这是「长区间不炸」的根因</code></pre>
+<p>降采样保留 <code>count</code>/<code>sum</code>/<code>min</code>/<code>max</code>，<code>rate</code>、<code>histogram_quantile</code> 仍可算但精度下降，<strong>不能替代原始数据</strong>。<strong>副本去重</strong>：HA 两份数据标签只差 <code>prometheus_replica</code>，Query 用 <code>--query.replica-label=prometheus_replica</code> 声明「该标签不参与 series 身份」，合并时折叠成一条；漏配则所有曲线数值翻倍、告警误报，配合 <code>external_labels</code>（<code>cluster</code>/<code>region</code>）标全局唯一来源才不会误伤不同集群。</p>
+<h3 id="36-两种架构的本质分野">3.6 两种架构的本质分野</h3>
+<div class="table-wrap"><table><thead><tr><th></th><th>VictoriaMetrics</th><th>Thanos</th></tr></thead><tbody><tr><td>查询放大</td><td>扇出到 N 个 vmstorage，无对象存储往返，延迟稳定</td><td>扇出到 N 个 Sidecar + M 个 Store Gateway，长区间天然放大，靠 downsampling + Query Frontend 压制</td></tr><tr><td>成本结构</td><td>本地盘 + 内存，数据不出口，成本可预测</td><td>容量便宜，但 PUT/GET 请求费、跨区流量、索引缓存是隐性成本</td></tr><tr><td>运维复杂度</td><td>单节点零运维；集群版 3 类节点</td><td>5~7 类组件 + bucket 生命周期 + Compactor 单例约束</td></tr><tr><td>与 Prometheus 关系</td><td>可替换/承接，采集可用 vmagent 重写</td><td>严格外挂，复用原生 TSDB 与规则语义</td></tr><tr><td>PromQL 兼容性</td><td>MetricsQL 超集，行为细节有差异</td><td>原生 PromQL 语义，迁移成本最低</td></tr></tbody></table></div>
+<blockquote><p>与 <strong>Grafana Mimir / Cortex</strong> 的边界：二者同属「remote write + 对象存储」家族，Mimir 主打原生多租户（<strong>AGPLv3</strong>，嵌入商业产品需法务评估），Cortex 是其上游前身（Apache-2.0，CNCF Incubating）。Thanos 与它们的根本区别是<strong>是否保留每集群独立 Prometheus + block 上传路径</strong>；VictoriaMetrics 根本区别是<strong>不依赖对象存储</strong>。Prometheus + 联邦只是层级聚合，三者都不提供长期归档与全局去重，不在同一能力档位。</p></blockquote>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-部署victoriametrics单节点-集群-vmagent">4.1 部署：VictoriaMetrics（单节点 / 集群 / vmagent）</h3>
+<pre><code class="lang-bash"># 单节点：一个二进制起全套；查询 /api/v1/query，remote write 接收 /api/v1/write，UI /vmui
+docker run -d --name vmsingle -p 8428:8428 -v vmdata:/data \
+  victoriametrics/victoria-metrics:v1.156.0 \
+  -retentionPeriod=12months -storageDataPath=/data
+# 集群版：vmstorage 有状态，vminsert/vmselect 无状态
+docker run -d --name vmstorage-1 -p 8400:8400 -p 8401:8401 \
+  victoriametrics/vmstorage:v1.156.0-cluster -retentionPeriod=12months
+docker run -d --name vminsert -p 8480:8480 \
+  victoriametrics/vminsert:v1.156.0-cluster -storageNode=vmstorage-1:8400
+docker run -d --name vmselect -p 8481:8481 \
+  victoriametrics/vmselect:v1.156.0-cluster -storageNode=vmstorage-1:8401
+# 多租户路径：/insert/42/prometheus/api/v1/write、/select/42/.../query（42=accountID）
+# vmagent：抓取 + relabel + 带 WAL 的可靠 remote write（-promscrape.config 兼容 Prometheus 语法）
+docker run -d --name vmagent -p 8429:8429 \
+  victoriametrics/vmagent:v1.156.0 -promscrape.config=/etc/vmagent/scrape.yml \
+  -remoteWrite.url=http://vmsingle:8428/api/v1/write -remoteWrite.tmpDataPath=/tmp/vmagent</code></pre>
+<h3 id="42-部署thanossidecar-store-query-compactor">4.2 部署：Thanos（Sidecar / Store / Query / Compactor）</h3>
+<pre><code class="lang-bash"># 对象存储用 MinIO（见 ../minio/minio-guide.md）
+docker run -d --name minio -p 9000:9000 \
+  -e MINIO_ROOT_USER=minio -e MINIO_ROOT_PASSWORD=minio123 minio/minio server /data
+mc alias set local http://localhost:9000 minio minio123 &amp;&amp; mc mb local/thanos
+# Sidecar 传冷 block + 暴露近 2h 热数据；Store 读历史；Query 联邦；Compactor 单例
+docker run -d --name thanos-sidecar --network host \
+  -v "$(pwd)/prometheus-data:/prometheus" -v "$(pwd)/bucket.yml:/etc/thanos/bucket.yml" \
+  quay.io/thanos/thanos:v0.42.5 sidecar --tsdb.path=/prometheus \
+  --prometheus.url=http://localhost:9090 --objstore.config-file=/etc/thanos/bucket.yml
+docker run -d --name thanos-store --network host \
+  -v "$(pwd)/bucket.yml:/etc/thanos/bucket.yml" \
+  quay.io/thanos/thanos:v0.42.5 store --data-dir=/var/thanos/store \
+  --objstore.config-file=/etc/thanos/bucket.yml
+docker run -d --name thanos-query --network host \
+  quay.io/thanos/thanos:v0.42.5 query --http-address=0.0.0.0:10902 \
+  --store=localhost:10901 --query.replica-label=prometheus_replica
+docker run -d --name thanos-compactor --network host \
+  -v "$(pwd)/bucket.yml:/etc/thanos/bucket.yml" \
+  quay.io/thanos/thanos:v0.42.5 compact --data-dir=/var/thanos/compact \
+  --objstore.config-file=/etc/thanos/bucket.yml \
+  --retention.resolution-raw=30d --retention.resolution-5m=180d --retention.resolution-1h=2y</code></pre>
+<pre><code class="lang-yaml"># bucket.yml —— 所有访问对象存储的 Thanos 组件共用
+type: S3
+config:
+  bucket: thanos
+  endpoint: localhost:9000
+  access_key: minio
+  secret_key: minio123
+  insecure: true</code></pre>
+<h3 id="43-采集端prometheus-配置与-go-应用埋点">4.3 采集端：Prometheus 配置与 Go 应用埋点</h3>
+<pre><code class="lang-yaml"># prometheus.yml —— external_labels 必须全局唯一，否则 Thanos 分不清来源
+global:
+  scrape_interval: 15s
+  external_labels: { cluster: cn-shanghai-a, prometheus_replica: replica-0 }
+scrape_configs:
+  - job_name: "app"
+    static_configs:
+      - targets: ["localhost:8080"]
+remote_write:
+  - url: http://vmsingle:8428/api/v1/write   # 路线 A：推给 vmsingle / vminsert
+    queue_config: { max_samples_per_send: 10000, capacity: 20000 }
+  # - url: http://localhost:10908/api/v1/receive  # 路线 B：推给 Thanos Receive（见 4.5）</code></pre>
+<pre><code class="lang-go">package main
+
+import (
+    "log"
+    "net/http"
+
+    "github.com/prometheus/client_golang/prometheus"
+    "github.com/prometheus/client_golang/prometheus/collectors"
+    "github.com/prometheus/client_golang/prometheus/promhttp"
+)
+
+func main() {
+    reg := prometheus.NewRegistry()
+    reg.MustRegister(collectors.NewGoCollector(),
+        collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
+    requests := prometheus.NewCounterVec(prometheus.CounterOpts{
+        Name: "app_http_requests_total",
+        Help: "Total HTTP requests handled, labelled by route and status.",
+    }, []string{"route", "code"})
+    reg.MustRegister(requests)
+    mux := http.NewServeMux()
+    mux.HandleFunc("/api/users", func(w http.ResponseWriter, r *http.Request) {
+        requests.WithLabelValues("/api/users", "200").Inc() // 用路由模板，勿用 r.URL.Path
+        w.WriteHeader(http.StatusOK)
+        _, _ = w.Write([]byte("ok"))
+    })
+    mux.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
+    log.Println("listening on :8080, metrics at /metrics")
+    log.Fatal(http.ListenAndServe(":8080", mux))
+}</code></pre>
+<blockquote><p>用独立 <code>Registry</code> 而非默认注册表避免重复注册 panic；标签只放有界枚举，见 <a href="../prometheus/prometheus-guide.html">Prometheus 篇</a>。批处理补数可走 VM 的 <code>/api/v1/import/prometheus</code> 文本导入端点，无需 protobuf/snappy。</p></blockquote>
+<h3 id="44-go一套代码查询两条路线的全局视图">4.4 Go：一套代码查询两条路线的全局视图</h3>
+<pre><code class="lang-go">package main
+
+import (
+    "fmt"
+    "io"
+    "log"
+    "net/http"
+    "net/url"
+)
+
+// vmsingle / vmselect / Thanos Query 都兼容 Prometheus /api/v1/query，
+// 因此同一段代码可无缝切换后端，拿到跨集群的全局结果。
+func query(endpoint, expr string) (string, error) {
+    u := endpoint + "/api/v1/query?query=" + url.QueryEscape(expr)
+    resp, err := http.Get(u)
+    if err != nil {
+        return "", err
+    }
+    defer resp.Body.Close()
+    b, err := io.ReadAll(resp.Body)
+    return fmt.Sprintf("%s %s", resp.Status, b), err
+}
+
+func main() {
+    expr := `sum by (cluster) (rate(app_http_requests_total[5m]))`
+    for _, ep := range []string{"http://localhost:8428", "http://localhost:10902"} {
+        out, err := query(ep, expr)
+        if err != nil {
+            log.Fatal(err)
+        }
+        fmt.Println(ep, out)
+    }
+}</code></pre>
+<h3 id="45-thanos-receivepush-形态与告警组件">4.5 Thanos Receive（push 形态）与告警组件</h3>
+<pre><code class="lang-bash"># Receive 直接收 remote write 替代 Sidecar（hash 环见 receive.yml）
+docker run -d --name thanos-receive --network host \
+  -v "$(pwd)/bucket.yml:/etc/thanos/bucket.yml" -v "$(pwd)/receive.yml:/etc/thanos/receive.yml" \
+  quay.io/thanos/thanos:v0.42.5 receive --tsdb.path=/var/thanos/receive \
+  --grpc-address=0.0.0.0:10907 --http-address=0.0.0.0:10908 \
+  --remote-write.address=0.0.0.0:10908/api/v1/receive \
+  --objstore.config-file=/etc/thanos/bucket.yml \
+  --receive.replication-factor=1 --receive.hashrings-file=/etc/thanos/receive.yml
+# 规则评估：vmalert（VM）/ Ruler（Thanos），规则语法与 Prometheus 一致（recording/alerting + for）
+docker run -d --name vmalert --network host \
+  -v "$(pwd)/rules.yml:/etc/vmalert/rules.yml" \
+  victoriametrics/vmalert:v1.156.0 -datasource.url=http://localhost:8428 \
+  -notifier.url=http://localhost:9093 -rule=/etc/vmalert/rules.yml
+docker run -d --name thanos-ruler --network host \
+  -v "$(pwd)/rules.yml:/etc/thanos/rules.yml" \
+  quay.io/thanos/thanos:v0.42.5 rule --data-dir=/var/thanos/rule \
+  --rule-file=/etc/thanos/rules.yml --alertmanagers.url=http://localhost:9093 \
+  --query=localhost:10902 --label=cluster="cn-shanghai-a"
+curl -s 'http://localhost:8428/api/v1/query?query=up'        # 查询
+thanos tools bucket inspect --objstore.config-file=bucket.yml # block/降采样/保留状态
+thanos tools bucket verify  --objstore.config-file=bucket.yml # 重叠/损坏 block</code></pre>
+<pre><code class="lang-yaml"># receive.yml —— hash 环按 tenant 标签路由
+- tenant: default
+  endpoints: [localhost:10907]</code></pre>
+<hr>
+
+<div class="callout info"><p><b>实战要点：</b>先算保留期与基数：本地盘能撑住就别急着上集群；需要跨集群全局视图时，Thanos 的 Query 层更自然，单集群高写入则优先 VM。</p></div>
+</section>
+<section data-anchor="5-版本演进与要点">
+<h2 id="5-版本演进与要点">5. 版本演进与要点<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>组件</th><th>阶段</th><th>关键变化与迁移注意点</th></tr></thead><tbody><tr><td>VictoriaMetrics</td><td>1.0x ~ 1.4x</td><td>单节点成熟、集群版三节点定形；MetricsQL、vmagent、vmalert、vmbackup 工具链补齐</td></tr><tr><td><strong>VictoriaMetrics</strong></td><td><strong>1.15x（2026）</strong></td><td>主线 <strong>v1.156.0</strong>（2026-11-09）：企业版改为 <code>-eula</code> 接受协议、<code>-license*</code> 废弃；vmagent 支持按 <code>-remoteWrite.url</code> 独立持久化队列；修复 stream aggregation 乱序、cgroup v1 资源探测</td></tr><tr><td>Thanos</td><td>0.2x ~ 0.3x</td><td>Sidecar + Store + Query 基本盘；Compactor 引入 5m/1h 降采样；Query Frontend 查询拆分</td></tr><tr><td><strong>Thanos</strong></td><td><strong>0.4x（2026）</strong></td><td>主线 <strong>v0.42.5</strong>（2026-10-27）：0.42 重点在 Receive 多租户写入、按 endpoint 配置、租户生命周期；Query Frontend 复用低步长缓存；修复 exemplar 跨层 external label 丢失与 gRPC 安全公告</td></tr></tbody></table></div>
+<p><strong>主线版本与许可（2026-11 核对）</strong>：VictoriaMetrics 主线 <strong>1.x</strong>，最新稳定 <strong>v1.156.0</strong>；Thanos 主线 <strong>0.x</strong>，最新稳定 <strong>v0.42.5</strong>，仍未发布 1.0，属 CNCF Incubating。两者社区版均 <strong>Apache-2.0</strong>，Thanos/Cortex 亦为 Apache-2.0，而 <strong>Grafana Mimir 为 AGPLv3</strong>，嵌入对外产品需法务评估。VictoriaMetrics <strong>企业版专有</strong>：多级保留期、原生降采样、异常检测、自动备份、LTS，需商业许可，切勿写进社区版方案。升级要点：VM 各组件版本必须配套；Thanos 所有组件必须同一版本；remote write 2.0 规范 2026 年仍为实验性、跨后端支持不一致，生产以 1.0 协议为准。若上述版本查不到，一律以「截至 2026-11 主线」表述，不臆造版本号。</p>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>单机够用却硬上分布式</strong>：单集群、周级保留直接调大 <code>--storage.tsdb.retention.time</code> 最省事。<strong>对策</strong>：先确认真的需要全局视图/年计保留再引入。</li><li><strong><code>-retentionPeriod</code> 单位写错</strong>：写成 <code>12</code> 或 <code>12d</code> 语义都不对。<strong>对策</strong>：用 <code>12months</code>/<code>2y</code> 带单位写法，并知道删除按整月分区、非精确到秒。</li><li><strong>Thanos 漏配唯一 <code>external_labels</code></strong>：两个集群都叫 <code>cluster=prod</code> 会被当成同一来源。<strong>对策</strong>：每个 Prometheus 写全局 <code>external_labels</code>，上线前 <code>thanos tools bucket inspect</code> 核对。</li><li><strong>HA 双副本数据翻倍</strong>：漏了 <code>--query.replica-label</code>，<code>rate()</code> 直接翻倍、告警全误报。<strong>对策</strong>：所有副本用同一 replica 标签名，Query 与 Ruler 都声明，用 <code>count(up) by (cluster)</code> 验证。</li><li><strong>长区间查询直接打 Query</strong>：一年曲线把请求放大到全部 block，拖垮 Store Gateway。<strong>对策</strong>：必配 Compactor 降采样 + Query Frontend，面板限制最大时间范围，raw 只用于短窗口排障。</li><li><strong>只算容量不算请求费与流量</strong>：Store Gateway 反复拉索引/chunks 产生大量 GET。<strong>对策</strong>：留足本地缓存盘、监控 bucket 操作数与跨区流量、同地域部署（见 <a href="../minio/minio-guide.html">MinIO 篇</a>）。</li><li><strong>把 VM 当成「省内存」方案</strong>：高压缩比是<strong>用内存换磁盘</strong>，索引与缓存常驻内存。<strong>对策</strong>：按活跃 series 数估内存，监控 <code>vm_*</code> 自监控指标，OOM 前先扩内存或减基数。</li><li><strong>高基数标签照搬</strong>：<code>user_id</code>/<code>trace_id</code>/原始 URL 做标签，两条路线都会爆。<strong>对策</strong>：标签只放有界枚举，明细进日志/链路（<a href="../opentelemetry/opentelemetry-guide.html">OpenTelemetry 篇</a>），查询侧用 <code>-search.maxSeries</code> 限流兜底。</li><li><strong>单节点与集群端点混用</strong>：集群版必须带 <code>/insert/&lt;accountID&gt;/...</code> 前缀，直接 POST <code>/api/v1/write</code> 会 404。<strong>对策</strong>：配置时明确区分 vmsingle 与 vminsert/vmselect 路径，accountID 由网关注入。</li><li><strong>多租户只靠路径、无鉴权</strong>：集群只认数字 <code>accountID</code> 不校验身份。<strong>对策</strong>：前置 vmauth/API 网关做认证、配额与租户映射，别把 vmselect 直接暴露给租户。</li><li><strong>把 MetricsQL 搬到 Thanos/Grafana</strong>：<code>WITH</code>、<code>rollup_*</code>、<code>label_match</code> 在标准 PromQL 直接语法错。<strong>对策</strong>：公共面板坚持用 PromQL 子集，VM 专属扩展只放 VM 数据源并注明不可移植。</li><li><strong><code>increase</code>/<code>rate</code> 跨路线对不上</strong>：MetricsQL 不外推，同一 counter 差几个百分点。<strong>对策</strong>：迁移 SLO 阈值重新校准，别把告警表达式在两条路线间原样复制。</li><li><strong>remote write 无队列、抖动丢数据</strong>：不落盘即内存排队。<strong>对策</strong>：开启 WAL/持久化队列（<code>-remoteWrite.tmpDataPath</code>、<code>queue_config</code>），监控 <code>prometheus_remote_storage_*</code> 失败与积压。</li><li><strong>Compactor 多实例抢同一 bucket</strong>：会损坏 block；Sidecar 跨集群写同一 bucket 也会重叠。<strong>对策</strong>：每 bucket 只跑一个 Compactor，用 relabel 或独立 bucket 隔离租户，定期 <code>bucket verify</code>。</li><li><strong>拿它存日志/明细/精确计费</strong>：时序库为聚合监控设计。<strong>对策</strong>：日志走 <a href="../loki/loki-guide.html">Loki 篇</a>、明细走 <a href="../clickhouse/clickhouse-guide.html">ClickHouse 篇</a>、业务时序走 <a href="../influxdb-v3/influxdb-v3-guide.html">InfluxDB v3 篇</a>。</li><li><strong>不看自监控</strong>：查询变慢、block 上传滞后、去重失效都不会主动报错。<strong>对策</strong>：给各组件配抓取与告警（compactor 进度、store 延迟、bucket 错误率、query 并发），共用 Alertmanager。</li></ol>
+<hr>
+
+<div class="callout warning"><p><b>生产警示：</b>remote write 的队列与超时配置不当会拖垮 Prometheus 本身；Thanos 的 downsampling 会让原始精度丢失，排障必须保留 raw block 的查询入口。</p></div>
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>VictoriaMetrics</th><th>Thanos</th><th>Grafana Mimir</th><th>Cortex</th><th>Prometheus + 联邦</th></tr></thead><tbody><tr><td>架构</td><td>一体化自研 TSDB</td><td>block 上传 + StoreAPI 联邦</td><td>remote write + 对象存储</td><td>remote write + 对象存储</td><td>层级聚合，无长期存储</td></tr><tr><td>采集链路</td><td>vmagent 可重写</td><td>沿用原生 Prometheus</td><td>沿用原生 Prometheus</td><td>沿用原生 Prometheus</td><td>原生</td></tr><tr><td>对象存储</td><td><strong>不需要</strong></td><td><strong>必须</strong></td><td>必须</td><td>必须</td><td>不需要</td></tr><tr><td>降采样</td><td>企业版</td><td><strong>原生 5m/1h</strong></td><td>无</td><td>无</td><td>无</td></tr><tr><td>查询语言</td><td>MetricsQL</td><td>标准 PromQL</td><td>PromQL / MQE</td><td>PromQL</td><td>PromQL</td></tr><tr><td>多租户</td><td>集群版 accountID 原生</td><td>Receive + 标签规划</td><td><strong>原生最完整</strong></td><td>原生</td><td>无</td></tr><tr><td>运维复杂度</td><td><strong>最低</strong></td><td>高</td><td>高</td><td>高</td><td>低</td></tr><tr><td>许可</td><td>Apache-2.0（企业版另计）</td><td>Apache-2.0</td><td>AGPLv3</td><td>Apache-2.0</td><td>Apache-2.0</td></tr></tbody></table></div>
+<p>按决策维度落点：</p>
+<div class="table-wrap"><table><thead><tr><th>决策维度</th><th>倾向</th><th>理由</th></tr></thead><tbody><tr><td><strong>单机够用</strong>（单集群、周级保留）</td><td>都别上，调大 <code>retention.time</code></td><td>引入分布式系统是无谓成本</td></tr><tr><td><strong>需要全局视图 + 想少运维</strong></td><td><strong>VictoriaMetrics</strong></td><td>无对象存储，单二进制/vmselect 即全局查询</td></tr><tr><td><strong>已有对象存储 / 已在跑 Prometheus 且不想改采集</strong></td><td><strong>Thanos</strong></td><td>Sidecar 外挂零侵入，block 归档无限保留</td></tr><tr><td><strong>已有对象存储 + 强多租户硬隔离</strong></td><td>Grafana Mimir（注意 AGPLv3）</td><td>租户、配额、限流最完整</td></tr><tr><td><strong>多租户但想避开 AGPLv3</strong></td><td>VM 集群版 / Thanos Receive + 前置网关</td><td>Apache-2.0，租户映射自己掌控</td></tr><tr><td><strong>极致压缩比、内存充足、成本敏感</strong></td><td><strong>VictoriaMetrics</strong></td><td>高压缩比，数据不出本地盘</td></tr><tr><td><strong>超长区间（年级）历史查询</strong></td><td><strong>Thanos</strong></td><td>唯一原生降采样，长区间扫描成本最低</td></tr></tbody></table></div>
+<p>一句话决策结论：<strong>想用最少组件、最低资源把 Prometheus 的存储和全局查询一次做好 → VictoriaMetrics；已重度依赖 Prometheus + 对象存储、要保持采集链路与 PromQL 语义原封不动 → Thanos</strong>。二者不是「谁更好」，而是「换引擎」与「加一层」两条方向相反的路。</p>
+<p>何时不该用：</p>
+<ul><li><strong>单机就能满足</strong>（单集群、保留期 &lt; 2 个月、无跨集群查询）：直接调大 Prometheus 本地保留期，别引入任何一套。</li><li><strong>只有对象存储、却没有跨集群/长期需求</strong>：Thanos 的组件与 bucket 治理成本收不回来。</li><li><strong>要 SQL 分析、明细事件、日志检索或精确计费</strong>：四条路线都是聚合型时序监控，明细分别走 <a href="../clickhouse/clickhouse-guide.html">ClickHouse</a>、<a href="../loki/loki-guide.html">Loki</a>、<a href="../influxdb-v3/influxdb-v3-guide.html">InfluxDB v3</a>。</li><li><strong>对 AGPLv3 敏感且要把监控系统嵌入对外产品</strong>：避开 Mimir，回到 Apache-2.0 的 VM / Thanos / Cortex 并让法务确认。</li><li><strong>没有对象存储运维能力、也不想自建</strong>（<a href="../minio/minio-guide.html">MinIO 篇</a>）：优先 VM 单节点或托管云监控，别硬扛 bucket 生命周期。</li></ul>
+<blockquote><p>落地顺序：先统一 <code>cluster</code>/<code>replica</code> 标签规范与 <a href="../opentelemetry/opentelemetry-guide.html">OpenTelemetry</a> Resource → 打通 remote write → 配好去重与降采样 → 再上全局面板与告警。<strong>先看标签与保留期，再选引擎</strong>，绝大多数「查询慢/数据翻倍/账单爆炸」都是这两件事没定好。</p></blockquote>
+<p>参考：<a href="https://docs.victoriametrics.com/">https://docs.victoriametrics.com/</a> · <a href="https://thanos.io/">https://thanos.io/</a> · <a href="https://github.com/VictoriaMetrics/VictoriaMetrics/releases">https://github.com/VictoriaMetrics/VictoriaMetrics/releases</a> · <a href="https://github.com/thanos-io/thanos/releases">https://github.com/thanos-io/thanos/releases</a> · 版本与许可核对截至 2026-11-13，具体以上游最新 release 为准。</p>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

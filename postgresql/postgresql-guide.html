@@ -180,6 +180,11 @@ func main() {
 <div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>并发控制</td><td><strong>MVCC 元组多版本</strong>（<code>xmin</code> / <code>xmax</code>）、VACUUM 回收、HOT 更新、事务 ID 回卷防护</td></tr><tr><td>隔离级别</td><td>默认 <strong>READ COMMITTED</strong>；REPEATABLE READ 为快照隔离；SERIALIZABLE 用 <strong>SSI</strong>（可能报 <code>40001</code> 需重试）</td></tr><tr><td>索引</td><td>B-tree（默认）、<strong>GIN</strong>（jsonb / 数组 / 全文）、<strong>GiST</strong>（地理 / 范围）、<strong>BRIN</strong>（大表时序）、SP-GiST、Hash；部分/表达式/覆盖索引</td></tr><tr><td>数据类型</td><td><code>jsonb</code>、数组、<code>hstore</code>、<code>range</code> / <code>multirange</code>、<code>uuid</code>、<code>inet</code>、<code>enum</code>、自定义类型、域</td></tr><tr><td>SQL 能力</td><td>CTE（含递归）、窗口函数、<code>MERGE</code>、<code>DISTINCT ON</code>、<code>LATERAL</code>、<code>FILTER</code>、并行查询、表函数</td></tr><tr><td>分区</td><td>声明式 RANGE / LIST / HASH 分区、分区裁剪、默认分区</td></tr><tr><td>复制与恢复</td><td>WAL 预写日志、流复制（物理）、<strong>逻辑复制</strong>（publication / subscription）、PITR 时间点恢复</td></tr><tr><td>扩展</td><td>PostGIS、<code>pg_trgm</code>（模糊匹配）、<code>pg_stat_statements</code>、TimescaleDB、<code>uuid-ossp</code></td></tr><tr><td>全文检索</td><td><code>tsvector</code> / <code>tsquery</code> + GIN，可满足中等规模检索需求</td></tr><tr><td>Go 驱动</td><td><code>pgx/v5</code> 原生接口、<code>pgxpool</code> 连接池、<code>CopyFrom</code> 批量写、<code>pgtype</code> 类型系统、<code>LISTEN/NOTIFY</code></td></tr></tbody></table></div>
 <hr>
 
+<div class="features">
+  <div class="feature"><div class="fh"><h4>多版本存储</h4></div><p>元组自带 xmin / xmax，旧版本留在堆表中，靠 VACUUM 回收</p></div>
+  <div class="feature"><div class="fh"><h4>索引体系</h4></div><p>B-tree 之外还有 GIN / GiST / BRIN，jsonb 与全文检索靠 GIN</p></div>
+  <div class="feature"><div class="fh"><h4>WAL 与连接</h4></div><p>WAL 支撑逻辑复制与 PITR；每连接一进程，必须配 pgx 连接池或 pgbouncer</p></div>
+</div>
 </section>
 <section data-anchor="3-核心概念与原理">
 <h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
@@ -189,7 +194,28 @@ func main() {
    ├─ backend process 2     （MySQL 是线程模型，连接便宜得多）
    └─ 后台进程：checkpointer / walwriter / autovacuum / bgwriter</code></pre>
 <p><strong>一个连接 = 一个进程 ≈ 数 MB 内存</strong>。所以 PG 不能像 MySQL 那样开几百个空闲连接，必须用连接池：<code>pgxpool</code>（应用内）或 <strong>PgBouncer</strong>（独立代理，transaction pooling 模式）。这是 PG 部署与 MySQL 最大的运维差异。</p>
-<h3 id="32-mvcc元组多版本与-vacuum">3.2 MVCC：元组多版本与 VACUUM</h3>
+<h3 id="32-mvcc元组多版本与-vacuum">3.2 MVCC：元组多版本与 VACUUM</h3><div class="figure">
+  <svg viewBox="0 0 880 268" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-postgresql" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#316192"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#1a3d5c">元组多版本与 VACUUM</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">UPDATE 不是原地覆盖，而是插入新元组并标记旧元组死亡</text>
+    <rect x="142" y="82" width="175" height="80" rx="12" fill="#dbe9f5" stroke="#316192" stroke-width="1.5"/>
+    <text x="229" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#1a3d5c">UPDATE</text>
+    <text x="229" y="136" text-anchor="middle" font-size="11" fill="#1a3d5c">写入新版本元组 xmax</text>
+    <line x1="320" y1="122" x2="346" y2="122" stroke="#316192" stroke-width="2" marker-end="url(#m-postgresql)"/>
+    <rect x="352" y="82" width="175" height="80" rx="12" fill="#dbe9f5" stroke="#316192" stroke-width="1.5"/>
+    <text x="440" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#1a3d5c">旧版本可见性</text>
+    <text x="440" y="136" text-anchor="middle" font-size="11" fill="#1a3d5c">按快照判断谁还能看见旧元组</text>
+    <line x1="532" y1="122" x2="558" y2="122" stroke="#316192" stroke-width="2" marker-end="url(#m-postgresql)"/>
+    <rect x="564" y="82" width="175" height="80" rx="12" fill="#dbe9f5" stroke="#316192" stroke-width="1.5"/>
+    <text x="651" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#1a3d5c">VACUUM</text>
+    <text x="651" y="136" text-anchor="middle" font-size="11" fill="#1a3d5c">回收死元组，冻结事务 ID</text>
+    <rect x="40" y="186" width="800" height="58" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="210" font-size="12.5" fill="#1e293b">与 MySQL 的 undo 回滚段不同，PG 把多版本直接堆在表里，因此膨胀与 VACUU</text>
+    <text x="60" y="230" font-size="12.5" fill="#1e293b">M 是日常运维主题。</text>
+  </svg>
+  <figcaption>元组多版本与 VACUUM</figcaption>
+</div>
 <pre><code class="lang-text">UPDATE users SET email='new' WHERE id=1;
 
 旧元组: (xmin=100, xmax=200, email='old')   ← 对事务 200 之后不可见，但物理还在
@@ -331,6 +357,7 @@ SELECT slot_name, pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(), restart_l
 pg_restore -d app app.dump</code></pre>
 <hr>
 
+<div class="callout info"><p><b>实战要点：</b>批量写入优先用 pgx v5 的 CopyFrom，比逐条 INSERT 快一个数量级；DDL 变更尽量用 CONCURRENTLY 建索引避免长时间持锁。</p></div>
 </section>
 <section data-anchor="5-版本演进速览">
 <h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
@@ -345,6 +372,7 @@ pg_restore -d app app.dump</code></pre>
 <ol><li><strong>把 MySQL 的隔离级别假设带过来</strong>：PG 默认 RC，同一事务两次读可能不一致。显式指定 <code>RepeatableRead</code>，或让单条 SQL 完成读-改-写。</li><li><strong>连接数开太大</strong>：每连接一个进程，<code>max_connections</code> 打满直接拒绝服务。用 <code>pgxpool</code> 限流 + PgBouncer，按 <code>总预算 / 副本数</code> 反推 <code>MaxConns</code>。</li><li><strong>长事务阻塞 VACUUM</strong>：事务开着不提交（或忘了 <code>COMMIT</code>），死元组无法回收 → 表膨胀、XID 回卷风险。监控 <code>pg_stat_activity</code> 与 <code>n_dead_tup</code>。</li><li><strong>用 <code>?</code> 占位符</strong>：PG 是 <code>$1</code>、<code>$2</code>。这是从 MySQL 迁来时最先撞到的语法错误。</li><li><strong><code>SERIALIZABLE</code> 不重试 <code>40001</code></strong>：SSI 冲突是预期行为，必须整体重试事务。</li><li><strong>标识符大小写</strong>：未加引号的标识符会被折叠成小写；<code>CREATE TABLE "User"</code> 之后 <code>SELECT * FROM user</code> 查不到。一律用小写 snake_case，不加引号。</li><li><strong>隐式类型转换</strong>：PG 比 MySQL 严格，<code>WHERE varchar_col = 123</code> 会报错；传参类型要明确（<code>$1::jsonb</code>、<code>$1::int</code>）。</li><li><strong>SELECT \* + 按位置 Scan</strong>：表加列或改列顺序会静默错位。明确列清单，或用 <code>pgx.RowToStructByName</code> 按名映射。</li><li><strong>NULL 扫描失败</strong>：<code>profile-&gt;&gt;'city'</code> 为 NULL 时扫进 <code>string</code> 会报错。用 <code>COALESCE</code> 或 <code>pgtype.Text</code> / <code>*string</code>。</li><li><strong>索引失效 / 统计信息过期</strong>：数据大幅变更后不 <code>ANALYZE</code>，优化器选错计划。看 <code>EXPLAIN (ANALYZE, BUFFERS)</code> 的预估 vs 实际行数。</li><li><strong><code>jsonb</code> 索引选错</strong>：默认 <code>jsonb_ops</code> 索引大；只做 <code>@&gt;</code> 包含查询时用 <code>jsonb_path_ops</code>。</li><li><strong>深分页 <code>OFFSET</code></strong>：与 MySQL 同理，改 keyset 分页（<code>WHERE id &gt; $1 ORDER BY id LIMIT n</code>）。</li><li><strong>时间类型混用</strong>：<code>TIMESTAMPTZ</code>（带时区，推荐）vs <code>TIMESTAMP</code>（不带）。Go 的 <code>time.Time</code> 与 <code>timestamptz</code> 搭配最省心，统一 UTC 存储。</li><li><strong>复制槽不消费</strong>：逻辑复制订阅端停机，WAL 无限堆积打满磁盘。监控 <code>pg_replication_slots</code> 的 lag，必要时删除失效槽。</li><li><strong>序列不回滚</strong>：<code>BIGSERIAL</code> / <code>IDENTITY</code> 的值在事务回滚后不会归还，ID 有空洞属正常，不要依赖连续性。</li><li><strong>不设超时</strong>：慢查询占满连接池。用带 deadline 的 <code>ctx</code> + <code>statement_timeout</code> 双保险。</li><li><strong>在库代码里建连接池</strong>：<code>pgxpool</code> 由应用入口装配并注入，库函数接收接口，便于测试与替换。</li></ol>
 <hr>
 
+<div class="callout warning"><p><b>生产警示：</b>默认 READ COMMITTED，不要想当然套用 MySQL 的 RR 语义；长事务、复制槽未消费、idle in transaction 都会阻止 VACUUM 回收，是表膨胀的头号原因。</p></div>
 </section>
 <section data-anchor="7-选型对比">
 <h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>

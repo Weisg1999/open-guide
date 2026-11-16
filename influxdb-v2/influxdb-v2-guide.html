@@ -92,7 +92,7 @@
 <body>
 <div class="layout">
 <nav class="sidebar">
-  <div class="logo">InfluxDB 2.x<span class="ver">v2.7</span></div>
+  <div class="logo">InfluxDB 2.x<span class="ver">v2.9</span></div>
   <div class="sub">时序数据库 · TSM + Flux</div>
   <a href="#1-项目简介">1. 项目简介</a>
   <a class="sub-link" href="#启动">启动</a>
@@ -118,14 +118,14 @@
   <h1>InfluxDB 2.x（OSS）技术介绍与使用指南</h1>
 <p>面向时序数据的开源数据库 v2 世代：TSM 存储引擎 + Flux 查询语言 + Bucket / Token 模型。DevOps 监控、IoT 传感、金融 tick 数据领域的老牌王者——单二进制内置 Web UI、任务调度与告警。</p>
 <p style="opacity:.8;font-size:13.5px">时序数据库 · TSM + Flux</p>
-<div class="meta"><span>v2.7（维护期）</span><span>TSM 引擎</span><span>Flux 语言</span><span>Line Protocol</span><span>Org / Bucket / Token</span></div>
+<div class="meta"><span>v2.9（维护线）</span><span>TSM 引擎</span><span>Flux 语言</span><span>Line Protocol</span><span>Org / Bucket / Token</span></div>
 </div>
-<blockquote><p>面向时序数据的开源数据库 v2 世代：TSM 存储引擎 + Flux 查询语言 + Bucket/Token 模型。 仓库：<a href="https://github.com/influxdata/influxdb">https://github.com/influxdata/influxdb</a>　|　主线：2.7（维护期；后续演进为 3.x，见姊妹篇）</p></blockquote>
+<blockquote><p>面向时序数据的开源数据库 v2 世代：TSM 存储引擎 + Flux 查询语言 + Bucket/Token 模型。 仓库：<a href="https://github.com/influxdata/influxdb">https://github.com/influxdata/influxdb</a>　|　主线：2.9.1（2.x 维护线；官方主线已转向 3.x，见姊妹篇）</p></blockquote>
 <section data-anchor="1-项目简介">
 <h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2><div class="danger"><b>⚠️ 版本现状（重要）：</b><span>InfluxData 的开发重心已转向 <b>v3</b>（Rust 重写）。2.7 处于<b>维护状态</b>（安全与缺陷修复），Flux 语言在新版本中不再支持。存量 2.x 集群仍大量运行于生产（含云厂商托管版本），学习价值在于运维存量系统与理解时序模型；<b>新项目建议评估 v3</b>（见第 7 章对照）。</span></div>
 <p>InfluxDB 是专门为<strong>时序数据</strong>（时间戳 + 指标 + 事件）设计的数据库，是 DevOps 监控、IoT 传感、金融tick 数据领域的老牌王者。v2（2020）相对 v1 的革新在于：</p>
 <ul><li><strong>一体化平台</strong>：数据库 + Web UI + 任务调度 + 告警（Alert）+ Dashboard 全部内置，单二进制；</li><li><strong>Flux 查询语言</strong>：函数式数据脚本语言，支持跨源 join、复杂转换；</li><li><strong>Bucket / Org / Token 模型</strong>：取代 v1 的 database/retention policy，权限以 API Token 精细化发放；</li><li>统一了 v1 时代 "influxdb + kapacitor + chronograf" 三件套的职责。</li></ul>
-<p>⚠️ <strong>版本现状（重要）</strong>：InfluxData 的开发重心已转向 v3（Rust 重写，见姊妹篇）。2.7 处于维护状态（安全与缺陷修复），Flux 语言在新版本中不再支持。<strong>存量 2.x 集群仍大量运行于生产</strong>（含云厂商托管版本），学习价值在于运维存量系统与理解时序模型；新项目建议评估 v3。</p>
+<p>⚠️ <strong>版本现状（重要）</strong>：InfluxData 的开发重心已转向 v3（Rust 重写，见姊妹篇）。2.x 维护线已到 <strong>2.9.1</strong>（2.7 仍是存量部署最多的版本），仅做安全与缺陷修复；Flux 在 3.x 中不再支持。<strong>存量 2.x 集群仍大量运行于生产</strong>（含云厂商托管版本），学习价值在于运维存量系统与理解时序模型；新项目建议评估 v3。</p>
 <h3 id="启动">启动</h3>
 <pre><code class="lang-bash">docker run -d -p 8086:8086 \
   -v influxdb-data:/var/lib/influxdb2 \

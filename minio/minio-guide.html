@@ -92,7 +92,7 @@
 <body>
 <div class="layout">
 <nav class="sidebar">
-  <div class="logo">MinIO<span class="ver">2025</span></div>
+  <div class="logo">MinIO<span class="ver">已归档</span></div>
   <div class="sub">S3 兼容高性能对象存储</div>
   <a href="#1-项目简介">1. 项目简介</a>
   <a class="sub-link" href="#部署形态决定性选择">部署形态（决定性选择）</a>
@@ -109,7 +109,7 @@
   <a class="sub-link" href="#43-presigned-url最常见的集成模式">4.3 Presigned URL（最常见的集成模式）</a>
   <a class="sub-link" href="#44-版本控制-事件通知">4.4 版本控制 + 事件通知</a>
   <a href="#5-与-s3-的兼容性说明">5. 与 S3 的兼容性说明</a>
-  <a href="#6-版本与产品线2025-起重要变化">6. 版本与产品线（2025 起重要变化）</a>
+  <a href="#6-版本与产品线20252026-重大变化">6. 版本与产品线（2025–2026 重大变化）</a>
   <a href="#7-常见坑与最佳实践">7. 常见坑与最佳实践</a>
   <a href="#8-选型小结">8. 选型小结</a>
 </nav>
@@ -118,9 +118,9 @@
   <h1>MinIO 技术介绍与使用指南</h1>
 <p>用 Go 编写的软件定义对象存储，100% 兼容 AWS S3 API。单二进制、纠删码数据保护、云原生与 AI 数据湖首选的自托管对象存储——任何有磁盘的机器跑一个 minio server 就是生产级对象存储。</p>
 <p style="opacity:.8;font-size:13.5px">S3 兼容高性能对象存储</p>
-<div class="meta"><span>S3 100% 兼容</span><span>纠删码 + bit-rot 防护</span><span>Go 实现 · 单二进制</span><span>云原生 · K8s Operator</span><span>社区版 AGPLv3</span></div>
+<div class="meta"><span>社区版 2026-04 归档</span><span>纠删码 + bit-rot 防护</span><span>Go 实现 · 单二进制</span><span>云原生 · K8s Operator</span><span>社区版 AGPLv3</span></div>
 </div>
-<blockquote><p>高性能 S3 兼容对象存储：单二进制、纠删码数据保护、云原生与 AI 数据湖首选的自托管对象存储。 仓库：<a href="https://github.com/minio/minio">https://github.com/minio/minio</a>　|　主线：社区版（<code>RELEASE.YYYY-MM-DD</code> 时间戳版本，持续发布；整理于 2026-11）　|　许可证：AGPLv3（2025 起双产品线，见 §6）</p></blockquote>
+<blockquote><p>高性能 S3 兼容对象存储：单二进制、纠删码数据保护、云原生与 AI 数据湖首选的自托管对象存储。 仓库：<a href="https://github.com/minio/minio">https://github.com/minio/minio</a>　|　状态：社区版已归档停维（2026-04；最后版本 RELEASE.2025-10-15，仅源码分发）　|　许可证：AGPLv3</p></blockquote>
 <section data-anchor="1-项目简介">
 <h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2><div class="features">
     <div class="feature"><b>S3 100% 兼容</b>AWS SDK / aws-cli / S3 生态工具（Spark、Hive、Trino、S3 Select）即插即用——迁移成本近乎为零。</div>
@@ -524,30 +524,31 @@ mc event add local/mybucket arn:minio:sqs::1:kafka \
 <hr>
 
 </section>
-<section data-anchor="6-版本与产品线2025-起重要变化">
-<h2 id="6-版本与产品线2025-起重要变化">6. 版本与产品线（2025 起重要变化）<span class="lvl a">避坑</span></h2><div class="warn"><b>⚠️ 社区版 2025 年的调整（务必知悉）：</b>
+<section data-anchor="6-版本与产品线20252026-重大变化">
+<h2 id="6-版本与产品线20252026-重大变化">6. 版本与产品线（2025–2026 重大变化）<span class="lvl a">避坑</span></h2>
+<div class="table-wrap"><table><thead><tr><th>产品</th><th>许可证</th><th>定位</th></tr></thead><tbody><tr><td><strong>MinIO Object Store（社区版）</strong></td><td>AGPLv3</td><td>开源主体，S3 兼容核心能力完整（EC、版本、复制、ILM、加密）</td></tr><tr><td><strong>MinIO AIStor（商业）</strong></td><td>商业许可</td><td>promptObject（LLM 问对象）、AIHub、S3-over-RDMA、Catalog/Firewall/KMS/Cache/全局控制台等企业特性</td></tr></tbody></table></div>
+<p>2025–2026 年的三步收缩（务必知悉）：</p>
+<ul><li><strong>2025.05</strong>：内置 Web Console 收缩为只读 object-browser；LDAP/OIDC 外部身份源登录移入商业版，社区版 UI 只用于浏览与基础操作（IAM 等经 mc/API 管理）；</li><li><strong>2025.10</strong>：停止发布社区版 Docker 镜像与预编译二进制，最后一个社区版本为 <code>RELEASE.2025-10-15T17-29-55Z</code>（安全修复版，需自行从源码构建镜像）；</li><li><strong>2026.04</strong>：<code>minio/minio</code> 仓库正式归档为只读，README 标注 "THIS REPOSITORY IS NO LONGER MAINTAINED"——不再有新特性、评审补丁或安全更新；</li><li>商业版 <strong>AIStor</strong> 继续演进；自建场景应评估 Garage、SeaweedFS、RustFS、Ceph RGW 等仍在维护的 S3 兼容替代，别把归档版本当作长期基础设施。</li><li><strong>AGPLv3 的含义</strong>：网络服务化使用也需开源派生作品，商业集成前评估合规；S3 API 兼容使替换/共存容易。</li></ul>
+<p>替代生态（选型时对照）：Ceph RGW（一体化存储平台、重）、SeaweedFS（轻量、性能好）、Garage（地理分布式轻量）、OpenIO/Scality 等。</p>
+<hr>
+
+<div class="warn"><b>⚠️ 社区版 2025 年的调整（务必知悉）：</b>
     <ul>
       <li><b>内置 Web Console 收缩为只读 object-browser</b>：LDAP / OIDC 外部身份源登录移入商业版，社区版 UI 主要用于浏览与基础操作（IAM 等经 mc / API 管理）；</li>
       <li>功能迭代重心转向商业版；社区版继续接收<b>安全与缺陷修复</b>（例如 2025.10 修复的 service-account 权限提升 CVE，社区版同步可用）；</li>
       <li><b>AGPLv3 的含义</b>：网络服务化使用也需开源派生作品，商业集成前评估合规；S3 API 兼容使替换 / 共存容易。</li>
     </ul>
   </div>
-<div class="table-wrap"><table><thead><tr><th>产品</th><th>许可证</th><th>定位</th></tr></thead><tbody><tr><td><strong>MinIO Object Store（社区版）</strong></td><td>AGPLv3</td><td>开源主体，S3 兼容核心能力完整（EC、版本、复制、ILM、加密）</td></tr><tr><td><strong>MinIO AIStor（商业）</strong></td><td>商业许可</td><td>promptObject（LLM 问对象）、AIHub、S3-over-RDMA、Catalog/Firewall/KMS/Cache/全局控制台等企业特性</td></tr></tbody></table></div>
-<p>社区版 2025 年的调整（务必知悉）：</p>
-<ul><li><strong>内置 Web Console 收缩为只读 object-browser</strong>；LDAP/OIDC 外部身份源登录移入商业版，社区版 UI 主要用于浏览与基础操作（IAM 等经 mc/API 管理）；</li><li>功能迭代重心转向商业版；社区版继续接收安全与缺陷修复（例如 2025.10 修复的 service-account 权限提升 CVE，社区版同步可用）；</li><li><strong>AGPLv3 的含义</strong>：网络服务化使用也需开源派生作品，商业集成前评估合规；S3 API 兼容使替换/共存容易。</li></ul>
-<p>替代生态（选型时对照）：Ceph RGW（一体化存储平台、重）、SeaweedFS（轻量、性能好）、Garage（地理分布式轻量）、OpenIO/Scality 等。</p>
-<hr>
-
 </section>
 <section data-anchor="7-常见坑与最佳实践">
 <h2 id="7-常见坑与最佳实践">7. 常见坑与最佳实践<span class="lvl a">决策</span></h2><div class="danger"><b>🚫 最常见事故：</b><span>生产用单节点 / 单盘——单盘模式<b>无冗余</b>，磁盘坏 = 数据丢。生产至少 4 块盘（一个最小 EC set），并跨主机 / 机架分布故障域。</span></div>
-<ol><li><strong>生产别用单节点</strong>：EC 需要 ≥4 块盘；单盘模式无冗余，磁盘坏=数据丢；</li><li><strong>EC set 内磁盘要"独立"</strong>：同 EC set 的盘挂同一 HBA/同一故障域，容错就是纸面数字——机架/主机感知布局；</li><li><strong>扩容按 pool，别混盘</strong>：新 pool 建议整组节点加入；不同容量的盘混布会倾斜；</li><li><strong>时钟同步</strong>：分布式部署对时间敏感（证书与复制），NTP 必备；</li><li><strong>大文件分片并行</strong>：SDK 默认 part size 16MiB；超 GB 级对象调大 partSize/并发，吞吐翻倍；</li><li><strong>别拿 MinIO 当文件系统</strong>：高频小文件随机改写是反模式；真正需要 POSIX 挂载时评估 S3-FS 网关的延迟代价；</li><li><strong>监控磁盘与 healing</strong>：<code>mc admin heal</code>、Prometheus 指标（磁盘离线、healing 队列）告警必须有；</li><li><strong>升级前读 release note</strong>：社区版个别版本标记 Breaking（如 2025-05-24），滚动升级前备份数据目录元信息。</li></ol>
+<ol><li><strong>生产别用单节点</strong>：EC 需要 ≥4 块盘；单盘模式无冗余，磁盘坏=数据丢；</li><li><strong>EC set 内磁盘要"独立"</strong>：同 EC set 的盘挂同一 HBA/同一故障域，容错就是纸面数字——机架/主机感知布局；</li><li><strong>扩容按 pool，别混盘</strong>：新 pool 建议整组节点加入；不同容量的盘混布会倾斜；</li><li><strong>时钟同步</strong>：分布式部署对时间敏感（证书与复制），NTP 必备；</li><li><strong>大文件分片并行</strong>：SDK 默认 part size 16MiB；超 GB 级对象调大 partSize/并发，吞吐翻倍；</li><li><strong>别拿 MinIO 当文件系统</strong>：高频小文件随机改写是反模式；真正需要 POSIX 挂载时评估 S3-FS 网关的延迟代价；</li><li><strong>监控磁盘与 healing</strong>：<code>mc admin heal</code>、Prometheus 指标（磁盘离线、healing 队列）告警必须有；</li><li><strong>先确认版本是否还在维护</strong>：社区版已于 2026-04 归档，最后版本为 <code>RELEASE.2025-10-15</code>；新部署请直接选仍维护的替代，存量升级前备份数据目录元信息。</li></ol>
 <hr>
 
 </section>
 <section data-anchor="8-选型小结">
 <h2 id="8-选型小结">8. 选型小结</h2><div class="tip"><b>✅ 选型口诀：</b><span>K8s 附件与备份默认 MinIO 社区版；数据湖底座选 MinIO；要 promptObject 等 AI 能力看 AIStor；要多协议一体化选 Ceph；极轻量边缘选 SeaweedFS / Garage。记住 AGPLv3 的开源传染性，商业集成前先过合规。</span></div>
-<div class="table-wrap"><table><thead><tr><th>场景</th><th>建议</th></tr></thead><tbody><tr><td>K8s/云原生应用附件、备份（Velero）</td><td>MinIO 社区版，几乎默认选择</td></tr><tr><td>数据湖 / Parquet / DuckDB-Trino 查询底座</td><td>MinIO（S3 协议 + 高吞吐）</td></tr><tr><td>AI 训练数据集分发</td><td>MinIO / AIStor（看重 promptObject 等则商业版）</td></tr><tr><td>超大规模多协议（块/文件/对象一体）</td><td>Ceph</td></tr><tr><td>极轻量边缘</td><td>SeaweedFS / Garage</td></tr></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>场景</th><th>建议</th></tr></thead><tbody><tr><td>K8s/云原生应用附件、备份（Velero）</td><td>MinIO 存量集群可继续用；<strong>新部署选 Garage / SeaweedFS / Ceph RGW</strong></td></tr><tr><td>数据湖 / Parquet / DuckDB-Trino 查询底座</td><td>MinIO 存量 / AIStor；新项目评估 SeaweedFS、RustFS</td></tr><tr><td>AI 训练数据集分发</td><td>AIStor（商业支持）；自建评估 RustFS / SeaweedFS</td></tr><tr><td>超大规模多协议（块/文件/对象一体）</td><td>Ceph</td></tr><tr><td>极轻量边缘</td><td>SeaweedFS / Garage</td></tr><tr><td>新自建对象存储（无历史包袱）</td><td><strong>Garage</strong>（轻量、地理分布）/ SeaweedFS / Ceph RGW</td></tr></tbody></table></div>
 </section>
 <footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
 </main>

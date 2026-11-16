@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Viper · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#16a34a; --accent-light:#dcfce7; --accent-dark:#166534;
+    --bg:#f4faf5; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#052e16; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#166534 0%,#16a34a 58%,#166534 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">Viper<span class="ver">v1.21</span></div>
+  <div class="sub">配置管理 · 优先级链</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#安装与最小示例">安装与最小示例</a>
+  <a href="#2-功能特性总览">2. 功能特性总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-六层注册表与-find-的执行路径">3.1 六层注册表与 find() 的执行路径</a>
+  <a class="sub-link" href="#32-key-归一化大小写不敏感与嵌套路径">3.2 key 归一化、大小写不敏感与嵌套路径</a>
+  <a class="sub-link" href="#33-环境变量的三条路径与不可枚举边界">3.3 环境变量的三条路径与「不可枚举」边界</a>
+  <a class="sub-link" href="#34-get-cast-隐式转换与-isset-的零值语义">3.4 Get / cast 隐式转换与 IsSet 的零值语义</a>
+  <a class="sub-link" href="#35-unmarshalallsettings-快照-mapstructure-解码链">3.5 Unmarshal：AllSettings 快照 + mapstructure 解码链</a>
+  <a class="sub-link" href="#36-热加载fsnotify-监听-inode-与并发模型">3.6 热加载：fsnotify 监听 inode 与并发模型</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-配置文件与初始化">4.1 配置文件与初始化</a>
+  <a class="sub-link" href="#42-热加载去抖-校验-原子替换">4.2 热加载：去抖 + 校验 + 原子替换</a>
+  <a href="#5-版本演进与要点">5. 版本演进与要点</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>Viper 技术介绍与使用指南</h1>
+<p>Go 生态最流行的配置管理库：把 flag、环境变量、配置文件与远程 KV 收口成一条优先级链，业务只调 Get* 而不关心值来自哪一层。</p>
+<p style="opacity:.8;font-size:13.5px">配置管理 · 优先级链</p>
+<div class="meta"><span>v1.21.0 · 2025.09 发布</span><span>MIT License</span><span>flag / env / 文件 / 远程四层来源</span><span>Unmarshal + mapstructure</span><span>WatchConfig 热更新</span><span>并发与零值陷阱</span></div>
+</div>
+<blockquote><p>Go 生态最流行的配置管理库：把 flag、环境变量、配置文件、远程 KV 与代码内默认值收口成一个「带优先级的配置注册表」，业务只调 <code>Get*</code> 而不必关心值来自哪一层。 仓库：<a href="https://github.com/spf13/viper">https://github.com/spf13/viper</a>　|　当前主线：<strong>v1.21.0</strong>（2025.09.08 发布，MIT 协议；截至 2026-11 仍为最新稳定版）</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p>Viper 由 spf13（也是 Cobra 作者）2014 年创建，30k+ star，与 Cobra 配对后成为 Go CLI / 服务端的事实标准配置层。它的定位不是「又一个 YAML 解析器」，而是<strong>一层带优先级的配置注册表</strong>：解析交给各格式库，Viper 负责把多个来源叠起来、按既定顺序裁决「同一个 key 用谁的值」，再对外提供统一的 <code>Get*</code> 取值面。它把配置拆成五件事：多路径查找与多格式加载、六层优先级覆盖、key 归一化与别名、类型宽松转换与 <code>Unmarshal</code> 结构解码、基于 fsnotify 的热加载。</p>
+<p><strong>适用</strong>：CLI（与 Cobra 组合）、12-Factor 应用、「文件给默认 + env 给部署差异 + flag 给临时覆盖」的服务端程序、多格式并存的历史项目。<strong>不适合</strong>：只读一两个环境变量的极小程序；要求编译期强类型、配置即代码且零反射；把 Viper 当配置中心客户端做动态推送；高 QPS 热路径里逐次 <code>Get</code>（每次都走一遍优先级链与反射）。</p>
+<blockquote><p>与 <a href="../etcd/etcd-guide.html">etcd 指南</a> 正好位于「配置从哪来」的两端：etcd 讲远端存储与 Watch，Viper 讲本地裁决。重载日志建议统一走 <a href="../slog/slog-guide.html">slog 指南</a> 的结构化输出，与 <a href="../gin/gin-guide.html">Gin 指南</a> 的启动日志对齐。</p></blockquote>
+<h3 id="安装与最小示例">安装与最小示例</h3>
+<pre><code class="lang-bash">go get github.com/spf13/viper@v1.21.0</code></pre>
+<pre><code class="lang-go">package main
+
+import (
+    "fmt"
+
+    "github.com/spf13/viper"
+)
+
+func main() {
+    v := viper.New()                  // 不用包级全局单例
+    v.SetDefault("server.port", 8080) // 第 6 层
+    v.Set("server.port", 9090)        // 第 1 层：显式 Set 永远赢
+    fmt.Println(v.GetInt("server.port"), v.GetInt("SERVER.PORT")) // 9090 9090，大小写不敏感
+    fmt.Println(v.GetString("server.port"))                       // "9090"，cast 隐式转换
+}</code></pre>
+<hr>
+
+</section>
+<section data-anchor="2-功能特性总览">
+<h2 id="2-功能特性总览">2. 功能特性总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>配置格式</td><td>JSON / TOML / YAML / HCL / INI / envfile / Java properties（v1.20 起部分改为可插拔 codec）</td></tr><tr><td>文件查找</td><td><code>SetConfigName</code> + 多个 <code>AddConfigPath</code>；或 <code>SetConfigFile</code> 指定绝对路径；<code>SetConfigType</code> 处理无扩展名 / 流</td></tr><tr><td>优先级链 / 键</td><td>显式 <code>Set</code> &gt; flag &gt; env &gt; config &gt; key/value remote store &gt; default（固定，不可重排）；<code>RegisterAlias</code>、key 统一小写且大小写不敏感、<code>.</code> 分隔嵌套路径</td></tr><tr><td>默认值 / flag</td><td><code>SetDefault</code> 兜底；<code>BindPFlag</code> 绑 pflag，v1.21.0 起支持 BoolSlice / UintSlice / Float64Slice</td></tr><tr><td>环境变量</td><td><code>SetEnvPrefix</code> / <code>AutomaticEnv</code> / <code>SetEnvKeyReplacer</code> / <code>BindEnv</code> / <code>AllowEmptyEnv</code></td></tr><tr><td>远程 KV</td><td>etcd / Consul / Firestore，独立 module，不 watch、需显式启用</td></tr><tr><td>取值 / 存在性</td><td><code>Get</code> / <code>GetString</code> / <code>GetInt</code> / <code>GetBool</code> / <code>GetDuration</code> / <code>GetStringSlice</code> / <code>GetStringMapString</code>（底层 <code>spf13/cast</code>）；<code>IsSet</code>（全链）、<code>InConfig</code>（只查 config 层）</td></tr><tr><td>结构解码</td><td><code>Unmarshal</code> / <code>UnmarshalKey</code> / <code>UnmarshalExact</code>，基于 <code>go-viper/mapstructure/v2</code>，支持 <code>DecodeHook</code> / <code>,squash</code> / <code>,remain</code>；<code>Sub</code>（可能为 <code>nil</code>）、<code>AllKeys</code> / <code>AllSettings</code> 一次性快照</td></tr><tr><td>热加载 / 写入</td><td><code>WatchConfig</code> + <code>OnConfigChange</code>（fsnotify）；<code>WriteConfig</code> / <code>SafeWriteConfig</code> 回写</td></tr><tr><td>实例模型</td><td><code>viper.New()</code> 多实例隔离；包级 <code>viper.*</code> 是全局单例，读写不加锁</td></tr></tbody></table></div>
+<hr>
+
+<div class="features">
+  <div class="feature"><div class="fh"><h4>统一读取口</h4></div><p>Get* / Unmarshal 抹平来源差异，业务不关心值来自 flag 还是文件</p></div>
+  <div class="feature"><div class="fh"><h4>多格式与远程</h4></div><p>yaml / toml / json / env / etcd / Consul 都可作为来源</p></div>
+  <div class="feature"><div class="fh"><h4>热更新</h4></div><p>WatchConfig 基于 fsnotify，回调里重建派生配置</p></div>
+</div>
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-六层注册表与-find-的执行路径">3.1 六层注册表与 <code>find()</code> 的执行路径</h3><div class="figure">
+  <svg viewBox="0 0 880 598" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-viper" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#16a34a"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#166534">配置优先级链</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">find() 自下而上逐层查找，第一个命中的来源胜出</text>
+    <rect x="90" y="84" width="700" height="52" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <circle cx="122" cy="110" r="14" fill="#16a34a"/>
+    <text x="122" y="110" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">1</text>
+    <text x="150" y="110" dominant-baseline="central" font-size="13" fill="#166534">显式 Set / Bind（最高优先级，测试与覆盖场景）</text>
+    <line x1="440" y1="138" x2="440" y2="154" stroke="#16a34a" stroke-width="2" marker-end="url(#m-viper)"/>
+    <rect x="90" y="158" width="700" height="52" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <circle cx="122" cy="184" r="14" fill="#16a34a"/>
+    <text x="122" y="184" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">2</text>
+    <text x="150" y="184" dominant-baseline="central" font-size="13" fill="#166534">命令行 flag（BindPFlag，运维临时覆盖）</text>
+    <line x1="440" y1="212" x2="440" y2="228" stroke="#16a34a" stroke-width="2" marker-end="url(#m-viper)"/>
+    <rect x="90" y="232" width="700" height="52" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <circle cx="122" cy="258" r="14" fill="#16a34a"/>
+    <text x="122" y="258" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">3</text>
+    <text x="150" y="258" dominant-baseline="central" font-size="13" fill="#166534">环境变量（AutomaticEnv + SetEnvKeyReplacer）</text>
+    <line x1="440" y1="286" x2="440" y2="302" stroke="#16a34a" stroke-width="2" marker-end="url(#m-viper)"/>
+    <rect x="90" y="306" width="700" height="52" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <circle cx="122" cy="332" r="14" fill="#16a34a"/>
+    <text x="122" y="332" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">4</text>
+    <text x="150" y="332" dominant-baseline="central" font-size="13" fill="#166534">配置文件（yaml / toml / json，主配置来源）</text>
+    <line x1="440" y1="360" x2="440" y2="376" stroke="#16a34a" stroke-width="2" marker-end="url(#m-viper)"/>
+    <rect x="90" y="380" width="700" height="52" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <circle cx="122" cy="406" r="14" fill="#16a34a"/>
+    <text x="122" y="406" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">5</text>
+    <text x="150" y="406" dominant-baseline="central" font-size="13" fill="#166534">远程 KV（etcd / Consul，动态配置）</text>
+    <line x1="440" y1="434" x2="440" y2="450" stroke="#16a34a" stroke-width="2" marker-end="url(#m-viper)"/>
+    <rect x="90" y="454" width="700" height="52" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <circle cx="122" cy="480" r="14" fill="#16a34a"/>
+    <text x="122" y="480" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">6</text>
+    <text x="150" y="480" dominant-baseline="central" font-size="13" fill="#166534">代码内默认值（最低，保证可启动）</text>
+    <rect x="40" y="522" width="800" height="54" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="546" font-size="12.5" fill="#1e293b">优先级是 Viper 的全部心智负担：排查「值为什么不对」时，按这条链自下而上逐层排除即可。</text>
+  </svg>
+  <figcaption>配置优先级链</figcaption>
+</div>
+<p>一个 <code>*viper.Viper</code> 内部不是「一份合并后的大 map」，而是<strong>六张并列的来源表</strong>，取值时才逐层裁决：</p>
+<pre><code class="lang-text">*viper.Viper
+├── override  map[string]interface{}   ← Set()            优先级 1（最高）
+├── pflags    map[string]FlagValue     ← BindPFlag()      优先级 2
+├── env       map[string][]string      ← BindEnv()        优先级 3
+├── config    map[string]interface{}   ← ReadInConfig()   优先级 4
+├── kvstore   map[string]interface{}   ← remote           优先级 5
+└── defaults  map[string]interface{}   ← SetDefault()     优先级 6（兜底）
+        ↑ aliases map[string]string（入口重定向，不复制数据）</code></pre>
+<p>核心是内部方法 <code>find(lcaseKey, flagDefault)</code>：别名解析后<strong>按上表顺序短路返回第一个命中值</strong>。由此推出几条易忽略的行为：</p>
+<ul><li><strong>flag 层特殊</strong>：绑定的 pflag 只有 <code>flag.Changed == true</code>（用户真传了 <code>--port</code>）才算命中；未改动的 flag 先被跳过，让 env / config 生效。只有整条链都没值时才以 <code>flagDefault=true</code> 重跑一次取 <code>DefValue</code>——所以 flag 默认值<strong>不会</strong>盖住配置文件里显式写的值，这与直觉相反。</li><li><strong><code>Set</code> 不会被 <code>ReadInConfig</code> 冲掉</strong>：重读文件只替换 <code>config</code> 表，热加载后 override 依旧最高。</li><li><strong>每层独立存储、取值才合并</strong>；<code>AllSettings()</code> 是「按 <code>AllKeys()</code> 逐 key 调 <code>Get</code>」的一次性快照，不是实时视图；<strong>短路判定是「非 nil」</strong>，config 里写了 <code>port: 0</code>，env 就没机会覆盖它（见 3.4）。</li></ul>
+<h3 id="32-key-归一化大小写不敏感与嵌套路径">3.2 key 归一化、大小写不敏感与嵌套路径</h3>
+<p>所有 key 进 <code>find</code> 前先 <code>strings.ToLower</code>，加载配置时 <code>insensitiviseMap</code> 还会递归把 <code>config</code> / <code>kvstore</code> / <code>defaults</code> 的 map 键全部小写化。官方 README 明确 <strong>所有 key 大小写不敏感</strong>：这是为兼容 env 变量与不同格式文件的大小写差异，社区多次尝试做大小写敏感都不了了之，只能留到 v2 作可选项。</p>
+<p><code>keyDelim</code> 默认 <code>"."</code>，<code>find</code> 用 <code>strings.Split</code> 切段、逐段 <code>cast.ToStringMap</code> 下钻嵌套 <code>map[string]interface{}</code>；任一层不是 map 就返回 <code>nil</code>。两个后果：<code>db.host</code> 与 <code>DB.HOST</code> 是同一项，但<strong>「含点的扁平 key」与「嵌套 map」在 <code>Get</code> 时无法区分</strong>（<code>AllSettings()</code> 展开结构却不同）；而 <strong>env 层不做路径拆分</strong>，Viper 把整个 key 连同 <code>.</code> 拼前缀后整体大写，<code>database.host</code> → <code>MYAPP_DATABASE.HOST</code>——这正是 <code>SetEnvKeyReplacer</code> 存在的唯一理由。</p>
+<h3 id="33-环境变量的三条路径与不可枚举边界">3.3 环境变量的三条路径与「不可枚举」边界</h3>
+<ul><li><strong><code>AutomaticEnv()</code></strong>：不登记任何 key，只在 <code>find</code> 的 env 环节按「前缀 + 大写 key」实时 <code>os.LookupEnv</code>。零配置，但 <strong>Viper 无法枚举任意环境变量</strong>——<code>AllKeys()</code> / <code>AllSettings()</code> / <code>Unmarshal()</code> / <code>Sub()</code> / <code>WriteConfig</code> 都看不到仅靠它注入的项，只有显式 <code>Get*</code> / <code>IsSet</code> 能取到。</li><li><strong><code>BindEnv(key, envName...)</code></strong>：把 key → 具体变量名写进 <code>v.env</code> 表，可被 <code>AllKeys()</code> 枚举，因而能进 <code>Unmarshal</code> 快照；支持多候选名依次回退；<code>AllowEmptyEnv</code> 默认 <code>false</code>，空串视为未设置继续下探。</li><li><strong><code>SetEnvKeyReplacer(r)</code></strong>：纯<strong>名字变换器</strong>，不决定是否启用 env。必须与 <code>SetEnvPrefix</code> + <code>AutomaticEnv</code>（或 <code>BindEnv</code>）同时设置，缺一个就拼出 <code>MYAPP_DATABASE.HOST</code> 这种永远匹配不上的名字。</li></ul>
+<p>一句话：<strong>Replacer 管「怎么拼名」，BindEnv 管「登记哪些 key 可枚举」，AutomaticEnv 管「是否对所有 key 自动按规则找」</strong>。生产最稳组合是 prefix + replacer + AutomaticEnv 负责通用覆盖，再对<strong>需要进结构体的敏感键</strong>补一条 <code>BindEnv</code>。</p>
+<h3 id="34-get-cast-隐式转换与-isset-的零值语义">3.4 <code>Get*</code> / cast 隐式转换与 <code>IsSet</code> 的零值语义</h3>
+<p><code>Get</code> 返回 <code>interface{}</code>，<code>GetString</code> / <code>GetInt</code> / <code>GetBool</code> / <code>GetDuration</code> / <code>GetStringSlice</code> 全委托 <code>spf13/cast</code>（v1.21.0 为 cast 1.9.2）。于是 <code>port: "8080"</code> 能被 <code>GetInt</code> 读出 8080、<code>debug: "false"</code> 能被 <code>GetBool</code> 读成 false；但 <code>"abc"</code> 交给 <code>GetInt</code> 会<strong>静默得到 0 不报错</strong>，<code>GetString</code> 又把 <code>nil</code>→<code>""</code>、数字→十进制串、bool→<code>"true"/"false"</code>。这种「跨来源一律宽松转换」极易把脏配置、空值与合法零值混在一起。</p>
+<p><code>IsSet(key)</code> 的实现就是 <code>Get(key) != nil</code>：<code>enabled: false</code>、<code>port: 0</code>、<code>list: []</code> 都算<strong>已设置</strong>（非 nil）并短路低层；但 AutomaticEnv + <code>AllowEmptyEnv=false</code> 下环境变量为空串时 <code>IsSet</code> 为 false 并继续下探到 default；不存在的嵌套父键 <code>Get</code> 返回 nil。<strong>别用 <code>IsSet</code> 判断「配置文件里有没有这一节」</strong>，那要用 <code>InConfig(key)</code>（只查 config 层，不看 env / override）；判断「用户是否显式传了 flag」应看 <code>flag.Changed</code>。</p>
+<h3 id="35-unmarshalallsettings-快照-mapstructure-解码链">3.5 <code>Unmarshal</code>：AllSettings 快照 + mapstructure 解码链</h3>
+<p><code>Unmarshal(&amp;cfg, opts...)</code> 不直接读 config：先 <code>AllSettings()</code> 生成 <code>map[string]interface{}</code> 快照，再交给 <code>github.com/go-viper/mapstructure/v2</code> 解码。<strong>快照是全部坑的源头</strong>：<code>AllKeys()</code> 只来自 override + 已绑定 flag + 显式 <code>BindEnv</code> + config + kvstore + defaults 的并集，AutomaticEnv 的项不在其中——「环境变量明明覆盖了文件，但 <code>Unmarshal</code> 出来的结构体还是旧值」是最高频事故。</p>
+<ul><li><strong>key 匹配</strong>：mapstructure 默认按字段名不区分大小写比较，但<strong>不会把下划线转驼峰</strong>，<code>log_level</code> 不会自动映射到 <code>LogLevel</code>；嵌套结构每一层都要显式 <code>mapstructure:"..."</code> tag。</li><li><strong>零值覆盖</strong>：解码是「用快照的值覆盖目标」，快照缺失的字段<strong>保留目标原有值而非清零</strong>。热加载复用同一个 <code>&amp;cfg</code> 反复 <code>Unmarshal</code>，被删掉的键会残留旧值；须每次 <code>var next Config</code> 全新解码、校验通过后整体替换。</li><li><strong>解码扩展 / 包路径</strong>：<code>DecoderConfigOption</code> 可注入 <code>DecodeHook</code>（<code>time.Duration</code> / <code>net.IP</code> / 逗号串转切片）、开 <code>ErrorUnused</code> 拒绝多余键、<code>,squash</code> 展开内嵌、<code>,remain</code> 收集未知键；v1.20 起从 <code>mitchellh/mapstructure</code> 迁到 fork <code>go-viper/mapstructure/v2</code>（v1.21.0 用 v2.4.0），自定义 hook 的 import 必须跟着改，否则类型不匹配编译失败。</li></ul>
+<h3 id="36-热加载fsnotify-监听-inode-与并发模型">3.6 热加载：fsnotify 监听 inode 与并发模型</h3>
+<p><code>WatchConfig()</code> 起一个后台 goroutine，用 <code>fsnotify.NewWatcher()</code> <strong>监听配置文件所在目录</strong>，事件到达后先内部 <code>ReadInConfig()</code> 刷新 <code>config</code> 表，再调 <code>OnConfigChange</code> 回调。关键在 <strong>fsnotify 监听的是 inode 上的事件</strong>：vim / neovim / 多数编辑器与配置下发工具采用「写临时文件 + <code>rename</code> 覆盖」的原子写，<code>rename</code> 换掉被监听的 inode，监听随之失效，事件可能表现为 <code>Rename</code> / <code>Remove</code> 而非 <code>Write</code>，或一次保存触发两次——典型现象是「改了文件，回调再也不触发」。K8s ConfigMap 用「目录 + <code>..data</code> 符号链接轮换」正是绕开这点；自研下发应监听目录并对 <code>Create</code> / <code>Rename</code> 重新 <code>Add</code>，测试一律用 <code>os.WriteFile</code> 直接覆写，别用编辑器 <code>:w</code>。</p>
+<p>并发上两条硬约束：<strong>回调运行在 watcher goroutine</strong>，与业务 goroutine 共享的状态必须 <code>sync.RWMutex</code> / <code>atomic.Value</code> 整体替换；回调只代表「文件变了」，<strong>不代表新配置已生效</strong>，必须先 <code>Unmarshal</code> 到临时变量并校验，失败保留旧值。Viper 实例本身<strong>不并发安全</strong>（README 明确并发读写会 panic），所以别在去抖定时器里异步回读 Viper，应在回调内同步取完快照。<code>WatchConfig</code> 没有公开的 Stop，监听生命周期应与进程一致。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-配置文件与初始化">4.1 配置文件与初始化</h3>
+<pre><code class="lang-yaml"># conf/config.yaml
+port: 8080
+log_level: info
+timeout: 5s</code></pre>
+<p>下面是一份完整可编译的装配代码，涵盖默认值、env、flag、文件、<code>ConfigFileNotFoundError</code>、强类型解码与启动校验：</p>
+<pre><code class="lang-go">package main
+
+import (
+    "errors"
+    "fmt"
+    "log"
+    "strings"
+    "time"
+
+    "github.com/go-viper/mapstructure/v2"
+    "github.com/spf13/pflag"
+    "github.com/spf13/viper"
+)
+
+type Config struct {
+    Port     int           `mapstructure:"port"`
+    LogLevel string        `mapstructure:"log_level"` // 下划线必须显式 tag
+    Timeout  time.Duration `mapstructure:"timeout"`   // "5s" 由 Viper 默认钩子转 Duration
+    Secret   string        `mapstructure:"secret"`    // 只由 BindEnv 登记，才能进 Unmarshal 快照
+}
+
+// newConfig 返回隔离实例 + 已校验配置，绝不使用包级 viper 单例。
+func newConfig(args []string) (*viper.Viper, Config, error) {
+    v := viper.New()
+    v.SetDefault("log_level", "info") // 第 6 层
+    v.SetDefault("timeout", "5s")
+    // 第 3 层：prefix + replacer + AutomaticEnv 成组；只在 env 里存在的键必须 BindEnv 才可被枚举。
+    v.SetEnvPrefix("MYAPP")
+    v.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
+    v.AutomaticEnv()
+    if err := v.BindEnv("secret", "MYAPP_SECRET"); err != nil {
+        return nil, Config{}, err
+    }
+    // 第 2 层：flag 必须在 Parse / Cobra Execute 之前绑定。
+    fs := pflag.NewFlagSet("app", pflag.ContinueOnError)
+    fs.Int("port", 8080, "listen port")
+    if err := fs.Parse(args); err != nil { return nil, Config{}, err }
+    if err := v.BindPFlag("port", fs.Lookup("port")); err != nil {
+        return nil, Config{}, err
+    }
+    // 第 4 层：只有「找不到文件」可降级，语法错 / 权限错必须暴露。
+    v.SetConfigName("config")
+    v.AddConfigPath("./conf")
+    if err := v.ReadInConfig(); err != nil {
+        var notFound viper.ConfigFileNotFoundError
+        if !errors.As(err, &amp;notFound) {
+            return nil, Config{}, fmt.Errorf("读取配置失败: %w", err)
+        }
+        log.Println("未找到配置文件，改用 flag / env / default")
+    }
+    var cfg Config // 全新变量，避免 3.5 的零值残留
+    err := v.Unmarshal(&amp;cfg, func(dc *mapstructure.DecoderConfig) {
+        dc.ErrorUnused = true
+    })
+    if err != nil { return nil, Config{}, err }
+    if cfg.Port &lt;= 0 || cfg.Port &gt; 65535 {
+        return nil, Config{}, fmt.Errorf("非法 port: %d", cfg.Port)
+    }
+    return v, cfg, nil
+}
+
+func main() {
+    v, cfg, err := newConfig([]string{"--port=9090"})
+    if err != nil { log.Fatal(err) }
+    fmt.Println("port =", v.GetInt("port"), "file =", v.ConfigFileUsed())
+    fmt.Printf("cfg  = %+v\n", cfg)
+}</code></pre>
+<blockquote><p><code>errors.As</code> 必须用具体类型变量（<code>ConfigFileNotFoundError</code> 是 struct），值比较是错的。<code>GetInt</code> 的隐式 cast 只用于日志 / 展示，业务值一律走上面的强类型结构体。<code>AutomaticEnv</code> / <code>SetEnvKeyReplacer</code> / <code>BindEnv</code> 的差别见 3.3：前者实时按规则查但不可枚举，中者只改名字，后者登记的 key 才会进 <code>Unmarshal</code> 快照。Viper 默认已注入 <code>StringToTimeDurationHookFunc</code> + <code>StringToSliceHookFunc(",")</code>，所以 <code>"5s"</code> 能直接进 <code>time.Duration</code>；自定义钩子要用 <code>viper.DecodeHook(mapstructure.ComposeDecodeHookFunc(...))</code> <strong>叠加</strong>，直接赋值 <code>dc.DecodeHook</code> 会把默认钩子覆盖掉。</p></blockquote>
+<h3 id="42-热加载去抖-校验-原子替换">4.2 热加载：去抖 + 校验 + 原子替换</h3>
+<pre><code class="lang-go">package main
+
+import (
+    "fmt"
+    "log"
+    "os"
+    "sync"
+    "time"
+
+    "github.com/fsnotify/fsnotify"
+    "github.com/spf13/viper"
+)
+
+type Config struct {
+    LogLevel string `mapstructure:"log_level"`
+    MaxConn  int    `mapstructure:"max_conn"`
+}
+
+func main() {
+    path := "config.yaml"
+    if err := os.WriteFile(path, []byte("log_level: info\nmax_conn: 10\n"), 0o644); err != nil {
+        log.Fatal(err)
+    }
+    defer os.Remove(path)
+    v := viper.New()
+    v.SetConfigFile(path)
+    v.SetDefault("max_conn", 10)
+    if err := v.ReadInConfig(); err != nil { log.Fatal(err) }
+
+    var mu sync.Mutex // 同时保护 current 与去抖状态
+    var current Config
+    if err := v.Unmarshal(&amp;current); err != nil { log.Fatal(err) }
+    var timer *time.Timer
+    var pending Config
+    v.OnConfigChange(func(e fsnotify.Event) {
+        // Viper 不并发安全：同步取快照，别把 Unmarshal 丢进定时器 goroutine。
+        var next Config // 全新变量，避免删键残留旧值（3.5）
+        if err := v.Unmarshal(&amp;next); err != nil {
+            log.Println("解码失败，保留旧值:", err); return
+        }
+        if next.MaxConn &lt;= 0 || next.MaxConn &gt; 10000 {
+            log.Println("校验失败，保留旧值: max_conn 越界"); return
+        }
+        mu.Lock()
+        pending = next
+        if timer != nil { timer.Stop() }
+        timer = time.AfterFunc(100*time.Millisecond, func() {
+            mu.Lock()
+            c := pending
+            current = c
+            mu.Unlock()
+            log.Printf("配置已生效: %+v (event=%s)", c, e.Op)
+        })
+        mu.Unlock()
+    })
+    v.WatchConfig()
+    time.Sleep(50 * time.Millisecond) // 等 watcher 就绪
+    // os.WriteFile 直接覆写保留 inode；编辑器 :w 的原子 rename 会丢监听。
+    if err := os.WriteFile(path, []byte("log_level: debug\nmax_conn: 50\n"), 0o644); err != nil {
+        log.Fatal(err)
+    }
+    time.Sleep(400 * time.Millisecond)
+    mu.Lock()
+    fmt.Println("当前生效配置:", current)
+    mu.Unlock()
+}</code></pre>
+<blockquote><p>测试隔离：每个用例 / 每个包都用 <code>viper.New()</code>，把 <code>*viper.Viper</code> 作为依赖显式传入；全局单例虽还有 <code>Reset()</code>，但清不掉已启动的 watcher 与其它 goroutine 的引用，库代码绝不隐式依赖它。</p></blockquote>
+<hr>
+
+<div class="callout info"><p><b>实战要点：</b>初始化顺序固定为 SetDefault → 读配置文件 → BindEnv → BindPFlag；Unmarshal 前先确认 AllSettings 里 key 的实际形状，嵌套结构的 mapstructure tag 要显式声明。</p></div>
+</section>
+<section data-anchor="5-版本演进与要点">
+<h2 id="5-版本演进与要点">5. 版本演进与要点<span class="lvl b">版本</span></h2>
+<p>已核对上游 Releases / Tags 页：<strong>v1.21.0 于 2025-09-08 发布（tag 签名 09-09），是当前最新稳定版，MIT 协议</strong>；截至 2026-11 主线未再发新版，README 正公开征集 v2 反馈。v1.21.0 最低 Go 版本 1.23。</p>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>时间</th><th>要点</th></tr></thead><tbody><tr><td>v1.19.0</td><td>2024</td><td>v1.18 系列稳定性收尾，弃用过时内部 API</td></tr><tr><td><strong>v1.20.0</strong></td><td>2025.03</td><td><strong>引入可插拔 encoding 层</strong>；HCL / INI / Java properties 从内置解码器移除；<strong>remote 拆为独立 Go module</strong>；Finder 取代旧文件搜索 API；新增 <code>DecodeHook</code> 选项、实验性 <code>BindStruct</code>；放弃 Go 1.20</td></tr><tr><td><strong>v1.21.0</strong></td><td><strong>2025.09.08</strong></td><td>支持 <code>pflag.BoolSlice/UintSlice/Float64Slice</code>；切换到维护中的 YAML 库 <code>go.yaml.in/yaml/v3</code>；修复 <code>configType</code> 与扩展名判定；升级指南补 mapstructure 包替换；依赖升至 fsnotify 1.9.0 / cast 1.9.2 / mapstructure v2.4.0 / pflag 1.0.10</td></tr><tr><td>v2（规划中）</td><td>未发布</td><td>方向：大小写敏感可选项、配置源插件化、远程层彻底剥离</td></tr></tbody></table></div>
+<p>升级要点：v1.19 → v1.20 是最需读 changelog 的一跳——自定义 <code>DecodeHook</code> 的 import 要从 <code>mitchellh/mapstructure</code> 改为 <code>go-viper/mapstructure/v2</code>；用到 INI / HCL / properties 的项目按新 encoding 层注册 codec；远程配置需单独 <code>go get github.com/spf13/viper/remote</code> 并空导入注册 provider（该模块有独立 <code>remote/v1.21.0</code> 标签）；CI 工具链升到 Go 1.23+。除这些 breaking changes 外 v1 API 保守，升级基本无痛。</p>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>只设 <code>AutomaticEnv</code> 忘了 <code>SetEnvKeyReplacer</code></strong>：<code>database.host</code> 拼成 <code>MYAPP_DATABASE.HOST</code> 永远匹配不上；→ 对策：<code>SetEnvPrefix</code> + <code>strings.NewReplacer(".", "_", "-", "_")</code> + <code>AutomaticEnv</code> 成组出现。</li><li><strong>以为环境变量的值会进 <code>Unmarshal</code></strong>：AutomaticEnv 项不可枚举，<code>AllSettings</code> 快照里没有它；→ 对策：需进结构体的键补 <code>BindEnv</code>，或 <code>SetDefault</code> 占位后启动显式 <code>Get*</code> 覆盖。</li><li><strong>结构体字段漏 <code>mapstructure</code> tag</strong>：<code>log_level</code> 不会自动映射到 <code>LogLevel</code>，嵌套每级同理；→ 对策：每字段都写 tag，开 <code>ErrorUnused</code> 暴露拼写错误。</li><li><strong>复用同一个 <code>&amp;cfg</code> 反复 <code>Unmarshal</code></strong>：删掉的键残留旧值（缺失字段不清零）；→ 对策：每次 <code>var next Config</code> 全新解码 + <code>validate</code> 通过后整体替换。</li><li><strong>全局 <code>viper.*</code> 单例并发读写 / 测试串味</strong>：官方明确并发读写会 panic，包级状态在用例间泄漏；→ 对策：一律 <code>viper.New()</code>，写侧加锁或 <code>atomic.Value</code> 存整份配置，测试每例新实例。</li><li><strong>用 <code>IsSet</code> 判断「配置里有没有这一节」或混淆零值</strong>：<code>port: 0</code> / <code>enabled: false</code> 都算已设置并短路低层，空串在 <code>AllowEmptyEnv=false</code> 下又算未设置；→ 对策：查文件用 <code>InConfig</code>，查 flag 用 <code>flag.Changed</code>，必填项解码后单独 <code>validate</code>。</li><li><strong>依赖 <code>GetString</code> / <code>GetInt</code> 的隐式 cast</strong>：<code>"abc"</code> → <code>GetInt</code> 静默变 0，脏配置隐藏到运行期；→ 对策：启动即 <code>Unmarshal</code> 到强类型结构体、关闭 <code>WeaklyTypedInput</code>，把类型错误挡在启动阶段。</li><li><strong><code>ReadInConfig</code> 报错就 <code>log.Fatal</code></strong>：纯 flag / env 部署没有配置文件是合法的；→ 对策：<code>var e viper.ConfigFileNotFoundError; errors.As(err, &amp;e)</code> 只降级「找不到文件」，语法错 / 权限错照常抛。</li><li><strong><code>WatchConfig</code> 在编辑器保存后不再触发</strong>：vim 等原子写 <code>rename</code> 换掉 inode，fsnotify 监听失效；→ 对策：监听目录并对 <code>Create</code> / <code>Rename</code> 重新 <code>Add</code>，配置下发用「目录 + 符号链接轮换」，测试用 <code>os.WriteFile</code> 而非 <code>:w</code>。</li><li><strong><code>OnConfigChange</code> 里裸改共享变量、不校验、不去抖</strong>：与业务 goroutine 数据竞争，一次保存触发多次重载，非法配置直接生效；→ 对策：<code>RWMutex</code> 整体替换、校验失败保留旧值、<code>time.AfterFunc</code> 100ms 去抖，且<strong>同步</strong>取 Viper 快照后再进定时器。</li><li><strong>flag 在 <code>RunE</code> 里才 <code>BindPFlag</code></strong>：Cobra 进入 <code>RunE</code> 前已解析完 flag，绑定太晚取值全落空；未 <code>Changed</code> 的 flag 默认值也不会盖住配置文件（3.1）；→ 对策：在 <code>init()</code> / <code>fs.Parse</code> 之前绑定，理解「显式 flag &gt; env &gt; config &gt; flag 默认值」。</li><li><strong>照旧教程直接调 <code>AddRemoteProvider</code> 连 etcd/Consul</strong>：v1.20 起 remote 已是独立 module，Viper <strong>不 watch 远端变更</strong>，<code>Unmarshal</code> 也不响应后续 <code>Set</code>；→ 对策：用官方 SDK 主动拉 + Watch，回调里 <code>viper.ReadConfig(bytes.NewReader(data))</code> 注入后重新解码（参见 <a href="../etcd/etcd-guide.html">etcd 指南</a>），别把配置中心做成业务链路的同步依赖。</li></ol>
+<hr>
+
+<div class="callout warning"><p><b>生产警示：</b>WatchConfig 监听的是文件 inode，编辑器「写临时文件再 rename」会导致监听丢失；Viper 全局单例不是并发安全的，多实例场景请各自 New() 并在启动期完成读取。</p></div>
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>Viper</th><th>标准库 <code>flag</code> + <code>encoding/json</code></th><th>koanf</th><th>envconfig</th><th>Go 1.x 配置实践</th></tr></thead><tbody><tr><td>定位</td><td>多来源优先级注册表</td><td>单来源，自己拼装</td><td>可组合的配置管线</td><td>只做 env → struct</td><td><code>os.Getenv</code> + struct tag + 校验</td></tr><tr><td>优先级链 / 格式</td><td><strong>内建 6 层，固定顺序</strong>；JSON/TOML/YAML/envfile 等</td><td>手写 if/else；自己接格式</td><td>Provider 顺序自定义 + 插件化</td><td>无格式支持</td><td>手写</td></tr><tr><td>环境变量</td><td>强（prefix/replacer/BindEnv）</td><td><code>os.Getenv</code> 手写</td><td>provider</td><td><strong>最专注</strong></td><td>原生</td></tr><tr><td>热加载</td><td><code>WatchConfig</code>（fsnotify）</td><td>无</td><td>可插拔 watch</td><td>无</td><td>无</td></tr><tr><td>结构体解码</td><td>mapstructure，宽松</td><td><code>json.Unmarshal</code>，严格</td><td>可换 decoder</td><td>struct tag</td><td>手写 / 第三方校验</td></tr><tr><td>类型安全 / 依赖体积</td><td>弱（cast 隐式转换）/ 较大（17+ 间接依赖）</td><td><strong>强 / 零</strong></td><td>中～强 / 小～中</td><td>强 / 极小</td><td>强 / 零</td></tr><tr><td>并发安全 / 维护</td><td><strong>否</strong>（需外部同步）；v1 稳定、v2 筹备中</td><td>取决于自己（标准库）</td><td>取决于 provider（活跃）</td><td>只读结构体安全（维护期）</td><td>自己保证（标准库）</td></tr><tr><td>适合</td><td>多来源、多格式、CLI + 服务</td><td>简单工具、只想零依赖</td><td>想精确控制加载管线</td><td>纯 12-Factor / 容器</td><td>配置极少的小程序</td></tr></tbody></table></div>
+<p><strong>一句话决策：按「来源数量」选——只有环境变量就 <code>envconfig</code> 或标准库，要「文件 + env + flag」分层覆盖且接受宽松类型就 Viper，想自己精确编排加载管线且在意依赖体积就 koanf；Viper 的价值在优先级链与 Cobra 生态，不在解析能力。</strong></p>
+<p>何时不该用：配置只有几个环境变量（容器化 12-Factor，<code>envconfig</code> 更直白）；要求编译期强类型、配置即代码（Viper 的隐式转换与大小写不敏感会掩盖拼写 / 类型错误，改走 <code>encoding/json</code> + <code>validator</code>）；把 Viper 当配置中心客户端做动态推送（它不 watch 远端，远程能力还在被讨论剥离）；超高 QPS 热路径逐次取值（应启动时解码一次并缓存）；库代码隐式依赖全局单例（污染宿主进程状态）；需要大小写敏感的 key（当前做不到，见 3.2，只能等 v2 或换库）。</p>
+<p>参考：<a href="https://github.com/spf13/viper">官方 README 与 FAQ</a>、<a href="https://github.com/spf13/viper/releases">Releases / Changelog</a>、<a href="https://github.com/go-viper/mapstructure">go-viper/mapstructure v2</a>。</p>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

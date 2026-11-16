@@ -92,7 +92,7 @@
 <body>
 <div class="layout">
 <nav class="sidebar">
-  <div class="logo">Elasticsearch<span class="ver">8.x / 9.x</span></div>
+  <div class="logo">Elasticsearch<span class="ver">9.x</span></div>
   <div class="sub">倒排索引 · 全文检索与日志分析</div>
   <a href="#1-项目简介">1. 项目简介</a>
   <a class="sub-link" href="#安装与本地起服务">安装与本地起服务</a>
@@ -125,7 +125,7 @@
 <p style="opacity:.8;font-size:13.5px">倒排索引 · 全文检索与日志分析</p>
 <div class="meta"><span>Lucene 倒排索引</span><span>text / keyword 双字段</span><span>NRT refresh 1s</span><span>主分片数不可改</span><span>search_after + PIT</span><span>Alias / Rollover / ILM</span></div>
 </div>
-<blockquote><p>基于 Lucene 的分布式搜索与分析引擎：倒排索引、分片与副本、近实时刷新、Query DSL 与聚合——同时承担全文检索与日志检索（ELK）两副担子。 上游：<a href="https://github.com/elastic/elasticsearch">https://github.com/elastic/elasticsearch</a>　|　服务端主线：<strong>8.x / 9.x</strong>（整理于 2026-11）　|　Go 客户端：<a href="https://github.com/elastic/go-elasticsearch">elastic/go-elasticsearch</a> v8 协议：服务端 Elastic License 2.0（另提供 AGPLv3 选项）/ Go 客户端 Apache-2.0；具体版本以上游最新 release 为准。</p></blockquote>
+<blockquote><p>基于 Lucene 的分布式搜索与分析引擎：倒排索引、分片与副本、近实时刷新、Query DSL 与聚合——同时承担全文检索与日志检索（ELK）两副担子。 上游：<a href="https://github.com/elastic/elasticsearch">https://github.com/elastic/elasticsearch</a>　|　服务端主线：<strong>9.x</strong>（9.5；8.x 维护中；整理于 2026-11）　|　Go 客户端：<a href="https://github.com/elastic/go-elasticsearch">elastic/go-elasticsearch</a> v9 协议：服务端 Elastic License 2.0（另提供 AGPLv3 选项）/ Go 客户端 Apache-2.0；具体版本以上游最新 release 为准。</p></blockquote>
 <section data-anchor="1-项目简介">
 <h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
 <p>Elasticsearch 在后端技术栈里通常有<strong>两个身份</strong>：业务侧的全文检索/商品搜索，以及可观测性侧的日志检索（<a href="../zap/zap-guide.html">Zap 篇</a> 产出的日志经采集器落到这里）。两个场景的建模方式完全不同——前者重相关性与字段设计，后者重写入吞吐、时序索引生命周期与成本控制。</p>
@@ -174,6 +174,11 @@ func main() {
 <div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>倒排索引</td><td>term → posting list，FST 词典加速；<code>doc_values</code> 列式结构服务排序与聚合</td></tr><tr><td>字段类型</td><td><code>text</code>（分词，全文）/ <code>keyword</code>（不分词，精确过滤与聚合）/ 数值 / 日期 / <code>nested</code> / <code>object</code> / <code>geo_point</code> / <code>dense_vector</code></td></tr><tr><td>分析器</td><td>Character Filter → Tokenizer → Token Filter；内置 standard、可装 IK 等中文分词插件</td></tr><tr><td>查询 DSL</td><td><code>match</code> / <code>term</code> / <code>range</code> / <code>bool</code>（must / filter / should / must_not）/ <code>multi_match</code> / <code>nested</code> / <code>script</code></td></tr><tr><td>聚合</td><td>桶聚合（terms / date_histogram / range）、指标聚合（avg / sum / percentiles）、管道聚合</td></tr><tr><td>分页</td><td><code>from + size</code>（上限 1 万）、<code>scroll</code>（快照）、<code>search_after</code> + PIT（实时深翻页）</td></tr><tr><td>写入</td><td>单条 Index / <code>Bulk</code> NDJSON 批量、乐观并发（<code>if_seq_no</code> / <code>if_primary_term</code>）、Ingest Pipeline 预处理</td></tr><tr><td>分布式</td><td>主分片 + 副本、路由 <code>hash(_routing) % 主分片数</code>、scatter/gather 两阶段查询</td></tr><tr><td>近实时</td><td><code>refresh_interval</code> 默认 1s、translog、flush、segment merge</td></tr><tr><td>索引治理</td><td>Alias、Rollover、ILM（hot/warm/cold/delete）、索引模板与 component template</td></tr><tr><td>Go SDK</td><td><code>esapi</code> 底层请求、<code>es.Index/Search/Bulk</code> 便捷方法、TypedClient、<code>elastictransport</code> 可配重试与连接池</td></tr></tbody></table></div>
 <hr>
 
+<div class="features">
+  <div class="feature"><div class="fh"><h4>倒排与列存</h4></div><p>text 走倒排索引用词找文档；doc_values 列存支撑排序与聚合</p></div>
+  <div class="feature"><div class="fh"><h4>分片与路由</h4></div><p>shard = hash(_routing) % 主分片数，主分片数创建后不可改</p></div>
+  <div class="feature"><div class="fh"><h4>生命周期</h4></div><p>Alias + Rollover + ILM 管理时序索引，search_after + PIT 替代深分页</p></div>
+</div>
 </section>
 <section data-anchor="3-核心概念与原理">
 <h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
@@ -197,7 +202,27 @@ func main() {
   → Tokenizer（standard → ["Hello", "Go", "2026"]）
   → Token Filter（lowercase → ["hello", "go", "2026"]）</code></pre>
 <ul><li><code>text</code>：走分析器，用于 <code>match</code> 全文检索；<strong>不能用 <code>term</code> 精确匹配</strong>（存的是词条，不是原文）</li><li><code>keyword</code>：不分词，整串入索引，用于 <code>term</code> 精确过滤、排序、聚合</li><li>中文默认 standard 分词器按单字切，检索效果差 → 装 IK（<code>ik_max_word</code> 建索引 / <code>ik_smart</code> 查询）</li></ul>
-<h3 id="33-近实时nrt与写入链路">3.3 近实时（NRT）与写入链路</h3>
+<h3 id="33-近实时nrt与写入链路">3.3 近实时（NRT）与写入链路</h3><div class="figure">
+  <svg viewBox="0 0 880 268" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-elasticsearch" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0f766e"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#115e59">NRT 写入链路</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">写入先落 translog 与内存 buffer，refresh 后才生成可搜索的 segment</text>
+    <rect x="142" y="82" width="175" height="80" rx="12" fill="#ccfbf1" stroke="#0f766e" stroke-width="1.5"/>
+    <text x="229" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#115e59">写入请求</text>
+    <text x="229" y="136" text-anchor="middle" font-size="11" fill="#115e59">translog 追加 + index buffer</text>
+    <line x1="320" y1="122" x2="346" y2="122" stroke="#0f766e" stroke-width="2" marker-end="url(#m-elasticsearch)"/>
+    <rect x="352" y="82" width="175" height="80" rx="12" fill="#ccfbf1" stroke="#0f766e" stroke-width="1.5"/>
+    <text x="440" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#115e59">refresh（默认 1s）</text>
+    <text x="440" y="136" text-anchor="middle" font-size="11" fill="#115e59">生成可搜索 Lucene segment</text>
+    <line x1="532" y1="122" x2="558" y2="122" stroke="#0f766e" stroke-width="2" marker-end="url(#m-elasticsearch)"/>
+    <rect x="564" y="82" width="175" height="80" rx="12" fill="#ccfbf1" stroke="#0f766e" stroke-width="1.5"/>
+    <text x="651" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#115e59">flush / merge</text>
+    <text x="651" y="136" text-anchor="middle" font-size="11" fill="#115e59">落盘并合并小段、清除标记删除</text>
+    <rect x="40" y="186" width="800" height="58" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="210" font-size="12.5" fill="#1e293b">「近实时」不是实时：写入后立刻查可能查不到；删除只打标记，空间要等 merge 才释放。</text>
+  </svg>
+  <figcaption>NRT 写入链路</figcaption>
+</div>
 <pre><code class="lang-text">写入请求
   ├─► 写 translog（追加，保证崩溃可恢复）
   └─► 写 index buffer（内存，此时还搜不到）
@@ -415,13 +440,14 @@ if res.IsError() {
 // Bulk 即使 200 也要检查 body.errors（见 4.3）</code></pre>
 <hr>
 
+<div class="callout info"><p><b>实战要点：</b>日志类索引把 refresh_interval 调到 30s~120s 能显著提升吞吐；精确聚合用 .keyword 多字段，对 text 做 terms 聚合会直接报错。</p></div>
 </section>
 <section data-anchor="5-版本演进速览">
 <h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
 <div class="table-wrap"><table><thead><tr><th>版本</th><th>关键变化与迁移注意点</th></tr></thead><tbody><tr><td>5.x / 6.x</td><td>一个索引可有多个 mapping type；6.x 起限制单 type，为移除做准备</td></tr><tr><td><strong>7.x</strong></td><td><strong>彻底移除 mapping type</strong>（<code>_type</code>）；主分片默认 1；Zen2 集群协调、ILM 成熟；引入 <code>search_after</code> 改进</td></tr><tr><td><strong>8.x</strong></td><td><strong>默认开启安全（TLS + 内置用户认证）</strong>；Java 17 运行时；API 清理与部分字段重命名；kNN 向量检索 GA；Go 客户端切到 <code>/v8</code> 模块并新增 TypedClient</td></tr><tr><td>9.x</td><td>继续简化配置与查询性能、增强向量/混合检索与 serverless 形态</td></tr></tbody></table></div>
 <p><strong>许可证变化务必留意</strong>：7.10 及之前为 Apache-2.0；7.11 起改为 <strong>Elastic License 2.0</strong>，社区随后 fork 出 <strong>OpenSearch</strong>（Apache-2.0）；Elastic 后来又提供 AGPLv3 作为可选许可。商业集成、二次分发前请自行核对当前许可条款，不要沿用老教程里「ES 是 Apache-2.0」的说法。</p>
 <p><strong>升级注意</strong>：</p>
-<ul><li>6.x → 7.x：拆 type、改客户端（<code>/v7</code>）、检查 <code>include_type_name</code> 相关 API</li><li>7.x → 8.x：<strong>必须配置 TLS/认证或显式关闭</strong>，否则客户端连不上；Go 客户端从 <code>github.com/elastic/go-elasticsearch/v7</code> 换到 <code>/v8</code>，<code>esapi</code> 请求构造方式变化</li><li>服务端与客户端大版本要对齐；跨大版本混用会出现兼容性头校验失败</li></ul>
+<ul><li>6.x → 7.x：拆 type、改客户端（<code>/v7</code>）、检查 <code>include_type_name</code> 相关 API</li><li>7.x → 8.x：<strong>必须配置 TLS/认证或显式关闭</strong>，否则客户端连不上；Go 客户端从 <code>github.com/elastic/go-elasticsearch/v7</code> 换到 <code>/v8</code>，<code>esapi</code> 请求构造方式变化</li><li>8.x → 9.x：Go 客户端切到 <code>/v9</code>，部分 deprecated API 被移除；升级前用 Deprecation API 清理调用点</li><li>服务端与客户端大版本要对齐；跨大版本混用会出现兼容性头校验失败</li></ul>
 <hr>
 
 </section>
@@ -430,6 +456,7 @@ if res.IsError() {
 <ol><li><strong>动态映射字段爆炸</strong>：任由业务写入任意字段，<code>mapping</code> 字段数暴涨 → 集群状态膨胀、内存吃紧甚至 <code>limit of total fields exceeded</code>。设 <code>dynamic: strict</code> 或 <code>false</code> + <code>index.mapping.total_fields.limit</code>。</li><li><strong><code>text</code> 与 <code>keyword</code> 用反</strong>：对 <code>text</code> 用 <code>term</code> 精确查（查不到）、对 <code>text</code> 做 terms 聚合（报错）。精确过滤/排序/聚合一律用 <code>.keyword</code> 多字段。</li><li><strong>把 ES 当主数据库</strong>：无跨文档事务、删除是标记、刷新有延迟、副本默认异步。<strong>源数据放 <a href="../mysql/mysql-guide.html">MySQL</a></strong>，ES 只作检索副本并设计好重放全量重建的流程。</li><li><strong>写后立刻查不到</strong>：NRT 默认 1s 刷新。测试用 <code>refresh=wait_for</code>；业务的「写后读自己」应回源库读，不要靠强制刷新掩盖一致性问题。</li><li><strong>生产逐条写入 / 逐条 refresh</strong>：两者都是吞吐杀手。用 Bulk（5~15MB）+ 合理的 <code>refresh_interval</code>。</li><li><strong><code>from + size</code> 深翻页</strong>：超过 1 万条直接报错，之前也会线性变慢。用 <code>search_after</code> + PIT，并记得关闭 PIT。</li><li><strong>主分片数拍脑袋</strong>：创建后不能改，只能 reindex。按数据总量与增长预估（单分片 20~50GB），日志类可用 Rollover 自动扩。</li><li><strong>不设 ILM / Rollover</strong>：时序索引无限增长或天天手工建索引。用固定写别名 + ILM 自动滚动与过期删除。</li><li><strong><code>filter</code> 写成 <code>must</code></strong>：纯过滤条件参与评分、无法命中 query cache，白白浪费 CPU。</li><li><strong>前缀通配 <code>*</code>、正则、<code>script</code> 查询</strong>：全词典扫描，容易把集群打挂。用 <code>match_phrase</code> / <code>n-gram</code> / 预计算字段替代。</li><li><strong>高基数聚合</strong>：对 <code>user_id</code> 做 terms、<code>size</code> 设几万、嵌套多层聚合 → 节点 OOM。用 <code>composite</code> 分页、限 <code>shard_size</code>，或把明细交给 <a href="https://clickhouse.com/">ClickHouse 类 OLAP</a>。</li><li><strong><code>_source</code> 过大 / <code>SELECT *</code> 习惯</strong>：只取需要的字段用 <code>_source_includes</code>，聚合/排序用 <code>docvalue_fields</code>，别把大文档全量拉回应用。</li><li><strong>Bulk 只判 HTTP 状态</strong>：200 也可能是部分失败，必须检查响应体 <code>errors</code> 与 <code>items</code>。</li><li><strong>429 硬加重试并发</strong>：写入队列满了应指数退避并降速，加大并发只会更糟。</li><li><strong>中文用默认分词</strong>：standard 按单字切，搜索「并发」会命中包含「并」「发」的无关文档。装 IK 并区分建索引/查询分析器。</li><li><strong>分片数影响相关性</strong>：小索引多分片时 IDF 按分片统计导致评分偏差，必要时 <code>dfs_query_then_fetch</code>。</li><li><strong>裸奔到公网</strong>：8.x 默认开安全是有原因的，历史上大量数据泄露来自无认证的 9200 端口。生产开 TLS + RBAC + 网络隔离。</li></ol>
 <hr>
 
+<div class="callout warning"><p><b>生产警示：</b>主分片数一旦写死只能 reindex 或 split；高基数聚合与通配符查询容易打爆堆内存，分页务必用 search_after + PIT，别用 from/size 翻到一万条以后。</p></div>
 </section>
 <section data-anchor="7-选型对比">
 <h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>

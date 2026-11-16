@@ -1,7 +1,7 @@
 # NATS 与 JetStream 技术介绍与使用指南
 
 > 云原生时代的轻量级消息系统：单二进制、Subject 寻址、核心即双向消息总线，JetStream 补齐持久化。
-> 仓库：<https://github.com/nats-io/nats-server>　|　当前主线：v2.11（2025.3.19）
+> 仓库：<https://github.com/nats-io/nats-server>　|　当前主线：v2.15（2026.11；v2.11 为 2025.3）
 
 ---
 
@@ -217,8 +217,9 @@ nats bench --pub 8 orders.test --size 1KB --msgs 100000   # 压测
 
 ---
 
-## 5. NATS 2.11 版本要点（2025.3）
+## 5. NATS 2.1x 版本要点（2.11 起）
 
+- **2.15（2026.11）**：当前主线，延续 JetStream 的优先级组、暂停投递与消息追踪能力，重点在稳定性与运维接口；新集群直接上 2.15，2.11 → 2.15 属小版本升级；
 - **按消息 TTL**：`Nats-TTL` 头让单条消息独立于流限制过期（ADR-43）；
 - **分布式消息追踪**：`Nats-Trace-Dest` 头开启消息级追踪，事件回报 ingress/映射/路由全链路；
 - **Pull 消费者优先级组**：主备消费者故障转移（pinning/overflow 策略）；

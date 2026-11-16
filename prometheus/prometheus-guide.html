@@ -165,6 +165,11 @@ func main() {
 <div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>数据模型</td><td><code>metric_name{label="value", ...} value timestamp</code>，标签是多维度的核心</td></tr><tr><td>四种指标类型</td><td>Counter（单调累计）/ Gauge（可增可减）/ Histogram（服务端分桶）/ Summary（客户端分位数）</td></tr><tr><td>采集方式</td><td>拉取为主；短生命周期任务用 Pushgateway；服务发现支持 K8s / Consul / DNS / 文件</td></tr><tr><td>查询</td><td>PromQL：即时向量、区间向量、<code>rate</code> / <code>irate</code> / <code>increase</code>、聚合 <code>sum by</code> / <code>topk</code>、<code>histogram_quantile</code></td></tr><tr><td>规则</td><td>Recording rules（预计算）、Alerting rules（条件 + <code>for</code> 持续时长）</td></tr><tr><td>告警</td><td>Alertmanager 负责去重、分组、静默、抑制、路由到邮件/企业微信/PagerDuty</td></tr><tr><td>存储</td><td>本地 TSDB：WAL → Head block → 2h block → 压缩合并；倒排索引按标签定位 series</td></tr><tr><td>扩展</td><td>Remote write / read 接长期存储；联邦；Thanos / Mimir / VictoriaMetrics 做全局视图与 HA</td></tr><tr><td>关联</td><td>Exemplar 把 <code>trace_id</code> 挂到指标样本上，打通到链路追踪</td></tr><tr><td>Go SDK</td><td><code>Registry</code> / <code>Collector</code> / <code>Gatherer</code>、<code>promhttp</code> Handler、中间件生态、<code>testutil</code> 单测断言</td></tr></tbody></table></div>
 <hr>
 
+<div class="features">
+  <div class="feature"><div class="fh"><h4>数据模型</h4></div><p>指标名 + 标签集唯一标识一条时间序列</p></div>
+  <div class="feature"><div class="fh"><h4>四种类型</h4></div><p>Counter / Gauge / Histogram / Summary 与 rate() 的正确用法</p></div>
+  <div class="feature"><div class="fh"><h4>告警链路</h4></div><p>记录规则预计算、Alertmanager 分组抑制与路由</p></div>
+</div>
 </section>
 <section data-anchor="3-核心概念与原理">
 <h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
@@ -174,7 +179,27 @@ func main() {
 <p><strong>指标名 + 标签集的每一种组合 = 一条独立 series</strong>。这是理解 Prometheus 的第一原则，也是头号事故的来源：</p>
 <pre><code class="lang-text">用户 ID 做标签 → 100 万用户 × 10 条指标 = 1000 万 series → 内存与索引爆炸</code></pre>
 <p>series 数量 = 各标签基数的<strong>笛卡尔积</strong>。标签必须是<strong>有界、低基数</strong>的枚举值（method、route 模板、status code、实例名），不能是 <code>user_id</code>、原始 URL、<code>trace_id</code>、时间戳。</p>
-<h3 id="32-为什么是拉取pull不是推送push">3.2 为什么是拉取（pull），不是推送（push）</h3>
+<h3 id="32-为什么是拉取pull不是推送push">3.2 为什么是拉取（pull），不是推送（push）</h3><div class="figure">
+  <svg viewBox="0 0 880 268" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-prometheus" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#e6522c"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#9a3412">Pull 模型与本地 TSDB</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">Prometheus 主动按间隔抓 /metrics，样本落入本地时序库</text>
+    <rect x="142" y="82" width="175" height="80" rx="12" fill="#ffe4d6" stroke="#e6522c" stroke-width="1.5"/>
+    <text x="229" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#9a3412">Exporter / 应用</text>
+    <text x="229" y="136" text-anchor="middle" font-size="11" fill="#9a3412">暴露 /metrics 文本端点</text>
+    <line x1="320" y1="122" x2="346" y2="122" stroke="#e6522c" stroke-width="2" marker-end="url(#m-prometheus)"/>
+    <rect x="352" y="82" width="175" height="80" rx="12" fill="#ffe4d6" stroke="#e6522c" stroke-width="1.5"/>
+    <text x="440" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#9a3412">Prometheus Server</text>
+    <text x="440" y="136" text-anchor="middle" font-size="11" fill="#9a3412">按 scrape_interval 拉取并附加标签</text>
+    <line x1="532" y1="122" x2="558" y2="122" stroke="#e6522c" stroke-width="2" marker-end="url(#m-prometheus)"/>
+    <rect x="564" y="82" width="175" height="80" rx="12" fill="#ffe4d6" stroke="#e6522c" stroke-width="1.5"/>
+    <text x="651" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#9a3412">TSDB + PromQL</text>
+    <text x="651" y="136" text-anchor="middle" font-size="11" fill="#9a3412">倒排索引定位序列、规则与告警</text>
+    <rect x="40" y="186" width="800" height="58" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="210" font-size="12.5" fill="#1e293b">拉取让服务端掌握采样节奏、天然发现目标存活状态；短期任务才需要 Pushgateway。</text>
+  </svg>
+  <figcaption>Pull 模型与本地 TSDB</figcaption>
+</div>
 <div class="table-wrap"><table><thead><tr><th></th><th>拉取（Prometheus）</th><th>推送（StatsD 等）</th></tr></thead><tbody><tr><td>应用</td><td>只需暴露一个 HTTP 端点，不感知监控后端地址</td><td>需配置后端地址、处理失败与背压</td></tr><tr><td>健康探测</td><td><code>up{job=...}</code> 天然是「目标是否活着」</td><td>需额外心跳</td></tr><tr><td>流量控制</td><td>服务端集中控制采集频率、可随时调</td><td>客户端决定，故障时易形成风暴</td></tr><tr><td>短板</td><td>短生命周期任务、NAT/防火墙后的目标</td><td>—</td></tr></tbody></table></div>
 <p>短任务（cron job、批处理）用 <strong>Pushgateway</strong> 补，但它不是「代理」：Pushgateway 会一直保留最后一次推送的值，任务结束<strong>必须显式删除对应分组</strong>，否则会永远上报一个僵死的指标。</p>
 <h3 id="33-四种指标类型与-rate">3.3 四种指标类型与 <code>rate()</code></h3>
@@ -348,6 +373,7 @@ http_requests_total{code="200",method="GET",route="/ping"} 1
 }</code></pre>
 <hr>
 
+<div class="callout info"><p><b>实战要点：</b>Counter 永远配合 rate()/increase() 使用；Histogram 的分桶边界要按真实 SLO 设计，否则算不出有意义的分位数。</p></div>
 </section>
 <section data-anchor="5-版本演进速览">
 <h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
@@ -362,6 +388,7 @@ http_requests_total{code="200",method="GET",route="/ping"} 1
 <ol><li><strong>高基数标签</strong>：把 <code>user_id</code> / <code>trace_id</code> / 原始 URL / 订单号 / 时间戳当标签，是 Prometheus 头号事故。标签只放有界枚举；明细进日志与链路。</li><li><strong>Counter 直接画原始值</strong>：它是累计值，重启归零会形成断崖。一律 <code>rate()</code> / <code>increase()</code>；聚合顺序是<strong>先 rate 再 sum</strong>。</li><li><strong>Histogram 桶边界拍脑袋</strong>：默认桶（最大 10s）对毫秒级 RPC 太粗，P99 会失真。按实际 P99 量级设计桶，且桶数别超过 ~20。</li><li><strong>用 Summary 做多副本聚合</strong>：Summary 的分位数在客户端算好，<strong>无法跨实例求 P99</strong>。多副本一律用 Histogram。</li><li><strong>单位与命名不规范</strong>：时长用 <code>_seconds</code>、字节用 <code>_bytes</code>、累计量加 <code>_total</code>；不要 <code>latency_ms</code> 和 <code>duration_seconds</code> 混用。遵循官方命名与 <a href="https://opentelemetry.io/docs/specs/semconv/">semantic conventions</a>。</li><li><strong>路由未模板化</strong>：<code>/users/123</code> 每条 URL 一条 series。用 <code>chi.RoutePattern()</code> / Gin 的 <code>FullPath()</code> 取 <code>/users/:id</code>。</li><li><strong><code>MustRegister</code> 重复注册 panic</strong>：库代码别直接注册到全局默认 Registry；用自定义 Registry 或 <code>Register</code> + 处理 <code>AlreadyRegisteredError</code>。</li><li><strong><code>Collect</code> 里做慢查询</strong>：抓取是同步的，慢 Collector 会拖垮整个 <code>/metrics</code> 乃至 target 超时。异步刷新缓存，Collect 只读内存。</li><li><strong><code>/metrics</code> 暴露到公网</strong>：泄露内部路径、实例信息与业务量。放在内网端口或加认证/网络策略。</li><li><strong>告警不带 <code>for</code></strong>：瞬时抖动狂轰滥炸。配 <code>for</code> + 用 <code>rate</code> 窗口，并在 Alertmanager 配置分组、静默与抑制。</li><li><strong><code>scrape_interval</code> 与突发流量不匹配</strong>：15s 间隔会漏掉秒级尖刺；关键 SLO 可缩到 5s，但要评估 TSDB 写入压力。</li><li><strong>拿 Prometheus 存日志/长期明细</strong>：本地 TSDB 是为近期监控设计的。长期归档走 remote write 到 Thanos / Mimir / VictoriaMetrics；日志走 <a href="../zap/zap-guide.html">Zap</a> + Loki/ES。</li><li><strong>Pushgateway 当代理用</strong>：短任务结束后不 <code>Delete</code> 分组，指标会永久停留在最后值，产生假告警。</li><li><strong>指标与日志/链路各自为政</strong>：<code>service.name</code> 不统一、<code>trace_id</code> 不写进日志、指标上不挂 exemplar，排障时三套系统对不上。用 <a href="../opentelemetry/opentelemetry-guide.html">OpenTelemetry</a> 统一 Resource，并用 exemplar 把指标样本连到 trace。</li></ol>
 <hr>
 
+<div class="callout warning"><p><b>生产警示：</b>标签高基数是头号事故：把 user_id、trace_id、URL 原文塞进标签会让序列数爆炸；重启后 Counter 归零由 rate() 自动处理，不要自己补偿。</p></div>
 </section>
 <section data-anchor="7-选型对比">
 <h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>

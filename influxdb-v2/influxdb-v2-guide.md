@@ -1,7 +1,7 @@
 # InfluxDB 2.x（OSS）技术介绍与使用指南
 
 > 面向时序数据的开源数据库 v2 世代：TSM 存储引擎 + Flux 查询语言 + Bucket/Token 模型。
-> 仓库：<https://github.com/influxdata/influxdb>　|　主线：2.7（维护期；后续演进为 3.x，见姊妹篇）
+> 仓库：<https://github.com/influxdata/influxdb>　|　主线：2.9.1（2.x 维护线；官方主线已转向 3.x，见姊妹篇）
 
 ---
 
@@ -14,7 +14,7 @@ InfluxDB 是专门为**时序数据**（时间戳 + 指标 + 事件）设计的�
 - **Bucket / Org / Token 模型**：取代 v1 的 database/retention policy，权限以 API Token 精细化发放；
 - 统一了 v1 时代 "influxdb + kapacitor + chronograf" 三件套的职责。
 
-⚠️ **版本现状（重要）**：InfluxData 的开发重心已转向 v3（Rust 重写，见姊妹篇）。2.7 处于维护状态（安全与缺陷修复），Flux 语言在新版本中不再支持。**存量 2.x 集群仍大量运行于生产**（含云厂商托管版本），学习价值在于运维存量系统与理解时序模型；新项目建议评估 v3。
+⚠️ **版本现状（重要）**：InfluxData 的开发重心已转向 v3（Rust 重写，见姊妹篇）。2.x 维护线已到 **2.9.1**（2.7 仍是存量部署最多的版本），仅做安全与缺陷修复；Flux 在 3.x 中不再支持。**存量 2.x 集群仍大量运行于生产**（含云厂商托管版本），学习价值在于运维存量系统与理解时序模型；新项目建议评估 v3。
 
 ### 启动
 
