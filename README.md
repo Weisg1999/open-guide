@@ -7,7 +7,7 @@
 能读、能查、能直接抄代码的「技术手册」，而不是又一份 Hello World。
 
 [![Docs](https://img.shields.io/badge/docs-56%20篇-16a34a?style=for-the-badge)](./README.md)
-[![Lines](https://img.shields.io/badge/正文-22%2C400%20行-0ea5e9?style=for-the-badge)](./README.md)
+[![Lines](https://img.shields.io/badge/正文-22%2C466%20行-0ea5e9?style=for-the-badge)](./README.md)
 [![Format](https://img.shields.io/badge/format-Markdown%20%2B%20HTML-f59e0b?style=for-the-badge)](./README.md)
 
 [![License](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square)](./LICENSE)
@@ -27,7 +27,7 @@
 
 | 📚 指南 | 📝 正文 | 📄 离线手册 | 🖼️ 架构图 | ✅ 写作规范 | ⚖️ 许可 |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| **56 篇** | **≈ 22,400 行** | **56 份** | **113 张 SVG** | **7 个必备要素** | **MIT** |
+| **56 篇** | **≈ 22,466 行** | **56 份** | **113 张 SVG** | **7 个必备要素** | **MIT** |
 
 </div>
 
@@ -461,6 +461,6 @@ Copyright (c) 2026 Weisg1999
 
 [文档目录](#二文档目录) · [阅读路径](#三推荐的阅读路径) · [参与贡献](#七贡献) · [English](./README_EN.md)
 
-<sub>Markdown 是唯一真源 · HTML 由构建脚本生成 · 56 篇 / 22,400 行 · © 2026 Weisg1999</sub>
+<sub>Markdown 是唯一真源 · HTML 由构建脚本生成 · 56 篇 / 22,466 行 · © 2026 Weisg1999</sub>
 
 </div>

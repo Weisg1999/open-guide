@@ -105,7 +105,7 @@ def build(guides) -> str:
         ensure_ascii=False,
         indent=0,
     )
-    lines = sum(1 for _ in README.read_text(encoding="utf-8").splitlines())
+    lines = sum(len(p.read_text(encoding="utf-8").split("\n")) for p in ROOT.glob("*/*.md"))
 
     return TEMPLATE % {
         "count": len(guides),
@@ -113,7 +113,7 @@ def build(guides) -> str:
         "chips": "\n      ".join(chips),
         "data": data,
         "colors": json.dumps(colors, ensure_ascii=False),
-        "lines": "18,400",
+        "lines": "{:,}".format(lines),
     }
 
 
