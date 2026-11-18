@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>open-guide · Go 后端技术栈中文深度指南</title>
-<meta name="description" content="47 篇 Go 后端技术栈中文深度指南：覆盖语言核心、服务治理、数据存储、消息调度、可观测性与部署，每篇含原理、实战、坑与选型。">
+<meta name="description" content="56 篇 Go 后端技术栈中文深度指南：覆盖语言核心、服务治理、数据存储、消息调度、可观测性与部署，每篇含原理、实战、坑与选型。">
 <meta name="theme-color" content="#0f172a">
 <style>
 :root{
@@ -96,9 +96,9 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;paddi
   <div class="wrap">
     <p class="eyebrow">open-guide · Go backend handbook</p>
     <h1>Go 后端技术栈<br><em>中文深度指南</em></h1>
-    <p class="lede">47 篇长文，覆盖语言核心、服务治理、数据存储、消息调度、可观测性与部署。每篇都按「原理 → 实战 → 版本 → 坑 → 选型」重写，不是 API 翻译。</p>
+    <p class="lede">56 篇长文，覆盖语言核心、服务治理、数据存储、消息调度、可观测性与部署。每篇都按「原理 → 实战 → 版本 → 坑 → 选型」重写，不是 API 翻译。</p>
     <div class="stats">
-      <div><b>47</b><span>篇指南</span></div>
+      <div><b>56</b><span>篇指南</span></div>
       <div><b>6</b><span>个分类</span></div>
       <div><b>18,400</b><span>行正文</span></div>
     </div>
@@ -110,12 +110,12 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;paddi
 </header>
 
 <nav class="filters wrap" id="filters">
-      <button class="chip active" data-c="all">全部<span>47</span></button>
-      <button class="chip" data-c="Go 语言核心"><i style="background:#0d9488"></i>🔤 Go 语言核心<span>9</span></button>
-      <button class="chip" data-c="Web、微服务与治理"><i style="background:#2563eb"></i>🌐 Web、微服务与治理<span>8</span></button>
-      <button class="chip" data-c="数据存储与检索"><i style="background:#7c3aed"></i>🗄️ 数据存储与检索<span>15</span></button>
-      <button class="chip" data-c="消息、任务与调度"><i style="background:#ea580c"></i>📨 消息、任务与调度<span>7</span></button>
-      <button class="chip" data-c="可观测性"><i style="background:#0891b2"></i>🔭 可观测性<span>6</span></button>
+      <button class="chip active" data-c="all">全部<span>56</span></button>
+      <button class="chip" data-c="Go 语言核心"><i style="background:#0d9488"></i>🔤 Go 语言核心<span>13</span></button>
+      <button class="chip" data-c="Web、微服务与治理"><i style="background:#2563eb"></i>🌐 Web、微服务与治理<span>9</span></button>
+      <button class="chip" data-c="数据存储与检索"><i style="background:#7c3aed"></i>🗄️ 数据存储与检索<span>17</span></button>
+      <button class="chip" data-c="消息、任务与调度"><i style="background:#ea580c"></i>📨 消息、任务与调度<span>8</span></button>
+      <button class="chip" data-c="可观测性"><i style="background:#0891b2"></i>🔭 可观测性<span>7</span></button>
       <button class="chip" data-c="部署与编排"><i style="background:#475569"></i>🐳 部署与编排<span>2</span></button>
 </nav>
 
@@ -206,6 +206,38 @@ const DATA = [
 "m": "./cobra-sqlc/cobra-sqlc-guide.md"
 },
 {
+"t": "ants",
+"d": "goroutine 池的调度模型、cap 与队列语义、阻塞 / 非阻塞两种失败模式、Invoke 与超时、panic 处理、Running / Free / Waiting 指标",
+"c": "Go 语言核心",
+"e": "🔤",
+"u": "./ants/ants-guide.html",
+"m": "./ants/ants-guide.md"
+},
+{
+"t": "google/wire",
+"d": "编译期依赖注入、Provider / ProviderSet、wire.Bind / Struct / Value、cleanup 顺序、类型唯一性、与 fx / dig 的取舍",
+"c": "Go 语言核心",
+"e": "🔤",
+"u": "./wire/wire-guide.html",
+"m": "./wire/wire-guide.md"
+},
+{
+"t": "Excelize",
+"d": "OOXML 结构、共享字符串表的内存账、普通 API vs StreamWriter、样式共享池、迭代读取、十万行导出与模板填充",
+"c": "Go 语言核心",
+"e": "🔤",
+"u": "./excelize/excelize-guide.html",
+"m": "./excelize/excelize-guide.md"
+},
+{
+"t": "Go 设计模式",
+"d": "哪些 GoF 模式在 Go 里消失 / 变形、functional options、中间件链、策略 = 函数值、观察者 = channel、并发模式与设计模式的区别、何时不该用",
+"c": "Go 语言核心",
+"e": "🔤",
+"u": "./golang-design-pattern/golang-design-pattern-guide.html",
+"m": "./golang-design-pattern/golang-design-pattern-guide.md"
+},
+{
 "t": "Gin",
 "d": "基数树路由、中间件链、参数绑定与校验、响应渲染、优雅启停，v1.10 → v1.12 演进",
 "c": "Web、微服务与治理",
@@ -270,6 +302,14 @@ const DATA = [
 "m": "./service-governance/service-governance-guide.md"
 },
 {
+"t": "gorilla/websocket",
+"d": "握手与 Origin 校验、帧与消息、单 reader / 单 writer 模型、deadline 与心跳、关闭握手、读上限与背压、水平扩展",
+"c": "Web、微服务与治理",
+"e": "🌐",
+"u": "./websocket/websocket-guide.html",
+"m": "./websocket/websocket-guide.md"
+},
+{
 "t": "MySQL",
 "d": "B+ 树聚簇索引与回表、最左前缀与覆盖索引、MVCC / ReadView 与隔离级别、临键锁与死锁、EXPLAIN 慢查询、主从复制与延迟、database/sql 连接池",
 "c": "数据存储与检索",
@@ -292,6 +332,14 @@ const DATA = [
 "e": "🗄️",
 "u": "./distributed-transaction/distributed-transaction-guide.html",
 "m": "./distributed-transaction/distributed-transaction-guide.md"
+},
+{
+"t": "DTM",
+"d": "Saga 正序补偿逆序、TCC 三接口与空回滚 / 悬挂、子事务屏障、二阶段消息、XA 边界、工作流编排",
+"c": "数据存储与检索",
+"e": "🗄️",
+"u": "./dtm/dtm-guide.html",
+"m": "./dtm/dtm-guide.md"
 },
 {
 "t": "GORM",
@@ -390,6 +438,14 @@ const DATA = [
 "m": "./vector-database/vector-database-guide.md"
 },
 {
+"t": "golang-migrate",
+"d": "版本表与 dirty 语义、up / down / steps、embed + iofs、并发与 advisory lock、不可逆迁移、与 goose / atlas 的分工",
+"c": "数据存储与检索",
+"e": "🗄️",
+"u": "./migrate/migrate-guide.html",
+"m": "./migrate/migrate-guide.md"
+},
+{
 "t": "asynq ⭐",
 "d": "本仓库最完整的一篇（1300+ 行）。Redis 分布式任务队列：任务生命周期、延时/重试/死信、优先级与加权队列、任务去重、任务聚合、超时与截止、Prometheus 指标、Asynqmon Web UI 部署",
 "c": "消息、任务与调度",
@@ -446,6 +502,14 @@ const DATA = [
 "m": "./temporal/temporal-guide.md"
 },
 {
+"t": "Watermill",
+"d": "Publisher / Subscriber 抽象、Router 与 ack 时机、中间件链（Recoverer / Retry / PoisonQueue）、CQRS、至少一次语义下的幂等",
+"c": "消息、任务与调度",
+"e": "📨",
+"u": "./watermill/watermill-guide.html",
+"m": "./watermill/watermill-guide.md"
+},
+{
 "t": "Zap",
 "d": "零分配热路径与强类型 Field、Logger vs SugaredLogger、zapcore 四层管线（Encoder / WriteSyncer / LevelEnabler）、Tee 多目的地分流、采样与 AtomicLevel、与标准库 log/slog 的关系",
 "c": "可观测性",
@@ -492,6 +556,14 @@ const DATA = [
 "e": "🔭",
 "u": "./victoriametrics/victoriametrics-guide.html",
 "m": "./victoriametrics/victoriametrics-guide.md"
+},
+{
+"t": "Nightingale（夜莺）",
+"d": "告警控制面定位、业务组 / 机器 / 标签模型、rule_config 与 cron_pattern、告警引擎分片与心跳、屏蔽 / 订阅 / 通知链、事件管道、v9 内置 TSDB 与 AI / MCP",
+"c": "可观测性",
+"e": "🔭",
+"u": "./nightingale/nightingale-guide.html",
+"m": "./nightingale/nightingale-guide.md"
 },
 {
 "t": "Docker / Kubernetes",

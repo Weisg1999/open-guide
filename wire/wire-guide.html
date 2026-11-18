@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>google/wire · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#6d28d9; --accent-light:#ede9fe; --accent-dark:#4c1d95;
+    --bg:#f8f6ff; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#1e0a3c; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#4c1d95 0%,#6d28d9 58%,#4c1d95 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">google/wire<span class="ver">v0.6</span></div>
+  <div class="sub">编译期 DI · 代码生成</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a href="#2-能力总览">2. 能力总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-求解过程从返回值反推整张图">3.1 求解过程：从返回值反推整张图</a>
+  <a class="sub-link" href="#32-双-build-tag-与-wire_gengo-的生成契约">3.2 双 build tag 与 wire_gen.go 的生成契约</a>
+  <a class="sub-link" href="#33-providerset-分层与标记函数">3.3 ProviderSet 分层与标记函数</a>
+  <a class="sub-link" href="#34-cleanup顺序错误与只能是-func">3.4 cleanup：顺序、错误与「只能是 func()」</a>
+  <a class="sub-link" href="#35-类型唯一性同类型多实例怎么破">3.5 类型唯一性：同类型多实例怎么破</a>
+  <a class="sub-link" href="#36-生成期会拒绝的五类错误">3.6 生成期会拒绝的五类错误</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-目录与-provider">4.1 目录与 provider</a>
+  <a class="sub-link" href="#42-wirego手写的只有签名与集合">4.2 wire.go：手写的只有签名与集合</a>
+  <a class="sub-link" href="#43-生成后的-wire_gengo">4.3 生成后的 wire_gen.go</a>
+  <a class="sub-link" href="#44-maingo进程生命周期与清理时序">4.4 main.go：进程生命周期与清理时序</a>
+  <a class="sub-link" href="#45-生成与-ci-校验">4.5 生成与 CI 校验</a>
+  <a href="#5-版本演进">5. 版本演进</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>google/wire 技术指南</h1>
+<p>Wire 不是运行时容器：它在编译期把「谁依赖谁」展开成普通构造函数调用，没有反射、没有启动期扫描，错了就编译不过。 上游：<a href="https://github.com/google/wire">https://github.com/google/wire</a> <strong>v0.6.x</strong>（最新 tag 为 v0.7.0，2025-08-22）　|　许可：Apache-2.0</p>
+<p style="opacity:.8;font-size:13.5px">编译期 DI · 代码生成</p>
+<div class="meta"><span>编译期 DI</span><span>代码生成</span></div>
+</div>
+<blockquote><p>Wire 不是运行时容器：它在编译期把「谁依赖谁」展开成普通构造函数调用，没有反射、没有启动期扫描，错了就编译不过。 上游：<a href="https://github.com/google/wire">https://github.com/google/wire</a> <strong>v0.6.x</strong>（最新 tag 为 v0.7.0，2025-08-22）　|　许可：Apache-2.0</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p>Wire 是 Google Go Cloud 团队 2018 年从 go-cloud 拆出的编译期依赖注入工具，v0.3 起宣称功能完备，2025 年 8 月仓库被自动归档，README 明确写着 <em>This project is no longer maintained</em>。它只做一件事：<strong>你写注入函数的签名，它生成函数体</strong>。</p>
+<ul><li><strong>Provider</strong>：普通构造函数 <code>func NewXxx(a A, b B) (*Xxx, func(), error)</code>。参数是依赖，第一个返回值是产物，第二个可选返回值是清理函数，最后一个是 error。它不 import wire，单独调用也能工作。</li><li><strong>Injector</strong>：签名由你写、函数体只有一行 <code>wire.Build(...)</code> 的函数。<code>wire</code> 从它的返回值反推整条依赖链，按拓扑序生成普通 Go 代码。</li></ul>
+<pre><code class="lang-text">wire.go（//go:build wireinject）      ── wire gen ──▶   wire_gen.go（//go:build !wireinject）
+手写 injector 签名 + wire.Build(Set)                  普通构造函数调用序列，入库、可 review、可断点</code></pre>
+<p><strong>为什么用编译期 DI</strong>：生成的 <code>wire_gen.go</code> 就是你会手写的那种代码——初始化顺序、错误分支、清理时机全部显式；运行期没有反射、没有容器、没有启动扫描；装配错误（缺 provider、循环依赖、类型歧义）在 <code>go build</code> 之前暴露，而不是等某个 handler 第一次取依赖时 panic；IDE 能跳转、能下断点、能直接单测 provider。代价是多一个生成步骤、「类型即契约」（同类型不能有两个实例）、生成文件必须入库，且上游已归档不再有新特性。</p>
+<p>安装只要一行：<code>go install github.com/google/wire/cmd/wire@v0.7.0</code>（只装 CLI，业务代码不 import；也可在模块内 <code>go run github.com/google/wire/cmd/wire@v0.7.0 ./...</code> 锁版本）。生成文件头部自带 <code>//go:generate go run -mod=mod github.com/google/wire/cmd/wire</code>，所以 <code>go generate ./...</code> 也能触发，不必人人装 CLI。</p>
+<hr>
+
+</section>
+<section data-anchor="2-能力总览">
+<h2 id="2-能力总览">2. 能力总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>工作方式</td><td>编译期代码生成，产物是普通 Go 调用序列；运行期无容器、无反射</td></tr><tr><td>注入点</td><td>injector：签名手写，函数体只允许 <code>wire.Build(...)</code> 或 <code>panic(wire.Build(...))</code></td></tr><tr><td>Provider</td><td>任意构造函数，参数即依赖；可返回 <code>(T)</code>、<code>(T, error)</code>、<code>(T, func())</code>、<code>(T, func(), error)</code></td></tr><tr><td>组织</td><td><code>wire.NewSet</code> 组合 provider 与其它 set，可嵌套，按层导出 <code>XxxSet</code></td></tr><tr><td>接口绑定</td><td><code>wire.Bind(new(Iface), new(*Impl))</code>；同一 set 内必须有 <code>*Impl</code> 的 provider</td></tr><tr><td>结构体装配</td><td><code>wire.Struct(new(S), "*"/"F1","F2")</code> 按字段类型填充，<code>wire:"-"</code> 排除字段</td></tr><tr><td>字段提升</td><td><code>wire.FieldsOf(new(S), "F1")</code> 把已有结构体的字段当成 provider；<code>wire.Value</code> 用于常量</td></tr><tr><td>资源清理</td><td>provider 返回 <code>func()</code>，wire 聚合成一个 cleanup，<strong>逆序</strong>执行；中途失败立即回收</td></tr><tr><td>错误传播</td><td>provider 的 error 逐层 <code>if err != nil</code> 返回，injector 必须预留 error 位</td></tr><tr><td>CLI</td><td><code>wire gen</code>（默认）、<code>diff</code>、<code>show</code>、<code>check</code>；<code>--tags</code>、<code>--header_file</code>、<code>--output_file_prefix</code></td></tr></tbody></table></div>
+<hr>
+
+<div class="features">
+  <div class="feature"><div class="fh"><h4>编译期 DI</h4></div><p>生成的是普通代码，可读、可断点、启动快</p></div>
+  <div class="feature"><div class="fh"><h4>cleanup 顺序</h4></div><p>按依赖逆序执行，用来关连接与刷缓冲</p></div>
+  <div class="feature"><div class="fh"><h4>类型唯一性</h4></div><p>同一类型多个实例要包装成不同命名类型</p></div>
+</div>
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-求解过程从返回值反推整张图">3.1 求解过程：从返回值反推整张图</h3><div class="figure">
+  <svg viewBox="0 0 880 268" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-wire" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6d28d9"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#4c1d95">编译期装配</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">没有反射，也没有运行时容器</text>
+    <rect x="36" y="82" width="175" height="80" rx="12" fill="#ede9fe" stroke="#6d28d9" stroke-width="1.5"/>
+    <text x="124" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#4c1d95">Provider</text>
+    <text x="124" y="136" text-anchor="middle" font-size="11" fill="#4c1d95">构造函数 + NewSet</text>
+    <line x1="215" y1="122" x2="241" y2="122" stroke="#6d28d9" stroke-width="2" marker-end="url(#m-wire)"/>
+    <rect x="247" y="82" width="175" height="80" rx="12" fill="#ede9fe" stroke="#6d28d9" stroke-width="1.5"/>
+    <text x="334" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#4c1d95">依赖图</text>
+    <text x="334" y="136" text-anchor="middle" font-size="11" fill="#4c1d95">按返回值反推</text>
+    <line x1="426" y1="122" x2="452" y2="122" stroke="#6d28d9" stroke-width="2" marker-end="url(#m-wire)"/>
+    <rect x="458" y="82" width="175" height="80" rx="12" fill="#ede9fe" stroke="#6d28d9" stroke-width="1.5"/>
+    <text x="546" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#4c1d95">wire 生成</text>
+    <text x="546" y="136" text-anchor="middle" font-size="11" fill="#4c1d95">编译期展开</text>
+    <line x1="637" y1="122" x2="663" y2="122" stroke="#6d28d9" stroke-width="2" marker-end="url(#m-wire)"/>
+    <rect x="669" y="82" width="175" height="80" rx="12" fill="#ede9fe" stroke="#6d28d9" stroke-width="1.5"/>
+    <text x="756" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#4c1d95">wire_gen.go</text>
+    <text x="756" y="136" text-anchor="middle" font-size="11" fill="#4c1d95">普通 Go 调用</text>
+    <rect x="40" y="186" width="800" height="58" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="210" font-size="12.5" fill="#1e293b">缺依赖直接编译失败，错误在启动前暴露，而不是在第一次请求时。</text>
+  </svg>
+  <figcaption>编译期装配</figcaption>
+</div>
+<p><code>wire</code> 先加载带 <code>wireinject</code> tag 的包，找出函数体只有 <code>wire.Build</code> 的函数，再从返回值出发<strong>反向求解</strong>：</p>
+<pre><code class="lang-text">需要 *HTTPServer      → NewHTTPServer(cfg, UserStore, *slog.Logger)
+需要 UserStore        → 只有 wire.Bind 声明，转去要 *store.UserRepo
+需要 *store.UserRepo  → NewUserRepo(*sql.DB, *redis.Client)
+需要 *sql.DB          → db.Open(cfg, *slog.Logger)   ← 自带 cleanup 与 error
+需要 config.Config    → config.Load()                ← 叶子，无依赖</code></pre>
+<ul><li><strong>类型匹配用 type identity</strong>：<code>string</code> 与 <code>type UserID string</code> 是两个类型，<code>Foo</code> 与 <code>*Foo</code> 也是（<code>wire.Struct</code> 是少数同时提供两者的例外）。</li><li><strong>同一类型只能有一个 provider</strong>，且检查整个传递闭包，不只是 <code>wire.Build</code> 的直接参数；同一个 provider 在 set 里出现两次也报错，wire 不去重。</li><li><strong>只生成用得到的路径</strong>，没被依赖的 provider 不会进入 <code>wire_gen.go</code>；<code>wire.go</code> 里的非 injector 声明（如 <code>ProviderSet</code>）会被原样复制到生成文件。</li><li>injector 可以带参数（<code>func InitApp(cfg config.Config) (...)</code>），这些参数成为图的输入，由调用方构造。</li></ul>
+<h3 id="32-双-build-tag-与-wire_gengo-的生成契约">3.2 双 build tag 与 <code>wire_gen.go</code> 的生成契约</h3>
+<p>stub 与生成物用<strong>互斥的 build tag</strong> 保证同名函数在任一编译单元里只有一份定义：</p>
+<pre><code class="lang-go">//go:build wireinject
+// +build wireinject
+
+package server
+
+func InitApp() (*HTTPServer, func(), error) {
+	panic(wire.Build(ProviderSet)) // 函数体只给 wire 看
+}</code></pre>
+<p>生成的 <code>wire_gen.go</code> 顶部是 <code>//go:build !wireinject</code> + <code>// +build !wireinject</code>：<code>wire</code> 工具需要「含 stub、不含实现」的视图做分析，<code>go build</code> 需要「含实现、不含 stub」的视图，否则同名函数 <code>redeclared in this block</code>。<code>// +build</code> 是 Go 1.17 之前的老式约束，与 <code>//go:build</code> 之间要空一行，gofmt 会保留两行。</p>
+<ul><li><strong><code>wire_gen.go</code> 必须提交</strong>：CI 只跑 <code>go build</code>/<code>go test</code> 时不会装 wire，缺它就是 <code>undefined: InitApp</code>；提交还能让 review 看到装配顺序变化。</li><li>防漂移：CI 重新生成后 <code>git diff --exit-code</code>，或直接 <code>wire diff ./...</code>（有差异退出码 1，出错 2）。</li><li>手改一定被覆盖：<code>wire gen</code> 是整文件重写，不是 patch；首行固定 <code>// Code generated by Wire. DO NOT EDIT.</code>。</li></ul>
+<h3 id="33-providerset-分层与标记函数">3.3 ProviderSet 分层与标记函数</h3>
+<p>按「层」组织 set，依赖方向单向 <code>server → store → db/cache</code>，set 跟着单向嵌套：</p>
+<pre><code class="lang-go">var ConfigSet = wire.NewSet(Load)
+var InfraSet = wire.NewSet(ConfigSet, logx.New, db.Open, cache.NewRedis)
+var ProviderSet = wire.NewSet(InfraSet, store.NewUserRepo,
+	wire.Bind(new(UserStore), new(*store.UserRepo)), NewHTTPServer)</code></pre>
+<p><code>wire.Bind</code> 是「接口 → 具体类型」的桥：Go 惯例是 provider 返回具体类型，消费方依赖接口。第二个参数是「指向具体类型的指针的指针」——provider 返回 <code>*UserRepo</code> 就写 <code>new(*UserRepo)</code>；被绑定的具体类型必须在<strong>同一个 set</strong> 里有 provider，否则报 <code>provider set does not include a provider for *store.UserRepo</code>。</p>
+<p><code>wire.Struct</code> 在字段本身就是依赖时省掉构造函数：</p>
+<pre><code class="lang-go">type HTTPServer struct {
+	srv   *http.Server
+	store UserStore
+	log   *slog.Logger
+	mu    sync.Mutex `wire:"-"` // 排除，wire 不会去图里找 sync.Mutex
+}
+
+var ServerSet = wire.NewSet(wire.Struct(new(HTTPServer), "*")) // 同时提供 HTTPServer 与 *HTTPServer</code></pre>
+<p>字段必须导出（unexported 自动跳过）；<code>"*"</code> 表示全填；显式点名被 <code>wire:"-"</code> 排除的字段会直接报错；旧写法「把 struct 值直接放进 <code>NewSet</code>」已废弃。<code>wire.Value</code> / <code>wire.InterfaceValue</code> 则给常量一个 provider，避免写只返回常量的函数——表达式会被<strong>复制到生成文件并在包初始化时求值</strong>，因此不能含函数调用或 channel 接收，且 <code>Value</code> 不接受接口类型（接口用 <code>InterfaceValue</code>）；<code>wire.FieldsOf</code> 把已构造结构体的字段提升为 provider，省掉 <code>getXxx</code>。</p>
+<h3 id="34-cleanup顺序错误与只能是-func">3.4 cleanup：顺序、错误与「只能是 <code>func()</code>」</h3>
+<p>清理函数签名<strong>必须是 <code>func()</code></strong>——wire 的类型检查只认 <code>func()</code>，写成 <code>func() error</code> 会报 <code>second return type is func() error; must be error or func()</code>。清理中的错误只能在闭包里自己记日志，wire 不聚合清理错误。顺序由生成器保证：<strong>清理与构造顺序相反</strong>。</p>
+<pre><code class="lang-go">sqlDB, cleanup, err := db.Open(configConfig, logger)
+if err != nil {
+	return nil, nil, err
+}
+client, cleanup2, err := cache.NewRedis(configConfig)
+if err != nil {
+	cleanup() // 中途失败：已建资源立即回收
+	return nil, nil, err
+}
+return httpServer, func() {
+	cleanup2() // 后构造的先清理
+	cleanup()  // 先构造的后清理
+}, nil</code></pre>
+<p>只要 provider 集合里任意一个 provider 带 cleanup（或 error），injector 签名就必须预留对应位置，顺序固定为「产物、<code>func()</code>、<code>error</code>」。</p>
+<h3 id="35-类型唯一性同类型多实例怎么破">3.5 类型唯一性：同类型多实例怎么破</h3>
+<p>wire 不允许同一类型有两个 provider，因为大多数情况下那是 bug。真实项目确实有「主库 + 从库」「缓存 Redis + 锁 Redis」，官方解法不是命名参数，而是<strong>造一个新类型</strong>：<code>type ReplicaDB struct{ *sql.DB }</code> 包一层，再给 <code>OpenReplica(cfg) (*ReplicaDB, func(), error)</code>，需要从库的仓储就声明 <code>NewReportRepo(primary *sql.DB, replica *ReplicaDB)</code>。指针别名（<code>type ReplicaDB = sql.DB</code>）无效，别名与原类型 type identity 相同。也可以 <code>type DSN string</code> 区分基础类型配置，或拆 injector 把互斥 provider 分到不同图。<code>Bind</code> 不是解法——它只是给同一实例加接口视图。</p>
+<h3 id="36-生成期会拒绝的五类错误">3.6 生成期会拒绝的五类错误</h3>
+<p><code>no provider found for X</code>（补 provider 或 injector 参数）、<code>cycle for X</code>（拆接口或注入工厂函数）、<code>multiple providers for X</code>（命名类型包装）、<code>Bind</code> 缺具体实现（把 <code>NewImpl</code> 加进同一 set）、injector 签名不匹配（补齐 <code>func()</code> / <code>error</code> 返回位）。这些检查都在生成阶段完成，<code>wire diff</code> 也跑同一套分析，放进 CI 相当于给装配图加了一道编译期单测。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<p>目标：HTTP 服务 + MySQL + Redis + <code>slog</code>，走通 config → infra → repo → transport 四层，演示 <code>wire.Bind</code> 与 cleanup。</p>
+<h3 id="41-目录与-provider">4.1 目录与 provider</h3>
+<pre><code class="lang-text">demo/
+├── cmd/server/main.go            # 只管进程：启动、信号、优雅退出
+└── internal/
+    ├── config/config.go          # Load() → Config
+    ├── logx/logx.go              # New() → *slog.Logger
+    ├── db/db.go                  # *sql.DB + cleanup + error
+    ├── cache/redis.go            # *redis.Client + cleanup + error
+    ├── store/user.go             # *store.UserRepo
+    └── server/{http.go,wire.go,wire_gen.go}</code></pre>
+<blockquote><p>两个叶子 provider 从略：<code>config.Load()</code> 从 <code>ADDR</code> / <code>MYSQL_DSN</code> / <code>REDIS_ADDR</code> 读环境变量并给默认值，返回 <code>Config{Addr, DSN, RedisAddr}</code>；<code>logx.New()</code> 返回一个 JSON handler 的 <code>*slog.Logger</code>。它们没有任何依赖，是最简单的 provider 形态。</p></blockquote>
+<pre><code class="lang-go">// internal/db/db.go
+package db
+
+import (
+	"database/sql"
+	"log/slog"
+
+	_ "github.com/go-sql-driver/mysql"
+
+	"example.com/demo/internal/config"
+)
+
+func Open(cfg config.Config, log *slog.Logger) (*sql.DB, func(), error) {
+	conn, err := sql.Open("mysql", cfg.DSN)
+	if err != nil {
+		return nil, nil, err
+	}
+	return conn, func() {
+		if err := conn.Close(); err != nil {
+			log.Error("close mysql", "err", err) // cleanup 只能是 func()，错误在这里收口
+		}
+	}, nil
+}</code></pre>
+<p><code>cache.NewRedis(cfg config.Config) (*redis.Client, func(), error)</code> 与 <code>db.Open</code> 同构——建客户端、返回 <code>Close</code> 闭包，这里不再重复贴代码。</p>
+<pre><code class="lang-go">// internal/store/user.go —— 只依赖具体资源，不认识任何接口
+package store
+
+import (
+	"context"
+	"database/sql"
+
+	"github.com/redis/go-redis/v9"
+)
+
+type UserRepo struct {
+	db  *sql.DB
+	rdb *redis.Client
+}
+
+func NewUserRepo(db *sql.DB, rdb *redis.Client) *UserRepo { return &amp;UserRepo{db: db, rdb: rdb} }
+
+func (r *UserRepo) Get(ctx context.Context, id int64) (string, error) {
+	var name string
+	err := r.db.QueryRowContext(ctx, "SELECT name FROM users WHERE id = ?", id).Scan(&amp;name)
+	return name, err
+}</code></pre>
+<pre><code class="lang-go">// internal/server/http.go —— 接口定义在消费方，store 不需要 import 本包
+package server
+
+import (
+	"context"
+	"log/slog"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
+
+	"example.com/demo/internal/config"
+)
+
+type UserStore interface {
+	Get(ctx context.Context, id int64) (string, error)
+}
+
+type HTTPServer struct {
+	srv   *http.Server
+	store UserStore
+	log   *slog.Logger
+}
+
+func NewHTTPServer(cfg config.Config, store UserStore, log *slog.Logger) *HTTPServer {
+	h := &amp;HTTPServer{store: store, log: log}
+	mux := http.NewServeMux()
+	mux.HandleFunc("/users/", func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.ParseInt(strings.TrimPrefix(r.URL.Path, "/users/"), 10, 64)
+		if err != nil {
+			http.Error(w, "bad id", http.StatusBadRequest)
+			return
+		}
+		name, err := h.store.Get(r.Context(), id)
+		if err != nil {
+			h.log.Error("get user", "id", id, "err", err)
+			http.Error(w, "internal error", http.StatusInternalServerError)
+			return
+		}
+		_, _ = w.Write([]byte(name))
+	})
+	h.srv = &amp;http.Server{Addr: cfg.Addr, Handler: mux, ReadHeaderTimeout: 5 * time.Second}
+	return h
+}
+
+func (h *HTTPServer) Start() error                       { return h.srv.ListenAndServe() }
+func (h *HTTPServer) Shutdown(ctx context.Context) error { return h.srv.Shutdown(ctx) }</code></pre>
+<h3 id="42-wirego手写的只有签名与集合">4.2 <code>wire.go</code>：手写的只有签名与集合</h3>
+<pre><code class="lang-go">//go:build wireinject
+// +build wireinject
+
+package server
+
+import (
+	"github.com/google/wire"
+
+	"example.com/demo/internal/cache"
+	"example.com/demo/internal/config"
+	"example.com/demo/internal/db"
+	"example.com/demo/internal/logx"
+	"example.com/demo/internal/store"
+)
+
+// ProviderSet 按层组合：配置 → 基础设施 → 仓储 → 传输层。
+var ProviderSet = wire.NewSet(
+	config.Load,
+	logx.New,
+	db.Open,
+	cache.NewRedis,
+	store.NewUserRepo,
+	wire.Bind(new(UserStore), new(*store.UserRepo)),
+	NewHTTPServer,
+)
+
+func InitApp() (*HTTPServer, func(), error) {
+	panic(wire.Build(ProviderSet))
+}</code></pre>
+<h3 id="43-生成后的-wire_gengo">4.3 生成后的 <code>wire_gen.go</code></h3>
+<pre><code class="lang-go">// Code generated by Wire. DO NOT EDIT.
+
+//go:generate go run -mod=mod github.com/google/wire/cmd/wire
+//go:build !wireinject
+// +build !wireinject
+
+package server
+
+import (
+	"example.com/demo/internal/cache"
+	"example.com/demo/internal/config"
+	"example.com/demo/internal/db"
+	"example.com/demo/internal/logx"
+	"example.com/demo/internal/store"
+)
+
+func InitApp() (*HTTPServer, func(), error) {
+	configConfig := config.Load()
+	logger := logx.New()
+	sqlDB, cleanup, err := db.Open(configConfig, logger)
+	if err != nil {
+		return nil, nil, err
+	}
+	client, cleanup2, err := cache.NewRedis(configConfig)
+	if err != nil {
+		cleanup()
+		return nil, nil, err
+	}
+	userRepo := store.NewUserRepo(sqlDB, client)
+	httpServer := NewHTTPServer(configConfig, userRepo, logger)
+	return httpServer, func() {
+		cleanup2()
+		cleanup()
+	}, nil
+}</code></pre>
+<p>对照四点：<code>Bind</code> 不产生额外代码，<code>*store.UserRepo</code> 被直接传给要 <code>UserStore</code> 的 <code>NewHTTPServer</code>（Go 隐式接口赋值）；cleanup 按 <code>cleanup</code>、<code>cleanup2</code> 递增命名，最终闭包逆序调用；无依赖的 <code>Load</code>/<code>New</code> 排在最前；<code>wire.go</code> 里的 <code>ProviderSet</code> 会被原样复制到文件末尾（上面略去该段，真实生成文件因此还会 import <code>wire</code>——那只是 marker 类型，无 init 逻辑）。</p>
+<h3 id="44-maingo进程生命周期与清理时序">4.4 <code>main.go</code>：进程生命周期与清理时序</h3>
+<pre><code class="lang-go">func main() {
+	app, cleanup, err := server.InitApp()
+	if err != nil {
+		log.Fatalf("init app: %v", err) // 失败时 cleanup 为 nil，不要 defer
+	}
+	defer cleanup() // 逆序：先关 redis，再关 mysql
+
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+	go func() { _ = app.Start() }()
+	&lt;-ctx.Done()
+
+	// 顺序不能反：先停流量、等在途请求结束，最后由 cleanup 关连接池。
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := app.Shutdown(shutdownCtx); err != nil {
+		log.Printf("shutdown: %v", err)
+	}
+}</code></pre>
+<p>（<code>main</code> 的 import：<code>context</code>、<code>log</code>、<code>os/signal</code>、<code>syscall</code>、<code>time</code> 与 <code>example.com/demo/internal/server</code>。）</p>
+<h3 id="45-生成与-ci-校验">4.5 生成与 CI 校验</h3>
+<pre><code class="lang-bash">wire ./...                  # 全仓生成，等价于 wire gen ./...
+wire show ./internal/server # 列出 ProviderSet 的导入关系、可产出类型与 injector
+wire diff ./... || { echo "wire_gen.go 与 wire.Build 不一致"; exit 1; }  # 有差异退出码 1</code></pre>
+<p>provider 带 build tag 时（如仅 Linux 编译的 provider），用 <code>wire gen -tags=linux ./...</code>，让分析器与 <code>go build</code> 用同一组 tag。</p>
+<hr>
+
+<div class="callout info"><p><b>实战要点：</b>wire_gen.go 要入库，并在 CI 里重新生成比对，防止有人手改生成文件。</p></div>
+</section>
+<section data-anchor="5-版本演进">
+<h2 id="5-版本演进">5. 版本演进<span class="lvl b">版本</span></h2>
+<p>Wire 的版本史几乎就是「停更史」。截至 2026-11，仓库已归档，最后提交停在 2025-08-21，最后一个 tag 是 2025-08-22 的 v0.7.0。</p>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>时间</th><th>要点</th></tr></thead><tbody><tr><td>v0.3.0</td><td>2019.06</td><td>宣布 beta 并承诺 API 稳定；新增 <code>wire.Struct</code> / <code>FieldsOf</code>；<code>Bind</code> 第二参数改为指针</td></tr><tr><td>v0.5.0</td><td>2021.01</td><td>支持 <code>--tags</code> 指定分析用 build tag；<code>go:generate</code> 改用 <code>go run</code></td></tr><tr><td><strong>v0.6.0</strong></td><td><strong>2024.02.07</strong></td><td>仅升级 <code>golang.org/x/tools</code> 以支持 Go 1.22，无语义变化；<code>go.mod</code> 为 <code>go 1.19</code></td></tr><tr><td>v0.7.0</td><td>2025.08.22</td><td>升级 x/tools 修复 Go 1.25 构建失败 + README 加「不再维护」声明；仓库随后归档</td></tr></tbody></table></div>
+<p>API 面自 v0.3 起没再变过，「v0.6.x」与「v0.7.0」在写法上完全等价，差别只是能否在新工具链下构建。升级 wire 不会带来新能力，只可能是兼容性修复；要用新 <code>go/types</code> 特性的团队只能自己 fork——上游 README 正是这么建议的。</p>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>忘了 <code>//go:build wireinject</code></strong>：stub 参与正常构建，生成后立刻 <code>InitApp redeclared in this block</code>；生成前 <code>panic(wire.Build(...))</code> 还会被打进二进制。→ 双 tag 都写，用空行与 package 隔开。</li><li><strong>手改 <code>wire_gen.go</code></strong>：下次 <code>wire gen</code> 整文件重写，改动无声消失。→ 要调顺序就改 <code>wire.Build</code> 的 set 或 provider 依赖；生成文件只读。</li><li><strong>把 <code>wire_gen.go</code> 加进 <code>.gitignore</code></strong>：CI 只跑 <code>go build</code> 就是 <code>undefined: InitApp</code>，本地能过只因你生成过。→ 生成文件必须入库并参与 review。</li><li><strong>ProviderSet 循环依赖</strong>：<code>server</code> 的 set 引 <code>store</code>，<code>store</code> 为拿 <code>Config</code> 反向引 <code>server</code>，编译期 import cycle。→ set 只沿依赖方向嵌套，公共类型下沉独立包。</li><li><strong>同类型两个 provider</strong>：两个 <code>*slog.Logger</code>、两个 <code>*redis.Client</code>、两个 <code>string</code> 都报 <code>multiple providers</code>。→ 命名类型包装（3.5），别指望按字段名或参数名区分。</li><li><strong>接口多实现混进同一张图</strong>：mock 与真实实现同时进 set，或 <code>Bind</code> 的目标类型没有 provider。→ 每个接口在单张图里只绑一个实现，mock 走独立 injector。</li><li><strong>有 cleanup 却没调用</strong>：<code>InitApp</code> 的 cleanup 被 <code>_</code> 丢掉，连接池不关、临时文件不删。→ <code>defer cleanup()</code> 紧跟成功判断；<code>err != nil</code> 时 cleanup 为 nil，别提前 defer。</li><li><strong>cleanup 写成 <code>func() error</code></strong>：wire 只接受 <code>func()</code>，报 <code>second return type is func() error; must be error or func()</code>。→ 错误在闭包里 <code>log.Error</code> 收口。</li><li><strong>injector 漏返回值位</strong>：provider 带 cleanup/error，injector 只返回 <code>*HTTPServer</code>。→ 签名固定 <code>(T, func(), error)</code>，多余与否让 wire 告诉你。</li><li><strong><code>wire.Value</code> 里放函数调用</strong>：<code>wire.Value(time.Now())</code> 会在生成文件的包初始化阶段求值，且 wire 直接拒绝复杂表达式。→ 只放常量/字面量，要计算就写 provider。</li><li><strong>provider 返回接口</strong>：<code>func NewStore() UserStore</code> 让具体类型从图上消失，<code>Bind</code> 也失去意义。→ provider 一律返回具体类型，接口在消费方定义并用 <code>Bind</code> 连接。</li><li><strong><code>wire.Struct(new(S), "*")</code> 撞上不该注入的字段</strong>：<code>sync.Mutex</code>、<code>chan struct{}</code>、测试专用字段都会触发 <code>no provider found</code>。→ 加 <code>wire:"-"</code>，或显式列字段名而不用 <code>*</code>。</li><li><strong>优雅退出顺序写反</strong>：先 <code>cleanup()</code> 再 <code>Shutdown</code>，在途请求拿到已关的连接池，报 <code>sql: database is closed</code>。→ 先停监听、等在途请求，最后 cleanup。</li><li><strong>把 wire 当活项目</strong>：仓库已归档，issue/PR 不再处理，新 Go 版本兼容只能等社区 fork。→ 锁 <code>v0.7.0</code>，把它当「稳定的生成器」而非演进中的框架；单个 injector 过大时按进程拆 <code>InitAPI</code>、<code>InitWorker</code>，共享下层 set。</li></ol>
+<hr>
+
+<div class="callout warning"><p><b>生产警示：</b>忘加 wireinject tag、手改生成文件被覆盖、接口多实现导致绑定歧义。</p></div>
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>wire</th><th>uber-go/fx</th><th>uber-go/dig</th><th>手动装配</th><th>samber/do</th></tr></thead><tbody><tr><td>机制</td><td>编译期代码生成</td><td>运行时反射 + 容器</td><td>运行时反射容器（fx 的内核）</td><td>直接写 <code>NewX(NewY(...))</code></td><td>泛型 + 运行时容器</td></tr><tr><td>接线时机</td><td><code>wire gen</code></td><td><code>fx.New</code> 启动时</td><td><code>dig.New</code> + <code>Invoke</code></td><td>编译期（就是代码）</td><td>运行期 <code>do.Invoke</code></td></tr><tr><td>可读性</td><td><strong>最高</strong>，生成的就是手写代码</td><td>中，图在运行时</td><td>低，注入靠 tag</td><td>最高，但随规模线性膨胀</td><td>中</td></tr><tr><td>生命周期钩子</td><td>无，cleanup 手工串</td><td><strong>完整</strong>：OnStart/OnStop、信号、超时</td><td>无</td><td>自己写</td><td>有 scope/health 钩子</td></tr><tr><td>模块化</td><td><code>ProviderSet</code> 组合</td><td><code>fx.Module</code> + Provide/Invoke</td><td>Provide 选项</td><td>包拆分</td><td><code>do.Package</code></td></tr><tr><td>类型冲突 / 失败暴露</td><td>生成期报错，构建期暴露</td><td>运行期报错，启动期 panic</td><td>运行期报错（可用 name 区分）</td><td>编译器不管</td><td>运行期报错</td></tr><tr><td>适合</td><td>中大型服务、要可读装配</td><td>长生命周期守护进程、要钩子</td><td>库内部动态装配</td><td>小项目、依赖 &lt; 10 个</td><td>想要泛型 API 的容器</td></tr></tbody></table></div>
+<p><strong>一句话决策</strong>：装配要「看得见、断得住、错在编译期」选 wire；要进程生命周期管理（OnStart/OnStop、信号、优雅退出编排）选 fx；只想在库里做动态解析用 dig；依赖不到十个就手写。</p>
+<p><strong>什么时候不该用 wire</strong>：小项目或 CLI——手写三行构造函数比维护 tag + 生成文件直观；团队不接受「生成代码入库」，review 时没人看 <code>wire_gen.go</code>；依赖图需要运行时动态变化（插件、按请求构造），wire 是静态图；需要开箱即用的生命周期与健康检查，wire 只给一个 cleanup；以及<strong>在意上游活跃度</strong>——项目已归档，长期只能靠 fork 维护。</p>
+<p>参考：<a href="https://github.com/google/wire">官方 README 与用户指南</a>、<a href="https://github.com/google/wire/blob/master/docs/faq.md">FAQ</a>、<a href="https://github.com/google/wire/tags">Tags / Releases</a>、<a href="../kratos/kratos-guide.html">Kratos 的 wire 用法</a>。</p>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

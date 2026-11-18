@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ants · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#b45309; --accent-light:#fef3c7; --accent-dark:#78350f;
+    --bg:#fdfaf3; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#2a1a05; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#78350f 0%,#b45309 58%,#78350f 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">ants<span class="ver">v2.12</span></div>
+  <div class="sub">goroutine 池 · 背压 · 指标</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a href="#2-能力总览">2. 能力总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-为什么需要池goroutine-便宜但驻留不免费">3.1 为什么需要池：goroutine 便宜，但驻留不免费</a>
+  <a class="sub-link" href="#32-pool-的调度模型">3.2 Pool 的调度模型</a>
+  <a class="sub-link" href="#33-容量语义cap-是并发上限不是队列长度">3.3 容量语义：cap 是并发上限，不是队列长度</a>
+  <a class="sub-link" href="#34-阻塞与非阻塞两种完全不同的失败模式">3.4 阻塞与非阻塞：两种完全不同的失败模式</a>
+  <a class="sub-link" href="#35-invoke-的真相它不在-pool-上也没有-ctx">3.5 Invoke 的真相：它不在 Pool 上，也没有 ctx</a>
+  <a class="sub-link" href="#36-panic被-recover-的是-worker不是任务">3.6 panic：被 recover 的是 worker，不是任务</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-观察容量caprunningwaiting-的关系">4.1 观察容量：cap、running、waiting 的关系</a>
+  <a class="sub-link" href="#42-http-服务限制下游并发-指标-优雅关闭">4.2 HTTP 服务：限制下游并发 + 指标 + 优雅关闭</a>
+  <a class="sub-link" href="#43-invoke池内固定函数结果自己回收">4.3 Invoke：池内固定函数，结果自己回收</a>
+  <a href="#5-版本演进">5. 版本演进</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>ants 技术指南</h1>
+<p>池化 goroutine 不是为了「省创建成本」，而是为了给出上限：没有上限的 <code>go func()</code> 是内存与下游连接的隐形泄漏。 上游：<a href="https://github.com/panjf2000/ants">https://github.com/panjf2000/ants</a> <strong>v2.12.1</strong>（2026-05）　|　许可：MIT</p>
+<p style="opacity:.8;font-size:13.5px">goroutine 池 · 背压 · 指标</p>
+<div class="meta"><span>goroutine 池</span><span>背压</span><span>指标</span></div>
+</div>
+<blockquote><p>池化 goroutine 不是为了「省创建成本」，而是为了给出上限：没有上限的 <code>go func()</code> 是内存与下游连接的隐形泄漏。 上游：<a href="https://github.com/panjf2000/ants">https://github.com/panjf2000/ants</a> <strong>v2.12.1</strong>（2026-05）　|　许可：MIT</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p>ants 是 panjf2000 维护的 goroutine 池库，MIT 许可。v2 线当前版本为 <strong>v2.12.1</strong>（2026-05-25 发布），<code>go.mod</code> 声明最低 <strong>Go 1.19</strong>。它只做一件事：把「同时运行的 goroutine 数量」钉在一个可配置的上限内，并复用这批 goroutine 执行源源不断的短任务。</p>
+<p>与《Go 并发与 Context 技术指南》的分工：那一篇讲 GMP、channel、context、errgroup、singleflight，回答「怎么让并发正确」；本篇只回答「怎么给并发装一个闸门」。调度器负责把 G 跑满，ants 负责不让 G 无限变多，两者不冲突。</p>
+<p>它带来三个真实收益：<strong>上限</strong>（保护内存、fd、下游连接池）、<strong>复用</strong>（worker 的栈与 <code>g</code> 结构体不反复分配回收，高频短任务下分配压力明显下降）、<strong>可观测</strong>（<code>Running()</code> / <code>Free()</code> / <code>Waiting()</code> 是现成的并发度指标，裸 <code>go func()</code> 没有）。</p>
+<p>不适用：需要任务结果或错误回传（<code>Submit</code> 没有返回值）、需要严格顺序、需要持久化或失败重试（那是 asynq / Kafka 的领域）、纯 CPU 密集计算（上限设成 <code>GOMAXPROCS</code> 即可，用 <code>semaphore.Weighted</code> 更简单）。</p>
+<hr>
+
+</section>
+<section data-anchor="2-能力总览">
+<h2 id="2-能力总览">2. 能力总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>API</th><th>说明与注意</th></tr></thead><tbody><tr><td>固定容量池</td><td><code>ants.NewPool(size, opts...)</code></td><td><code>size</code> 是<strong>最大并发 worker 数</strong>；<code>size &lt;= 0</code> 会变成 <code>-1</code>，即无上限</td></tr><tr><td>提交任务</td><td><code>pool.Submit(func())</code></td><td>异步语义：返回 <code>nil</code> 只代表任务被接收，不代表执行成功</td></tr><tr><td>带参任务池</td><td><code>ants.NewPoolWithFunc(size, f)</code> + <code>Invoke(arg)</code></td><td>池内固定一个函数，每次只换参数；适合「同一种作业」</td></tr><tr><td>泛型带参池</td><td><code>ants.NewPoolWithFuncGeneric[T]</code></td><td>v2.11.0 引入，避免 <code>any</code> 断言</td></tr><tr><td>多池分片</td><td><code>ants.NewMultiPool</code> / <code>MultiPoolWithFunc</code></td><td>v2.9.0 引入，按 RoundRobin 或 LeastTasks 选子池，降低单池锁竞争</td></tr><tr><td>运行时调容量</td><td><code>pool.Tune(n)</code></td><td>对无限池与 <code>PreAlloc</code> 池无效；调小不会杀掉正在跑的任务</td></tr><tr><td>指标</td><td><code>Running()</code> / <code>Free()</code> / <code>Waiting()</code> / <code>Cap()</code></td><td><code>Free()</code> 在无限池返回 <code>-1</code>；<code>Waiting()</code> 数的是被阻塞的<strong>提交方</strong></td></tr><tr><td>关闭</td><td><code>Release()</code> / <code>ReleaseTimeout(d)</code> / <code>ReleaseContext(ctx)</code></td><td><code>Release</code> 立即返回；后两者等 worker 退出，超时分别返回 <code>ErrTimeout</code> / <code>ctx.Err()</code></td></tr><tr><td>重启</td><td><code>pool.Reboot()</code></td><td>已释放的池可复用；官方要求先用 <code>ReleaseTimeout</code> 等干净，否则有 data race</td></tr><tr><td>预分配</td><td><code>ants.WithPreAlloc(true)</code></td><td>一次性分配环形队列，超大容量 + 长任务时降低分配开销</td></tr><tr><td>过期回收</td><td><code>ants.WithExpiryDuration(d)</code> / <code>WithDisablePurge(true)</code></td><td>默认 1s 扫描一次，回收空闲超过 <code>d</code> 的 worker</td></tr><tr><td>拒绝策略</td><td><code>WithNonblocking(true)</code> / <code>WithMaxBlockingTasks(n)</code></td><td>前者立即返回 <code>ErrPoolOverload</code>，后者给阻塞的提交方设上限</td></tr></tbody></table></div>
+<hr>
+
+<div class="features">
+  <div class="feature"><div class="fh"><h4>池化给上限</h4></div><p>goroutine 便宜，但栈、fd 与下游连接不便宜</p></div>
+  <div class="feature"><div class="fh"><h4>隔离长任务</h4></div><p>池里只放短任务，长阻塞 IO 会占死 worker</p></div>
+  <div class="feature"><div class="fh"><h4>指标先行</h4></div><p>Running / Free / Waiting 三个指标接进 Prometheus</p></div>
+</div>
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-为什么需要池goroutine-便宜但驻留不免费">3.1 为什么需要池：goroutine 便宜，但驻留不免费</h3>
+<p>初始栈 2 KB、<code>g</code> 结构体约 300 B，创建一个 goroutine 只要几百纳秒。但成本有三块不在「创建」上：</p>
+<ul><li><strong>内存与 GC</strong>：每个阻塞中的 G 都保留栈和 <code>sudog</code>。十万个 G 就是数百 MB 常驻内存，且 goroutine 栈属于 GC root set，标记阶段要逐个扫描；栈收缩是延迟的，不会因为空闲立刻归还。</li><li><strong>fd 与连接</strong>：一个 G 通常对应一个下游请求，占一个 fd 或一条连接。<code>ulimit -n</code> 是 1024 还是 65535，决定了你能并发多少；连接池只有 50 条时，5000 个 G 里有 4950 个在驱动内部排队。</li><li><strong>下游承载能力</strong>：DB、Redis、第三方 API 都有硬上限。无上限的扇出不报错，它只是把压力推给下游，然后以超时、重试、雪崩的形式还回来。</li></ul>
+<p>所以池化的核心不是性能优化，而是<strong>把「并发度」变成一个显式配置</strong>：它必须是你在容量规划里写过、在监控里看得见、在告警里配有阈值的数字。</p>
+<h3 id="32-pool-的调度模型">3.2 Pool 的调度模型</h3>
+<pre><code class="lang-text">Submit(fn)
+   │
+   ├─ 空闲栈非空？ ──是──► 取出最近归还的 worker（LIFO），把 fn 交给它的 task channel
+   │
+   ├─ running &lt; cap？ ──是──► 新建一个 worker goroutine 并交付
+   │
+   └─ 否则 ──► Nonblocking 或 Waiting() &gt;= MaxBlockingTasks ？── 是 ──► ErrPoolOverload
+                     │
+                     └─ 否 ──► 调用方在 cond.Wait() 上阻塞，Waiting +1</code></pre>
+<p>worker 的主循环只有三行语义：<code>for fn := range task { fn(); revertWorker() }</code>。执行完一个任务后，worker 把自己放回<strong>空闲栈</strong>并更新 <code>lastUsed</code>，等待下一个任务——这就是「复用」的全部。</p>
+<p>关键细节：</p>
+<ul><li><strong>空闲 worker 用 LIFO 栈，不用队列</strong>。刚归还的 worker 最先被复用，热栈缓存友好；长期没被用到的 worker 沉在栈底，正好被回收。</li><li><strong>回收由独立的 purge goroutine 做</strong>。每隔 <code>expiryDuration</code> 扫一遍空闲栈，把空闲超过该时长的 worker 摘下来、发一个 <code>nil</code> 让它退出循环。默认 <code>expiryDuration = 1s</code>，非常激进——低频业务里 worker 基本不会被复用，池的意义主要是限流而非复用。</li><li><strong>时间戳是粗粒度的</strong>。另有 ticktock goroutine 每 500ms 更新一次池内「现在」，worker 归还时读缓存值，避免每次 <code>time.Now()</code>。</li><li><strong><code>Release</code> 不等任务</strong>。CAS 把状态置为 <code>CLOSED</code>，停掉 purge/ticktock，清空空闲栈，<code>Broadcast</code> 唤醒所有阻塞的提交方（它们会拿到 <code>ErrPoolClosed</code>），然后立即返回；正在跑的任务继续跑完。<code>ReleaseTimeout</code> / <code>ReleaseContext</code> 才会等 <code>Running()</code> 归零，超时分别返回 <code>ErrTimeout</code> / <code>ctx.Err()</code>。</li><li><strong><code>Reboot</code> 复用的是同一个对象</strong>。所以必须先 <code>ReleaseTimeout</code> 确认所有 worker 已退出，否则 purge/ticktock 的收尾会和重启后的初始化撞上。</li></ul>
+<h3 id="33-容量语义cap-是并发上限不是队列长度">3.3 容量语义：cap 是并发上限，不是队列长度</h3>
+<p><code>NewPool(32)</code> 的含义是「同时最多 32 个 worker 在跑」，<strong>不是</strong>「队列长度 32」。ants 没有池级别的任务队列：任务要么被塞进某个 worker 的私有 <code>task</code> channel（容量 1，单核时是 0），要么提交方直接阻塞。因此：</p>
+<ul><li>积压不发生在池里，而发生在<strong>调用方</strong>。每个被阻塞的 <code>Submit</code> 都占着一个调用方 goroutine、一段请求上下文、可能还有一条上游连接；</li><li>把 <code>cap</code> 从 100 调到 10000，不会「容纳更多排队」，只会让更多任务同时打到下游；</li><li><code>Waiting()</code> 是阻塞在 <code>Submit</code> 上的调用方数量，不是排队任务数；<code>Free() = Cap() - Running()</code>，无限池返回 <code>-1</code>；</li><li><code>size &lt;= 0</code> 会被归一成 <code>-1</code>，即无限池。包级函数 <code>ants.Submit(fn)</code> 用的正是容量 <code>math.MaxInt32</code> 的默认池——<strong>等于没有上限</strong>，不要在生产代码里用它。</li></ul>
+<p>需要真正的队列（持久化、削峰、重试）时，正确答案是 asynq / Kafka / Redis Stream，而不是把池调大。</p>
+<h3 id="34-阻塞与非阻塞两种完全不同的失败模式">3.4 阻塞与非阻塞：两种完全不同的失败模式</h3><div class="figure">
+  <svg viewBox="0 0 880 376" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-ants" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#b45309"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#78350f">提交端的三种命运</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">cap 是并发上限，不是队列长度</text>
+    <rect x="90" y="84" width="700" height="52" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+    <circle cx="122" cy="110" r="14" fill="#b45309"/>
+    <text x="122" y="110" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">1</text>
+    <text x="150" y="110" dominant-baseline="central" font-size="13" fill="#78350f">阻塞模式：Submit 等到有空闲 worker，队列有上限</text>
+    <line x1="440" y1="138" x2="440" y2="154" stroke="#b45309" stroke-width="2" marker-end="url(#m-ants)"/>
+    <rect x="90" y="158" width="700" height="52" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+    <circle cx="122" cy="184" r="14" fill="#b45309"/>
+    <text x="122" y="184" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">2</text>
+    <text x="150" y="184" dominant-baseline="central" font-size="13" fill="#78350f">非阻塞：满了返回 ErrPoolOverload，调用方必须处理</text>
+    <line x1="440" y1="212" x2="440" y2="228" stroke="#b45309" stroke-width="2" marker-end="url(#m-ants)"/>
+    <rect x="90" y="232" width="700" height="52" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+    <circle cx="122" cy="258" r="14" fill="#b45309"/>
+    <text x="122" y="258" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">3</text>
+    <text x="150" y="258" dominant-baseline="central" font-size="13" fill="#78350f">Invoke：同步执行并等结果，没有 ctx，超时要自己包</text>
+    <rect x="40" y="300" width="800" height="54" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="324" font-size="12.5" fill="#1e293b">非阻塞模式下忽略返回值，等于在高峰期静默丢任务。</text>
+  </svg>
+  <figcaption>提交端的三种命运</figcaption>
+</div>
+<p>默认模式下池满即阻塞，形成<strong>背压</strong>：上游自然变慢，不会丢任务。代价是调用方被挂起，且这个挂起没有超时——<code>Submit</code> 不接受 <code>context.Context</code>，你无法用 ctx 取消一次提交。</p>
+<p><code>WithNonblocking(true)</code> 改成快速失败：没有空闲 worker 时立刻返回 <code>ErrPoolOverload</code>（错误文案是 "too many goroutines blocked on submit or Nonblocking is set"）。这时<strong>调用方必须处理这个 error</strong>：返回 503 + <code>Retry-After</code>、降级到缓存、或丢弃并计数。忽略它等于静默丢任务，而且 <code>Submit</code> 的返回值很容易被 <code>_ =</code> 掉。</p>
+<p><code>WithMaxBlockingTasks(n)</code> 是中间态：允许阻塞，但阻塞者超过 n 个后也开始返回 <code>ErrPoolOverload</code>（<code>n = 0</code> 表示不限，且该选项在 <code>Nonblocking</code> 下失效）。</p>
+<p>为什么必须给阻塞设上限？因为被阻塞的提交方往往持有昂贵资源：HTTP 连接、请求体的内存缓冲、数据库事务、分布式锁。池一满，这些资源跟着堆积；上游等不到响应开始重试，重试又产生新的提交，最终是「池没满、但服务已经死了」的雪崩。生产上更常见的选择是<strong>非阻塞 + 明确降级</strong>，或者<strong>有界阻塞 + 端到端超时</strong>。</p>
+<h3 id="35-invoke-的真相它不在-pool-上也没有-ctx">3.5 Invoke 的真相：它不在 Pool 上，也没有 ctx</h3>
+<p>这是文档与博客里最常见的误记。v2 的 API 事实是：</p>
+<ul><li><code>Pool</code> 只有 <code>Submit(task func()) error</code>，没有 <code>Invoke</code>；</li><li><code>Invoke(arg any) error</code> 属于 <code>PoolWithFunc</code>；<code>PoolWithFuncGeneric[T].Invoke(arg T)</code> 属于泛型版本；<code>MultiPoolWithFunc.Invoke(args any)</code> 会先按策略选子池；</li><li><strong><code>Invoke</code> 的参数是「数据」，不是「函数」</strong>，签名里既没有 <code>ctx</code> 也没有 <code>timeout</code>。</li></ul>
+<p>所以 <code>pool.Invoke(ctx, fn)</code> 这种写法在 v2 里不存在。要传 ctx，就用 <code>Submit</code> 包一个闭包把 ctx 捕获进去；要超时，就在任务内部 <code>select ctx.Done()</code>，或者由调用方自己计时并在超时后放弃等待。</p>
+<p>同步语义同样容易被误解：<code>Submit</code> / <code>Invoke</code> 都是<strong>投递即返回</strong>，返回 <code>nil</code> 不表示任务执行成功，更不表示已经执行完。要结果就自己准备一个带缓冲的 channel 或 <code>WaitGroup</code>；要错误就让任务把 error 写回 channel——ants 不替你做这件事。</p>
+<h3 id="36-panic被-recover-的是-worker不是任务">3.6 panic：被 recover 的是 worker，不是任务</h3>
+<p>worker 的 goroutine 最外层有一个 <code>defer</code>，里面 <code>recover()</code>：任务 panic 不会带崩进程，默认会打印 panic 值与完整栈。但要看清它的作用域——recover 在 <code>for fn := range task</code> 的<strong>外层</strong>，所以一次 panic 会终止这个 worker 的循环：</p>
+<ol><li><code>Running()</code> 减一，worker 对象被放回 <code>sync.Pool</code>；</li><li>该任务剩余逻辑全部丢失，<code>Submit</code> 早已返回 <code>nil</code>，调用方永远等不到结果；</li><li>后续任务会按需创建新 worker，容量不会永久少一块，但会有一段时间的抖动。</li></ol>
+<p><code>WithPanicHandler(fn)</code> 拿到的是 panic 值（<code>any</code>），可以用来打点、计数、上报。注意源码是 <code>if ph != nil { ph(p) } else { log(...) }</code>——<strong>一旦设置了 handler，默认的栈日志就不再打印</strong>，你得自己在 handler 里补上 <code>debug.Stack()</code>。</p>
+<p>handler 也无法把错误回传给提交方。想让「任务失败」可被感知，正确做法是任务内部自己 <code>defer recover()</code> 并把 error 写进结果 channel，把 panic 转成普通错误，而不是依赖池的兜底。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-观察容量caprunningwaiting-的关系">4.1 观察容量：cap、running、waiting 的关系</h3>
+<pre><code class="lang-go">package main
+
+import (
+	"fmt"
+	"sync"
+	"time"
+
+	"github.com/panjf2000/ants/v2"
+)
+
+func main() {
+	p, err := ants.NewPool(3, ants.WithExpiryDuration(2*time.Second))
+	if err != nil {
+		panic(err)
+	}
+	defer p.Release()
+
+	var wg sync.WaitGroup
+	start := time.Now()
+	for i := 0; i &lt; 9; i++ {
+		wg.Add(1)
+		go func() { // 每个提交者是一个独立的调用方 goroutine
+			defer wg.Done()
+			if err := p.Submit(func() {
+				time.Sleep(100 * time.Millisecond)
+			}); err != nil {
+				fmt.Println("submit:", err)
+			}
+		}()
+	}
+
+	time.Sleep(50 * time.Millisecond)
+	fmt.Printf("cap=%d running=%d free=%d waiting=%d\n",
+		p.Cap(), p.Running(), p.Free(), p.Waiting())
+
+	wg.Wait()
+	// 9 个任务 / 3 个 worker / 每个 100ms，约 300ms 跑完；waiting 最多时是 6
+	fmt.Println("elapsed:", time.Since(start).Round(10*time.Millisecond))
+}</code></pre>
+<p>这段代码要读出两件事：<code>running</code> 不会超过 <code>cap</code>，而超出的部分既不在队列里、也没被拒绝——它们变成了 6 个阻塞的调用方，体现在 <code>waiting</code> 上。这就是「池不是队列」的直接证据。</p>
+<h3 id="42-http-服务限制下游并发-指标-优雅关闭">4.2 HTTP 服务：限制下游并发 + 指标 + 优雅关闭</h3>
+<pre><code class="lang-go">package main
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"log"
+	"net/http"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/panjf2000/ants/v2"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+)
+
+type result struct {
+	body string
+	err  error
+}
+
+func callDownstream(ctx context.Context, id string) (string, error) {
+	select {
+	case &lt;-time.After(200 * time.Millisecond):
+		return "ok:" + id, nil
+	case &lt;-ctx.Done():
+		return "", ctx.Err()
+	}
+}
+
+func main() {
+	submitted := promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "downstream_submit_total",
+		Help: "Submit 结果计数，按 accepted/rejected/panic 区分",
+	}, []string{"result"})
+
+	// cap=32：同时最多 32 个下游调用；非阻塞：满了立刻拒绝，绝不堆积
+	pool, err := ants.NewPool(32,
+		ants.WithNonblocking(true),
+		ants.WithExpiryDuration(5*time.Second),
+		ants.WithPanicHandler(func(v any) {
+			submitted.WithLabelValues("panic").Inc()
+			log.Printf("task panic: %v", v) // 设了 handler 就不会再打默认栈，需要自己补
+		}),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	promauto.NewGaugeFunc(prometheus.GaugeOpts{
+		Name: "downstream_pool_running", Help: "正在执行的 worker 数",
+	}, func() float64 { return float64(pool.Running()) })
+	promauto.NewGaugeFunc(prometheus.GaugeOpts{
+		Name: "downstream_pool_free", Help: "空闲 worker 数",
+	}, func() float64 { return float64(pool.Free()) })
+	promauto.NewGaugeFunc(prometheus.GaugeOpts{
+		Name: "downstream_pool_waiting", Help: "阻塞在 Submit 上的调用方数",
+	}, func() float64 { return float64(pool.Waiting()) })
+
+	mux := http.NewServeMux()
+	mux.Handle("/metrics", promhttp.Handler())
+	mux.HandleFunc("/fetch", func(w http.ResponseWriter, r *http.Request) {
+		id := r.URL.Query().Get("id")
+		ctx, cancel := context.WithTimeout(r.Context(), 300*time.Millisecond)
+		defer cancel()
+
+		ch := make(chan result, 1) // 缓冲 1：调用方超时返回后，任务仍能写完退出
+		err := pool.Submit(func() {
+			body, err := callDownstream(ctx, id)
+			ch &lt;- result{body, err}
+		})
+		if err != nil {
+			submitted.WithLabelValues("rejected").Inc()
+			if errors.Is(err, ants.ErrPoolOverload) {
+				w.Header().Set("Retry-After", "1")
+				http.Error(w, "busy", http.StatusServiceUnavailable)
+				return
+			}
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		submitted.WithLabelValues("accepted").Inc()
+
+		select {
+		case res := &lt;-ch:
+			if res.err != nil {
+				http.Error(w, res.err.Error(), http.StatusBadGateway)
+				return
+			}
+			fmt.Fprint(w, res.body)
+		case &lt;-ctx.Done():
+			http.Error(w, "upstream timeout", http.StatusGatewayTimeout)
+		}
+	})
+
+	srv := &amp;http.Server{Addr: ":8080", Handler: mux}
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil &amp;&amp; !errors.Is(err, http.ErrServerClosed) {
+			log.Printf("serve: %v", err)
+		}
+	}()
+
+	&lt;-ctx.Done()
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	_ = srv.Shutdown(shutdownCtx) // 先停新流量
+
+	// 再等在途任务退出；超时返回 ants.ErrTimeout
+	if err := pool.ReleaseTimeout(5 * time.Second); err != nil {
+		log.Printf("release pool: %v", err)
+	}
+}</code></pre>
+<p>三个要点：<strong>先 <code>Shutdown</code> 再 <code>Release</code></strong>，否则新请求会拿到 <code>ErrPoolClosed</code>；<strong>结果 channel 必须带缓冲</strong>，否则调用方超时返回后任务会永久阻塞在 <code>ch &lt;-</code> 上；<strong><code>ErrPoolOverload</code> 必须映射成 503</strong>，而不是 500 或静默丢弃。<code>downstream_pool_waiting</code> 持续大于 0 是容量不足的早期信号，比等 P99 恶化再扩容快得多。</p>
+<h3 id="43-invoke池内固定函数结果自己回收">4.3 Invoke：池内固定函数，结果自己回收</h3>
+<pre><code class="lang-go">package main
+
+import (
+	"fmt"
+	"sync/atomic"
+
+	"github.com/panjf2000/ants/v2"
+)
+
+func main() {
+	var sum atomic.Int64
+	done := make(chan struct{}, 1000)
+
+	// Invoke 属于 PoolWithFunc：worker 跑的是同一个函数，每次只换参数
+	p, err := ants.NewPoolWithFunc(4, func(arg any) {
+		sum.Add(int64(arg.(int)))
+		done &lt;- struct{}{}
+	})
+	if err != nil {
+		panic(err)
+	}
+	defer p.Release()
+
+	for i := 1; i &lt;= 1000; i++ {
+		if err := p.Invoke(i); err != nil {
+			fmt.Println("invoke:", err) // 池满时阻塞；WithNonblocking 下返回 ErrPoolOverload
+		}
+	}
+	for i := 0; i &lt; 1000; i++ {
+		&lt;-done // Invoke 不同步，完成要自己等
+	}
+	fmt.Println("sum:", sum.Load()) // 500500
+}</code></pre>
+<p>如果这 1000 个任务需要「任一失败就取消其余」，ants 帮不了你——那是 errgroup 的职责；如果只需要「同时最多 4 个」，<code>PoolWithFunc(4, ...)</code> 就够了。</p>
+<hr>
+
+<div class="callout info"><p><b>实战要点：</b>给下游限并发用池；要错误传播与取消用 errgroup，两者组合而不是互相替代。</p></div>
+</section>
+<section data-anchor="5-版本演进">
+<h2 id="5-版本演进">5. 版本演进<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>变化</th><th>迁移注意</th></tr></thead><tbody><tr><td>v1 → v2</td><td>模块路径改为 <code>github.com/panjf2000/ants/v2</code>，配置改为函数式 <code>Option</code></td><td>v1 与 v2 是两个模块，可同时存在于一个二进制里，但会得到两个互不相干的池与两套上限</td></tr><tr><td>v2.8.0</td><td>新增 <code>ReleaseTimeout</code></td><td>关停要等任务跑完时用它，不要裸 <code>Release</code></td></tr><tr><td>v2.9.0</td><td>新增 <code>MultiPool</code> / <code>MultiPoolWithFunc</code></td><td>单池成为锁竞争瓶颈时按分片拆，按 RoundRobin/LeastTasks 选池</td></tr><tr><td>v2.11.0</td><td>新增 <code>PoolWithFuncGeneric[T]</code></td><td>带参池可以摆脱 <code>any</code> 断言</td></tr><tr><td>v2.11.4</td><td>修正 <code>Free()</code> 的计算结果</td><td>依赖 <code>Free()</code> 做指标的要升级</td></tr><tr><td>v2.12.0（2026-03-20）</td><td>新增 <code>ReleaseContext</code>；最低 Go 版本提到 1.19；worker 时间戳改纳秒</td><td>低于 Go 1.19 的项目不能升级</td></tr><tr><td>v2.12.1（2026-05-25）</td><td><code>allDone</code> 的关闭时机从 <code>Reboot</code> 移到 <code>Release</code></td><td>修的是「无 worker 时 <code>Release</code>/<code>Reboot</code> 互相等待」的竞态，建议跟进</td></tr></tbody></table></div>
+<p>截至 2026-11，v2 线最新 tag 为 <strong>v2.12.1</strong>。v2.12.x 之后 <code>dev</code> 分支仍有提交，但没有新的稳定 tag；生产环境请钉 tag，不要跟分支。</p>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>把池当队列</strong>。<code>NewPool(1000)</code> 不会给你 1000 个排队位，只会在 1000 个并发跑满后把调用方全部挂起。<strong>对策</strong>：把 <code>cap</code> 当「并发预算」按下游容量定，需要削峰就上真正的队列。</li><li><strong>非阻塞模式下忽略 <code>ErrPoolOverload</code></strong>。最常见的写法是 <code>_ = pool.Submit(fn)</code>，池一满任务就静默消失。<strong>对策</strong>：每个 <code>Submit</code> 都检查 error，把 overload 映射成 503/降级，并单独计数。</li><li><strong><code>Submit</code> 闭包捕获循环变量</strong>。Go 1.22 之前所有闭包共享同一个变量，任务里读到的是最后一个值。<strong>对策</strong>：<code>for _, v := range xs { v := v; pool.Submit(func(){ use(v) }) }</code>，或升级到 Go 1.22+ 并确认模块的 <code>go</code> 指令已更新。</li><li><strong>忘记 <code>Release</code></strong>。purge 与 ticktock 两个后台 goroutine 会一直活着，测试里尤其明显。<strong>对策</strong>：<code>defer pool.Release()</code>；<code>TestMain</code> 里用 <code>goleak</code> 断言；长生命周期池在服务关停时 <code>ReleaseTimeout</code>。</li><li><strong>在池里做长阻塞 IO 或等锁</strong>。容量会被慢任务占死，<code>Running</code> 打满、<code>Waiting</code> 飙升，所有请求排队。<strong>对策</strong>：进池的任务必须有自己的超时；按「阻塞型任务」而非 CPU 核数估算 <code>cap</code>；不要让任务无限等待下游。</li><li><strong>以为 panic 会返回给调用方</strong>。默认只把 panic 值与栈打到日志，worker 退出、任务丢失，<code>Submit</code> 早就返回了 <code>nil</code>。<strong>对策</strong>：关键任务内部自己 <code>defer recover()</code> 转成 error 写回结果 channel；<code>WithPanicHandler</code> 只用来计数和上报。</li><li><strong>设置了 <code>WithPanicHandler</code> 却不再打栈</strong>。源码是 if/else，handler 存在时默认日志被跳过。<strong>对策</strong>：handler 里自己 <code>log.Printf("%v\n%s", v, debug.Stack())</code>。</li><li><strong>只看 <code>Running</code> 不看 <code>Waiting</code></strong>。<code>Running</code> 打满可能只是正常满载，<code>Waiting</code> 持续增长才说明容量不够或下游变慢。<strong>对策</strong>：三个指标一起采集，给 <code>Waiting &gt; 0</code> 的持续时间设告警。</li><li><strong>在池任务里再向同一个池 <code>Submit</code></strong>。池满时外层任务会占着 worker 等内层任务，内层又拿不到 worker，形成自锁；官方注释专门警告过这一点。<strong>对策</strong>：拆成两个池（IO 池与计算池），或内层用 <code>WithNonblocking</code> 快速失败。</li><li><strong>把 <code>Submit</code> 返回 <code>nil</code> 当成任务成功</strong>。它只表示「已交付给某个 worker」。<strong>对策</strong>：需要结果就传 channel；需要错误就让任务把 error 写回来，别指望 <code>Submit</code>。</li><li><strong>任务绑定请求的 ctx，handler 却先返回了</strong>。ctx 被 cancel，任务要么白跑要么写结果时才发现无人接收。<strong>对策</strong>：要么同步等任务结束，要么用 <code>context.WithoutCancel</code> + 自己的超时，并保证结果 channel 有缓冲。</li><li><strong><code>Tune</code> 用错场景</strong>。对无限池与 <code>PreAlloc</code> 池无效；调小不会终止正在跑的任务，只是不再新建；调大也不保证立刻扩容。<strong>对策</strong>：容量在启动时按容量规划定好，<code>Tune</code> 只作为应急手段。</li><li><strong>用 <code>size &lt;= 0</code> 或包级 <code>ants.Submit</code></strong>。两者都等于无上限，和「不用池」没区别，还多了一层假象。<strong>对策</strong>：显式写正数；包级 API 只用于一次性脚本。</li></ol>
+<blockquote><p>判断要不要池，只问一句：<strong>这个并发度有没有一个「超过就会出事」的数字？</strong> 有，就把它写进配置、接进监控；没有，说明你还没找到真正的瓶颈，先别加池。</p></blockquote>
+<hr>
+
+<div class="callout warning"><p><b>生产警示：</b>把池当无界队列、忽略 ErrPoolOverload、忘记 Release 导致 worker 泄漏。</p></div>
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>裸 <code>go func()</code></th><th><code>errgroup.SetLimit</code></th><th><code>semaphore.Weighted</code></th><th><code>ants.Pool</code></th><th>手写 worker pool</th></tr></thead><tbody><tr><td>并发上限</td><td>无</td><td>有，但仅限本次 <code>Wait</code> 范围内</td><td>有，进程级共享</td><td>有，进程级共享</td><td>有，自己实现</td></tr><tr><td>worker 复用</td><td>否</td><td>否，每个任务新建 G</td><td>否，仍是每个任务一个 G</td><td><strong>是</strong>，空闲栈复用</td><td>是</td></tr><tr><td>任务排队</td><td>无，直接压给调度器</td><td>超出 limit 时阻塞调用方</td><td>拿不到许可时阻塞</td><td>默认阻塞调用方，可改为拒绝</td><td>取决于实现</td></tr><tr><td>结果与错误回传</td><td>自己做 channel</td><td>首个 error 由 <code>Wait</code> 返回</td><td>不涉及</td><td><strong>不提供</strong></td><td>自己做</td></tr><tr><td>取消传播</td><td>自己做 select</td><td><code>WithContext</code> 自动派生</td><td>ctx 只作用于 <code>Acquire</code></td><td>不提供，任务内自己处理</td><td>自己做</td></tr><tr><td>可观测性</td><td>无</td><td>弱</td><td>弱</td><td><code>Running/Free/Waiting/Cap</code></td><td>自己加</td></tr><tr><td>代码量</td><td>最低</td><td>低</td><td>低</td><td>低</td><td>高</td></tr><tr><td>典型场景</td><td>一次性、数量可控</td><td>一次请求内扇出 N 个下游</td><td>保护单个下游或临界区</td><td>常驻服务的高频短任务</td><td>需要优先级、批量、结果协议</td></tr></tbody></table></div>
+<p>四条结论：</p>
+<ul><li><strong><code>errgroup</code> 管的是「一组任务的生命周期」</strong>：错误传播、取消、汇合。它的 <code>SetLimit</code> 是<strong>每次调用局部</strong>的限制，两个请求各自 <code>SetLimit(10)</code>，对下游就是 20 个并发。要全局共享的预算，靠它做不到。</li><li><strong><code>semaphore.Weighted</code> 管的是「许可」</strong>：进入前 <code>Acquire</code>、离开 <code>Release</code>，任务本身仍然是每次新建 goroutine。它适合保护一个明确的临界区或下游，但不复用 worker，也不提供任何池指标。</li><li><strong><code>ants</code> 管的是「worker 的复用与总量」</strong>：适合长期存在、提交频率高、单个任务短的服务。它不提供结果、错误、取消、顺序——这些必须由调用方补齐，补不齐就不要用。</li><li><strong>手写 worker pool 只在需要 ants 给不了的东西时才有意义</strong>：优先级队列、批量拉取、任务持久化、每任务结果协议。否则你只是在重写一个更差的 ants。</li></ul>
+<p>最后一句：<strong><code>errgroup</code> 与 <code>ants</code> 不冲突，它们是两层</strong>。errgroup 负责「这次请求的 10 个下游调用要么全成要么全取消」，ants 负责「整个进程对某个下游的总并发不超过 32」。把两层混成一层，才会出现「限流限了个寂寞」。</p>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

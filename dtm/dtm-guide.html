@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DTM · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#be123c; --accent-light:#ffe4e6; --accent-dark:#881337;
+    --bg:#fff5f6; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#3b0713; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#881337 0%,#be123c 58%,#881337 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">DTM<span class="ver">v1.19</span></div>
+  <div class="sub">Saga · TCC · 子事务屏障</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a href="#2-能力总览">2. 能力总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-架构与存储一个独立服务两种协议">3.1 架构与存储：一个独立服务，两种协议</a>
+  <a class="sub-link" href="#32-gid-与幂等重试是常态不是意外">3.2 gid 与幂等：重试是常态，不是意外</a>
+  <a class="sub-link" href="#33-saga正向顺序补偿逆序以及补偿失败这个真问题">3.3 Saga：正向顺序、补偿逆序，以及「补偿失败」这个真问题</a>
+  <a class="sub-link" href="#34-tcc-与子事务屏障一张表同时解决三个问题">3.4 TCC 与子事务屏障：一张表同时解决三个问题</a>
+  <a class="sub-link" href="#35-二阶段消息本地事务-消息表但-relay-由-dtm-当">3.5 二阶段消息：本地事务 + 消息表，但 relay 由 DTM 当</a>
+  <a class="sub-link" href="#36-xa-的边界与工作流到底解决什么">3.6 XA 的边界，与「工作流」到底解决什么</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-起一个-dtm-服务">4.1 起一个 DTM 服务</a>
+  <a class="sub-link" href="#42-saga-转账扣款-入账-补偿">4.2 Saga 转账：扣款 + 入账 + 补偿</a>
+  <a class="sub-link" href="#43-tcc-库存一个-handler-覆盖三个阶段">4.3 TCC 库存：一个 handler 覆盖三个阶段</a>
+  <a class="sub-link" href="#44-二阶段消息下单-saga-的并行-dag">4.4 二阶段消息下单 + Saga 的并行 DAG</a>
+  <a href="#5-版本演进">5. 版本演进</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>DTM 技术指南</h1>
+<p>DTM 把 Saga、TCC、XA、二阶段消息与工作流做成一套 HTTP/gRPC 协议：业务侧只需暴露补偿与确认接口，剩下的事务状态机由它推进。 上游：<a href="https://github.com/dtm-labs/dtm">https://github.com/dtm-labs/dtm</a> <strong>v1.18.x</strong>　|　协议：HTTP / gRPC　|　许可：BSD-3-Clause</p>
+<p style="opacity:.8;font-size:13.5px">Saga · TCC · 子事务屏障</p>
+<div class="meta"><span>Saga</span><span>TCC</span><span>子事务屏障</span></div>
+</div>
+<blockquote><p>DTM 把 Saga、TCC、XA、二阶段消息与工作流做成一套 HTTP/gRPC 协议：业务侧只需暴露补偿与确认接口，剩下的事务状态机由它推进。 上游：<a href="https://github.com/dtm-labs/dtm">https://github.com/dtm-labs/dtm</a> <strong>v1.18.x</strong>　|　协议：HTTP / gRPC　|　许可：BSD-3-Clause</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p><a href="../distributed-transaction/distributed-transaction-guide.html">分布式事务篇</a> 回答的是「要不要做分布式事务、用哪类模式」；本篇只回答一件事：<strong>选定模式之后，用 DTM 怎么接、接口长什么样、哪些活它替你干了、哪些坑它替不了你</strong>。理论推导、2PC 的阻塞分析、Outbox 的 relay 细节都在那一篇，这里不重复。</p>
+<p>DTM 是一个 Go 写的<strong>独立事务管理器进程</strong>（<code>dtmsvr</code>）+ 一组多语言 SDK。它的工作方式很朴素：业务服务把自己的接口地址注册给 DTM，DTM 按事务模式依次 POST 这些地址，把每一步的结果记进自己的库，失败就回调补偿接口。<strong>没有 sidecar、没有 SQL 代理、不需要改数据源</strong>——这是它与 Seata AT 最本质的区别（AT 要在数据源上挂代理、解析 SQL、维护 <code>undo_log</code> 和全局锁）。</p>
+<pre><code class="lang-text">        ①提交全局事务（gid + 分支列表）        ②按序回调分支（HTTP/gRPC）
+业务 A ─────────────────────────► dtmsvr ─────────────────────────► 业务 A /TransOut
+   ▲                                 │  │
+   │  ④返回最终结果                   │  └──────────────────────────► 业务 B /TransIn
+   └─────────────────────────────────┘
+                   ③落盘 gid、分支、状态（MySQL / PostgreSQL / Redis）</code></pre>
+<p>三条由此推出的性质：</p>
+<ul><li><strong>DTM 是无状态进程 + 有状态存储</strong>：进程可以多副本、可以随便重启，事务状态在 <code>dtm</code> 库里，重启后靠定时扫描继续推进未完成的事务。所谓「单点」通常指它的<strong>存储</strong>，不是进程。</li><li><strong>业务侧的最小契约是「能被回调的接口」</strong>：一个 HTTP handler 或 gRPC method，加上一个本地库。跨语言栈（Java/PHP/Python/Node）只要按协议实现这几个接口，不需要官方 SDK。</li><li><strong>DTM 只保证「推进到终态」，不保证「业务语义正确」</strong>：它不知道你的补偿写得对不对，也不知道退款接口是否幂等。这半边永远在业务代码里。</li></ul>
+<p>什么时候<strong>不该</strong>上 DTM：两个写能塞进同一个库（本地事务就够）、只是「写完库要通知别人」且团队已有成熟 Outbox（多引入一个组件不划算）、流程要等人工审批或跨天定时（那是 <a href="../temporal/temporal-guide.html">Temporal</a> 的地盘）。DTM 的甜区是<strong>秒级、步骤固定、每步都有明确反向操作</strong>的跨服务写。</p>
+<hr>
+
+</section>
+<section data-anchor="2-能力总览">
+<h2 id="2-能力总览">2. 能力总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>模式</th><th>一致性</th><th>业务侧要写什么</th><th>DTM 替你做的</th><th>典型落点</th></tr></thead><tbody><tr><td><strong>Saga</strong></td><td>最终（补偿完成后）</td><td>正向接口 + 补偿接口</td><td>顺序推进、失败逆序补偿、超时重试</td><td>跨服务多步骤、资源不可预留</td></tr><tr><td><strong>TCC</strong></td><td>最终（Confirm 后）</td><td>Try / Confirm / Cancel 三个接口</td><td>两阶段调度、空回滚/悬挂/幂等兜底</td><td>余额、库存、优惠券</td></tr><tr><td><strong>XA</strong></td><td>强一致（提交即一致）</td><td>一个本地事务回调</td><td>prepare/commit/rollback 与崩溃恢复</td><td>同机房同构 MySQL、短事务</td></tr><tr><td><strong>二阶段消息</strong></td><td>最终</td><td>本地事务 + 回查接口</td><td>消息持久化、投递、回查、重试</td><td>写完库要可靠通知下游</td></tr><tr><td><strong>Workflow</strong></td><td>最终</td><td>一个编排函数 + 补偿回调</td><td>断点续跑、混合 HTTP/gRPC/本地事务</td><td>步骤会变、协议混合</td></tr><tr><td><strong>Outbox 对接</strong></td><td>最终</td><td>只写业务表与 outbox 表</td><td>轮询并投递 outbox 行</td><td>已有 outbox 想交给外部推进</td></tr></tbody></table></div>
+<p>三条硬约束，选型前先接受：</p>
+<ol><li><strong>所有分支接口必须幂等</strong>。DTM 的重试不是异常路径，是常规路径（见 3.2）。</li><li><strong>补偿必须可重入且不依赖当前状态</strong>。「查一下订单是不是已支付，是就不退」这种补偿在重放时会永久失败。</li><li><strong>中间态一定会被看到</strong>。DTM 不提供隔离性，<code>CREATED</code> 与 <code>PAID</code> 之间的窗口必须由业务显式表达。</li></ol>
+<hr>
+
+<div class="features">
+  <div class="feature"><div class="fh"><h4>Saga</h4></div><p>正向顺序、补偿逆序；补偿失败要重试并告警</p></div>
+  <div class="feature"><div class="fh"><h4>TCC</h4></div><p>Try / Confirm / Cancel 三接口，空回滚与悬挂必须处理</p></div>
+  <div class="feature"><div class="fh"><h4>二阶段消息</h4></div><p>本地事务 + 消息表，relay 由 DTM 承担</p></div>
+</div>
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-架构与存储一个独立服务两种协议">3.1 架构与存储：一个独立服务，两种协议</h3>
+<p><code>dtmsvr</code> 对外只做四类事：<code>newGid</code>（取全局事务号）、<code>submit</code>（提交全局事务）、<code>prepare/abort</code>（二阶段消息与 TCC 的准备/回滚）、<code>registerBranch</code>（分支注册与状态回报）。业务侧调 SDK，SDK 把这些动作翻译成 HTTP 或 gRPC。</p>
+<p>存储底座决定运维形态：</p>
+<div class="table-wrap"><table><thead><tr><th>底座</th><th>配置</th><th>特点</th><th>适用</th></tr></thead><tbody><tr><td><strong>MySQL / MariaDB</strong></td><td><code>Store.Driver: mysql</code></td><td>事务表落盘，崩溃可恢复，功能最全</td><td><strong>生产默认</strong></td></tr><tr><td><strong>PostgreSQL</strong></td><td><code>Store.Driver: postgres</code></td><td>同上，PG 栈团队用</td><td>生产可用</td></tr><tr><td><strong>Redis</strong></td><td><code>Store.Driver: redis</code></td><td>吞吐高、延迟低；持久性取决于 AOF/RDB，宕机可能丢状态</td><td>秒杀、可接受极端情况重放</td></tr><tr><td><strong>BoltDB</strong></td><td>本地文件</td><td>零依赖</td><td>只用于开发与单测</td></tr><tr><td><strong>MongoDB</strong></td><td>—</td><td>只能作为<strong>业务库</strong>（<code>MongoCall</code> 屏障可用）；作为 DTM 状态存储截至 2026-11 仍是规划项</td><td>不建议</td></tr></tbody></table></div>
+<p>Redis 底座要额外注意：状态丢了不会「自动对账」，只会让在途事务永远停在 <code>prepared</code>。所以用 Redis 的前提是业务侧有对账兜底，或者这批事务本身可重放。</p>
+<h3 id="32-gid-与幂等重试是常态不是意外">3.2 gid 与幂等：重试是常态，不是意外</h3>
+<p><code>gid</code>（全局事务 ID）由调用方生成——<code>shortuuid.New()</code> 或 <code>dtmcli.MustGenGid(server)</code>，长度上限 128。它有两个语义，很多人只记住了第一个：</p>
+<ul><li><strong>唯一标识一笔全局事务</strong>：同一笔业务用同一个 gid。</li><li><strong>幂等键</strong>：同一个 gid 重复 <code>Submit</code>，DTM 视为同一笔事务的重试，<strong>不会开第二笔</strong>；反过来，业务失败后换个 gid 重试，就是两笔独立事务，可能扣两次钱。</li></ul>
+<p>重试来自三处，无法用「小心一点」消除：DTM 侧的分支超时按退避重发、进程重启后扫描未完成事务继续推进；网络侧客户端等不到 <code>submit</code> 响应用同一 gid 再提交；业务侧处理完了但响应丢了，DTM 认为失败、稍后再调一次同一个接口。</p>
+<p>所以「接口幂等」不是优化项，是接入 DTM 的<strong>前置条件</strong>。三种落地方式：</p>
+<div class="table-wrap"><table><thead><tr><th>方式</th><th>写法</th><th>适用</th></tr></thead><tbody><tr><td><strong>唯一键</strong></td><td><code>INSERT ... ON DUPLICATE KEY UPDATE</code> / 唯一索引 + 捕获 1062</td><td>有天然业务唯一号（订单号、流水号）</td></tr><tr><td><strong>状态机 CAS</strong></td><td><code>UPDATE ... WHERE status = 'PENDING'</code>，影响 0 行即已处理</td><td>状态流转明确的实体</td></tr><tr><td><strong>子事务屏障</strong></td><td><code>bb.Call(tx, busiCall)</code>，框架用一张表挡住重复</td><td>TCC/Saga/消息，<strong>推荐</strong></td></tr></tbody></table></div>
+<h3 id="33-saga正向顺序补偿逆序以及补偿失败这个真问题">3.3 Saga：正向顺序、补偿逆序，以及「补偿失败」这个真问题</h3>
+<p><code>T1 → T2 → T3</code>，T2 失败则执行 <code>C1</code>（只补偿已成功的步骤，且逆序）。DTM 记录每个分支的状态，所以它能精确知道「哪些正向成功了」，不会去补偿没执行过的分支。并发 Saga（<code>SetConcurrent</code>）的补偿顺序是<strong>完成顺序的逆序</strong>，不是声明顺序。</p>
+<p>补偿失败是 Saga 最容易被低估的部分。DTM 的行为是<strong>持续重试</strong>：全局事务停在 <code>aborting</code>，按退避间隔反复调补偿接口，直到成功。这带来两个必然后果：</p>
+<ul><li>补偿接口<strong>不能有前置校验</strong>。<code>if order.Status != "PAID" { return nil }</code> 看似安全，实际会在重放时把「已退款」当成「无需退款」跳过，或者因为状态已被别的流程改掉而永远抛错。</li><li>补偿失败<strong>必须告警到人</strong>。DTM 会一直重试，但不会告诉你它重试了 300 次；监控要盯 <code>aborting</code> 状态的事务数与最老事务年龄，超阈值转人工对账。</li></ul>
+<p>Saga 还有个隐藏问题：正向接口也可能「超时但实际成功」，此时 DTM 发起补偿，而正向请求在网络里滞留后到达——这就是 TCC 里的<strong>空补偿</strong>与<strong>悬挂</strong>，Saga 一样存在。所以 Saga 的每个分支（正向和补偿）也应该套 <code>BranchBarrier</code>，而不是只靠手写唯一键。</p>
+<h3 id="34-tcc-与子事务屏障一张表同时解决三个问题">3.4 TCC 与子事务屏障：一张表同时解决三个问题</h3><div class="figure">
+  <svg viewBox="0 0 880 268" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-dtm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#be123c"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#881337">一次全局事务</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">重试是常态，幂等是业务责任</text>
+    <rect x="36" y="82" width="175" height="80" rx="12" fill="#ffe4e6" stroke="#be123c" stroke-width="1.5"/>
+    <text x="124" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#881337">全局事务</text>
+    <text x="124" y="136" text-anchor="middle" font-size="11" fill="#881337">gid 唯一</text>
+    <line x1="215" y1="122" x2="241" y2="122" stroke="#be123c" stroke-width="2" marker-end="url(#m-dtm)"/>
+    <rect x="247" y="82" width="175" height="80" rx="12" fill="#ffe4e6" stroke="#be123c" stroke-width="1.5"/>
+    <text x="334" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#881337">分支调用</text>
+    <text x="334" y="136" text-anchor="middle" font-size="11" fill="#881337">HTTP / gRPC</text>
+    <line x1="426" y1="122" x2="452" y2="122" stroke="#be123c" stroke-width="2" marker-end="url(#m-dtm)"/>
+    <rect x="458" y="82" width="175" height="80" rx="12" fill="#ffe4e6" stroke="#be123c" stroke-width="1.5"/>
+    <text x="546" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#881337">补偿或确认</text>
+    <text x="546" y="136" text-anchor="middle" font-size="11" fill="#881337">失败逆序回滚</text>
+    <line x1="637" y1="122" x2="663" y2="122" stroke="#be123c" stroke-width="2" marker-end="url(#m-dtm)"/>
+    <rect x="669" y="82" width="175" height="80" rx="12" fill="#ffe4e6" stroke="#be123c" stroke-width="1.5"/>
+    <text x="756" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#881337">子事务屏障</text>
+    <text x="756" y="136" text-anchor="middle" font-size="11" fill="#881337">空回滚 / 悬挂 / 幂等</text>
+    <rect x="40" y="186" width="800" height="58" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="210" font-size="12.5" fill="#1e293b">Cancel 可能先于 Try 到达（悬挂），屏障表用插入冲突把三种异常一次挡掉。</text>
+  </svg>
+  <figcaption>一次全局事务</figcaption>
+</div>
+<p>TCC 把「检查」和「使用」拆开：Try 只<strong>预留</strong>（冻结 100 元），Confirm 才真正扣，Cancel 解冻。好处是不长期持锁；代价是三个接口 + 三个经典故障。</p>
+<p>DTM 的解法叫<strong>子事务屏障</strong>（sub-transaction barrier）：在业务库建一张 <code>barrier</code> 表，唯一键是 <code>(gid, branch_id, op, barrier_id)</code>，所有分支先插记录再执行业务，插入是否成功决定要不要执行。</p>
+<pre><code class="lang-sql">CREATE DATABASE IF NOT EXISTS dtm_barrier;
+CREATE TABLE IF NOT EXISTS dtm_barrier.barrier (
+  id          BIGINT PRIMARY KEY AUTO_INCREMENT,
+  trans_type  VARCHAR(45) DEFAULT '',
+  gid         VARCHAR(128) DEFAULT '',
+  branch_id   VARCHAR(128) DEFAULT '',
+  op          VARCHAR(45) DEFAULT '',   -- try / confirm / cancel / action / compensate
+  barrier_id  VARCHAR(45) DEFAULT '',
+  create_time DATETIME DEFAULT NOW(),
+  UNIQUE KEY uk_barrier (gid, branch_id, op, barrier_id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;</code></pre>
+<p><code>bb.Call(tx, busiCall)</code> 的语义（<code>CallWithDB</code> 只是帮你开了事务）：</p>
+<div class="table-wrap"><table><thead><tr><th>到达的分支</th><th>屏障先做什么</th><th>什么时候执行 <code>busiCall</code></th></tr></thead><tbody><tr><td><strong>Try</strong></td><td><code>INSERT IGNORE (gid, branch, 'try')</code></td><td>仅当本次插入成功（首次）</td></tr><tr><td><strong>Confirm</strong></td><td><code>INSERT IGNORE (gid, branch, 'confirm')</code></td><td>仅当本次插入成功（首次）</td></tr><tr><td><strong>Cancel</strong></td><td>先 <code>INSERT IGNORE ... 'try'</code>，再 <code>INSERT IGNORE ... 'cancel'</code></td><td>仅当 <strong>try 已存在</strong>（说明 Try 真执行过）且 cancel 首次插入成功</td></tr></tbody></table></div>
+<p>三个问题因此同时消失：</p>
+<ul><li><strong>空回滚</strong>：Cancel 先到，它插 try 时成功了 → 说明 Try 从未执行 → 不调用 <code>busiCall</code>，直接返回成功。业务侧不会出现「解冻了没冻结的钱」。</li><li><strong>悬挂</strong>：Cancel 已经把 <code>try</code> 记录占住，迟到的 Try 再插 try 会失败 → 不执行正向逻辑。预留不会在回滚之后发生。</li><li><strong>幂等</strong>：唯一键让同一分支的同一 op 只会执行一次，重放直接返回成功。</li></ul>
+<p>关键前提：<strong>屏障记录必须与业务写在同一个本地事务里</strong>。<code>CallWithDB</code> 会自己开事务；用 GORM 时必须把 <code>tx.Statement.ConnPool.(*sql.Tx)</code> 传进 <code>Call</code>，不能另开一个连接——否则「屏障写了、业务没写」或反之，屏障就成了假的。</p>
+<h3 id="35-二阶段消息本地事务-消息表但-relay-由-dtm-当">3.5 二阶段消息：本地事务 + 消息表，但 relay 由 DTM 当</h3>
+<p>普通 Outbox 要自己写 relay（轮询或 CDC）把 outbox 行搬到 MQ；DTM 的二阶段消息把这层接过去了：</p>
+<pre><code class="lang-text">1. Prepare：告诉 DTM「我要发这条消息」→ DTM 落一条 prepared 记录（业务不可见）
+2. 本地事务：业务写入 + 屏障记录，同一个 tx 提交
+3. Submit：告诉 DTM 可以发了 → DTM 回调 action 接口（可多条、可延迟）
+4. 中间崩溃：DTM 回查 queryPrepared → 你回答「本地事务提交了吗」→ 决定投递或丢弃</code></pre>
+<p>第 4 步的回查接口<strong>必须读业务库的真实状态</strong>（通常是 <code>bb.QueryPrepared(db)</code>，即查屏障记录），不能靠内存变量。它和 RocketMQ 事务消息的回查是同一个难点，只是回查方向相反（DTM 问你，而不是你问 Broker）。</p>
+<p>与自研 Outbox 的取舍：</p>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>自研 Outbox</th><th>DTM 二阶段消息</th></tr></thead><tbody><tr><td>谁投递</td><td>自己的 relay / Debezium</td><td>DTM 服务</td></tr><tr><td>额外组件</td><td>MQ + 调度</td><td>DTM + 存储（MQ 可选，可直接 HTTP 回调）</td></tr><tr><td>投递语义</td><td>at-least-once</td><td>at-least-once（消费端仍要幂等）</td></tr><tr><td>多库支持</td><td>每库一套 relay</td><td>一个 DTM 管多库</td></tr><tr><td>延迟</td><td>轮询 100ms~5s</td><td>通常百 ms 级</td></tr></tbody></table></div>
+<p>省掉的是 relay 的运维（积压、认领、归档），付出的是多一次 RPC 和一个必须高可用的 DTM。</p>
+<h3 id="36-xa-的边界与工作流到底解决什么">3.6 XA 的边界，与「工作流」到底解决什么</h3>
+<p><strong>XA</strong> 在 DTM 里是唯一能给出强一致的选项：业务侧只写一个本地事务回调，DTM 当 TM 发 <code>prepare</code>/<code>commit</code>。但边界很硬：目前主要对 MySQL 协议系可用；从 <code>prepare</code> 到 <code>commit</code> 期间连接被 xid 绑定、行锁不释放，等于把单机锁持有时间放大成跨服务 RTT；TM 崩溃会留下 in-doubt 事务，只能靠 <code>XA RECOVER</code> 人工裁决。<strong>只在同机房、短事务、低并发、且两个库都是 MySQL 时用</strong>，不要放在主交易链路。</p>
+<p><strong>工作流</strong>解决的是 Saga 表达力不够的问题：一个函数里混用 HTTP 调用、gRPC 调用和本地事务，分支的补偿写在 <code>OnRollback</code> 里；进程崩溃后 DTM 会重试整个函数，SDK 用拦截器把已完成分支的结果直接回放，所以函数必须幂等。</p>
+<pre><code class="lang-go">workflow.Register("pay-order", func(wf *workflow.Workflow, data []byte) error {
+	wf.NewBranch().OnRollback(func(bb *dtmcli.BranchBarrier) error { return unfreeze(wf.Context) })
+	if err := freeze(wf.Context); err != nil {
+		return err
+	}
+	// 本地库操作也能作为一个分支，和远程分支混在同一个全局事务里
+	return wf.Do(func(bb *dtmcli.BranchBarrier) ([]byte, error) {
+		return nil, bb.CallWithDB(db, func(tx *sql.Tx) error { return insertOrder(tx) })
+	})
+})</code></pre>
+<p>如果只是「几步之间要并行、要依赖顺序」，不必上 workflow：Saga 的 <code>AddBranchOrder</code> + <code>SetConcurrent</code> 就是一张轻量 DAG（见 4.4）。超时有两层：DTM 服务端的 <code>TimeoutToFail</code>（默认 35s，超时后判定失败并回滚）和业务自己的 <code>context.WithTimeout</code>；后者必须<strong>小于</strong>前者，否则 DTM 已经放弃、你的请求还在跑。</p>
+<blockquote><p>版本备注：社区文章里常见的 <code>trans.New(...)</code>、<code>dtm.NewFromDB(...)</code> 这类一体化编排写法，截至 2026-11 未在公开 SDK 的稳定文档中出现；对外的编排入口是 <code>github.com/dtm-labs/client/workflow</code>，事务模型类型留在服务端内部。生产代码请以 <code>dtmcli</code> / <code>dtmgrpc</code> / <code>workflow</code> 三个包的签名为准。</p></blockquote>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-起一个-dtm-服务">4.1 起一个 DTM 服务</h3>
+<pre><code class="lang-bash">git clone https://github.com/dtm-labs/dtm &amp;&amp; cd dtm
+mysql -uroot -p -e "CREATE DATABASE IF NOT EXISTS dtm"   # 再导入 sqls/ 下的建表脚本
+go run main.go -c conf.yml     # HTTP 36789 / gRPC 36790
+# 验证：curl -s "http://127.0.0.1:36789/api/dtmsvr/query?gid=$(uuidgen)"</code></pre>
+<pre><code class="lang-yaml"># conf.yml：只需 Store 一节，Driver 可选 mysql / postgres / redis
+Store: {Driver: mysql, Host: 127.0.0.1, Port: 3306, User: root, Password: '123456', Db: dtm}</code></pre>
+<p>业务库另建 <code>dtm_barrier</code>（3.4 的 DDL），并给每个参与方服务配好 <code>dtmcli.SetCurrentDBType("mysql")</code>。</p>
+<h3 id="42-saga-转账扣款-入账-补偿">4.2 Saga 转账：扣款 + 入账 + 补偿</h3>
+<pre><code class="lang-go">package main
+
+import (
+	"database/sql"
+	"net/http"
+
+	"github.com/dtm-labs/client/dtmcli"
+	"github.com/gin-gonic/gin"
+	"github.com/lithammer/shortuuid/v3"
+)
+
+const DtmServer, Busi = "http://127.0.0.1:36789/api/dtmsvr", "http://127.0.0.1:8081"
+
+type TransferReq struct {
+	From   int64 `json:"from"`
+	To     int64 `json:"to"`
+	Amount int64 `json:"amount"`
+}
+
+// Transfer 发起方：gid 只生成一次，重试必须复用；换 gid 等于又转了一笔
+func Transfer(c *gin.Context) {
+	var req TransferReq
+	if err := c.ShouldBindJSON(&amp;req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	saga := dtmcli.NewSaga(DtmServer, shortuuid.New()).
+		Add(Busi+"/TransOut", Busi+"/TransOutCompensate", req).
+		Add(Busi+"/TransIn", Busi+"/TransInCompensate", req)
+	if err := saga.Submit(); err != nil {
+		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"result": "SUCCESS"})
+}
+
+// adjust 正向与补偿共用一个实现：sign=-1 扣款，sign=+1 退款。
+// 返回码不同：正向 409 让 DTM 立刻回滚，补偿 5xx 让 DTM 持续重试。
+func adjust(c *gin.Context, db *sql.DB, sign int64) {
+	bb, err := dtmcli.BarrierFromQuery(c.Request.URL.Query())
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var req TransferReq
+	_ = c.ShouldBindJSON(&amp;req)
+
+	code := http.StatusConflict
+	if sign &gt; 0 {
+		code = http.StatusInternalServerError
+	}
+	err = bb.CallWithDB(db, func(tx *sql.Tx) error {
+		delta := sign * req.Amount
+		res, err := tx.Exec(
+			`UPDATE account SET balance = balance + ? WHERE uid = ? AND balance + ? &gt;= 0`,
+			delta, req.From, delta)
+		if err != nil {
+			return err
+		}
+		if n, _ := res.RowsAffected(); n == 0 {
+			return dtmcli.ErrFailure // 余额不足
+		}
+		return nil
+	})
+	if err != nil {
+		c.JSON(code, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"result": dtmcli.ResultSuccess})
+}
+
+// 路由：/TransOut → adjust(c, db, -1)，/TransOutCompensate → adjust(c, db, +1)；
+// TransIn 一侧同构，只换账户。补偿里不要加任何状态校验：重放时它会「假装成功」。</code></pre>
+<p><code>adjust</code> 把「扣款」和「退款」压成一条带符号的 SQL，这与 DTM 官方示例的 <code>SagaAdjustBalance</code> 同构。真正要小心的是返回码：正向失败回 <strong>409</strong>、补偿失败回 <strong>5xx</strong>，写反了事务就停在不该停的地方。</p>
+<h3 id="43-tcc-库存一个-handler-覆盖三个阶段">4.3 TCC 库存：一个 handler 覆盖三个阶段</h3>
+<pre><code class="lang-go">type StockReq struct {
+	SKU string `json:"sku"`
+	Qty int64  `json:"qty"`
+}
+
+// StockStage 同时注册到 /StockTry /StockConfirm /StockCancel，用回调里的 op 区分阶段
+func StockStage(c *gin.Context, db *sql.DB) {
+	bb, err := dtmcli.BarrierFromQuery(c.Request.URL.Query())
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var req StockReq
+	_ = c.ShouldBindJSON(&amp;req)
+
+	err = bb.CallWithDB(db, func(tx *sql.Tx) error {
+		var res sql.Result
+		var execErr error
+		switch bb.Op {
+		case dtmcli.BranchTry: // 只冻结，可用量不动
+			res, execErr = tx.Exec(`UPDATE stock SET frozen = frozen + ?
+				WHERE sku = ? AND available - frozen &gt;= ?`, req.Qty, req.SKU, req.Qty)
+		case dtmcli.BranchConfirm: // 冻结转实扣
+			_, execErr = tx.Exec(`UPDATE stock SET available = available - ?, frozen = frozen - ?
+				WHERE sku = ? AND frozen &gt;= ?`, req.Qty, req.Qty, req.SKU, req.Qty)
+		case dtmcli.BranchCancel: // 解冻
+			_, execErr = tx.Exec(`UPDATE stock SET frozen = frozen - ?
+				WHERE sku = ? AND frozen &gt;= ?`, req.Qty, req.SKU, req.Qty)
+		}
+		if execErr != nil {
+			return execErr
+		}
+		if res != nil {
+			if n, _ := res.RowsAffected(); n == 0 {
+				return dtmcli.ErrFailure // 库存不足，全局回滚
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"result": dtmcli.ResultSuccess})
+}</code></pre>
+<p>发起侧只有一句 <code>dtmcli.TccGlobalTransaction(DtmServer, gid, func(tcc *dtmcli.Tcc) (*resty.Response, error) { return tcc.CallBranch(req, Busi+"/StockTry", Busi+"/StockConfirm", Busi+"/StockCancel") })</code>：返回 <code>nil</code> 表示三个分支的 Confirm 全部完成，非 <code>nil</code> 表示已回滚或正在回滚。</p>
+<p>Try 里的 <code>available - frozen &gt;= qty</code> 是资源预留的核心：可用量在 Try 阶段不变，只是被冻结，所以并发的其他请求看到的是真实的剩余可售量。</p>
+<h3 id="44-二阶段消息下单-saga-的并行-dag">4.4 二阶段消息下单 + Saga 的并行 DAG</h3>
+<pre><code class="lang-go">// CreateOrder 本地事务写订单，成功后 DTM 才会去调 DeductStock / SendCoupon
+func CreateOrder(c *gin.Context, db *sql.DB) {
+	var req OrderReq
+	_ = c.ShouldBindJSON(&amp;req)
+	msg := dtmcli.NewMsg(DtmServer, shortuuid.New()).
+		Add(Busi+"/DeductStock", req).
+		Add(Busi+"/SendCoupon", req)
+	err := msg.DoAndSubmitDB(Busi+"/QueryPrepared", db, func(tx *sql.Tx) error {
+		_, err := tx.Exec(`INSERT INTO orders (order_no, uid, sku, qty, status)
+			VALUES (?, ?, ?, ?, 'CREATED')`, req.OrderNo, req.UID, req.SKU, req.Qty)
+		return err // 唯一键冲突即重复下单，返回错误让整条消息作废
+	})
+	if err != nil {
+		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"result": "SUCCESS"})
+}</code></pre>
+<p>回查接口单独实现，只读屏障记录：<code>bb.QueryPrepared(db)</code> 返回 <code>nil</code> 回答 <code>ResultSuccess</code>（已提交，DTM 继续投递），返回错误则回答 <code>ResultFailure</code>（未提交，丢弃消息）。别读内存标志位或缓存——进程重启后它们都不存在。</p>
+<p>步骤有依赖关系时，用 Saga 的 DAG 而不是自己写 goroutine：</p>
+<pre><code class="lang-go">saga := dtmcli.NewSaga(DtmServer, gid).
+	Add(Busi+"/FreezeStock", Busi+"/UnfreezeStock", req). // 0
+	Add(Busi+"/LockCoupon", Busi+"/UnlockCoupon", req).   // 1
+	Add(Busi+"/CreateOrder", Busi+"/CancelOrder", req).   // 2
+	AddBranchOrder(2, []int{0, 1}). // 2 必须等 0、1 都成功
+	SetConcurrent()                 // 0、1 并行</code></pre>
+<hr>
+
+<div class="callout info"><p><b>实战要点：</b>gid 用业务单号派生，天然防重；补偿接口按「可重复执行任意次」设计。</p></div>
+</section>
+<section data-anchor="5-版本演进">
+<h2 id="5-版本演进">5. 版本演进<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>时间</th><th>与落地相关的点</th></tr></thead><tbody><tr><td>v1.15</td><td>2022</td><td>客户端代码迁到独立仓库 <code>dtm-labs/client</code>，import 路径变为 <code>.../client/dtmcli</code>；老 <code>dtmcli</code> 包逐步弃用，混用会报 <code>undefined: dtmdriver.GetHTTPDriver</code></td></tr><tr><td>v1.16</td><td>2023</td><td>消息支持按 Topic 投递（<code>Msg.AddTopic</code>）、可配超时的 HTTP 客户端；Postgres 底座成熟</td></tr><tr><td>v1.17</td><td>2023</td><td><code>workflow.ExecuteCtx</code> 取代 <code>Execute</code>（后者废弃）；driver 化，接入 go-zero / kratos 注册中心</td></tr><tr><td><strong>v1.18</strong></td><td>2023-11</td><td>存储新增 SQL Server；<strong>本篇基线</strong>，社区绝大多数生产部署停在这条线</td></tr><tr><td>v1.19</td><td>2025-02</td><td>以构建与依赖升级为主，协议与 API 无破坏性变更；<strong>截至 2026-11 仍是最新 release</strong></td></tr></tbody></table></div>
+<p>现状判断：DTM 已进入维护节奏（提交以依赖升级和 issue 修复为主），不是高速迭代期。这对使用方是好事——协议稳定、行为可预期；但要接受「新特性少、遇到冷门问题要自己读源码」。依赖锁 <code>github.com/dtm-labs/client v1.18.x</code>，不要用 <code>@latest</code> 混搭服务端与客户端。</p>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>补偿接口不幂等，重复退款</strong>：补偿里写 <code>balance = balance + amount</code> 而没有任何去重，网络一抖就多退一次。补偿也要走 <code>bb.Call</code>，或至少带业务唯一号。</li><li><strong>gid 重复使用</strong>：把订单号当 gid 复用给「重试下单」，DTM 认为还是那笔老事务，直接返回上次结果，新订单永远不生效。一笔业务一个新 gid，重试复用同一个。</li><li><strong>Cancel 在 Try 之前到达（悬挂）</strong>：只写三个接口不建屏障表，超时重发时 Try 会在 Cancel 之后执行，冻结了一笔已经回滚的库存。<code>BranchBarrier</code> 是必需品，不是可选项。</li><li><strong>空回滚没处理</strong>：Try 请求超时但从未落库，DTM 发起 Cancel，代码 <code>UPDATE ... SET frozen = frozen - 100</code> 把冻结量扣成负数。屏障的「Cancel 先插 try」就是专门挡这个的。</li><li><strong>屏障和业务不在同一个事务</strong>：用 GORM 时另开了连接，barrier 提交、业务回滚，重放时被当成「已处理」直接跳过——数据永久丢失且无人报错。</li><li><strong>把非事务操作塞进 Saga</strong>：发短信、调第三方支付划款、推 IM 消息放在中间步骤，失败后无法补偿。可补偿步骤前置，不可逆步骤后置并接受人工兜底。</li><li><strong>补偿里做业务校验</strong>：<code>if status != PAID { return nil }</code> 在重放时等于「假装补偿成功」，账永远对不上。补偿只做反向写。</li><li><strong>超时时间小于下游 P99</strong>：<code>TimeoutToFail</code> 设 3s 而下单接口 P99 是 5s，DTM 每笔都判超时、每笔都补偿，系统看起来在「疯狂回滚」。超时至少取下游 P99 的 3 倍。</li><li><strong>DTM 服务当单点部署</strong>：进程挂了在途事务停住（不是丢），恢复后继续；但如果存储也挂了且用 Redis 无持久化，状态就真丢了。至少两副本 + MySQL 主从。</li><li><strong>Redis 底座当强一致用</strong>：Redis 丢了 <code>prepared</code> 记录，业务侧已经扣的钱没有任何人负责回滚。要么有对账，要么别用 Redis 存关键事务。</li><li><strong>业务返回码乱写</strong>：失败回 200、补偿失败回 409，DTM 的判断全反。约定：正向失败 409（<code>ErrFailure</code>），临时故障 5xx（触发重试），成功 200。</li><li><strong><code>aborting</code> 堆积没人看</strong>：补偿一直失败，事务永远停在回滚中，监控只看进程存活是发现不了的。必须告警「<code>aborting</code> 数量」与「最老事务年龄」。</li><li><strong>以为 DTM 提供隔离性</strong>：Saga 分支提交后、全局未完成前，别人能读到中间态。用语义锁（<code>CREATED</code>/<code>FROZEN</code> 等中间状态）+ 查询侧显式过滤。</li></ol>
+<hr>
+
+<div class="callout warning"><p><b>生产警示：</b>补偿不幂等导致重复退款、TCC 空回滚没处理、DTM 服务单点、超时短于下游 P99。</p></div>
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th><strong>DTM</strong></th><th><strong>Temporal</strong></th><th><strong>Seata（AT/TCC）</strong></th><th><strong>RocketMQ 事务消息</strong></th><th><strong>自研 Outbox</strong></th></tr></thead><tbody><tr><td>定位</td><td>轻量事务协调器</td><td>持久化执行平台</td><td>Java 系事务中间件</td><td>消息侧的事务投递</td><td>模式，不是产品</td></tr><tr><td>一致性</td><td>最终（XA 除外）</td><td>最终</td><td>AT 准强一致 / TCC 最终</td><td>最终</td><td>最终</td></tr><tr><td>业务侵入</td><td>中（暴露回调接口）</td><td>高（Workflow/Activity 改造）</td><td>AT 低 / TCC 高</td><td>中（回查接口）</td><td>中（outbox 表 + relay）</td></tr><tr><td>编排能力</td><td>中（Saga DAG + workflow）</td><td><strong>强</strong>（代码即流程、子流程、信号）</td><td>弱（按分支顺序）</td><td>无</td><td>无</td></tr><tr><td>长流程 / 定时器</td><td>弱（分钟级以上不适合）</td><td><strong>强</strong>（天级、定时、人工任务）</td><td>无</td><td>无</td><td>无</td></tr><tr><td>语言生态</td><td>Go 原生，HTTP/gRPC 跨语言</td><td>Go/Java/TS/Python/PHP</td><td>Java 为主，Go SDK 较弱</td><td>Java/Go/C++</td><td>任意</td></tr><tr><td>运维成本</td><td>低（一个服务 + 一个库）</td><td>高（Server + Cassandra/PG + 可见性库）</td><td>中高（Server + DB + 注册中心）</td><td>低（已有 MQ 则几乎为零）</td><td>低，但要自己写 relay + 归档</td></tr><tr><td>适合</td><td>跨服务写一致性、秒级收敛</td><td>长流程、复杂编排、需要人工介入</td><td>Java 存量系统、AT 快速接入</td><td>只差「写完库发消息」</td><td>已有 MQ、团队想完全自控</td></tr></tbody></table></div>
+<p>按场景给结论：</p>
+<ul><li><strong>跨服务写、步骤固定、能补偿</strong> → DTM 的 Saga，配 <code>BranchBarrier</code>，秒级收敛，运维最轻。</li><li><strong>钱/券/库存要预留</strong> → DTM 的 TCC；<strong>同机房两个 MySQL、短事务、必须强一致</strong> → DTM 的 XA，但要先确认能接受连接占用与 in-doubt 运维。</li><li><strong>写完库只要通知下游</strong> → DTM 的二阶段消息，等价于「托管版 Outbox」，省掉 relay；<strong>Java 团队已有 Seata、要 AT 的低侵入</strong> → Seata，接受全局锁与 <code>undo_log</code>。</li><li><strong>流程跨天、要等人工、要定时器</strong> → Temporal，别用 DTM 硬撑（它的重试与状态机不是为长流程设计的）。</li></ul>
+<p>最后说清两篇的分工：<strong><a href="../distributed-transaction/distributed-transaction-guide.html">分布式事务篇</a> 负责「判断」</strong>——该不该做、选哪类模式、补偿与幂等的通用原理、失败边界在哪；<strong>本篇负责「落地」</strong>——选定 DTM 之后，接口怎么签名、屏障表怎么建、gid 怎么管、坑在哪。先读那篇决定要不要引入协调者，再读这篇决定怎么把它接进代码。</p>
+<blockquote><p>DTM 的价值不是「让分布式事务变简单」，而是把「状态机 + 重试 + 幂等表」这三件重复劳动收进框架；补偿的业务语义、监控告警、对账兜底，仍然一件都少不了。</p></blockquote>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Excelize · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#15803d; --accent-light:#dcfce7; --accent-dark:#14532d;
+    --bg:#f6fdf8; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#052e16; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#14532d 0%,#15803d 58%,#14532d 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">Excelize<span class="ver">v2.9</span></div>
+  <div class="sub">xlsx · 流式写入 · 共享字符串</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#安装">安装</a>
+  <a href="#2-能力总览">2. 能力总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-一个-xlsx-就是一个-zip">3.1 一个 xlsx 就是一个 zip</a>
+  <a class="sub-link" href="#32-共享字符串表内存的真正账本">3.2 共享字符串表：内存的真正账本</a>
+  <a class="sub-link" href="#33-两套写入-api-的取舍">3.3 两套写入 API 的取舍</a>
+  <a class="sub-link" href="#34-样式是共享池不是单元格属性">3.4 样式是共享池，不是单元格属性</a>
+  <a class="sub-link" href="#35-读路径迭代器优先">3.5 读路径：迭代器优先</a>
+  <a class="sub-link" href="#36-并发模型file-不是并发安全的">3.6 并发模型：File 不是并发安全的</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-十万行导出streamwriter">4.1 十万行导出：StreamWriter</a>
+  <a class="sub-link" href="#42-按模板填充导入导出闭环">4.2 按模板填充：导入导出闭环</a>
+  <a class="sub-link" href="#43-样式合并与维度">4.3 样式、合并与维度</a>
+  <a class="sub-link" href="#44-公式与计算">4.4 公式与计算</a>
+  <a class="sub-link" href="#45-图表校验与条件格式">4.5 图表、校验与条件格式</a>
+  <a class="sub-link" href="#46-读大文件与按需转换">4.6 读大文件与按需转换</a>
+  <a href="#5-版本演进">5. 版本演进</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>Excelize 技术指南</h1>
+<p>服务端生成 Excel 的难点不在 API，而在内存：10 万行用普通 API 会吃掉几个 GB，流式写入才能把峰值压到常量级。 上游：<a href="https://github.com/qax-os/excelize">https://github.com/qax-os/excelize</a> <strong>v2.9.x</strong>　|　文档：<a href="https://xuri.me/excelize/">https://xuri.me/excelize/</a>　|　许可：BSD-3-Clause</p>
+<p style="opacity:.8;font-size:13.5px">xlsx · 流式写入 · 共享字符串</p>
+<div class="meta"><span>xlsx</span><span>流式写入</span><span>共享字符串</span></div>
+</div>
+<blockquote><p>服务端生成 Excel 的难点不在 API，而在内存：10 万行用普通 API 会吃掉几个 GB，流式写入才能把峰值压到常量级。 上游：<a href="https://github.com/qax-os/excelize">https://github.com/qax-os/excelize</a> <strong>v2.9.x</strong>　|　文档：<a href="https://xuri.me/excelize/">https://xuri.me/excelize/</a>　|　许可：BSD-3-Clause</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p><code>excelize</code> 是 Go 生态里最主流的电子表格读写库，纯 Go 实现、无 CGO、无外部 Office 依赖，直接按 ECMA-376 / ISO-29500（OOXML）标准操作 <code>.xlsx</code> / <code>.xlsm</code> / <code>.xltx</code> / <code>.xlam</code> 等格式。</p>
+<p>它解决的问题很具体：<strong>在服务端把结构化的数据变成一份人类能看的表格，或者把用户上传的表格解析成结构化数据</strong>。典型场景是报表导出、对账单生成、批量导入校验、财务模板填充。</p>
+<p>核心特征：</p>
+<ul><li><strong>完整的 OOXML 支持</strong>：样式、合并单元格、条件格式、数据验证、图表、图片、数据透视表、切片器；</li><li><strong>双写入通道</strong>：普通 API（随机读写，内存换便利）与 StreamWriter（顺序写，常量内存）；</li><li><strong>公式引擎</strong>：<code>CalcCellValue</code> 可对 400+ 内置函数求值，不依赖 Excel 客户端；</li><li><strong>跨语言绑定</strong>：同仓库提供 <code>excelize-wasm</code>（浏览器/Node）、PyPI 与 .NET 包。</li></ul>
+<p>一句话定位：<strong>它不是"操作 Excel 的驱动"，而是一个 OOXML 文档处理器</strong>——每个 API 最终都落到某个 XML 部件的某个节点上。</p>
+<h3 id="安装">安装</h3>
+<pre><code class="lang-bash">go get github.com/xuri/excelize/v2@v2.9.1</code></pre>
+<p>包名仍是 <code>excelize</code>，但模块路径带 <code>/v2</code>。v2.9.1 起要求 Go 1.23+，老项目请锁版本或升级工具链。</p>
+<hr>
+
+</section>
+<section data-anchor="2-能力总览">
+<h2 id="2-能力总览">2. 能力总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力域</th><th>主要 API</th><th>说明</th></tr></thead><tbody><tr><td>工作簿</td><td><code>NewFile</code> / <code>OpenFile</code> / <code>OpenReader</code> / <code>SaveAs</code> / <code>Write</code> / <code>Close</code></td><td><code>Write(io.Writer)</code> 可直接写 HTTP 响应，免落盘</td></tr><tr><td>工作表</td><td><code>NewSheet</code> / <code>DeleteSheet</code> / <code>SetSheetName</code> / <code>MoveSheet</code> / <code>GetSheetList</code></td><td><code>MoveSheet</code> 为 v2.9 新增</td></tr><tr><td>单元格写入</td><td><code>SetCellValue</code> / <code>SetCellInt</code> / <code>SetCellFloat</code> / <code>SetCellBool</code> / <code>SetCellStr</code> / <code>SetSheetRow</code></td><td>强类型入口能避免"数字变文本"</td></tr><tr><td>单元格读取</td><td><code>GetCellValue</code> / <code>GetCellType</code> / <code>GetRows</code> / <code>Rows</code>（迭代器）</td><td>大文件必须用迭代器</td></tr><tr><td>流式写入</td><td><code>NewStreamWriter</code> / <code>SetRow</code> / <code>SetColWidth</code> / <code>MergeCell</code> / <code>AddTable</code> / <code>Flush</code></td><td>顺序写，峰值内存与行数无关</td></tr><tr><td>样式</td><td><code>NewStyle</code> / <code>SetCellStyle</code> / <code>GetStyle</code></td><td>样式是共享池，按 ID 引用</td></tr><tr><td>布局</td><td><code>MergeCell</code> / <code>SetColWidth</code> / <code>SetRowHeight</code> / <code>SetPanes</code></td><td>冻结窗格靠 <code>SetPanes</code></td></tr><tr><td>公式</td><td><code>SetCellFormula</code> / <code>GetCellFormula</code> / <code>CalcCellValue</code></td><td>计算结果不会自动回写单元格</td></tr><tr><td>图表</td><td><code>AddChart</code> / <code>AddChartSheet</code></td><td>支持柱/线/饼/散点/股价等，v2.9 起可组合图</td></tr><tr><td>图片</td><td><code>AddPicture</code> / <code>GetPictures</code> / <code>DeletePicture</code></td><td>支持单元格锚点与绝对锚点</td></tr><tr><td>校验与格式</td><td><code>AddDataValidation</code> / <code>AddConditionalFormat</code> / <code>AddIgnoredErrors</code></td><td>v2.9 起部分函数并发安全</td></tr><tr><td>其他</td><td><code>AddPivotTable</code> / <code>GetSlicers</code> / <code>AddComment</code> / <code>SetDocProps</code></td><td>透视表、切片器、批注、文档属性</td></tr></tbody></table></div>
+<hr>
+
+<div class="features">
+  <div class="feature"><div class="fh"><h4>共享字符串</h4></div><p>重复文本进 sharedStrings，写得多不如写得省</p></div>
+  <div class="feature"><div class="fh"><h4>样式复用</h4></div><p>NewStyle 只建一次，每行新建会让文件膨胀数倍</p></div>
+  <div class="feature"><div class="fh"><h4>日期与数字</h4></div><p>日期是序列号，长数字要防精度丢失与前导零</p></div>
+</div>
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-一个-xlsx-就是一个-zip">3.1 一个 xlsx 就是一个 zip</h3>
+<p><code>.xlsx</code> 没有二进制魔数结构，它就是个 zip 包（这也是为什么"改扩展名成 zip 能解开"）。解开后大致是：</p>
+<pre><code class="lang-text">xl/
+├── workbook.xml          # 工作表清单、定义名称、计算属性
+├── worksheets/sheet1.xml # 真正存单元格的部件，一行一个 &lt;row&gt;
+├── sharedStrings.xml     # 全簿共享的字符串池
+├── styles.xml            # 字体/填充/边框/数字格式，按 xf 索引引用
+├── charts/chart1.xml     # AddChart 生成的图表定义
+├── drawings/drawing1.xml # 图表与图片的锚点信息
+└── media/image1.png</code></pre>
+<p>关键点：<strong>单元格里存的是"索引"而不是完整内容</strong>。字符串存 <code>t="s"</code> + <code>sharedStrings</code> 下标，样式存 <code>s="3"</code> 指向 <code>styles.xml</code> 的第 3 个 <code>cellXfs</code>。所以体积与内存本质上由"共享表规模"和"XML 节点数"决定。</p>
+<h3 id="32-共享字符串表内存的真正账本">3.2 共享字符串表：内存的真正账本</h3>
+<p>普通 API 写入 <code>SetCellValue("A1", "华东区")</code> 时，excelize 会把字符串塞进内存里的 <code>sharedStrings</code> 池：重复值只存一份，但<strong>池子随唯一值数量线性增长</strong>，且全部驻留内存直到 <code>Save</code>。</p>
+<ul><li>10 万行 × 10 列如果都是唯一订单号，池子里就有 100 万个条目；</li><li>每条要存 Go string + XML 转义副本 + map 索引，实测量级是每单元格几百字节；</li><li>结论：<strong>数据越"不重复"，普通 API 越吃内存</strong>，这就是"10 万行导出 OOM"的根因。</li></ul>
+<p>StreamWriter 走另一条路：<strong>字符串直接内联写进 sheet XML</strong>（<code>t="inlineStr"</code>），不建共享池，落盘即释放。代价是不再压缩重复值，文件可能略大，但内存是常量级。</p>
+<h3 id="33-两套写入-api-的取舍">3.3 两套写入 API 的取舍</h3><div class="figure">
+  <svg viewBox="0 0 880 376" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-excelize" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#15803d"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#14532d">三条路径，三种内存曲线</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">选错 API，10 万行就能吃掉几个 GB</text>
+    <rect x="90" y="84" width="700" height="52" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="1.5"/>
+    <circle cx="122" cy="110" r="14" fill="#15803d"/>
+    <text x="122" y="110" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">1</text>
+    <text x="150" y="110" dominant-baseline="central" font-size="13" fill="#14532d">普通 API：随机构建，内存随行列与共享字符串增长</text>
+    <line x1="440" y1="138" x2="440" y2="154" stroke="#15803d" stroke-width="2" marker-end="url(#m-excelize)"/>
+    <rect x="90" y="158" width="700" height="52" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="1.5"/>
+    <circle cx="122" cy="184" r="14" fill="#15803d"/>
+    <text x="122" y="184" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">2</text>
+    <text x="150" y="184" dominant-baseline="central" font-size="13" fill="#14532d">流式写入：NewStreamWriter + SetRow + Flush，常量内存，只能顺序写</text>
+    <line x1="440" y1="212" x2="440" y2="228" stroke="#15803d" stroke-width="2" marker-end="url(#m-excelize)"/>
+    <rect x="90" y="232" width="700" height="52" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="1.5"/>
+    <circle cx="122" cy="258" r="14" fill="#15803d"/>
+    <text x="122" y="258" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">3</text>
+    <text x="150" y="258" dominant-baseline="central" font-size="13" fill="#14532d">迭代读取：Rows() 逐行扫描，不 GetRows 全量</text>
+    <rect x="40" y="300" width="800" height="54" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="324" font-size="12.5" fill="#1e293b">导出走流式、读大文件走迭代器；两个方向都不要「先全读进内存再处理」。</text>
+  </svg>
+  <figcaption>三条路径，三种内存曲线</figcaption>
+</div>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>普通 API（<code>SetCellValue</code>）</th><th>流式 API（<code>NewStreamWriter</code>）</th></tr></thead><tbody><tr><td>写入顺序</td><td>任意，可回头改</td><td><strong>必须行号递增</strong>，写完不能回改</td></tr><tr><td>内存</td><td>与数据量线性相关</td><td>常量（约几十 MB），超 16MB 自动溢写临时文件</td></tr><tr><td>随机读取</td><td>支持</td><td><strong>不支持</strong>，写入期拿不到单元格值</td></tr><tr><td>样式</td><td>任意单元格独立设置</td><td>整行或整列设置（<code>RowOpts</code> / <code>SetColWidth</code>）</td></tr><tr><td>适用</td><td>&lt; 1 万行、需要回填合计行</td><td>万行以上、纯追加导出</td></tr></tbody></table></div>
+<p>硬规则：<strong>同一张工作表里，普通函数和流式函数不能混用</strong>。<code>NewStreamWriter</code> 接管后再调 <code>SetCellValue</code> 写同一 sheet，轻则丢数据，重则产出的文件被 Excel 判定损坏。</p>
+<h3 id="34-样式是共享池不是单元格属性">3.4 样式是共享池，不是单元格属性</h3>
+<p><code>NewStyle</code> 返回的是 <code>int</code> 索引，指向 <code>styles.xml</code> 的 <code>cellXfs</code> 数组。每次调用都会<strong>新增</strong>一个条目，excelize 内部不做去重。</p>
+<pre><code class="lang-go">// 反例：在 10 万行的循环里调用，styles.xml 会膨胀到几十 MB
+for i := 2; i &lt;= 100000; i++ {
+    id, _ := f.NewStyle(&amp;excelize.Style{Font: &amp;excelize.Font{Bold: true}})
+    f.SetCellStyle("Sheet1", fmt.Sprintf("A%d", i), fmt.Sprintf("A%d", i), id)
+}</code></pre>
+<p>正确做法是<strong>在循环外建好样式，循环内复用同一个 ID</strong>。<code>Style</code> 结构由 <code>Font</code>、<code>Fill</code>、<code>Border</code>、<code>Alignment</code>、<code>Protection</code>、<code>NumFmt</code> 六部分组成，未设置的字段继承默认值；<code>CustomNumFmt</code> 用于自定义数字格式（如 <code>#,##0.00_);[Red](#,##0.00)</code>）。</p>
+<h3 id="35-读路径迭代器优先">3.5 读路径：迭代器优先</h3>
+<p><code>GetRows</code> 会把整张表读成 <code>[][]string</code> 返回——等于把"XML 解析 + 字符串解码 + 切片扩容"三份开销同时压在内存里。<code>Rows</code> 迭代器则是流式解析 <code>sheetN.xml</code>，每次只保留当前行：</p>
+<pre><code class="lang-go">rows, err := f.Rows("Sheet1") // 迭代器，而不是 GetRows
+if err != nil {
+    return err
+}
+defer rows.Close()
+for rows.Next() {
+    cols, err := rows.Columns() // 只解析当前行
+    if err != nil {
+        return err
+    }
+    _ = cols
+}</code></pre>
+<p>v2.9.1 对 <code>Rows</code> 提速约 20%、内存下降约 10%，v2.10 又把 <code>GetSheetDimension</code> 改为流式解析（提速约 95%）。<strong>判断标准：文件超过 10MB 或行数未知，一律用迭代器。</strong></p>
+<h3 id="36-并发模型file-不是并发安全的">3.6 并发模型：File 不是并发安全的</h3>
+<p><code>*excelize.File</code> 内部有 <code>sync.Mutex</code> 保护部分写入路径，但<strong>不保证跨 goroutine 的复合操作安全</strong>；v2.9 仅把 <code>AddDataValidation</code>、<code>DeleteDataValidation</code>、<code>GetCellStyle</code> 少数函数标注为并发安全。</p>
+<p>实践结论：</p>
+<ul><li><strong>禁止多个 goroutine 写同一个 <code>File</code></strong>（尤其同一个 sheet），会出现 XML 结构错乱；</li><li>正确姿势是<strong>一个 goroutine 一个 File</strong>，或按 sheet 拆分后各自导出再合并；</li><li>多 sheet 并行收益远小于调试成本，优先单 worker 串行写。</li></ul>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-十万行导出streamwriter">4.1 十万行导出：StreamWriter</h3>
+<p>这是最该背下来的一段代码。要点：样式只建一次、列宽在写行之前设置、行号递增、最后必须 <code>Flush</code>。</p>
+<pre><code class="lang-go">package main
+
+import (
+    "fmt"
+    "math/rand"
+    "strconv"
+
+    "github.com/xuri/excelize/v2"
+)
+
+func exportLarge(path string, total int) error {
+    f := excelize.NewFile()
+    defer f.Close()
+
+    const sheet = "订单明细"
+    if err := f.SetSheetName("Sheet1", sheet); err != nil {
+        return err
+    }
+
+    // 1) 样式在流式写入之前建好，全程复用同一个 ID
+    headerStyle, err := f.NewStyle(&amp;excelize.Style{
+        Font:      &amp;excelize.Font{Bold: true, Color: "FFFFFF"},
+        Fill:      excelize.Fill{Type: "pattern", Pattern: 1, Color: []string{"2F5597"}},
+        Alignment: &amp;excelize.Alignment{Horizontal: "center", Vertical: "center"},
+    })
+    if err != nil {
+        return err
+    }
+
+    sw, err := f.NewStreamWriter(sheet)
+    if err != nil {
+        return err
+    }
+    // 2) 列宽必须在 SetRow 之前调用
+    if err := sw.SetColWidth(1, 5, 18); err != nil {
+        return err
+    }
+
+    headers := make([]interface{}, 5)
+    for i, h := range []string{"订单号", "客户", "数量", "单价", "金额"} {
+        headers[i] = excelize.Cell{StyleID: headerStyle, Value: h}
+    }
+    if err := sw.SetRow("A1", headers, excelize.RowOpts{Height: 22}); err != nil {
+        return err
+    }
+
+    // 3) 逐行追加，行号严格递增
+    for i := 2; i &lt;= total+1; i++ {
+        qty := rand.Intn(100) + 1
+        price := float64(rand.Intn(10000)) / 100
+        row := []interface{}{
+            fmt.Sprintf("SO-%08d", i-1),
+            "客户-" + strconv.Itoa(i%500),
+            qty, price, float64(qty) * price,
+        }
+        if err := sw.SetRow(fmt.Sprintf("A%d", i), row); err != nil {
+            return err
+        }
+    }
+
+    // 4) 收尾：Flush 必须调用，否则最后一批数据不会落盘
+    if err := sw.Flush(); err != nil {
+        return err
+    }
+    return f.SaveAs(path)
+}</code></pre>
+<p>这段代码 10 万行 × 5 列的峰值内存通常在 60~120MB 区间（大部分是临时文件缓冲），而不是普通 API 的 2GB+。</p>
+<h3 id="42-按模板填充导入导出闭环">4.2 按模板填充：导入导出闭环</h3>
+<p>真实业务很少从零画表，通常是"设计好的模板 + 占位符"。小数据用普通 API（<code>NewFile</code> + <code>SetSheetRow</code> / <code>SetCellValue</code> + <code>SaveAs</code>），要直接写 HTTP 响应可用 <code>WriteTo(io.Writer)</code> 省一次落盘；模板填充则走 <code>OpenFile</code> → 覆盖占位单元格 → 插图 → <code>WriteToBuffer</code>。</p>
+<pre><code class="lang-go">func fillInvoice(tplPath string, inv Invoice) ([]byte, error) {
+    f, err := excelize.OpenFile(tplPath)
+    if err != nil {
+        return nil, err
+    }
+    defer f.Close()
+
+    const sheet = "发票"
+    for cell, v := range map[string]interface{}{
+        "C3": inv.No, "C4": inv.Customer,
+        "C5": inv.Date.Format("2006-01-02"), "E8": inv.Total,
+    } {
+        if err := f.SetCellValue(sheet, cell, v); err != nil {
+            return nil, err
+        }
+    }
+
+    // 明细从固定起始行追加，行高随内容走
+    for i, item := range inv.Items {
+        r := 10 + i
+        _ = f.SetCellValue(sheet, fmt.Sprintf("B%d", r), item.Name)
+        _ = f.SetCellValue(sheet, fmt.Sprintf("D%d", r), item.Qty)
+        _ = f.SetCellValue(sheet, fmt.Sprintf("E%d", r), item.Price)
+        _ = f.SetCellFormula(sheet, fmt.Sprintf("F%d", r), fmt.Sprintf("=D%d*E%d", r, r))
+        _ = f.SetRowHeight(sheet, r, 24)
+    }
+
+    // 图片锚点：以单元格左上角为基准，偏移量单位为像素
+    if inv.Logo != "" {
+        if err := f.AddPicture(sheet, "A1", inv.Logo, &amp;excelize.GraphicOptions{
+            ScaleX: 0.4, ScaleY: 0.4, OffsetX: 12, OffsetY: 8,
+        }); err != nil {
+            return nil, err
+        }
+    }
+    buf, err := f.WriteToBuffer()
+    if err != nil {
+        return nil, err
+    }
+    return buf.Bytes(), nil
+}</code></pre>
+<p>模板设计约定：占位符放在独立单元格（不要和文字混排），明细区预留 1 行样式供复制，<code>AddPicture</code> 只接受服务端可读的本地文件。</p>
+<h3 id="43-样式合并与维度">4.3 样式、合并与维度</h3>
+<pre><code class="lang-go">// 边框 + 居中 + 自动换行，一次建好反复用
+border := []excelize.Border{
+    {Type: "left", Color: "BFBFBF", Style: 1}, {Type: "right", Color: "BFBFBF", Style: 1},
+    {Type: "top", Color: "BFBFBF", Style: 1}, {Type: "bottom", Color: "BFBFBF", Style: 1},
+}
+id, _ := f.NewStyle(&amp;excelize.Style{
+    Border:    border,
+    Alignment: &amp;excelize.Alignment{Horizontal: "center", Vertical: "center", WrapText: true},
+})
+f.SetCellStyle("Sheet1", "A1", "F1", id) // 区间批量设置，比逐格快得多
+
+f.MergeCell("Sheet1", "A1", "F1")     // 只保留左上角的值
+f.SetColWidth("Sheet1", "A", "A", 12) // 单位是字符宽度
+f.SetRowHeight("Sheet1", 1, 28)       // 单位是磅
+f.SetPanes("Sheet1", &amp;excelize.Panes{Freeze: true, YSplit: 2, TopLeftCell: "A3", ActivePane: "bottomLeft"})</code></pre>
+<p>v2.9 起 <code>MergeCell</code> 会清空被合并区域除左上角外的单元格值——依赖旧行为（合并后仍能读到从属单元格）的代码升级时会踩到。</p>
+<h3 id="44-公式与计算">4.4 公式与计算</h3>
+<p><code>SetCellFormula</code> 只写公式文本，<strong>不会算结果</strong>；Excel 打开时才计算。要在服务端拿值，用 <code>CalcCellValue</code>：</p>
+<pre><code class="lang-go">f.SetCellFormula("Sheet1", "F2", "=SUM(D2:E2)")
+f.SetCellFormula("Sheet1", "F3", "=IFERROR(VLOOKUP(A3,数据!$A:$C,3,FALSE),\"\")")
+
+val, err := f.CalcCellValue("Sheet1", "F2") // 返回格式化后的字符串
+if err != nil {
+    // 常见：循环引用、引用了外部工作簿、函数未实现
+    log.Printf("calc F2: %v", err)
+}</code></pre>
+<p>能力边界必须清楚：</p>
+<ul><li>支持 400+ 内置函数，但<strong>不支持宏表函数、外部链接引用、部分新版动态数组函数</strong>；</li><li>结果为 <code>#N/A</code> 等错误值时返回错误字符串而非 <code>error</code>，需要自己判前缀；</li><li>计算是<strong>按需递归</strong>的，整表重算没有批量 API，循环里调 <code>CalcCellValue</code> 会重复解析依赖树——大批量请自己用 Go 算，再 <code>SetCellValue</code> 写死。</li></ul>
+<h3 id="45-图表校验与条件格式">4.5 图表、校验与条件格式</h3>
+<pre><code class="lang-go">// 图表：系列引用用绝对引用，放在数据右侧
+chart := &amp;excelize.Chart{
+    Type: excelize.Col,
+    Series: []excelize.ChartSeries{{
+        Name:       "订单明细!$E$2",
+        Categories: "订单明细!$A$3:$A$1002",
+        Values:     "订单明细!$E$3:$E$1002",
+    }},
+    Title: excelize.ChartTitle{Paragraph: []excelize.RichTextRun{{Text: "金额分布"}}},
+    Width: 720, Height: 320,
+}
+f.AddChart("订单明细", "H2", chart)
+
+// 数据验证：下拉框
+f.AddDataValidation("Sheet1", &amp;excelize.DataValidation{
+    Sqref: "C2:C500", Type: "list",
+    Formula1: `"待付款,已付款,已发货,已完成"`,
+    Error:    "请从下拉列表中选择状态",
+})
+
+// 条件格式：大于 10000 标红（v2.9 起 Format 是指针）
+f.AddConditionalFormat("Sheet1", &amp;excelize.ConditionalFormatOptions{
+    Type: "cell", Criteria: "greater than", Value: "10000",
+    Format: &amp;excelize.ConditionalStyle{Font: &amp;excelize.Font{Color: "9C0006", Bold: true}},
+})</code></pre>
+<p>注意 <code>AddChart</code> 的 <code>Series</code> 引用的是<strong>最终工作表名</strong>，之后再 <code>SetSheetName</code> 改名会让图表断链；系列区间长度也要与数据实际行数一致。</p>
+<h3 id="46-读大文件与按需转换">4.6 读大文件与按需转换</h3>
+<pre><code class="lang-go">func scan(path string) error {
+    f, err := excelize.OpenFile(path)
+    if err != nil {
+        return err
+    }
+    defer f.Close()
+
+    rows, err := f.Rows("Sheet1")
+    if err != nil {
+        return err
+    }
+    defer rows.Close()
+
+    for rows.Next() {
+        cols, err := rows.Columns()
+        if err != nil {
+            return err
+        }
+        // 日期列：先拿序列号，再转 time.Time
+        if len(cols) &gt;= 5 {
+            if serial, err := strconv.ParseFloat(cols[4], 64); err == nil {
+                if t, err := excelize.ExcelDateToTime(serial, false); err == nil {
+                    _ = t.Format(time.RFC3339)
+                }
+            }
+        }
+    }
+    return rows.Error()
+}</code></pre>
+<p>两个细节：<code>ExcelDateToTime</code> 的第二个参数是"是否 1904 基准"（Mac 旧版 Excel 用），传错会整体偏移 4 年；<code>rows.Error()</code> 才是迭代过程中的真实错误，<code>Next()</code> 返回 false 不代表成功结束。</p>
+<hr>
+
+<div class="callout info"><p><b>实战要点：</b>先做 1000 行与 10 万行两档压测，内存曲线平不平比 API 好不好看更重要。</p></div>
+</section>
+<section data-anchor="5-版本演进">
+<h2 id="5-版本演进">5. 版本演进<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>时间</th><th>关键变化</th></tr></thead><tbody><tr><td>v1.x</td><td>2016–2019</td><td>单包时代，API 无版本后缀，<code>import "github.com/xuri/excelize"</code></td></tr><tr><td>v2.0</td><td>2019-05</td><td>模块路径改为 <code>/v2</code>，破坏性重构，引入 <code>Options</code></td></tr><tr><td>v2.4</td><td>2021-04</td><td>StreamWriter 成熟，支持 <code>AddTable</code> / <code>MergeCell</code> / <code>SetPanes</code></td></tr><tr><td>v2.6</td><td>2022-04</td><td>公式引擎大扩，<code>CalcCellValue</code> 支持函数数破 300</td></tr><tr><td>v2.9.0</td><td>2024-10</td><td>新增 <code>MoveSheet</code>、<code>DeleteSlicer</code>/<code>GetSlicers</code>；<code>MergeCell</code> 清空从属单元格；<code>AddDataValidation</code> 等支持并发</td></tr><tr><td>v2.9.1</td><td>2025-05</td><td>要求 Go 1.23+；<code>SetColStyle</code> 让流式写入支持列样式；新增 <code>SetCalcProps</code>/<code>GetCalcProps</code>；<code>SetCellInt</code> 参数改 <code>int64</code>；<code>Rows</code> 提速约 20%</td></tr><tr><td>v2.10.x</td><td>2025-10 / 2026-02</td><td><code>Options.TmpDir</code> 可指定临时目录；<code>SetZipWriter</code> 自定义 ZIP 写入器；<code>GetSheetDimension</code> 提速约 95%</td></tr><tr><td>v2.11.x</td><td>2026-07 / 2026-11</td><td>持续补齐图表类型与数字格式本地化</td></tr></tbody></table></div>
+<p>截至 2026-11，上游已发布到 v2.11.x，但 v2.9.x 仍是企业项目中使用最广的一条线。本文所有 API 均以 v2.9 为基线，v2.10/v2.11 保持向后兼容（除 <code>Format</code> 指针化、<code>SetCellInt</code> 类型这类已标注的破坏性变更）。升级时重点检查 <code>go.mod</code> 的 Go 版本、<code>ConditionalFormatOptions.Format</code> 是否仍按结构体赋值、<code>SetCellInt</code> 传参是否编译失败。</p>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong><code>GetRows</code> 一把梭会打爆内存</strong>：它返回 <code>[][]string</code>，10 万行 × 20 列轻松吃掉 1GB 以上。大文件一律用 <code>Rows</code> + <code>rows.Next()</code>，并 <code>defer rows.Close()</code>。</li><li><strong>StreamWriter 之后再调普通 API</strong>：<code>NewStreamWriter</code> 之后对同一 sheet 调 <code>SetCellValue</code>/<code>SetCellStyle</code>，会得到"流已关闭"类错误或损坏文件。要么全流式，要么全普通，<strong>不要混</strong>。</li><li><strong>循环里 <code>NewStyle</code> 导致文件膨胀</strong>：样式是追加式索引，10 万个样式会让 <code>styles.xml</code> 涨到几十 MB。样式必须在循环外创建，循环内只传 ID。</li><li><strong>日期是浮点数，不是时间</strong>：Excel 存的是 1900 基准的序列号。写入用 <code>excelize.TimeToExcelTime</code>，读取用 <code>ExcelDateToTime(serial, use1904)</code>；<code>use1904</code> 传错（或模板来自 Mac 旧版）会整体偏移 4 年。另注意 1900 年 2 月 29 日这个历史 bug 的存在。</li><li><strong>长数字被当字符串 / 前导零丢失</strong>：18 位订单号用 <code>SetCellValue</code> 会按 <code>float64</code> 处理，末位变 0。必须用 <code>SetCellStr</code> 并配 <code>NumFmt: "@"</code>（文本格式）；手机号、身份证同理。</li><li><strong>数字被当文本，Excel 左上角绿三角</strong>：反过来的坑。用 <code>SetCellInt</code>/<code>SetCellFloat</code> 而不是 <code>SetCellValue(..., "123")</code>，并确认该列 <code>NumFmt</code> 不是文本。</li><li><strong>并发写同一个 <code>File</code></strong>：只有少数函数（v2.9 起 <code>AddDataValidation</code>、<code>DeleteDataValidation</code>、<code>GetCellStyle</code>）标注并发安全，其余都会竞争内部 XML 缓冲。正确做法是一个 goroutine 一个 <code>File</code>，或按 sheet 拆文件。</li><li><strong>忘记 <code>Flush</code> 或 <code>Close</code></strong>：StreamWriter 不 <code>Flush</code> 最后一批数据不会落盘；<code>File</code> 不 <code>Close</code> 在 Windows 上会锁住临时文件，导致后续 <code>os.Remove</code> 失败（尤其在 <code>defer</code> 里忘了）。</li><li><strong><code>SetCellFormula</code> 不等于算出值</strong>：<code>GetCellValue</code> 读公式单元格返回的是<strong>缓存值</strong>，新建文件里通常为空。需要数值就 <code>CalcCellValue</code>，或直接写入计算结果。</li><li><strong>图片路径必须是服务端可读的本地文件</strong>：<code>AddPicture</code> 不接受 URL，也不接受 <code>io.Reader</code>。远程图片要先下载到临时目录，用完清理；<code>GraphicOptions</code> 的 <code>OffsetX/OffsetY</code> 单位是像素，<code>ScaleX/ScaleY</code> 相对原图。</li><li><strong>工作表名限制</strong>：最长 31 字符，不能含 <code>: \ / ? * [ ]</code>，且不能重名。用 <code>f.NewSheet(userInput)</code> 前必须校验，否则返回错误；v2.9 起 <code>SetSheetName</code> 区分大小写。</li><li><strong>临时目录不可写</strong>：StreamWriter 超过 16MB 会溢写到 <code>os.TempDir()</code>。容器里 <code>/tmp</code> 只读或磁盘满时会报错，v2.10 起可用 <code>excelize.Options{TmpDir: "/data/tmp"}</code> 指定。</li></ol>
+<hr>
+
+<div class="callout warning"><p><b>生产警示：</b>StreamWriter 之后再调普通 API 会报「流已关闭」；GetRows 全量读是 OOM 的头号原因。</p></div>
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>方案</th><th>优势</th><th>短板</th><th>适用边界</th></tr></thead><tbody><tr><td><strong>excelize</strong></td><td>功能最全、流式写入、公式引擎、图表/图片/透视表</td><td>API 面大、样式与坐标需手算、非并发安全</td><td>服务端生成复杂报表、模板填充、需要真 <code>.xlsx</code></td></tr><tr><td><strong>tealeg/xlsx</strong></td><td>API 简单、上手快、老项目多</td><td>维护停滞、样式/图表能力弱、无流式写入、大文件内存差</td><td>只需读写简单表格、存量代码迁移成本敏感</td></tr><tr><td><strong>encoding/csv</strong></td><td>零依赖、极快、内存可控</td><td>无格式/多 sheet/公式，Excel 打开中文易乱码（需 BOM）</td><td>数据交换、批量导入的中间格式、日志导出</td></tr><tr><td><strong>模板渲染（html/template 等）</strong></td><td>前端思维、布局灵活</td><td>产出是 HTML，Excel 打开兼容性差、公式与图表不可用</td><td>邮件内嵌表格、需要"看起来像报表"的轻量场景</td></tr><tr><td><strong>前端 SheetJS（xlsx.js）</strong></td><td>无需服务端、可离线、能解析用户本地文件</td><td>大文件阻塞主线程、样式保真度有限、Node 端内存同样吃紧</td><td>浏览器内预览/小文件导出、纯前端工具</td></tr></tbody></table></div>
+<p>选型判断可以压缩成三个问题：</p>
+<ul><li><strong>要不要"像 Excel"</strong>？要公式、图表、条件格式、多 sheet，只能上 excelize，tealeg/xlsx 和 CSV 都撑不住。</li><li><strong>数据量多大</strong>？超过 5 万行必须考虑流式；CSV 天然流式但牺牲格式。</li><li><strong>生成在哪一侧</strong>？服务端生成便于审计、复用模板、控制权限；前端 SheetJS 适合即时导出，但别把百万行丢给浏览器。</li></ul>
+<p>常见组合是<strong>服务端 excelize 出正式报表 + CSV 做数据交换 + 前端 SheetJS 做上传预览</strong>，边界按"是否需要格式保真"划。</p>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

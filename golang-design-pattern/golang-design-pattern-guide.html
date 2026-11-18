@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Go 设计模式 · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#c026d3; --accent-light:#fae8ff; --accent-dark:#701a75;
+    --bg:#fdf6ff; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#2a0a2e; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#701a75 0%,#c026d3 58%,#701a75 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">Go 设计模式<span class="ver">Go 1.22+</span></div>
+  <div class="sub">组合 · 接口 · 函数值</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a href="#2-能力总览">2. 能力总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-创建型从工厂到函数返回接口">3.1 创建型：从「工厂」到「函数返回接口」</a>
+  <a class="sub-link" href="#32-结构型适配器与装饰器就是包装同一个接口">3.2 结构型：适配器与装饰器就是「包装同一个接口」</a>
+  <a class="sub-link" href="#33-行为型策略-函数值责任链-中间件观察者-channel">3.3 行为型：策略 = 函数值，责任链 = 中间件，观察者 = channel</a>
+  <a class="sub-link" href="#34-go-特有的模式optionsmiddlewareerrgrouppipeline">3.4 Go 特有的模式：options、middleware、errgroup、pipeline</a>
+  <a class="sub-link" href="#35-并发模式与设计模式的区别">3.5 并发模式与设计模式的区别</a>
+  <a class="sub-link" href="#36-什么时候不该用模式">3.6 什么时候不该用模式</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-functional-options-配置-http-server">4.1 functional options 配置 HTTP server</a>
+  <a class="sub-link" href="#42-中间件链日志-恢复-超时">4.2 中间件链：日志 + 恢复 + 超时</a>
+  <a class="sub-link" href="#43-策略-工厂按渠道选择通知发送器">4.3 策略 + 工厂：按渠道选择通知发送器</a>
+  <a class="sub-link" href="#44-观察者事件总线channel-退订-非阻塞发布">4.4 观察者：事件总线（channel + 退订 + 非阻塞发布）</a>
+  <a class="sub-link" href="#45-泛型-策略可组合的-map-filter">4.5 泛型 + 策略：可组合的 Map / Filter</a>
+  <a href="#5-版本演进语言如何让模式变得多余">5. 版本演进：语言如何让模式变得多余</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+  <a class="sub-link" href="#71-模式-vs-直接写">7.1 模式 vs 直接写</a>
+  <a class="sub-link" href="#72-接口-vs-泛型">7.2 接口 vs 泛型</a>
+  <a class="sub-link" href="#73-组合-vs-继承">7.3 组合 vs 继承</a>
+  <a class="sub-link" href="#74-一页决策清单">7.4 一页决策清单</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>Go 设计模式技术指南</h1>
+<p>Go 没有继承，很多 GoF 模式失去了存在理由；真正该学的是「用接口、函数值与组合替代继承」之后，剩下的那几种形状。 参考实现：<a href="https://github.com/senghoo/golang-design-pattern">https://github.com/senghoo/golang-design-pattern</a>（GoF 23 种的 Go 版本）　|　适用 <strong>Go 1.22+</strong>（含泛型与 range-over-func）　|　许可：MIT</p>
+<p style="opacity:.8;font-size:13.5px">组合 · 接口 · 函数值</p>
+<div class="meta"><span>组合</span><span>接口</span><span>函数值</span></div>
+</div>
+<blockquote><p>Go 没有继承，很多 GoF 模式失去了存在理由；真正该学的是「用接口、函数值与组合替代继承」之后，剩下的那几种形状。 参考实现：<a href="https://github.com/senghoo/golang-design-pattern">https://github.com/senghoo/golang-design-pattern</a>（GoF 23 种的 Go 版本）　|　适用 <strong>Go 1.22+</strong>（含泛型与 range-over-func）　|　许可：MIT</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p>上游 <a href="https://github.com/senghoo/golang-design-pattern">senghoo/golang-design-pattern</a> 是《研磨设计模式》的读书笔记：23 个编号目录，每个目录几十行最小 Go 实现，MIT 协议。价值是<strong>完整</strong>，局限也是完整——把 Java 的 23 个模子逐个倒进 Go，会得到一批只有一个实现、只调用一次、只为对齐目录而存在的接口。</p>
+<p>本文不逐条翻译，而是回答三个问题：</p>
+<ol><li><strong>哪些消失了</strong>：模板方法、抽象工厂、原型、迭代器中的大部分，被函数值、嵌入、泛型、<code>range-over-func</code> 吸收，硬写只剩形式。</li><li><strong>哪些变形了</strong>：建造者变成 functional options；策略变成 <code>func</code> 类型；装饰器与责任链都变成「包装同签名函数」；观察者变成 channel 或回调表；代理变成 <code>sync.Once</code> 惰性加载。</li><li><strong>哪些必须新造</strong>：functional options、HTTP/gRPC 中间件、<code>errgroup</code> 编排、pipeline、<code>context</code> 取消树——GoF 书里没有，工程里天天用。</li></ol>
+<p>所以本文按「Go 的语言事实」重排，而不是按 GoF 分类重排。上游只作出处引用：想查某个经典模式的最小写法，去那里翻目录更快。</p>
+<hr>
+
+</section>
+<section data-anchor="2-能力总览">
+<h2 id="2-能力总览">2. 能力总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>模式</th><th>Go 中的形态</th><th>标准库 / 官方库实例</th><th>何时用</th></tr></thead><tbody><tr><td>单例</td><td><code>sync.Once</code> + 包级变量</td><td><code>http.DefaultClient</code>、<code>sql.Register</code></td><td>进程内唯一、有状态</td></tr><tr><td>简单工厂 / 工厂方法</td><td>返回接口的构造函数、<code>map[string]func()</code> 注册表</td><td><code>errors.New</code>、<code>sql.Open</code></td><td>调用方只关心行为</td></tr><tr><td>抽象工厂</td><td>一族构造函数收进接口或配置结构体</td><td><code>database/sql/driver</code></td><td>需要整族替换（DB、云 SDK）</td></tr><tr><td>建造者</td><td>functional options</td><td><code>grpc.NewServer(opts...)</code>、<code>zap.New</code></td><td>参数多、大多有默认值</td></tr><tr><td>原型</td><td>值拷贝、<code>Clone()</code></td><td><code>slices.Clone</code>、<code>maps.Clone</code></td><td>复制比重新构造便宜</td></tr><tr><td>适配器</td><td>包一层、实现目标接口</td><td><code>http.HandlerFunc</code>、<code>io.NopCloser</code></td><td>复用签名不兼容的第三方</td></tr><tr><td>装饰器</td><td>同签名函数包同签名函数</td><td><code>http.Handler</code> 中间件、<code>gzip.Writer</code></td><td>正交能力叠加</td></tr><tr><td>代理</td><td>惰性初始化包装 + 访问控制</td><td><code>singleflight.Group</code></td><td>昂贵资源、远程调用</td></tr><tr><td>外观</td><td>一个函数包住多个子系统</td><td><code>os/exec</code>、<code>log/slog</code></td><td>给复杂依赖一个稳定入口</td></tr><tr><td>组合</td><td>树形结构 + 统一接口</td><td><code>io/fs.FS</code>、<code>go/ast.Node</code></td><td>递归结构（文件树、菜单）</td></tr><tr><td>策略</td><td>函数类型，而非接口</td><td><code>slices.SortFunc</code>、<code>http.RoundTripper</code></td><td>算法运行时可变</td></tr><tr><td>责任链</td><td>中间件链</td><td><code>net/http</code> 的 handler 包装</td><td>顺序处理、可插拔环节</td></tr><tr><td>观察者</td><td>channel 广播、回调注册表</td><td><code>context</code> 取消广播、<code>signal.Notify</code></td><td>一对多、弱耦合通知</td></tr><tr><td>命令</td><td>闭包或带 <code>Do()</code> 的结构体</td><td><code>exec.Command</code>、<code>cobra.Command</code></td><td>延迟执行、可排队</td></tr><tr><td>迭代器</td><td><code>func(func(T) bool)</code></td><td><code>iter.Seq</code>、<code>maps.Keys</code></td><td>惰性遍历、大数据流</td></tr><tr><td>模板方法</td><td>固定流程函数 + 接口钩子</td><td><code>sort.Sort</code>（旧）、<code>http.Handler</code></td><td>骨架不变、单步可变</td></tr></tbody></table></div>
+<p>解释器、访问者、桥接、享元、备忘录、中介者不在表里：不是 Go 不能写，而是业务代码里出现频率低到不值得默认掌握。真遇到 AST 求值或编辑器撤销栈时再回上游查。</p>
+<hr>
+
+<div class="features">
+  <div class="feature"><div class="fh"><h4>组合优于继承</h4></div><p>嵌入提供能力复用，不提供 is-a 关系</p></div>
+  <div class="feature"><div class="fh"><h4>函数是一等公民</h4></div><p>策略、命令、回调都可以是 func 类型</p></div>
+  <div class="feature"><div class="fh"><h4>标准库就是模式库</h4></div><p>io.Reader、http.Handler、sort.Interface、sync.Pool</p></div>
+</div>
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-创建型从工厂到函数返回接口">3.1 创建型：从「工厂」到「函数返回接口」</h3>
+<p><strong>模式</strong>：工厂方法把 <code>new</code> 藏起来，抽象工厂保证产品族一致，建造者解决参数爆炸，单例保证唯一。<strong>Go 形态</strong>：构造函数就是工厂——<code>NewX(...) *X</code>。没有类层次，就没有「工厂子类」；按名字选择时用 <code>map[string]func(Config) (T, error)</code> 注册表。建造者退化为 functional options（<code>Option func(*Config)</code>），单例退化为 <code>sync.Once</code>。</p>
+<p><strong>标准库实例</strong>：<code>errors.New</code> 是最朴素的工厂；<code>sql.Open(driver, dsn)</code> 是按名字查驱动表的抽象工厂。<strong>反例</strong>：为「以后可能换实现」写 <code>UserRepo</code> 接口 + <code>userRepo</code> 结构体 + <code>NewUserRepo</code> 三件套，而全仓库只有一个实现、一个调用点。这不是工厂，是三层转发。</p>
+<pre><code class="lang-go">type Registry struct{ data map[string]string }
+var (
+	once     sync.Once
+	registry *Registry
+)
+func GetRegistry() *Registry {
+	once.Do(func() { registry = &amp;Registry{data: map[string]string{}} })
+	return registry
+}</code></pre>
+<p>为什么不用 <code>init()</code>：无法返回错误，失败只能 <code>panic</code>；包被导入就执行，哪怕这次运行用不到；测试里无法重置或替换。<code>sync.Once</code> 把初始化推迟到首次使用，且失败可重试（把错误存下来，下次判断）。</p>
+<p>构造函数返回什么，是最容易被滥用的决策：<strong>默认返回具体类型</strong>，调用方能用全部方法，日后加方法不破坏兼容；只有确实想让调用方只看见行为、或实现必须藏在包内时，才返回接口。<code>func NewMemStore() Store { return &amp;memStore{} }</code> 的代价是调用方拿不到额外能力，也无法在不改接口的前提下扩展。</p>
+<p>functional options 的形状（完整用法见 4.1）：每个选项是 <code>func(*Server)</code>，<code>NewServer</code> 先填默认值再逐个应用，因此零值永远是安全的；与 builder 相比不需要 <code>Build()</code> 终态，也不可能「忘了 Build」，代价是表达不了「A 与 B 互斥」这类约束。</p>
+<p>对象池用 <code>sync.Pool</code>，但它是<strong>临时对象复用</strong>而不是缓存：GC 随时清空，取不到就调 <code>New</code>；适合短命、可重建、分配频繁的缓冲（<code>bytes.Buffer</code>、编解码临时结构），不适合连接池、会话、任何有外部资源或需要保序的对象。放回前必须 <code>Reset</code>，否则会把上一次的数据泄漏给下一个使用者。</p>
+<h3 id="32-结构型适配器与装饰器就是包装同一个接口">3.2 结构型：适配器与装饰器就是「包装同一个接口」</h3><div class="figure">
+  <svg viewBox="0 0 880 376" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-golang-design-pattern" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c026d3"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#701a75">GoF 在 Go 里的三种命运</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">一半模式失去存在理由，一半换了形状</text>
+    <rect x="90" y="84" width="700" height="52" rx="10" fill="#fae8ff" stroke="#c026d3" stroke-width="1.5"/>
+    <circle cx="122" cy="110" r="14" fill="#c026d3"/>
+    <text x="122" y="110" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">1</text>
+    <text x="150" y="110" dominant-baseline="central" font-size="13" fill="#701a75">原样保留：functional options、对象池、责任链（中间件）</text>
+    <line x1="440" y1="138" x2="440" y2="154" stroke="#c026d3" stroke-width="2" marker-end="url(#m-golang-design-pattern)"/>
+    <rect x="90" y="158" width="700" height="52" rx="10" fill="#fae8ff" stroke="#c026d3" stroke-width="1.5"/>
+    <circle cx="122" cy="184" r="14" fill="#c026d3"/>
+    <text x="122" y="184" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">2</text>
+    <text x="150" y="184" dominant-baseline="central" font-size="13" fill="#701a75">变形：策略 = 函数值，观察者 = channel，模板方法 = 接口 + 组合</text>
+    <line x1="440" y1="212" x2="440" y2="228" stroke="#c026d3" stroke-width="2" marker-end="url(#m-golang-design-pattern)"/>
+    <rect x="90" y="232" width="700" height="52" rx="10" fill="#fae8ff" stroke="#c026d3" stroke-width="1.5"/>
+    <circle cx="122" cy="258" r="14" fill="#c026d3"/>
+    <text x="122" y="258" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#ffffff">3</text>
+    <text x="150" y="258" dominant-baseline="central" font-size="13" fill="#701a75">消失：单例（sync.Once）、工厂（函数返回接口）、继承体系（嵌入 + 组合）</text>
+    <rect x="40" y="300" width="800" height="54" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="324" font-size="12.5" fill="#1e293b">隐式接口与函数值让「为抽象而抽象」的成本变高，组合与并发模式才是日常。</text>
+  </svg>
+  <figcaption>GoF 在 Go 里的三种命运</figcaption>
+</div>
+<p><strong>模式</strong>：适配器改变接口，装饰器保持接口并叠加行为，代理保持接口并控制访问，外观简化一组接口，组合把树当叶子用。<strong>Go 形态</strong>：前四者都归结为一个动作——写一个结构体，字段里持有同签名的东西，方法里转发并加料。没有抽象类，包装就是组合；接口是隐式的，实现目标接口不需要声明。</p>
+<p><strong>标准库实例</strong>：<code>io.Reader</code> 生态（<code>bufio.Reader</code>、<code>gzip.Reader</code>、<code>io.TeeReader</code>、<code>io.LimitReader</code>）是装饰器教科书，<code>io.Writer</code> 侧有 <code>bufio.Writer</code>、<code>gzip.Writer</code>、<code>io.MultiWriter</code>；<code>http.Handler</code> 中间件同理。<strong>反例</strong>：为一个 <code>io.Reader</code> 包装器定义 <code>ReaderDecorator</code>、<code>ReaderDecoratorFactory</code>、<code>AbstractReaderDecorator</code> 三个类型，而实际只包了 <code>bufio</code>。</p>
+<pre><code class="lang-go">type countingReader struct {
+	r io.Reader
+	n int64
+}
+func (c *countingReader) Read(p []byte) (int, error) {
+	n, err := c.r.Read(p)
+	c.n += int64(n)
+	return n, err
+}
+func CountBytes(r io.Reader) (io.Reader, *int64) {
+	cr := &amp;countingReader{r: r}
+	return cr, &amp;cr.n
+}</code></pre>
+<p><code>http.Handler</code> 中间件完全同构，只是方法叫 <code>ServeHTTP</code>（完整链见 4.2）。「保持签名、包一层」便宜到不需要命名模式，真正要想清楚的是<strong>顺序</strong>：日志在恢复之内还是之外、超时包住整条链还是只包业务。顺序错了，观测数据就会骗人。</p>
+<p><code>sort.Interface</code> 是把比较抽成接口的旧写法：三个方法 <code>Len</code>/<code>Less</code>/<code>Swap</code>，为每种排序维度定义一个类型。Go 1.21 后应直接写 <code>slices.SortFunc(files, func(a, b File) int { return cmp.Compare(a.Size, b.Size) })</code>——接口消失，只剩函数值。</p>
+<p>嵌入（embedding）常被当作继承用，但它只是<strong>字段提升</strong>：<code>type User struct { Base; Name string }</code> 会让 <code>User</code> 拥有 <code>Base</code> 的 <code>Describe()</code>，但 <code>Base</code> 里的代码永远不知道 <code>User</code> 的存在——没有虚函数分发，<code>Base</code> 调不到 <code>User</code> 的「覆盖」版本。要可变行为，只能用接口注入钩子，或在 <code>User</code> 上重写同名方法（那是遮蔽，不是覆盖）。</p>
+<p>代理在 Go 里通常是惰性加载：结构体持有 <code>sync.Once</code>、路径与结果，<code>Get()</code> 首次调用时加载，之后直接返回缓存（含错误）。外观是<strong>多对一</strong>（把 DB、缓存、日志收进一个 <code>Service</code>），代理是<strong>一对一</strong>（在同一接口前后加控制）；外观不实现被包者的接口，代理实现。</p>
+<h3 id="33-行为型策略-函数值责任链-中间件观察者-channel">3.3 行为型：策略 = 函数值，责任链 = 中间件，观察者 = channel</h3>
+<p><strong>模式</strong>：策略把算法抽成对象；责任链把处理者串成链；观察者维护订阅表并广播；模板方法把骨架放父类；命令把请求封装成对象。<strong>Go 形态</strong>：策略用函数类型（无状态）或单方法接口（有状态）；责任链就是中间件；观察者用 channel 或回调注册表；模板方法退化为「普通函数 + 接口参数」；命令用闭包。</p>
+<p><strong>标准库实例</strong>：<code>slices.SortFunc</code> 是策略；<code>http.Handler</code> 链是责任链；<code>context.Done()</code> 是取消广播；<code>signal.Notify</code> 是观察者。<strong>反例</strong>：五个策略各写一个 interface + 一个 struct，而每个 <code>Do()</code> 只有一行、没有字段。此时接口只是给函数加了四行样板。</p>
+<pre><code class="lang-go">type PricingFunc func(amount int64) int64
+func NoDiscount(amount int64) int64 { return amount }
+func PercentOff(pct int64) PricingFunc {
+	return func(amount int64) int64 { return amount * (100 - pct) / 100 }
+}
+type Checkout struct{ price PricingFunc }
+func (c *Checkout) Total(amount int64) int64 {
+	if c.price == nil {
+		return NoDiscount(amount)
+	}
+	return c.price(amount)
+}</code></pre>
+<p>只有当策略需要配置以外的状态（连接、计数器、缓存）时，才升级成 <code>interface{ Apply(int64) int64 }</code>——此时结构体字段就是那个状态。</p>
+<p>责任链与中间件是同一个东西：<code>Chain(h, A, B)</code> 等价于 <code>A(B(h))</code>，倒序应用，请求先过 A。没有处理者类，也没有 <code>SetNext</code>；链就是嵌套的闭包，环节就是 <code>func(http.Handler) http.Handler</code>。写反不会报错，只会让「最外层」变成「最内层」。</p>
+<p>观察者用 channel 时，必须决定<strong>发布方是否阻塞</strong>：无缓冲 channel + 阻塞发送，会把一次发布变成「等所有订阅者消费完」，一个卡住的消费者能拖垮整个服务；正确做法是带缓冲 + <code>select/default</code>，把丢弃数记进指标。fan-out 时每个订阅者一条 goroutine，退订要能终止它，完整实现见 4.4。</p>
+<p>模板方法在 Go 里没有父类，只剩「接口 + 组合」：固定流程函数接收一个接口参数，<code>func Import(src io.Reader, p Parser) (int, error)</code> 里 <code>Import</code> 是骨架，<code>Parser.Parse</code> 是可变步骤；不需要 <code>AbstractImporter</code>，因为复用流程靠函数调用，不靠继承。命令用闭包同理：<code>type Command func(ctx context.Context) error</code>，队列只需 <code>[]Command</code> 和 <code>for</code> 循环；需要撤销时才升级成带 <code>Do</code>/<code>Undo</code> 的结构体。</p>
+<h3 id="34-go-特有的模式optionsmiddlewareerrgrouppipeline">3.4 Go 特有的模式：options、middleware、errgroup、pipeline</h3>
+<p><strong>模式</strong>：这四个不在 GoF 里，却是 Go 代码里出现频率最高的结构。共同点是<strong>用语言原语替代类型层次</strong>：函数值、接口、goroutine、channel。<strong>Go 形态</strong>：options 是 <code>func(*Config)</code> 变参；middleware 在 HTTP 是 <code>func(http.Handler) http.Handler</code>，在 gRPC 是 <code>grpc.UnaryServerInterceptor</code>；<code>errgroup</code> 是 <code>WaitGroup</code> + 错误传播 + 取消；pipeline 是 channel 串阶段 + <code>close</code> 传播结束。</p>
+<p><strong>标准库实例</strong>：<code>http.Handler</code>、<code>grpc.UnaryServerInterceptor</code>、<code>golang.org/x/sync/errgroup</code>、<code>context</code>。<strong>反例</strong>：自己写 <code>TaskGroup</code>，内部 <code>WaitGroup</code> + <code>error</code> 切片 + 手写取消，行为和 <code>errgroup</code> 一样，却少了「第一个错误取消其余」的语义。</p>
+<pre><code class="lang-go">func FetchAll(ctx context.Context, urls []string) ([]string, error) {
+	g, ctx := errgroup.WithContext(ctx)
+	results := make([]string, len(urls))
+	for i, u := range urls {
+		g.Go(func() error {
+			body, err := fetch(ctx, u) // fetch 为项目内的抓取函数
+			if err != nil {
+				return fmt.Errorf("fetch %s: %w", u, err)
+			}
+			results[i] = body
+			return nil
+		})
+	}
+	if err := g.Wait(); err != nil {
+		return nil, err
+	}
+	return results, nil
+}</code></pre>
+<p>Go 1.22 起循环变量每轮独立，<code>i</code>、<code>u</code> 可直接在闭包里用；1.21 及以前必须 <code>i, u := i, u</code>。写不同下标是安全的，但<strong>读 <code>results</code> 之前必须 <code>Wait</code></strong>。</p>
+<p>pipeline 的每个阶段都要能被取消，否则上游退出后下游会永久阻塞：</p>
+<pre><code class="lang-go">func gen(ctx context.Context, nums ...int) &lt;-chan int {
+	out := make(chan int)
+	go func() {
+		defer close(out)
+		for _, n := range nums {
+			select {
+			case out &lt;- n:
+			case &lt;-ctx.Done():
+				return
+			}
+		}
+	}()
+	return out
+}</code></pre>
+<p><code>square(in &lt;-chan int) &lt;-chan int</code> 的结构完全相同，只把 <code>n</code> 换成 <code>n*n</code>；最后 <code>for v := range square(ctx, gen(ctx, 1, 2, 3))</code> 消费。<code>context</code> 本身也是一种模式：<strong>取消树</strong>。每个请求派生一个 <code>ctx</code>，下游共享；客户端断开或超时，整棵树同时收到信号——比任何「观察者 + 生命周期管理器」都可靠，因为运行时和标准库共同保证。</p>
+<h3 id="35-并发模式与设计模式的区别">3.5 并发模式与设计模式的区别</h3>
+<p><strong>模式</strong>：设计模式解决「代码怎么组织」，并发模式解决「多个执行流怎么协作」。前者是静态结构，后者是时序契约。<strong>Go 形态</strong>：worker pool、fan-in/fan-out、pipeline、超时与取消；通常<strong>不需要接口</strong>，只需要 channel 和 <code>context</code>。</p>
+<p><strong>标准库实例</strong>：<code>net/http</code> 的每连接 goroutine、<code>errgroup</code> 的扇出、<code>runtime/pprof</code> 的采样。<strong>反例</strong>：把 worker pool 写成 <code>WorkerPoolFactory</code> + <code>AbstractWorker</code> + <code>TaskQueue</code>，然后在 <code>Start()</code> 里 <code>go func()</code>——抽象层没解决任何时序问题，只增加了阅读距离。</p>
+<p>worker pool 的骨架只有三行：<code>for i := 0; i &lt; n; i++ { go worker() }</code>、<code>wg.Wait()</code>、每个 worker 里一个 <code>select</code> 监听 <code>ctx.Done()</code>。没有任何接口，因为要解决的问题是「谁在什么时候退出」，不是「谁替换谁」。</p>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>设计模式</th><th>并发模式</th></tr></thead><tbody><tr><td>解决的问题</td><td>依赖方向、替换、复用</td><td>顺序、取消、背压、竞态</td></tr><tr><td>失效表现</td><td>改一处要改很多文件</td><td>偶发死锁、数据竞争、goroutine 泄漏</td></tr><tr><td>验证方式</td><td>code review、依赖图</td><td><code>-race</code>、压力测试、超时注入</td></tr><tr><td>常见错误</td><td>过度抽象</td><td>忘记 <code>close</code>、无缓冲阻塞、丢 <code>ctx</code></td></tr></tbody></table></div>
+<p>一句话：<strong>并发模式解决时序，设计模式解决结构</strong>。混为一谈的典型产物是「用接口包了一个 <code>go func()</code>」，既没有抽象收益，也说不清谁负责关闭 channel。</p>
+<h3 id="36-什么时候不该用模式">3.6 什么时候不该用模式</h3>
+<p><strong>模式</strong>：模式是对反复出现的结构性问题的命名。没有问题，就没有模式。<strong>Go 形态</strong>：「不该用」的信号很具体——接口只有一个实现且没有测试替身需求；抽象层只是转发（<code>Service.Create</code> → <code>Repo.Create</code> → <code>DAO.Create</code>，三层都没逻辑）；为「未来可能换存储」预留扩展点，而路线图上没有这件事；工厂只 <code>return &amp;impl{}</code>，没有选择逻辑；用 <code>any</code> 做「通用」参数，调用方每次都要断言。</p>
+<p><strong>标准库实例</strong>：<code>net/http.Handler</code> 只有一个方法却值得存在——因为它有大量实现和中间件生态。这说明接口的正当性来自<strong>多实现或边界</strong>，不是「看起来解耦」。<strong>反例</strong>：全仓库只有一个 <code>userRepo</code>、只有一处调用，却定义了 <code>UserRepo</code> 接口。它唯一的作用是让 IDE 的「跳转定义」多跳一次。</p>
+<p>Go 的隐式接口意味着：<strong>等真需要第二个实现时再抽，成本是零</strong>；提前抽，成本是永久的间接层。它也更危险——任何类型只要方法凑巧相同就满足接口，重构时可能悄悄绑错实现，所以接口应尽量小、尽量定义在使用方。YAGNI 在这里格外适用：加方法，所有实现编译期报错；改签名，<code>go build</code> 全量指出。语言已经做了静态检查，不需要用抽象层再买一份保险。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-functional-options-配置-http-server">4.1 functional options 配置 HTTP server</h3>
+<p>默认值先填，再应用 options；顺序反了，未传的选项会变成危险的零值（<code>ReadHeaderTimeout=0</code> 表示不超时）。</p>
+<pre><code class="lang-go">package main
+import (
+	"fmt"
+	"log"
+	"net/http"
+	"time"
+)
+type Option func(*http.Server)
+func WithAddr(a string) Option { return func(s *http.Server) { s.Addr = a } }
+func WithTimeout(d time.Duration) Option {
+	return func(s *http.Server) { s.ReadHeaderTimeout, s.WriteTimeout = d, d }
+}
+func NewServer(h http.Handler, opts ...Option) *http.Server {
+	s := &amp;http.Server{Addr: ":8080", Handler: h, ReadHeaderTimeout: 5 * time.Second}
+	for _, opt := range opts { opt(s) }
+	return s
+}
+func main() {
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "ok")
+	})
+	srv := NewServer(mux, WithAddr(":9090"), WithTimeout(3*time.Second))
+	log.Printf("listening on %s", srv.Addr)
+	log.Fatal(srv.ListenAndServe())
+}</code></pre>
+<h3 id="42-中间件链日志-恢复-超时">4.2 中间件链：日志 + 恢复 + 超时</h3>
+<p>三个关注点各自独立，组合顺序决定语义：<code>Recover</code> 必须在最外层，才能兜住后面所有 panic。</p>
+<pre><code class="lang-go">package main
+import (
+	"context"
+	"log/slog"
+	"net/http"
+	"time"
+)
+type Middleware func(http.Handler) http.Handler
+func Chain(h http.Handler, mws ...Middleware) http.Handler {
+	for i := len(mws) - 1; i &gt;= 0; i-- { h = mws[i](h) }
+	return h
+}
+func Logging(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		next.ServeHTTP(w, r)
+		slog.Info("req", "path", r.URL.Path, "cost", time.Since(start))
+	})
+}
+func Recover(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if v := recover(); v != nil { http.Error(w, "internal error", 500) }
+		}()
+		next.ServeHTTP(w, r)
+	})
+}
+func Timeout(d time.Duration) Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx, cancel := context.WithTimeout(r.Context(), d)
+			defer cancel()
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+}
+func main() {
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("ok")) })
+	http.Handle("/", Chain(h, Recover, Logging, Timeout(time.Second)))
+	http.ListenAndServe(":8080", nil)
+}</code></pre>
+<p><code>Timeout</code> 只设置 <code>ctx</code> 截止时间，<strong>不会</strong>自动中断 handler：handler 必须把 <code>ctx</code> 传给下游，或在长循环里检查 <code>ctx.Err()</code>。要硬中断，得配合 <code>http.TimeoutHandler</code> 或 <code>ResponseController</code>。</p>
+<h3 id="43-策略-工厂按渠道选择通知发送器">4.3 策略 + 工厂：按渠道选择通知发送器</h3>
+<p>渠道到实现的映射在启动时注册，运行时不加锁；新增渠道只加一行 <code>Register</code>。</p>
+<pre><code class="lang-go">package main
+import (
+	"context"
+	"errors"
+	"fmt"
+)
+type Notifier interface {
+	Notify(ctx context.Context, to, msg string) error
+}
+type FuncNotifier func(ctx context.Context, to, msg string) error
+func (f FuncNotifier) Notify(ctx context.Context, to, msg string) error { return f(ctx, to, msg) }
+var registry = map[string]Notifier{}
+func Register(channel string, n Notifier) { registry[channel] = n }
+func Send(ctx context.Context, channel, to, msg string) error {
+	n, ok := registry[channel]
+	if !ok {
+		return fmt.Errorf("unknown channel %q", channel)
+	}
+	return n.Notify(ctx, to, msg)
+}
+func main() {
+	Register("sms", FuncNotifier(func(ctx context.Context, to, msg string) error {
+		fmt.Println("sms", to, msg)
+		return nil
+	}))
+	Register("email", FuncNotifier(func(ctx context.Context, to, msg string) error {
+		if to == "" {
+			return errors.New("empty recipient")
+		}
+		fmt.Println("email", to, msg)
+		return nil
+	}))
+	_ = Send(context.Background(), "sms", "138****0000", "hello")
+}</code></pre>
+<p><code>FuncNotifier</code> 是「函数 → 接口」的适配器，标准库同款是 <code>http.HandlerFunc</code>。注册表只在 <code>main</code> 初始化阶段写，所以省掉 mutex；若运行时要动态注册，必须加 <code>sync.RWMutex</code>。</p>
+<h3 id="44-观察者事件总线channel-退订-非阻塞发布">4.4 观察者：事件总线（channel + 退订 + 非阻塞发布）</h3>
+<p>订阅返回只读 channel 和幂等取消函数；发布用 <code>select/default</code> 丢弃慢订阅者的事件，而不是阻塞。</p>
+<pre><code class="lang-go">package main
+import (
+	"fmt"
+	"sync"
+)
+type Event struct{ Topic, Payload string }
+type Bus struct {
+	mu     sync.RWMutex
+	subs   map[int]chan Event
+	nextID int
+}
+func NewBus() *Bus { return &amp;Bus{subs: map[int]chan Event{}} }
+func (b *Bus) Subscribe(buf int) (&lt;-chan Event, func()) {
+	b.mu.Lock()
+	id := b.nextID
+	b.nextID++
+	ch := make(chan Event, buf)
+	b.subs[id] = ch
+	b.mu.Unlock()
+	var once sync.Once
+	return ch, func() {
+		once.Do(func() {
+			b.mu.Lock()
+			delete(b.subs, id)
+			close(ch)
+			b.mu.Unlock()
+		})
+	}
+}
+func (b *Bus) Publish(e Event) (dropped int) {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+	for _, ch := range b.subs {
+		select {
+		case ch &lt;- e:
+		default:
+			dropped++
+		}
+	}
+	return dropped
+}
+func main() {
+	bus := NewBus()
+	ch, cancel := bus.Subscribe(2)
+	defer cancel()
+	go func() {
+		for e := range ch {
+			fmt.Println(e.Topic, e.Payload)
+		}
+	}()
+	for i := 0; i &lt; 5; i++ {
+		bus.Publish(Event{"order.paid", fmt.Sprint(i)})
+	}
+}</code></pre>
+<p>三个细节：<code>close(ch)</code> 必须在持写锁时做，否则可能与正在发送的 <code>Publish</code>（持读锁）撞上，触发 <code>send on closed channel</code>；取消函数用 <code>sync.Once</code> 保证重复调用安全；<code>dropped</code> 是背压信号，应打进指标而不是静默丢弃。</p>
+<h3 id="45-泛型-策略可组合的-map-filter">4.5 泛型 + 策略：可组合的 Map / Filter</h3>
+<p>「遍历方式」固定，「单步逻辑」作为函数值传入，泛型负责类型安全。</p>
+<pre><code class="lang-go">package main
+import "fmt"
+func Map[T, U any](xs []T, f func(T) U) []U {
+	out := make([]U, 0, len(xs))
+	for _, x := range xs {
+		out = append(out, f(x))
+	}
+	return out
+}
+func Filter[T any](xs []T, keep func(T) bool) []T {
+	out := make([]T, 0, len(xs))
+	for _, x := range xs {
+		if keep(x) {
+			out = append(out, x)
+		}
+	}
+	return out
+}
+type User struct {
+	Name string
+	Age  int
+}
+func main() {
+	users := []User{{"alice", 17}, {"bob", 23}, {"carol", 31}}
+	adults := Filter(users, func(u User) bool { return u.Age &gt;= 18 })
+	fmt.Println(Map(adults, func(u User) string { return u.Name }))
+}</code></pre>
+<p>不要在业务代码里为每个类型重造这套工具：标准库已有 <code>slices</code>、<code>maps</code>。这里的价值是演示「泛型替代了容器型模式」——<code>Iterator</code>、<code>Composite</code>、<code>Flyweight</code> 的大部分需求被 <code>Map/Filter</code> 加 <code>slices</code> 吃掉了。</p>
+<hr>
+
+<div class="callout info"><p><b>实战要点：</b>先写直白代码，重复三次再抽象；只有一个实现的接口不是抽象，是负担。</p></div>
+</section>
+<section data-anchor="5-版本演进语言如何让模式变得多余">
+<h2 id="5-版本演进语言如何让模式变得多余">5. 版本演进：语言如何让模式变得多余<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>变化</th><th>被削弱的模式</th></tr></thead><tbody><tr><td>Go 1.13</td><td><code>errors.Is</code> / <code>errors.As</code> / <code>%w</code></td><td>错误码枚举、类型断言链</td></tr><tr><td>Go 1.16</td><td><code>//go:embed</code></td><td>资源加载工厂、<code>Asset()</code> 抽象</td></tr><tr><td>Go 1.18</td><td>类型参数</td><td>容器型模式：<code>Iterator</code>、<code>Flyweight</code></td></tr><tr><td>Go 1.21</td><td><code>slices</code> / <code>maps</code> / <code>cmp</code>、内置 <code>min</code>/<code>max</code></td><td><code>sort.Interface</code> 策略、手写查找工具</td></tr><tr><td>Go 1.22</td><td>循环变量每轮独立、路由增强</td><td>「防御性复制」闭包惯用法</td></tr><tr><td>Go 1.23</td><td>range-over-func 正式（1.22 为实验）</td><td><code>Iterator</code> 模式彻底函数化</td></tr></tbody></table></div>
+<p><code>errors</code> 的演进最典型：以前判错误类型要写 <code>switch err.(type)</code> 或自定义 <code>Is()</code>；现在哨兵错误 + <code>errors.Is</code> 就是标准做法，包装链由 <code>%w</code> 维护。<code>sort.Interface</code> 的三个方法则被一行函数值取代：<code>slices.SortFunc(files, func(a, b File) int { return cmp.Compare(a.Size, b.Size) })</code>。</p>
+<p>迭代器从「带 <code>Next()</code>/<code>Value()</code> 的结构体」变成一次函数调用：</p>
+<pre><code class="lang-go">func Backward[T any](xs []T) func(func(T) bool) {
+	return func(yield func(T) bool) {
+		for i := len(xs) - 1; i &gt;= 0; i-- {
+			if !yield(xs[i]) {
+				return
+			}
+		}
+	}
+}</code></pre>
+<p>消费端就是 <code>for v := range Backward(xs) { ... }</code>。range 版本在 Go 1.23+ 可编译，1.22 需要 <code>GOEXPERIMENT=rangefunc</code>。意义不只是语法糖：<code>yield</code> 返回 <code>false</code> 时立即停止，<code>break</code> 能正确传播，不需要 <code>Stop()</code>，也不需要调用方记得关闭。<code>embed</code> 则让「模板方法 + 资源子类」消失：以前要 <code>SchemaProvider</code> 接口、<code>fileSchema</code> 实现、测试替身，现在只要 <code>//go:embed schema.sql</code> 加一个 <code>var schema string</code>。</p>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>为单一实现造接口</strong>。接口的正当性来自多实现、测试替身或包边界，不来自「解耦」这个词。等需要时再抽，成本为零。</li><li><strong>接口污染</strong>：参数写 <code>any</code>，函数体第一行就是类型断言。这是把静态语言当动态语言用，调用方失去编译期检查。</li><li><strong>在 <code>init()</code> 里做单例</strong>。无法返回错误、无法重置、包被导入就执行。用 <code>sync.Once</code> + 显式 <code>New</code>，测试才能替换。</li><li><strong>用 embedding 模拟继承</strong>。嵌入只提升字段与方法，没有虚函数分发；<code>Base</code> 调不到 <code>Child</code> 的「覆盖」版本。要多样态就传接口。</li><li><strong>装饰器顺序写反</strong>。<code>Chain(h, A, B)</code> 得到 <code>A(B(h))</code>，A 在最外层。日志包在恢复外面，panic 时就没有访问日志；超时包在最里面，就管不到前面的中间件。</li><li><strong>channel 版观察者用无缓冲 channel</strong>。发布方会被最慢的订阅者拖住，一个卡死的消费者能让服务雪崩。用缓冲 + <code>select/default</code>，并统计丢弃数。</li><li><strong>忘记 <code>close</code> 或重复 <code>close</code></strong>。发送方负责关闭，接收方永不关闭；多发送方时用 <code>sync.Once</code> 或额外的协调 goroutine。</li><li><strong>泛型滥用</strong>。约束比实现还长、推导不出类型参数、每个调用都要显式写 <code>[T, U]</code>——此时接口或代码生成更简单。泛型适合容器与算法，不适合「让函数看起来通用」。</li><li><strong>把模式名写进函数名</strong>。<code>BuildUserRepositoryFactory</code>、<code>ExecuteNotificationStrategy</code> 让读者先查模式再看代码。名字应描述<strong>做什么</strong>，不是<strong>用了什么招</strong>。</li><li><strong>对象池当缓存用</strong>。<code>sync.Pool</code> 会被 GC 清空，不能存连接、会话、任何需要保序或有外部资源的对象。</li><li><strong>工厂里藏 I/O</strong>。<code>NewClient()</code> 里发网络请求、读配置，导致构造函数可能失败却只返回一个值。构造只做内存初始化，I/O 放到显式 <code>Start</code>/<code>Connect</code>。</li><li><strong>用 <code>Option</code> 传必填参数</strong>。必填项应是位置参数：<code>NewServer(h http.Handler, opts ...Option)</code>；全塞进 options 会让「忘了传」变成运行时零值错误。</li><li><strong>在库代码里 <code>panic</code></strong>。库的边界应返回 <code>error</code>；<code>panic</code> 只用于状态不可恢复，且必须在服务边界（中间件）统一 recover。</li><li><strong>抽象层没有第二个实现，也没有测试</strong>。判断标准：删掉这层，代码是否只变短不变难？如果是，删掉。</li></ol>
+<p>元规则：<strong>先写三遍重复代码，再抽模式</strong>。第一次写直白版本，第二次复制，第三次看清变化点后再抽象。Go 的重构成本低（编译期全量检查），过早抽象的成本却很高（间接层永久存在）。</p>
+<hr>
+
+<div class="callout warning"><p><b>生产警示：</b>为未来预留扩展点、接口污染、把模式名写进函数名——读者要先查模式再看代码。</p></div>
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<h3 id="71-模式-vs-直接写">7.1 模式 vs 直接写</h3>
+<div class="table-wrap"><table><thead><tr><th>场景</th><th>直接写</th><th>引入模式</th><th>建议</th></tr></thead><tbody><tr><td>一个实现、一个调用点</td><td>结构体 + 方法</td><td>接口 + 工厂 + DI</td><td>直接写</td></tr><tr><td>两个实现，运行时切换</td><td><code>if/switch</code></td><td>策略接口</td><td>先 <code>switch</code>，分支超 5 个再抽</td></tr><tr><td>参数 3 个以内</td><td>位置参数</td><td>functional options</td><td>位置参数</td></tr><tr><td>参数 8 个、多数有默认值</td><td>配置结构体</td><td>functional options</td><td>options 或配置结构体</td></tr><tr><td>给已有类型加行为</td><td>改原类型</td><td>装饰器包装</td><td>第三方类型才包装</td></tr></tbody></table></div>
+<p>判断句式：<strong>「如果删掉这层，会发生什么？」</strong> 答案是「少几个文件」→ 删；是「测试要连真实 DB」或「要支持第二种实现」→ 留。</p>
+<h3 id="72-接口-vs-泛型">7.2 接口 vs 泛型</h3>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>接口</th><th>泛型</th></tr></thead><tbody><tr><td>多态时机</td><td>运行时（动态分发）</td><td>编译期（单态化/字典）</td></tr><tr><td>适合</td><td>行为抽象、异构集合、插件边界</td><td>容器、算法、类型关系固定</td></tr><tr><td>性能</td><td>一次间接调用，可能装箱</td><td>无装箱，可能代码膨胀</td></tr><tr><td>可读性</td><td>调用方只看方法集</td><td>约束复杂时骤降</td></tr></tbody></table></div>
+<p>规则：<strong>行为用接口，数据用泛型</strong>。<code>io.Reader</code> 是行为，<code>Map[T, U]</code> 是数据变换。不要用泛型模拟「可插拔实现」，也不要用接口存「任意类型的切片」。</p>
+<h3 id="73-组合-vs-继承">7.3 组合 vs 继承</h3>
+<p>Go 没有继承，只有两种复用：<strong>嵌入（字段与方法提升）</strong> 和 <strong>持有字段（显式转发）</strong>。</p>
+<div class="table-wrap"><table><thead><tr><th>方式</th><th>语义</th><th>风险</th></tr></thead><tbody><tr><td>嵌入</td><td>「是一个」的语法错觉，方法集被提升</td><td>误以为有虚函数分发；导出方法意外泄漏</td></tr><tr><td>持有 + 转发</td><td>「有一个」，接口边界清晰</td><td>样板代码略多</td></tr><tr><td>接口注入</td><td>「依赖一个行为」，可替换</td><td>接口过多时调用链变长</td></tr></tbody></table></div>
+<p>实践：<strong>默认持有</strong>；需要复用一整组方法且确实想暴露时才嵌入；需要多态时永远用接口，不要用嵌入 + 同名方法模拟 override。</p>
+<h3 id="74-一页决策清单">7.4 一页决策清单</h3>
+<ol><li>只有一种实现 → 不抽接口。</li><li>需要替换 → 抽接口，且定义在<strong>使用方</strong>的包（consumer-defined interface）。</li><li>参数多且有默认值 → functional options。</li><li>要按名字选实现 → <code>map[string]func(...)</code> 注册表，启动时注册。</li><li>要叠加正交行为 → 同签名包装（middleware / decorator）。</li><li>要一对多通知 → channel + 缓冲 + 非阻塞发送，或回调注册表。</li><li>要并发扇出 → <code>errgroup</code>，不要自己拼 <code>WaitGroup</code> + 错误切片。</li><li>要遍历大数据 → <code>iter.Seq</code> / range-over-func，不要造 <code>Iterator</code> 接口。</li></ol>
+<p>设计模式在 Go 里的正确用法，不是把 23 种背下来，而是知道<strong>哪些形状已经被语言吸收</strong>，然后把注意力留给真正难的部分：边界划分、错误语义、并发所有权。模式名只是沟通词汇，不是设计目标。</p>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

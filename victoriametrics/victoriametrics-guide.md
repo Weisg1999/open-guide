@@ -141,6 +141,49 @@ Thanos 不改采集，外挂一组组件，组件间用 gRPC **Store API** 通�
 
 > 与 **Grafana Mimir / Cortex** 的边界：二者同属「remote write + 对象存储」家族，Mimir 主打原生多租户（**AGPLv3**，嵌入商业产品需法务评估），Cortex 是其上游前身（Apache-2.0，CNCF Incubating）。Thanos 与它们的根本区别是**是否保留每集群独立 Prometheus + block 上传路径**；VictoriaMetrics 根本区别是**不依赖对象存储**。Prometheus + 联邦只是层级聚合，三者都不提供长期归档与全局去重，不在同一能力档位。
 
+### 3.7 MetricsQL：PromQL 超集，多出来的那部分
+
+MetricsQL 的目标是「PromQL 能跑的都能跑，跑不顺的给你更好的写法」。它兼容 PromQL 的语法与函数名，但在几个地方做了实质增强：
+
+| 能力 | PromQL | MetricsQL | 用处 |
+| --- | --- | --- | --- |
+| 空结果兜底 | 需要 `or vector(0)` | `expr default 0` | 大盘上的「无数据」变成 0，不用拼伪序列 |
+| 按标签过滤另一查询 | 无直接语法 | `q1 if q2` / `q1 ifnot q2` | 用另一条查询的结果裁剪标签集，替代 `and on()` 的绕法 |
+| 合并多查询 | `or` 要求标签完全一致 | `union(q1, q2, ...)` | 同名指标来自不同 job 时合并 |
+| 保留指标名 | `rate()` 后名字丢失，需 `label_replace` | `rate(...) keep_metric_names` | 告警模板里直接用 `{{ $labels.__name__ }}` |
+| 分页 | 无 | `limit_offset(offset, limit, expr)` | 大基数标签枚举 |
+| 尖刺观测 | 只能取瞬时或区间聚合 | `rollup_rate()` / `rollup_delta()` 返回 min/max/avg | 看「这一分钟有没有尖刺」，而不是只看均值 |
+| 标签改写 | `label_replace` / `label_join` | `alias` / `label_set` / `label_del` / `label_copy` | 批量改写，语法更直观 |
+| 直方图 | `histogram_quantile` | 同函数 + `histogram_avg` / `histogram_stddev` / `buckets_limit` | 原生 histogram 的补充统计 |
+
+几个高频写法：
+
+```promql
+# 大盘上「没有请求」显示 0，而不是 No data
+sum(rate(http_requests_total[5m])) by (route) default 0
+
+# 只看生产环境：用另一条查询裁剪标签
+sum(rate(http_requests_total[5m])) by (route) if on (instance) up{env="prod"} == 1
+
+# 保留指标名，告警里直接用名字
+rate(node_cpu_seconds_total{mode="idle"}[5m]) keep_metric_names
+
+# 看 5 分钟内的尖刺，而不只是均值
+rollup_rate(http_request_duration_seconds_bucket[5m])
+
+# 分页枚举高基数标签
+limit_offset(0, 100, count by (user_id) (requests_total))
+```
+
+需要留意的语义差异：
+
+- **`rate()` / `increase()` 的外推策略不同**。Prometheus 按区间边界外推，VM 会在 counter reset 与数据缺口上做更保守的处理。同一段数据在两侧算出的值可能差几个百分点，**迁移时不要拿旧值当基线做同比**。
+- **`@` 修饰符与子查询**都支持，但 `@ start()` / `@ end()` 在 VM 的查询参数下语义以请求区间为准，Grafana 里改时间范围会连带改变结果。
+- **多租户查询要带 `extra_label` 或走 `/select/{accountID}/prometheus/api/v1/query`**。单机版没有租户概念，集群版忘了带租户 ID 会查不到数据，而不是报错。
+- **`histogram_quantile` 对原生 histogram 的支持**是 VM 的扩展；如果指标来自 Prometheus 的经典 bucket，行为与 PromQL 一致。
+
+迁移 Grafana 大盘时，绝大多数 PromQL 可以直接用；真正要改的是那些依赖「空结果就是空」的面板——VM 的 `default` 会让它们从 No data 变成 0，视觉上反而更清楚，但告警阈值要重新确认。
+
 ---
 
 ## 4. 使用实战
@@ -324,6 +367,125 @@ thanos tools bucket verify  --objstore.config-file=bucket.yml # 重叠/损坏 bl
 - tenant: default
   endpoints: [localhost:10907]
 ```
+
+### 4.6 集群扩缩容与容量规划
+
+集群版的三类节点，扩容语义完全不同，不能一起加机器：
+
+| 节点 | 是否有状态 | 扩容效果 | 注意 |
+| --- | --- | --- | --- |
+| `vminsert` | 无状态 | 提升写入吞吐，线性 | 前面挂负载均衡；`-replicationFactor` 决定副本数 |
+| `vmselect` | 无状态（有缓存） | 提升查询并发，近似线性 | 缓存命中率随实例增多下降，必要时收敛副本数 |
+| `vmstorage` | **有状态** | 提升容量与查询并行度 | 扩容后**旧数据不迁移**，新数据按一致性哈希落到新节点；查询会扇出到全部 storage |
+
+两个和「多副本」直接相关的参数：
+
+```bash
+# 写入 2 副本：同一份样本进两个 vmstorage，单节点故障不丢数据
+-replicationFactor=2
+
+# 多副本/多次抓取的去重窗口：同一 series 在窗口内的重复样本只留一份
+-dedup.minScrapeInterval=30s
+```
+
+`-dedup.minScrapeInterval` 的取值要和采集间隔对齐。设成 30s 而实际 15s 抓一次，会丢掉一半样本；设成 0（关闭）而两个 vmagent 都在抓，查询会看到双倍数值。
+
+**容量估算**（数量级判断，最终以压测为准）：
+
+```text
+磁盘 ≈ 活跃 series × (1 / 采集间隔) × 字节/样本 × 保留秒数
+内存 ≈ 活跃 series × 1~2 KB（索引 + 倒排 + 缓存，随标签基数上升）
+
+例：50 万 series，15s 间隔，保留 90 天，按 0.8 B/样本
+   samples/s = 500000 / 15 ≈ 33,333
+   磁盘 ≈ 33333 × 86400 × 90 × 0.8 ≈ 207 GB（未计副本与 WAL 余量，实际留 1.5 倍）
+```
+
+比公式更可靠的是直接读 VM 自己的指标：
+
+| 指标 | 含义 | 用途 |
+| --- | --- | --- |
+| `vm_rows_inserted_total` | 每秒写入行数 | 对照磁盘增长，验证估算 |
+| `vm_slow_queries_total` | 慢查询计数 | 调 `-search.maxQueryDuration` 或优化 PromQL |
+| `vm_cache_size_bytes` | 各类缓存占用 | 判断内存是否被缓存吃满 |
+| `vm_active_merges` / `vm_rows_merged_total` | 后台合并压力 | 合并跟不上会导致查询变慢 |
+| `vm_free_disk_space_bytes` | 剩余磁盘 | 保留期到顶前的预警 |
+
+调参优先级：先限 `-memory.allowedPercent`（默认 60），避免缓存把机器吃满触发 OOM；再限 `-search.maxQueryDuration`（默认 30s），防止一个大盘拖垮查询；最后才考虑加 `vmselect`。
+
+### 4.7 迁移：从 Prometheus / Thanos 到 VM
+
+按起点分三条路，切换方式不同，但原则一样：**先双写观察，再切读，最后下线旧组件**。
+
+**路径 A：单机 Prometheus，想换成 VM**
+
+```bash
+# 1) 起 VM，保留期与单机一致或更长
+./victoria-metrics-prod -storageDataPath=/data/vm -retentionPeriod=12
+
+# 2) Prometheus 加 remote_write，双写一段时间
+# prometheus.yml
+remote_write:
+  - url: http://vm.internal:8428/api/v1/write
+    queue_config:
+      max_samples_per_send: 10000
+
+# 3) 用 vmagent 接管采集（替代 Prometheus 的 scrape）
+# vmagent 支持磁盘缓冲，网络抖动不丢样本
+./vmagent-prod -promscrape.config=/etc/prometheus/prometheus.yml \
+  -remoteWrite.url=http://vm.internal:8428/api/v1/write \
+  -remoteWrite.tmpDataPath=/data/vmagent-buf
+
+# 4) 历史数据：先把 Prometheus 快照导出，再导入 VM
+curl -X POST http://prom.internal:9090/api/v1/admin/tsdb/snapshot
+./vmctl prometheus --prom-snapshot=/var/lib/prometheus/snapshots/<id> \
+  --vm-addr=http://vm.internal:8428
+```
+
+**路径 B：Prometheus + Thanos，想收敛成 VM**
+
+Thanos 的价值是「对象存储 + 全局查询」，VM 的价值是「本地盘 + 低查询放大」。切换时不要试图把 bucket 里的 block 全量导入——几年数据导入耗时远超收益，通常只迁最近 30–90 天，更早的留在 bucket 里只读归档。步骤：vmagent 双写 → 新数据进 VM → Grafana 数据源切到 VM → 旧 Thanos 保留只读 → 保留期到后下线。
+
+**路径 C：Mimir / Cortex，想降成本**
+
+这两者与 VM 同属「remote write 接收」，切换最平滑：把 `remote_write` 的 URL 指到 `vminsert`，观察写入与查询，确认无缺样本后切读。注意 Mimir 的 `X-Scope-OrgID` 与 VM 的租户路径（`/insert/{accountID}/...`）不是一回事，网关层要做头转换。
+
+规则也要跟着迁：Prometheus 的 `rule_files` 拆成 `vmalert` 的 `-rule` 目录（兼容 Prometheus rule YAML），`alerting` 段指向 Alertmanager 或夜莺。**Recording rules 里对 `rate()` 的依赖要在 VM 上重算基线**，原因见 3.7 的外推差异。
+
+### 4.8 备份、快照与容灾
+
+单机版没有「备份命令」，只有快照：
+
+```bash
+# 创建硬链接快照（几乎瞬时，不占额外空间）
+curl -X POST 'http://vm.internal:8428/snapshot/create'
+# 返回 {"status":"ok","snapshot":"20261118T091500Z-xxxx"}
+
+# 备份快照目录（rsync / 对象存储同步均可）
+rsync -a /data/vm/snapshots/20261118T091500Z-xxxx/ backup:/vm-snapshots/
+
+# 用完删除，否则快照会阻止旧数据被回收
+curl 'http://vm.internal:8428/snapshot/delete?snapshot=20261118T091500Z-xxxx'
+```
+
+集群版用 `vmbackup` 直接对接对象存储，靠 `vmstorage` 的 snapshot API 做一致性点：
+
+```bash
+vmbackup -storageDataPath=/vmstorage-data \
+  -snapshot.createURL=http://vmstorage-0:8482/snapshot/create \
+  -dst=s3://my-bucket/vm-backup/$(date +%Y%m%d)
+```
+
+容灾拓扑按 RTO 选：
+
+| 方案 | RTO | 成本 | 适用 |
+| --- | --- | --- | --- |
+| 单机 + 每日快照 | 小时级 | 低 | 内部监控、可容忍丢一天 |
+| `-replicationFactor=2` 跨 AZ | 分钟级（单节点故障无感） | 中（存储翻倍） | 生产默认 |
+| 双集群 + vmagent 双写 | 秒级切换 | 高 | 核心 SLO、跨region |
+| 对象存储归档 + vmrestore | 小时级 | 低 | 合规留存、冷备 |
+
+最后一条经验：**备份要演练恢复**。`vmrestore` 到一台新机器、起 `vmselect` 查一个月前的数据，比备份成功率报表更有说服力。
 
 ---
 

@@ -1585,5 +1585,286 @@
       "typ": "#67e8f9"
     },
     "intro": "版本升级不是改个 go 指令：循环变量语义、迭代器、泛型别名、工具链与运行时都在变，升级前要知道哪些会改变行为。"
+  },
+  "nightingale": {
+    "title": "Nightingale（夜莺）",
+    "ver": "v9.3.0",
+    "subtitle": "告警控制面 · 规则 · 事件",
+    "tags": [
+      "多数据源",
+      "业务组隔离",
+      "告警分片",
+      "事件管道",
+      "n9e-edge",
+      "内置 TSDB"
+    ],
+    "colors": {
+      "accent": "#4338ca",
+      "accent-light": "#e0e7ff",
+      "accent-dark": "#312e81",
+      "bg": "#f7f7ff",
+      "card": "#ffffff",
+      "border": "#e3e9f2",
+      "text": "#1e293b",
+      "muted": "#64748b",
+      "ok": "#059669",
+      "warn": "#d97706",
+      "danger": "#dc2626",
+      "code-bg": "#120f33",
+      "kw": "#93c5fd",
+      "str": "#86efac",
+      "cmt": "#64748b",
+      "num": "#fbbf24",
+      "fn": "#f472b6",
+      "typ": "#67e8f9"
+    },
+    "intro": "夜莺不采集、不存储指标，只做告警与事件中心：把已有的 Prometheus / VictoriaMetrics / ES / Loki / ClickHouse 接进来，统一规则、屏蔽、订阅与通知。"
+  },
+  "websocket": {
+    "title": "gorilla/websocket",
+    "ver": "v1.5.3",
+    "subtitle": "全双工 · 单写者 · 心跳",
+    "tags": [
+      "全双工",
+      "单写者",
+      "心跳"
+    ],
+    "colors": {
+      "accent": "#0284c7",
+      "accent-light": "#dbeafe",
+      "accent-dark": "#0c4a6e",
+      "bg": "#f5f9ff",
+      "card": "#ffffff",
+      "border": "#e3e9f2",
+      "text": "#1e293b",
+      "muted": "#64748b",
+      "ok": "#059669",
+      "warn": "#d97706",
+      "danger": "#dc2626",
+      "code-bg": "#06192e",
+      "kw": "#93c5fd",
+      "str": "#86efac",
+      "cmt": "#64748b",
+      "num": "#fbbf24",
+      "fn": "#f472b6",
+      "typ": "#67e8f9"
+    },
+    "intro": ""
+  },
+  "excelize": {
+    "title": "Excelize",
+    "ver": "v2.9",
+    "subtitle": "xlsx · 流式写入 · 共享字符串",
+    "tags": [
+      "xlsx",
+      "流式写入",
+      "共享字符串"
+    ],
+    "colors": {
+      "accent": "#15803d",
+      "accent-light": "#dcfce7",
+      "accent-dark": "#14532d",
+      "bg": "#f6fdf8",
+      "card": "#ffffff",
+      "border": "#e3e9f2",
+      "text": "#1e293b",
+      "muted": "#64748b",
+      "ok": "#059669",
+      "warn": "#d97706",
+      "danger": "#dc2626",
+      "code-bg": "#052e16",
+      "kw": "#93c5fd",
+      "str": "#86efac",
+      "cmt": "#64748b",
+      "num": "#fbbf24",
+      "fn": "#f472b6",
+      "typ": "#67e8f9"
+    },
+    "intro": ""
+  },
+  "migrate": {
+    "title": "golang-migrate",
+    "ver": "v4.20",
+    "subtitle": "版本表 · dirty · 迁移锁",
+    "tags": [
+      "版本表",
+      "dirty",
+      "迁移锁"
+    ],
+    "colors": {
+      "accent": "#0d9488",
+      "accent-light": "#ccfbf1",
+      "accent-dark": "#134e4a",
+      "bg": "#f5fdfb",
+      "card": "#ffffff",
+      "border": "#e3e9f2",
+      "text": "#1e293b",
+      "muted": "#64748b",
+      "ok": "#059669",
+      "warn": "#d97706",
+      "danger": "#dc2626",
+      "code-bg": "#042f2e",
+      "kw": "#93c5fd",
+      "str": "#86efac",
+      "cmt": "#64748b",
+      "num": "#fbbf24",
+      "fn": "#f472b6",
+      "typ": "#67e8f9"
+    },
+    "intro": ""
+  },
+  "ants": {
+    "title": "ants",
+    "ver": "v2.12",
+    "subtitle": "goroutine 池 · 背压 · 指标",
+    "tags": [
+      "goroutine 池",
+      "背压",
+      "指标"
+    ],
+    "colors": {
+      "accent": "#b45309",
+      "accent-light": "#fef3c7",
+      "accent-dark": "#78350f",
+      "bg": "#fdfaf3",
+      "card": "#ffffff",
+      "border": "#e3e9f2",
+      "text": "#1e293b",
+      "muted": "#64748b",
+      "ok": "#059669",
+      "warn": "#d97706",
+      "danger": "#dc2626",
+      "code-bg": "#2a1a05",
+      "kw": "#93c5fd",
+      "str": "#86efac",
+      "cmt": "#64748b",
+      "num": "#fbbf24",
+      "fn": "#f472b6",
+      "typ": "#67e8f9"
+    },
+    "intro": ""
+  },
+  "wire": {
+    "title": "google/wire",
+    "ver": "v0.6",
+    "subtitle": "编译期 DI · 代码生成",
+    "tags": [
+      "编译期 DI",
+      "代码生成"
+    ],
+    "colors": {
+      "accent": "#6d28d9",
+      "accent-light": "#ede9fe",
+      "accent-dark": "#4c1d95",
+      "bg": "#f8f6ff",
+      "card": "#ffffff",
+      "border": "#e3e9f2",
+      "text": "#1e293b",
+      "muted": "#64748b",
+      "ok": "#059669",
+      "warn": "#d97706",
+      "danger": "#dc2626",
+      "code-bg": "#1e0a3c",
+      "kw": "#93c5fd",
+      "str": "#86efac",
+      "cmt": "#64748b",
+      "num": "#fbbf24",
+      "fn": "#f472b6",
+      "typ": "#67e8f9"
+    },
+    "intro": ""
+  },
+  "dtm": {
+    "title": "DTM",
+    "ver": "v1.19",
+    "subtitle": "Saga · TCC · 子事务屏障",
+    "tags": [
+      "Saga",
+      "TCC",
+      "子事务屏障"
+    ],
+    "colors": {
+      "accent": "#be123c",
+      "accent-light": "#ffe4e6",
+      "accent-dark": "#881337",
+      "bg": "#fff5f6",
+      "card": "#ffffff",
+      "border": "#e3e9f2",
+      "text": "#1e293b",
+      "muted": "#64748b",
+      "ok": "#059669",
+      "warn": "#d97706",
+      "danger": "#dc2626",
+      "code-bg": "#3b0713",
+      "kw": "#93c5fd",
+      "str": "#86efac",
+      "cmt": "#64748b",
+      "num": "#fbbf24",
+      "fn": "#f472b6",
+      "typ": "#67e8f9"
+    },
+    "intro": ""
+  },
+  "watermill": {
+    "title": "Watermill",
+    "ver": "v1.5",
+    "subtitle": "消息抽象 · Router · CQRS",
+    "tags": [
+      "消息抽象",
+      "Router",
+      "CQRS"
+    ],
+    "colors": {
+      "accent": "#0369a1",
+      "accent-light": "#e0f2fe",
+      "accent-dark": "#075985",
+      "bg": "#f5faff",
+      "card": "#ffffff",
+      "border": "#e3e9f2",
+      "text": "#1e293b",
+      "muted": "#64748b",
+      "ok": "#059669",
+      "warn": "#d97706",
+      "danger": "#dc2626",
+      "code-bg": "#04212f",
+      "kw": "#93c5fd",
+      "str": "#86efac",
+      "cmt": "#64748b",
+      "num": "#fbbf24",
+      "fn": "#f472b6",
+      "typ": "#67e8f9"
+    },
+    "intro": ""
+  },
+  "golang-design-pattern": {
+    "title": "Go 设计模式",
+    "ver": "Go 1.22+",
+    "subtitle": "组合 · 接口 · 函数值",
+    "tags": [
+      "组合",
+      "接口",
+      "函数值"
+    ],
+    "colors": {
+      "accent": "#c026d3",
+      "accent-light": "#fae8ff",
+      "accent-dark": "#701a75",
+      "bg": "#fdf6ff",
+      "card": "#ffffff",
+      "border": "#e3e9f2",
+      "text": "#1e293b",
+      "muted": "#64748b",
+      "ok": "#059669",
+      "warn": "#d97706",
+      "danger": "#dc2626",
+      "code-bg": "#2a0a2e",
+      "kw": "#93c5fd",
+      "str": "#86efac",
+      "cmt": "#64748b",
+      "num": "#fbbf24",
+      "fn": "#f472b6",
+      "typ": "#67e8f9"
+    },
+    "intro": ""
   }
 }

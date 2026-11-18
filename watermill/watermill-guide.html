@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Watermill · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#0369a1; --accent-light:#e0f2fe; --accent-dark:#075985;
+    --bg:#f5faff; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#04212f; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#075985 0%,#0369a1 58%,#075985 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">Watermill<span class="ver">v1.5</span></div>
+  <div class="sub">消息抽象 · Router · CQRS</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a href="#2-能力总览">2. 能力总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-message一条消息只有四样东西">3.1 Message：一条消息只有四样东西</a>
+  <a class="sub-link" href="#32-publisher-subscriber只有三个方法">3.2 Publisher / Subscriber：只有三个方法</a>
+  <a class="sub-link" href="#33-router每个-handler-一个-goroutine">3.3 Router：每个 handler 一个 goroutine</a>
+  <a class="sub-link" href="#34-ack-时机这就是至少一次的全部秘密">3.4 ack 时机：这就是「至少一次」的全部秘密</a>
+  <a class="sub-link" href="#35-中间件链顺序就是语义">3.5 中间件链：顺序就是语义</a>
+  <a class="sub-link" href="#36-cqrs-与请求-响应">3.6 CQRS 与请求-响应</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-依赖">4.1 依赖</a>
+  <a class="sub-link" href="#42-kafka-订阅-处理-发布下游完整可运行">4.2 Kafka 订阅 → 处理 → 发布下游（完整可运行）</a>
+  <a class="sub-link" href="#43-cqrs命令总线-处理器">4.3 CQRS：命令总线 + 处理器</a>
+  <a class="sub-link" href="#44-指标几行拿到-prometheus">4.4 指标：几行拿到 Prometheus</a>
+  <a href="#5-版本演进">5. 版本演进</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>Watermill 技术指南</h1>
+<p>Watermill 把「消息从哪来、到哪去」抽象成 Publisher / Subscriber，业务只写 Handler：换 broker 不改业务代码，中间件与 CQRS 也顺手。 上游：<a href="https://github.com/ThreeDotsLabs/watermill">https://github.com/ThreeDotsLabs/watermill</a> <strong>v1.5.x（v1.5.3，2026-08；上一维护线 v1.4.7）</strong>　|　实现：Kafka / NATS / RabbitMQ / Redis Streams / SQL　|　许可：MIT</p>
+<p style="opacity:.8;font-size:13.5px">消息抽象 · Router · CQRS</p>
+<div class="meta"><span>消息抽象</span><span>Router</span><span>CQRS</span></div>
+</div>
+<blockquote><p>Watermill 把「消息从哪来、到哪去」抽象成 Publisher / Subscriber，业务只写 Handler：换 broker 不改业务代码，中间件与 CQRS 也顺手。 上游：<a href="https://github.com/ThreeDotsLabs/watermill">https://github.com/ThreeDotsLabs/watermill</a> <strong>v1.5.x（v1.5.3，2026-08；上一维护线 v1.4.7）</strong>　|　实现：Kafka / NATS / RabbitMQ / Redis Streams / SQL　|　许可：MIT</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p>Watermill 由 ThreeDotsLabs 在 2018 年开源，定位不是「又一个 MQ 客户端」，而是 <strong>Go 的消息抽象层</strong>：用一套 <code>Publisher</code> / <code>Subscriber</code> / <code>Router</code> / <code>Middleware</code> 接口把 Kafka、NATS、RabbitMQ、Redis Streams、SQL 甚至进程内 channel 统一起来。业务代码只依赖 <code>message</code> 包，换 broker 只换构造适配器那几行。</p>
+<p>类比：<strong><code>database/sql</code> 之于各种数据库驱动，就是 Watermill 之于各种 broker</strong>。它不替代 broker，也不隐藏 broker 的模型（分区、消费组、保留策略仍然存在），只是把「消费—处理—再发布—确认」这条主干流程标准化。</p>
+<p>三块能力拼起来才是完整形态：</p>
+<div class="table-wrap"><table><thead><tr><th>层</th><th>包</th><th>职责</th></tr></thead><tbody><tr><td>消息模型</td><td><code>github.com/ThreeDotsLabs/watermill/message</code></td><td><code>Message</code>、<code>Publisher</code> / <code>Subscriber</code> 接口、<code>Router</code>、<code>Handler</code></td></tr><tr><td>中间件</td><td><code>message/router/middleware</code></td><td>重试、panic 恢复、超时、关联 ID、死信、限流、熔断、去重</td></tr><tr><td>应用组件</td><td><code>components/cqrs</code>、<code>components/requestreply</code>、<code>components/metrics</code></td><td>命令/事件总线、请求-响应、Prometheus 指标</td></tr></tbody></table></div>
+<p>生态是<strong>独立 Go module</strong>：核心 <code>watermill</code>，适配器 <code>watermill-kafka/v3</code>、<code>watermill-nats/v2</code>、<code>watermill-amqp/v3</code>、<code>watermill-redisstream</code>、<code>watermill-sql/v3</code>，可以只挑一个装。</p>
+<hr>
+
+</section>
+<section data-anchor="2-能力总览">
+<h2 id="2-能力总览">2. 能力总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>组件 / 类型</th><th>说明</th></tr></thead><tbody><tr><td>统一消息模型</td><td><code>message.Message</code></td><td>UUID + Metadata + Payload + Ack/Nack，broker 无关</td></tr><tr><td>发布 / 订阅</td><td><code>message.Publisher</code> / <code>message.Subscriber</code></td><td>两个方法 + <code>Close()</code>，自己实现即可接入私有中间件</td></tr><tr><td>消费编排</td><td><code>message.Router</code></td><td>注册 handler，自动订阅、调用、ack、发布下游、优雅停止</td></tr><tr><td>中间件</td><td><code>router/middleware</code></td><td>Recoverer / Retry / Timeout / CorrelationID / PoisonQueue / Throttle / CircuitBreaker / Deduplicator</td></tr><tr><td>命令总线</td><td><code>cqrs.CommandBus</code></td><td>一个命令一个处理者，点对点语义</td></tr><tr><td>事件总线</td><td><code>cqrs.EventBus</code></td><td>一个事件多个订阅者，广播语义</td></tr><tr><td>请求-响应</td><td><code>components/requestreply</code></td><td>阻塞等回复，泛型返回结果；本质仍是异步消息</td></tr><tr><td>可观测</td><td><code>components/metrics</code></td><td>消费量、处理耗时、发布延迟；另有 OTel 适配</td></tr><tr><td>事务性发件箱</td><td><code>watermill-sql</code> + forwarder</td><td>与业务同库同事务写 outbox，后台转发到 broker</td></tr><tr><td>内存实现</td><td><code>pubsub/gochannel</code></td><td>单测与本地开发零依赖，<strong>不要用于生产</strong></td></tr><tr><td>测试工具</td><td><code>pubsub/gochannel</code> + <code>message.TestPublisher</code></td><td>无需起 broker，直接断言 handler 输入输出</td></tr></tbody></table></div>
+<hr>
+
+<div class="features">
+  <div class="feature"><div class="fh"><h4>三方法抽象</h4></div><p>Publisher / Subscriber / Message，换 broker 不改业务</p></div>
+  <div class="feature"><div class="fh"><h4>中间件链</h4></div><p>Recoverer → Retry → PoisonQueue，顺序就是语义</p></div>
+  <div class="feature"><div class="fh"><h4>CQRS</h4></div><p>CommandBus / EventBus 复用同一套 handler</p></div>
+</div>
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-message一条消息只有四样东西">3.1 Message：一条消息只有四样东西</h3>
+<pre><code class="lang-go">type Message struct {
+    UUID     string            // 全局唯一，broker 无关；常被拿去当去重键
+    Metadata Metadata          // map[string]string，可 JSON 序列化
+    Payload  []byte            // 业务体，JSON / protobuf / 任意字节
+    // 未导出：context、ack/nack 通道、是否已 ack 的标记
+}</code></pre>
+<ul><li><code>message.NewMessage(uuid, payload)</code> 构造，通常 <code>watermill.NewUUID()</code> 生成 UUID；</li><li><code>msg.Metadata.Set("partition", orderID)</code> —— Metadata 是<strong>跨 broker 传递</strong>的唯一通道，分区键、租户、追踪 ID 都靠它；</li><li><code>msg.Context()</code> 带取消信号，handler 里应基于它派生超时语境；</li><li><code>msg.Ack()</code> / <code>msg.Nack()</code> <strong>手写消费循环时</strong>必须自己调；走 <code>Router</code> 时由 Router 根据 handler 返回值代劳，业务里<strong>不要</strong>再调一次。</li></ul>
+<p>Metadata 的两个坑：同名 broker header 映射由适配器决定（Kafka 适配器默认把 metadata 序列化进 header），超长 header 会被 broker 拒绝；中间件之间靠固定 key 协作（如 <code>correlation_id</code>、<code>poisonqueue_topic</code>），改名即断链。</p>
+<h3 id="32-publisher-subscriber只有三个方法">3.2 Publisher / Subscriber：只有三个方法</h3>
+<pre><code class="lang-go">type Publisher interface {
+    Publish(topic string, messages ...*Message) error
+    Close() error
+}
+
+type Subscriber interface {
+    Subscribe(ctx context.Context, topic string) (&lt;-chan *Message, error)
+    Close() error
+}</code></pre>
+<p><code>Subscribe</code> 立即返回一个 channel，适配器内部起 goroutine 拉消息往里塞；<strong>channel 被关闭表示订阅结束</strong>。所以 Router 的模型非常朴素：拿到 channel，<code>for msg := range ch</code>。</p>
+<p>同样的接口在不同 broker 上的行为差异巨大，这是选型时真正要看的东西：</p>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>Kafka</th><th>NATS JetStream</th><th>Redis Streams</th></tr></thead><tbody><tr><td>负载均衡单位</td><td>consumer group</td><td>queue group / durable consumer</td><td>consumer group</td></tr><tr><td>进度保存</td><td>offset 提交到 <code>__consumer_offsets</code></td><td>consumer 的 ack 序列</td><td><code>last-delivered-id</code> + PEL</td></tr><tr><td>Nack 后行为</td><td>不提交 offset，重新拉到（可能换实例）</td><td><code>Nak()</code> 按 <code>MaxDeliver</code> 立即重投</td><td>留在 PEL，靠 <code>XAUTOCLAIM</code> 认领</td></tr><tr><td>顺序保证</td><td>仅分区内</td><td>单 subject 内</td><td>单 stream 内</td></tr><tr><td>再均衡</td><td>有，期间可能重复投递</td><td>无此概念</td><td>无此概念</td></tr><tr><td>语义天花板</td><td>至少一次</td><td>至少一次</td><td>至少一次</td></tr></tbody></table></div>
+<p>结论：<strong>Watermill 统一的是 API，不是语义</strong>。从 Kafka 换到 Redis Streams，代码不改，但重复投递的形态、积压的观测方式、顺序保证的边界全变了。</p>
+<h3 id="33-router每个-handler-一个-goroutine">3.3 Router：每个 handler 一个 goroutine</h3>
+<p><code>Router</code> 是 Watermill 的执行引擎。<code>Run(ctx)</code> 时会为每个已注册 handler 启动一个 goroutine，循环做五件事：</p>
+<pre><code class="lang-text">从 Subscriber channel 取 msg
+  → 依次穿过中间件链
+  → 调 handler(msg)
+  → handler 无错：发布返回的新消息，全部成功后 msg.Ack()
+  → handler 报错：msg.Nack()（重投交给 PubSub 决定）</code></pre>
+<p>由此推出三条硬约束：</p>
+<ol><li><strong>一个 handler 串行处理自己的订阅</strong>。handler 阻塞 10 秒，这个订阅（Kafka 上是分到的那些分区）就停 10 秒；提高并行度靠加分区 + 加实例，不是加 goroutine；</li><li><strong>handler 名称必须全局唯一</strong>，重复注册直接报错；</li><li>优雅停止由 <code>Close()</code> 完成：停止拉新消息 → 等待在途 handler 结束（上限 <code>RouterConfig.CloseTimeout</code>，默认 30s）→ 关闭 Pub/Sub。</li></ol>
+<p>注册方式三选一：<code>AddHandler</code>（订阅 + 发布，最常用）、<code>AddNoPublisherHandler</code>（纯消费者）、<code>AddConsumerHandler</code>（只订阅不产出，语义更明确）；<code>AddHandler</code> 返回 <code>*message.Handler</code>，可挂 handler 级中间件或单独 <code>Stop()</code>。</p>
+<p><code>Running()</code> 返回一个 channel，<strong>Router 启动完成后关闭</strong>，是「所有订阅就绪」的信号，健康检查/就绪探针应该等它。</p>
+<h3 id="34-ack-时机这就是至少一次的全部秘密">3.4 ack 时机：这就是「至少一次」的全部秘密</h3><div class="figure">
+  <svg viewBox="0 0 880 268" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-watermill" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0369a1"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#075985">一条消息的处理路径</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">handler 返回 error 即 nack 重试</text>
+    <rect x="36" y="82" width="175" height="80" rx="12" fill="#e0f2fe" stroke="#0369a1" stroke-width="1.5"/>
+    <text x="124" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#075985">Subscriber</text>
+    <text x="124" y="136" text-anchor="middle" font-size="11" fill="#075985">Kafka / NATS / Redis</text>
+    <line x1="215" y1="122" x2="241" y2="122" stroke="#0369a1" stroke-width="2" marker-end="url(#m-watermill)"/>
+    <rect x="247" y="82" width="175" height="80" rx="12" fill="#e0f2fe" stroke="#0369a1" stroke-width="1.5"/>
+    <text x="334" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#075985">Router</text>
+    <text x="334" y="136" text-anchor="middle" font-size="11" fill="#075985">每 handler 一 goroutine</text>
+    <line x1="426" y1="122" x2="452" y2="122" stroke="#0369a1" stroke-width="2" marker-end="url(#m-watermill)"/>
+    <rect x="458" y="82" width="175" height="80" rx="12" fill="#e0f2fe" stroke="#0369a1" stroke-width="1.5"/>
+    <text x="546" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#075985">Handler</text>
+    <text x="546" y="136" text-anchor="middle" font-size="11" fill="#075985">返回 error 即 nack</text>
+    <line x1="637" y1="122" x2="663" y2="122" stroke="#0369a1" stroke-width="2" marker-end="url(#m-watermill)"/>
+    <rect x="669" y="82" width="175" height="80" rx="12" fill="#e0f2fe" stroke="#0369a1" stroke-width="1.5"/>
+    <text x="756" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#075985">Publisher</text>
+    <text x="756" y="136" text-anchor="middle" font-size="11" fill="#075985">下游主题</text>
+    <rect x="40" y="186" width="800" height="58" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="210" font-size="12.5" fill="#1e293b">至少一次语义下，幂等不是可选项：同一条消息会被投递多次。</text>
+  </svg>
+  <figcaption>一条消息的处理路径</figcaption>
+</div>
+<p>Router 只在 handler 返回 <code>nil</code> 且下游消息全部发布成功后才 <code>Ack</code>。任一环节出错就 <code>Nack</code>，而 Nack 在 Kafka 适配器里的含义是「不提交 offset」——进程重启、rebalance、重连之后这条消息会被再投一次。</p>
+<p>所以：<strong>Watermill 默认给的是 at-least-once，不是 exactly-once</strong>。官方文档对 Kafka 也是明确写 <code>ExactlyOnceDelivery: no</code>。</p>
+<p>推论只有一条，但极其重要：<strong>handler 必须幂等</strong>。可用手段：</p>
+<ul><li>以 <code>msg.UUID</code> 建去重表（Redis <code>SETNX</code> + TTL 或唯一索引），命中即跳过；</li><li>业务层用幂等写（<code>INSERT ... ON CONFLICT DO NOTHING</code>、状态机只允许单向跃迁）；</li><li>副作用外置（发短信、扣款）用「本地状态表 + 唯一约束」兜住，而不是靠不重投。</li></ul>
+<p>同时注意 <code>middleware.Deduplicator</code> 是<strong>处理前去重</strong>，默认内存实现只在单实例内有效；多副本部署必须换成 Redis 等共享存储的 <code>ExpiringKeyRepository</code>。</p>
+<h3 id="35-中间件链顺序就是语义">3.5 中间件链：顺序就是语义</h3>
+<p>中间件签名是 <code>func(HandlerFunc) HandlerFunc</code>，<code>router.AddMiddleware</code> <strong>先加的在最外层</strong>（包裹后加的）。这决定了组合顺序：</p>
+<pre><code class="lang-go">router.AddMiddleware(
+    middleware.CorrelationID,          // 最外层：把 correlation_id 复制到产出消息
+    poisonQueue,                        // 重试彻底失败后才落死信
+    retryMiddleware,                    // 内部重试，耗尽后把 error 抛出
+    middleware.Recoverer,               // 最内层：panic 转 error，交给 Retry
+)</code></pre>
+<div class="table-wrap"><table><thead><tr><th>中间件</th><th>作用</th><th>注意</th></tr></thead><tbody><tr><td><code>Recoverer</code></td><td>捕获 panic，转成带堆栈的 error</td><td>必须放最内层，否则 panic 直接杀进程</td></tr><tr><td><code>Retry</code></td><td>指数退避重试 handler（cenkalti/backoff）</td><td><strong>阻塞式</strong>，占着这个 handler goroutine；总预算应小于 broker 的 session timeout</td></tr><tr><td><code>Timeout</code></td><td>给 <code>msg.Context()</code> 加 deadline</td><td>handler 必须尊重 <code>ctx.Done()</code>，否则形同虚设</td></tr><tr><td><code>CorrelationID</code></td><td>透传 <code>correlation_id</code> 到下游</td><td>入口用 <code>middleware.SetCorrelationID</code> 播种</td></tr><tr><td><code>PoisonQueue</code></td><td>失败消息转发到死信 topic 并附失败原因</td><td>不配 = 毒消息无限重投；要放在 Retry 外层</td></tr><tr><td><code>Throttle</code></td><td>令牌桶限速，保护下游</td><td>阻塞排队，不是丢弃</td></tr><tr><td><code>CircuitBreaker</code></td><td>连续失败后快速失败</td><td>防雪崩，恢复期半开探测</td></tr><tr><td><code>Deduplicator</code></td><td>内容哈希去重</td><td>默认内存，多实例要共享存储</td></tr></tbody></table></div>
+<p><code>PoisonQueue</code> 会往消息 Metadata 写 <code>reason</code>、<code>poisonqueue_topic</code>、<code>poisonqueue_handler_name</code>，消费死信时靠这些字段定位问题、决定是否重放。</p>
+<h3 id="36-cqrs-与请求-响应">3.6 CQRS 与请求-响应</h3>
+<p>CQRS 组件把「按类型路由」这件事封装掉：<code>CommandBus</code> / <code>EventBus</code> 负责发，<code>CommandProcessor</code> / <code>EventProcessor</code> 基于 Router 负责收并分发到具体 handler。</p>
+<pre><code class="lang-go">commandBus.Send(ctx, &amp;IssueInvoice{OrderID: "o-1"})   // 一个命令，期望一个处理者
+eventBus.Publish(ctx, &amp;OrderPaid{OrderID: "o-1"})     // 一个事件，N 个订阅者</code></pre>
+<p>topic 由 <code>GeneratePublishTopic</code> / <code>GenerateSubscribeTopic</code> 回调决定（一般是 <code>commands.&lt;Name&gt;</code>、<code>events.&lt;Name&gt;</code>），序列化由 <code>cqrs.JSONMarshaler{GenerateName: cqrs.StructName}</code> 负责。<code>EventProcessor</code> 支持 <code>AddHandlersGroup</code>，让多个事件 handler 共用一个订阅以保证顺序——否则同一 topic 上的事件会被并行处理。</p>
+<p>请求-响应用 <code>components/requestreply</code>：请求方 <code>SendWithReply[T](ctx, backend, cmd)</code> 阻塞等回复，回复 topic 由 operation ID 关联。官方态度很明确：<strong>默认不推荐</strong>，它把两个服务在时间上耦合起来；只是为了拿返回值，gRPC 更合适。它真正的价值场景是「必须确保命令被处理，同时要把处理结果回给用户」。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-依赖">4.1 依赖</h3>
+<pre><code class="lang-bash">go get github.com/ThreeDotsLabs/watermill@v1.5.3
+go get github.com/ThreeDotsLabs/watermill-kafka/v3</code></pre>
+<h3 id="42-kafka-订阅-处理-发布下游完整可运行">4.2 Kafka 订阅 → 处理 → 发布下游（完整可运行）</h3>
+<pre><code class="lang-go">package main
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"log/slog"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/ThreeDotsLabs/watermill"
+	"github.com/ThreeDotsLabs/watermill-kafka/v3/pkg/kafka"
+	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
+	"github.com/ThreeDotsLabs/watermill/message/router/plugin"
+)
+
+func main() {
+	logger := watermill.NewSlogLogger(slog.Default())
+
+	pub, err := kafka.NewPublisher(kafka.PublisherConfig{
+		Brokers:   []string{"localhost:9092"},
+		Marshaler: kafka.DefaultMarshaler{},
+	}, logger)
+	must(err)
+	defer pub.Close()
+
+	sub, err := kafka.NewSubscriber(kafka.SubscriberConfig{
+		Brokers:         []string{"localhost:9092"},
+		Unmarshaler:     kafka.DefaultMarshaler{},
+		ConsumerGroup:   "billing-service", // 不设 = 每个实例都消费全量
+		NackResendSleep: 500 * time.Millisecond,
+	}, logger)
+	must(err)
+	defer sub.Close()
+
+	router, err := message.NewRouter(message.RouterConfig{
+		CloseTimeout: 30 * time.Second, // 等在途 handler 结束的上限
+	}, logger)
+	must(err)
+	router.AddPlugin(plugin.SignalsHandler) // SIGTERM 自动 Close
+
+	poisonQueue, err := middleware.PoisonQueue(pub, "orders.dead_letter")
+	must(err)
+
+	router.AddMiddleware(
+		middleware.CorrelationID,
+		poisonQueue,
+		middleware.Retry{
+			MaxRetries:      3,
+			InitialInterval: 200 * time.Millisecond,
+			MaxInterval:     5 * time.Second,
+			Multiplier:      2,
+			Logger:          logger,
+		}.Middleware,
+		middleware.Recoverer,
+	)
+
+	router.AddHandler(
+		"order_paid_to_invoice",  // 名称全局唯一
+		"orders.paid",            // 订阅
+		sub,
+		"billing.invoice_issued", // 产出
+		pub,
+		handleOrderPaid,
+	)
+
+	go func() {
+		if err := router.Run(context.Background()); err != nil {
+			logger.Error("router stopped", err, nil)
+		}
+	}()
+	&lt;-router.Running() // 订阅就绪
+
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
+	&lt;-stop
+
+	if err := router.Close(); err != nil { // 停拉取 → 等 handler → 关连接
+		logger.Error("router close", err, nil)
+	}
+}
+
+func handleOrderPaid(msg *message.Message) ([]*message.Message, error) {
+	ctx, cancel := context.WithTimeout(msg.Context(), 5*time.Second)
+	defer cancel()
+
+	var ev struct {
+		OrderID string `json:"order_id"`
+		Amount  int64  `json:"amount"`
+	}
+	if err := json.Unmarshal(msg.Payload, &amp;ev); err != nil {
+		// 不可恢复错误：重试无意义，交给 PoisonQueue 落死信
+		return nil, fmt.Errorf("unmarshal order_paid: %w", err)
+	}
+
+	// 幂等：同一 order_id 重复投递只会开一张发票
+	if err := issueInvoiceOnce(ctx, ev.OrderID, ev.Amount); err != nil {
+		return nil, err // 返回 error = Nack = 稍后重投
+	}
+
+	out := message.NewMessage(watermill.NewUUID(), []byte(`{"order_id":"`+ev.OrderID+`"}`))
+	// 分区键写进 Metadata：同一订单必须落同一分区，否则下游乱序
+	out.Metadata.Set("partition", ev.OrderID)
+	return message.Messages{out}, nil
+}
+
+func issueInvoiceOnce(ctx context.Context, orderID string, amount int64) error {
+	return nil // 用唯一索引 / 幂等 upsert 实现
+}
+
+func must(err error) {
+	if err != nil {
+		panic(err)
+	}
+}</code></pre>
+<p>配套的 broker 配置（本地 Redpanda 即可，不必装 Kafka）：</p>
+<pre><code class="lang-yaml">services:
+  kafka:
+    image: redpandadata/redpanda:v26.1.7
+    command: &gt;
+      redpanda start --mode dev-container --smp 1
+      --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      --advertise-kafka-addr internal://kafka:9092,external://localhost:19092
+    ports: ["19092:19092"]</code></pre>
+<h3 id="43-cqrs命令总线-处理器">4.3 CQRS：命令总线 + 处理器</h3>
+<pre><code class="lang-go">commandBus, err := cqrs.NewCommandBusWithConfig(pub, cqrs.CommandBusConfig{
+	GeneratePublishTopic: func(p cqrs.GenerateCommandMessageTopicParams) (string, error) {
+		return "commands." + p.CommandName, nil
+	},
+	Marshaler: cqrs.JSONMarshaler{GenerateName: cqrs.StructName},
+	Logger:    logger,
+})
+must(err)
+
+// 一个命令 → 一个订阅者；SubscriberConstructor 里给每个命令建独立 consumer group
+processor, err := cqrs.NewCommandProcessorWithConfig(router, cqrs.CommandProcessorConfig{
+	GenerateSubscribeTopic: func(p cqrs.CommandProcessorGenerateSubscribeTopicParams) (string, error) {
+		return "commands." + p.CommandName, nil
+	},
+	SubscriberConstructor: func(p cqrs.CommandProcessorSubscriberConstructorParams) (message.Subscriber, error) {
+		return kafka.NewSubscriber(kafka.SubscriberConfig{
+			Brokers:       []string{"localhost:9092"},
+			ConsumerGroup: "billing-" + p.HandlerName,
+		}, logger)
+	},
+	Marshaler: cqrs.JSONMarshaler{GenerateName: cqrs.StructName},
+})
+must(err)
+must(processor.AddHandlers(cqrs.NewCommandHandler("IssueInvoice", handleIssueInvoice)))
+
+must(commandBus.Send(context.Background(), &amp;IssueInvoice{OrderID: "o-1"}))</code></pre>
+<h3 id="44-指标几行拿到-prometheus">4.4 指标：几行拿到 Prometheus</h3>
+<pre><code class="lang-go">registry := prometheus.NewRegistry()
+builder := metrics.NewPrometheusMetricsBuilder(registry, "billing", "watermill")
+builder.AddPrometheusRouterMetrics(router) // 处理耗时、消费数、发布延迟
+http.Handle("/metrics", promhttp.HandlerFor(registry, promhttp.HandlerOpts{}))</code></pre>
+<hr>
+
+<div class="callout info"><p><b>实战要点：</b>先配齐 Recoverer + Retry + PoisonQueue，再写业务 handler；否则毒消息会卡住整个分区。</p></div>
+</section>
+<section data-anchor="5-版本演进">
+<h2 id="5-版本演进">5. 版本演进<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>时间</th><th>变化</th></tr></thead><tbody><tr><td>1.0 – 1.2</td><td>2019 – 2022</td><td>核心定型：<code>Message</code> / <code>Publisher</code> / <code>Subscriber</code> / <code>Router</code> 与中间件体系，此后 API 基本未破</td></tr><tr><td>1.3</td><td>2023</td><td>新增 <code>requestreply</code>（含泛型结果）、<code>CircuitBreaker</code>、slog 适配；<code>watermill-sql</code> 升 v2 修掉丢消息问题</td></tr><tr><td>1.4.x</td><td>2024 – 2025</td><td>维护线，v1.4.7（2025-07）为末版；各适配器跟进新 broker 客户端</td></tr><tr><td>1.5.0 / 1.5.1</td><td>2025-08 / 2025-09</td><td>进入 1.5 主线，<code>watermill-kafka/v3</code> 持续跟进 Sarama v1.4x</td></tr><tr><td>1.5.2</td><td>2026-05</td><td>文档补齐 <code>AddConsumerHandler</code>、SQLite / MySQL 延迟消息；<code>Retry</code> 增加 <code>OnRetriesExhausted</code> 钩子（重试耗尽时做清理）</td></tr><tr><td>1.5.3</td><td>2026-08</td><td>forwarder 支持自定义 handler 名；NATS 文档更新（截至 2026-11，最新版本）</td></tr></tbody></table></div>
+<p>升级建议：<code>1.4.x → 1.5.x</code> 是兼容升级，改 <code>go.mod</code> 即可；跨大版本主要是适配器的 module 路径（<code>watermill-kafka/v2</code> → <code>/v3</code> 属于 Sarama 大版本跟进）与 <code>watermill-sql</code> v1 → v2 的<strong>表结构不兼容</strong>，后者必须新建表 + 数据迁移，不能原地改。</p>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>handler 不幂等 + 自动重试 = 重复副作用</strong>。这是最高频的线上事故：handler 发完短信后进程 OOM，重启后消息重投，客户收到两条。所有副作用都要有幂等键（<code>msg.UUID</code> 或业务主键）。</li><li><strong>忘记 <code>defer router.Close()</code>（或没装 <code>plugin.SignalsHandler</code>）</strong>。容器收到 SIGTERM 直接退出，在途消息被 Nack，重启后集中重投，还可能出现「发布了下游消息但没 ack 上游」的重复。优雅关闭是必选项，且 <code>CloseTimeout</code> 要小于 K8s 的 <code>terminationGracePeriodSeconds</code>。</li><li><strong>handler 阻塞导致整个分区停摆</strong>。Router 每个 handler 一个 goroutine，串行处理自己的订阅。handler 里做 <code>time.Sleep</code>、同步 HTTP 调用、大文件解析，Kafka 侧直接表现为 lag 飙升。慢活拆成独立 topic + 独立消费者。</li><li><strong>没配 PoisonQueue，毒消息无限重投</strong>。一条反序列化不了的消息会 Nack → 重投 → 又失败，永远卡在分区头部，后面的消息全部堵死。死信队列不是可选件。</li><li><strong>Metadata 丢字段</strong>。自己实现中间件或 Publisher 时忘记复制 <code>msg.Metadata</code>，<code>correlation_id</code>、<code>partition</code> 静默消失。产出的新消息应显式 <code>for k, v := range msg.Metadata</code> 或依赖 <code>CorrelationID</code> 中间件；跨 broker 时 metadata 的映射规则要看适配器实现。</li><li><strong>Kafka 分区键不设，下游乱序</strong>。<code>DefaultMarshaler</code> 不设置 key，消息被轮询到各分区，同一订单的 <code>paid</code> / <code>shipped</code> 可能被两个消费者并发处理。用 <code>kafka.NewWithPartitioningMarshaler</code> 或把 key 放 Metadata 再映射。</li><li><strong>长任务超过 session timeout</strong>。handler 跑 2 分钟，超过 Kafka <code>session.timeout</code> / <code>max.poll.interval</code>，组内判定该消费者死亡触发 rebalance，分区被抢走又重投，形成「永远处理不完」的循环。长任务要异步化或者显著调大超时。</li><li><strong>ConsumerGroup 忘了设</strong>。Kafka 适配器里 <code>ConsumerGroup</code> 为空表示「消费所有分区的全量消息」，多副本部署时每个实例都收到同一份——看着像重复投递，实际是配置错。</li><li><strong>Retry 阻塞占用 goroutine，且预算过大</strong>。<code>MaxRetries</code> 大 + 退避长，等于这个 handler 长时间不可用；结合 <code>Timeout</code> 使用，并让总重试时长明显小于 broker 的 session timeout。</li><li><strong>生产用了 <code>gochannel</code></strong>。内存实现重启即丢，且没有跨进程投递。它只适合单测和本地跑通链路，上线前必须换真 broker。</li><li><strong>数据库提交与消息发布不是原子的</strong>。<code>publisher.Publish</code> 成功、<code>tx.Commit</code> 失败，或者反过来，都会造成状态不一致。需要强一致就用 outbox：业务数据与 outbox 记录同事务写入，后台 forwarder 转发。</li><li><strong>把抽象层当成「屏蔽一切」</strong>。Watermill 不处理 schema 演进、消息大小上限、ACL、保留策略、积压监控，这些依然要按 broker 的规矩来；出问题时日志里只有 topic 和 UUID，必须自己补指标和链路追踪，否则排查比直接写 SDK 更痛苦。</li></ol>
+<hr>
+
+<div class="callout warning"><p><b>生产警示：</b>handler 不幂等 + 自动重试 = 重复副作用；忘 router.Close；分区键不设导致乱序。</p></div>
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>直接用 broker SDK</th><th>go-micro / broker</th><th>自研抽象层</th><th>Watermill</th><th>Temporal</th></tr></thead><tbody><tr><td>抽象层次</td><td>无，直接面对协议</td><td>轻，仅 pub/sub 接口</td><td>取决于投入</td><td>中高：消息 + 路由 + 中间件 + CQRS</td><td>高：工作流/活动编排</td></tr><tr><td>换 broker 成本</td><td>重写消费循环</td><td>换插件，但语义仍自管</td><td>看设计</td><td>换适配器构造几行</td><td>与 broker 无关</td></tr><tr><td>重试 / 死信</td><td>自己实现</td><td>基本没有</td><td>自己实现</td><td>内置 Retry / PoisonQueue</td><td>内置，按活动重试</td></tr><tr><td>ack 控制粒度</td><td>完全可控</td><td>弱</td><td>可控</td><td>中，Router 托管</td><td>不适用</td></tr><tr><td>可调试性</td><td>最好，能看到每条细节</td><td>中</td><td>中</td><td>偏差，需要补日志与追踪</td><td>好，有可视化历史</td></tr><tr><td>性能开销</td><td>基准</td><td>低</td><td>低</td><td>小（多一层函数调用与 metadata 复制）</td><td>大（持久化状态机）</td></tr><tr><td>适用场景</td><td>单 broker、极致性能、特殊协议特性</td><td>老项目、要极轻</td><td>平台团队、有长期维护预算</td><td>多 broker、微服务事件驱动、要 CQRS</td><td>长事务、Saga、需要人工介入的流程</td></tr></tbody></table></div>
+<p>几条判断规则：</p>
+<ul><li><strong>只用一个 broker，且要用事务、精确一次、分层存储等专有特性</strong>——直接写 SDK（franz-go / nats.go），抽象层只会让你离细节更远；</li><li><strong>要跨 broker 迁移、或团队里多个服务各用各的 MQ</strong>——Watermill 的收益最大，中间件与 CQRS 是白送的；</li><li><strong>需要「流程状态」而不只是「消息投递」</strong>——长跑几天的订单编排、需要补偿与人工审批，用 Temporal；它解决的是另一个维度的问题，两者可以并存（Watermill 传事件，Temporal 管流程）；</li><li><strong>自研抽象层</strong>只在有平台团队长期维护时成立，否则半年后就是一套没人敢改的私有框架。</li></ul>
+<p>一句话：<strong>Watermill 买的是「消费循环 + 重试 + 死信 + 优雅关闭 + CQRS」这套骨架的标准实现，代价是失去对 broker 细节的直接掌控</strong>。骨架值钱就上，细节值钱就别上。</p>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

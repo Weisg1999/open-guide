@@ -6,8 +6,8 @@
 
 Manuals you can read, search, and copy working code from — not another Hello World.
 
-[![Docs](https://img.shields.io/badge/docs-47%20guides-16a34a?style=for-the-badge)](./README_EN.md)
-[![Lines](https://img.shields.io/badge/text-18%2C400%20lines-0ea5e9?style=for-the-badge)](./README_EN.md)
+[![Docs](https://img.shields.io/badge/docs-56%20guides-16a34a?style=for-the-badge)](./README_EN.md)
+[![Lines](https://img.shields.io/badge/text-22%2C400%20lines-0ea5e9?style=for-the-badge)](./README_EN.md)
 [![Format](https://img.shields.io/badge/format-Markdown%20%2B%20HTML-f59e0b?style=for-the-badge)](./README_EN.md)
 
 [![License](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square)](./LICENSE)
@@ -29,7 +29,7 @@ Manuals you can read, search, and copy working code from — not another Hello W
 
 | 📚 Guides | 📝 Text | 📄 Offline manuals | 🖼️ Diagrams | ✅ Writing rules | ⚖️ License |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| **47** | **≈ 18,400 lines** | **47 pages** | **104 SVG** | **7 required elements** | **MIT** |
+| **56** | **≈ 22,400 lines** | **56 pages** | **113 SVG** | **7 required elements** | **MIT** |
 
 </div>
 
@@ -70,13 +70,13 @@ Manuals you can read, search, and copy working code from — not another Hello W
 
 | 🔤 Language | 🌐 Frameworks | 🗄️ Data & Search | 📨 Messaging | 🔭 Observability | 🐳 Deployment |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| **9** | **8** | **15** | **7** | **6** | **2** |
+| **13** | **9** | **17** | **8** | **7** | **2** |
 
 </div>
 
 Every guide ships as `MD` (searchable, copyable, PR-friendly) and `HTML` (a dependency-free, single-file offline manual).
 
-### 🔤 Go Language Core <sub>9 guides</sub>
+### 🔤 Go Language Core <sub>13 guides</sub>
 
 | Topic | What's covered | Files |
 | --- | --- | --- |
@@ -89,8 +89,12 @@ Every guide ships as `MD` (searchable, copyable, PR-friendly) and `HTML` (a depe
 | **Go 1.2x Modern Features** | 1.22 loop-variable semantics, range-over-func and iter, generic type aliases, unique / weak, slices / maps / slog, toolchain and PGO | [MD](./go-modern/go-modern-guide.md) · [HTML](./go-modern/go-modern-guide.html) |
 | **samber/lo** | The Lodash-style generics toolkit: the full slice / map / channel / string / function helper catalog, and how it relates to the stdlib `slices` / `maps` packages | [MD](./samber-lo/samber-lo-guide.md) · [HTML](./samber-lo/samber-lo-guide.html) |
 | **Cobra / sqlc** | Command trees and RunE, PersistentFlags vs LocalFlags, Viper binding, the sqlc compilation model and query annotations, NULL type mapping, goose migrations | [MD](./cobra-sqlc/cobra-sqlc-guide.md) · [HTML](./cobra-sqlc/cobra-sqlc-guide.html) |
+| **ants** | Goroutine pool scheduling, cap vs queue semantics, blocking and non-blocking failure modes, Invoke and timeouts, panic handling, Running / Free / Waiting metrics | [MD](./ants/ants-guide.md) · [HTML](./ants/ants-guide.html) |
+| **google/wire** | Compile-time dependency injection, Provider / ProviderSet, `wire.Bind` / `Struct` / `Value`, cleanup ordering, type uniqueness, trade-offs vs fx / dig | [MD](./wire/wire-guide.md) · [HTML](./wire/wire-guide.html) |
+| **Excelize** | OOXML layout, the shared-strings memory bill, plain API vs `StreamWriter`, style pooling, iterator reads, 100k-row exports and template filling | [MD](./excelize/excelize-guide.md) · [HTML](./excelize/excelize-guide.html) |
+| **Go Design Patterns** | Which GoF patterns disappear or morph in Go, functional options, middleware chains, strategy as func values, observer as channels, concurrency vs design patterns, when not to use them | [MD](./golang-design-pattern/golang-design-pattern-guide.md) · [HTML](./golang-design-pattern/golang-design-pattern-guide.html) |
 
-### 🌐 Web, Microservices & Governance <sub>8 guides</sub>
+### 🌐 Web, Microservices & Governance <sub>9 guides</sub>
 
 | Topic | What's covered | Files |
 | --- | --- | --- |
@@ -102,14 +106,16 @@ Every guide ships as `MD` (searchable, copyable, PR-friendly) and `HTML` (a depe
 | **Casbin** | The PERM meta-model and evaluation flow, ACL / RBAC / ABAC / RESTful, `g` role inheritance and multi-tenant domains, adapters and watchers for policy sync, enforcer concurrency and caching, boundaries with OPA | [MD](./casbin/casbin-guide.md) · [HTML](./casbin/casbin-guide.html) |
 | **Authentication: JWT / OAuth2 / OIDC** | JWT structure and signing algorithms, the full validation checklist (alg allowlist / iss / aud / exp), JWKS rotation, OAuth2 flows and PKCE, OIDC, refresh rotation and revocation | [MD](./auth/auth-guide.md) · [HTML](./auth/auth-guide.html) |
 | **Service Governance** | Four rate-limiting algorithms, per-node vs cluster limits, circuit-breaker states and sliding windows, adaptive limits, retry budgets and idempotency, bulkheads and fallbacks | [MD](./service-governance/service-governance-guide.md) · [HTML](./service-governance/service-governance-guide.html) |
+| **gorilla/websocket** | Handshake and Origin checks, frames vs messages, single reader / single writer model, deadlines and heartbeats, close handshake, read limits and backpressure, horizontal scaling | [MD](./websocket/websocket-guide.md) · [HTML](./websocket/websocket-guide.html) |
 
-### 🗄️ Data Stores & Search <sub>15 guides</sub>
+### 🗄️ Data Stores & Search <sub>17 guides</sub>
 
 | Topic | What's covered | Files |
 | --- | --- | --- |
 | **MySQL** | B+ tree clustered indexes and table lookups, leftmost-prefix and covering indexes, MVCC / ReadView and isolation levels, next-key locks and deadlocks, `EXPLAIN` for slow queries, replication lag, `database/sql` connection pooling | [MD](./mysql/mysql-guide.md) · [HTML](./mysql/mysql-guide.html) |
 | **PostgreSQL** | Tuple-based MVCC and VACUUM, default READ COMMITTED and SSI, B-tree / GIN / GiST / BRIN indexes, `jsonb` with GIN, WAL logical replication, pgx v5 pooling and `CopyFrom`, SQLSTATE-based retries | [MD](./postgresql/postgresql-guide.md) · [HTML](./postgresql/postgresql-guide.html) |
 | **Distributed Transactions** | The cost of 2PC / XA, TCC and its three failure modes, Saga orchestration and compensation, the Outbox pattern, transactional messaging, idempotency and reconciliation | [MD](./distributed-transaction/distributed-transaction-guide.md) · [HTML](./distributed-transaction/distributed-transaction-guide.html) |
+| **DTM** | Saga with reverse compensation, TCC and empty rollback / suspension, sub-transaction barrier, two-phase messages, XA limits, workflow orchestration | [MD](./dtm/dtm-guide.md) · [HTML](./dtm/dtm-guide.html) |
 | **GORM** | Chained API, associations & preloading, transactions and savepoints, hooks, migrator, soft delete, read/write-splitting plugin, generics-based interfaces | [MD](./gorm/gorm-guide.md) · [HTML](./gorm/gorm-guide.html) |
 | **go-redis** | Connection pool & `Cmdable`, Pipeline vs TxPipeline, `redis.Nil` semantics, Lua and distributed locks, Stream consumer groups, Cluster slots and hash tags, cache-stampede defences | [MD](./redis/redis-guide.md) · [HTML](./redis/redis-guide.html) |
 | **etcd** | Raft consensus, MVCC, the bbolt B+ tree, leases / watches / distributed locks, clientv3 in practice, what's new in v3.6 | [MD](./etcd/etcd-guide.md) · [HTML](./etcd/etcd-guide.html) |
@@ -122,10 +128,11 @@ Every guide ships as `MD` (searchable, copyable, PR-friendly) and `HTML` (a depe
 | **OpenSearch** | The ES 7.10 fork and Apache-2.0 licensing, Lucene inverted index and NRT, shard routing, k-NN vector search, ISM and Data Streams, the `opensearch-go` client, compatibility boundaries with Elasticsearch | [MD](./opensearch/opensearch-guide.md) · [HTML](./opensearch/opensearch-guide.html) |
 | **TimescaleDB** | Hypertables and automatic chunk partitioning, `time_bucket`, continuous aggregates, columnar compression with segmentby / orderby, retention and tiering, why unique indexes must include the time column, boundaries with InfluxDB / ClickHouse | [MD](./timescaledb/timescaledb-guide.md) · [HTML](./timescaledb/timescaledb-guide.html) |
 | **Vector Databases** | Distance metrics and normalization, HNSW's M / efConstruction / efSearch, IVF / PQ, pre-filter vs post-filter, RRF hybrid search, pgvector / Milvus / Qdrant in practice | [MD](./vector-database/vector-database-guide.md) · [HTML](./vector-database/vector-database-guide.html) |
+| **golang-migrate** | Version table and dirty semantics, up / down / steps, `embed` + `iofs`, concurrency and advisory locks, irreversible migrations, vs goose / atlas | [MD](./migrate/migrate-guide.md) · [HTML](./migrate/migrate-guide.html) |
 
 > 💡 Elasticsearch wears two hats: business full-text search and log search. For logs, pair the `trace_id` from the [Zap guide](./zap/zap-guide.md) with [OpenTelemetry](./opentelemetry/opentelemetry-guide.md) traces.
 
-### 📨 Messaging, Tasks & Scheduling <sub>7 guides</sub>
+### 📨 Messaging, Tasks & Scheduling <sub>8 guides</sub>
 
 | Topic | What's covered | Files |
 | --- | --- | --- |
@@ -136,10 +143,11 @@ Every guide ships as `MD` (searchable, copyable, PR-friendly) and `HTML` (a depe
 | **robfig/cron** | 5-field and 6-field cron expressions, parser extensions (`@every`, `@daily`, …), job wrappers (`SkipIfStillRunning`, …), time zones and concurrency, custom jobs | [MD](./robfig-cron/robfig-cron-guide.md) · [HTML](./robfig-cron/robfig-cron-guide.html) |
 | **RabbitMQ / RocketMQ** | Exchange/Queue routing, publisher confirms and manual ACKs, Quorum Queues and DLX, CommitLog sequential writes, ordered / transactional / scheduled messages, at-least-once idempotency, and the boundaries with Kafka / NATS / asynq | [MD](./rabbitmq/rabbitmq-guide.md) · [HTML](./rabbitmq/rabbitmq-guide.html) |
 | **Temporal** | Durable execution and event-history replay, determinism constraints, durable timers, Activity idempotency and layered retries, Signal / Query / Update, Saga compensation, `GetVersion` and `Continue-As-New`, WorkflowReplayer tests | [MD](./temporal/temporal-guide.md) · [HTML](./temporal/temporal-guide.html) |
+| **Watermill** | Publisher / Subscriber abstraction, Router and ack timing, middleware chain (Recoverer / Retry / PoisonQueue), CQRS, idempotency under at-least-once | [MD](./watermill/watermill-guide.md) · [HTML](./watermill/watermill-guide.html) |
 
 > 💡 The five messaging / task guides (Kafka / NATS / asynq / RabbitMQ·RocketMQ / Temporal) each end with a **head-to-head comparison table** — start there if you're making a technology decision.
 
-### 🔭 Observability <sub>6 guides</sub>
+### 🔭 Observability <sub>7 guides</sub>
 
 | Topic | What's covered | Files |
 | --- | --- | --- |
@@ -149,6 +157,7 @@ Every guide ships as `MD` (searchable, copyable, PR-friendly) and `HTML` (a depe
 | **OpenTelemetry** | Trace/Span model and W3C `traceparent` propagation, Sampler / BatchSpanProcessor / OTLP, Resource and semantic conventions, Gin/gRPC/asynq instrumentation, writing `trace_id` into Zap logs | [MD](./opentelemetry/opentelemetry-guide.md) · [HTML](./opentelemetry/opentelemetry-guide.html) |
 | **Grafana Loki** | Label-only indexing cost model, chunks + TSDB index on object storage, Distributor/Ingester/Querier paths, two-stage LogQL and parsers, the high-cardinality trap, compactor and retention, Alloy collection | [MD](./loki/loki-guide.md) · [HTML](./loki/loki-guide.html) |
 | **VictoriaMetrics / Thanos** | Prometheus local-TSDB retention and single-node limits, VM single-binary vs. cluster (vminsert / vmselect / vmstorage), MetricsQL, Thanos Sidecar / Store / Query / Compactor, object-storage downsampling and replica dedup, how to choose | [MD](./victoriametrics/victoriametrics-guide.md) · [HTML](./victoriametrics/victoriametrics-guide.html) |
+| **Nightingale** | Alerting control plane, business group / target / label model, `rule_config` and `cron_pattern`, alert-engine sharding and heartbeat, mute / subscribe / notify chain, event pipelines, v9 embedded TSDB and AI / MCP | [MD](./nightingale/nightingale-guide.md) · [HTML](./nightingale/nightingale-guide.html) |
 
 > 💡 `Zap` / `slog` produce logs, `Loki` retrieves them, `Prometheus` handles metrics and `OpenTelemetry` traces — all linked by a shared `service.name` and `trace_id`.
 
@@ -200,6 +209,15 @@ flowchart LR
 | Deliver maintainable code | **Go Testing & Testability** → table-driven → httptest → testcontainers |
 | Serve users in multiple time zones | **Time Zones & Time Handling** → store UTC, render per zone, test DST |
 | Flaky dependencies / traffic spikes | **Service Governance** → rate limit → circuit break → retry budget; timeouts first |
+| Unify alerting across TSDBs | **Nightingale** → centralize rules and routing; add PagerDuty / FlashDuty for escalation |
+| Real-time push | **gorilla/websocket** → single-writer model + heartbeats; broadcast across instances via NATS |
+| Excel export / reports | **Excelize** → StreamWriter for 100k rows, not the plain API |
+| Version your schema | **golang-migrate** → version table + dirty handling; run migrations as a separate job |
+| Cap goroutines | **ants** → cap is a concurrency limit; handle ErrPoolOverload in non-blocking mode |
+| Tangled wiring | **google/wire** → compile-time generation instead of runtime reflection |
+| Cross-service consistency (framework) | **DTM** → read the concepts guide first, then pick the pattern |
+| Change brokers without rewriting | **Watermill** → Router + middleware; idempotency is still yours |
+| Learn design patterns properly | **Go Design Patterns** → see which patterns disappeared, then learn the rest |
 | Semantic search / RAG | **Vector Databases** → start with pgvector, evaluate dedicated stores at scale |
 | Service got slow / memory climbing | **Go Profiling** → pprof for hotspots, trace for waiting, then GC tuning |
 | Writes must stay consistent across services | **Distributed Transactions** → first ask whether you can avoid it, then pick Outbox / Saga |
@@ -257,7 +275,7 @@ The builder uses only the Python 3 standard library — no third-party packages.
 | File | Purpose |
 |---|---|
 | [`tools/themes.json`](./tools/themes.json) | Per-guide colours, hero subtitle and tags |
-| [`tools/fragments.json`](./tools/fragments.json) | SVG architecture diagrams, feature cards and callouts that have no Markdown equivalent, injected by chapter anchor (402 blocks / 104 diagrams) |
+| [`tools/fragments.json`](./tools/fragments.json) | SVG architecture diagrams, feature cards and callouts that have no Markdown equivalent, injected by chapter anchor (438 blocks / 113 diagrams) |
 | [`tools/anchor_map.json`](./tools/anchor_map.json) | Legacy semantic anchors -> heading slugs, so links inside those blocks keep working |
 
 A new topic needs no build configuration: the script auto-discovers `*/ *.md` and assigns a stable palette from the directory name. CI ([`.github/workflows/check-html.yml`](./.github/workflows/check-html.yml)) runs `--check --audit` on every push / PR, which mechanically prevents MD/HTML drift.
@@ -292,7 +310,7 @@ The original convention was a strict "7-section" layout. In practice, a deep man
 ## 6. Upstream Projects & Versions
 
 <details>
-<summary><b>Expand the full version table (47 entries)</b></summary>
+<summary><b>Expand the full version table (56 entries)</b></summary>
 
 | Guide | Upstream repo | Version documented |
 | --- | --- | --- |
@@ -341,6 +359,15 @@ The original convention was a strict "7-section" layout. In practice, a deep man
 | VictoriaMetrics / Thanos | [VictoriaMetrics](https://github.com/VictoriaMetrics/VictoriaMetrics) · [thanos-io/thanos](https://github.com/thanos-io/thanos) | v1.156.0 / v0.42.5 |
 | TimescaleDB | [timescale/timescaledb](https://github.com/timescale/timescaledb) | 2.31.0 (PG 16 / 17 / 18) |
 | Casbin | [casbin/casbin](https://github.com/casbin/casbin) | v3.11.0 |
+| Nightingale | [ccfos/nightingale](https://github.com/ccfos/nightingale) | v9.3.0 · Apache-2.0 (donated to CCF ODC in 2022) |
+| gorilla/websocket | [gorilla/websocket](https://github.com/gorilla/websocket) | v1.5.3 (maintenance mode) · RFC 6455 |
+| Excelize | [qax-os/excelize](https://github.com/qax-os/excelize) | v2.9 |
+| golang-migrate | [golang-migrate/migrate](https://github.com/golang-migrate/migrate) | v4.20.1 |
+| ants | [panjf2000/ants](https://github.com/panjf2000/ants) | v2.12.1 |
+| google/wire | [google/wire](https://github.com/google/wire) | v0.6 |
+| DTM | [dtm-labs/dtm](https://github.com/dtm-labs/dtm) | v1.19.0 |
+| Watermill | [ThreeDotsLabs/watermill](https://github.com/ThreeDotsLabs/watermill) | v1.5.3 |
+| Go Design Patterns | [senghoo/golang-design-pattern](https://github.com/senghoo/golang-design-pattern) | Go 1.22+ |
 
 </details>
 
@@ -434,6 +461,6 @@ You are free to use, copy, modify, merge, publish and distribute these documents
 
 [Guide Index](#2-guide-index) · [Reading Paths](#3-suggested-reading-paths) · [Contributing](#7-contributing) · [中文](./README.md)
 
-<sub>Markdown is the single source of truth · HTML is a build artifact · 47 guides / 18,400 lines · © 2026 Weisg1999</sub>
+<sub>Markdown is the single source of truth · HTML is a build artifact · 56 guides / 22,400 lines · © 2026 Weisg1999</sub>
 
 </div>

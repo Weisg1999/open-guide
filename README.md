@@ -6,8 +6,8 @@
 
 能读、能查、能直接抄代码的「技术手册」，而不是又一份 Hello World。
 
-[![Docs](https://img.shields.io/badge/docs-47%20篇-16a34a?style=for-the-badge)](./README.md)
-[![Lines](https://img.shields.io/badge/正文-18%2C400%20行-0ea5e9?style=for-the-badge)](./README.md)
+[![Docs](https://img.shields.io/badge/docs-56%20篇-16a34a?style=for-the-badge)](./README.md)
+[![Lines](https://img.shields.io/badge/正文-22%2C400%20行-0ea5e9?style=for-the-badge)](./README.md)
 [![Format](https://img.shields.io/badge/format-Markdown%20%2B%20HTML-f59e0b?style=for-the-badge)](./README.md)
 
 [![License](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square)](./LICENSE)
@@ -27,7 +27,7 @@
 
 | 📚 指南 | 📝 正文 | 📄 离线手册 | 🖼️ 架构图 | ✅ 写作规范 | ⚖️ 许可 |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| **47 篇** | **≈ 18,400 行** | **47 份** | **104 张 SVG** | **7 个必备要素** | **MIT** |
+| **56 篇** | **≈ 22,400 行** | **56 份** | **113 张 SVG** | **7 个必备要素** | **MIT** |
 
 </div>
 
@@ -68,13 +68,13 @@
 
 | 🔤 语言核心 | 🌐 服务与治理 | 🗄️ 数据存储与检索 | 📨 消息 / 任务 | 🔭 可观测性 | 🐳 部署 |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| **9** | **8** | **15** | **7** | **6** | **2** |
+| **13** | **9** | **17** | **8** | **7** | **2** |
 
 </div>
 
 每篇都提供 `MD`（便于搜索、复制、提 PR）与 `HTML`（零依赖单文件离线手册）两种格式。
 
-### 🔤 Go 语言核心 <sub>9 篇</sub>
+### 🔤 Go 语言核心 <sub>13 篇</sub>
 
 | 主题 | 覆盖要点 | 文档 |
 | --- | --- | --- |
@@ -87,8 +87,12 @@
 | **Go 1.2x 现代特性** | 1.22 循环变量语义、range-over-func 与 `iter`、泛型类型别名、`unique` / `weak`、slices / maps / slog、toolchain 与 PGO | [MD](./go-modern/go-modern-guide.md) · [HTML](./go-modern/go-modern-guide.html) |
 | **samber/lo** | 基于泛型的 Lodash 风格工具库：slice / map / channel / string / 函数式helper 全量分类讲解，与标准库 `slices`/`maps` 的关系 | [MD](./samber-lo/samber-lo-guide.md) · [HTML](./samber-lo/samber-lo-guide.html) |
 | **Cobra / sqlc** | 命令树与 `RunE`、`PersistentFlags` vs `LocalFlags`、与 Viper 绑定、sqlc 编译模型与查询注解、NULL 类型映射、goose 迁移配合 | [MD](./cobra-sqlc/cobra-sqlc-guide.md) · [HTML](./cobra-sqlc/cobra-sqlc-guide.html) |
+| **ants** | goroutine 池的调度模型、cap 与队列语义、阻塞 / 非阻塞两种失败模式、`Invoke` 与超时、panic 处理、Running / Free / Waiting 指标 | [MD](./ants/ants-guide.md) · [HTML](./ants/ants-guide.html) |
+| **google/wire** | 编译期依赖注入、Provider / ProviderSet、`wire.Bind` / `Struct` / `Value`、cleanup 顺序、类型唯一性、与 fx / dig 的取舍 | [MD](./wire/wire-guide.md) · [HTML](./wire/wire-guide.html) |
+| **Excelize** | OOXML 结构、共享字符串表的内存账、普通 API vs `StreamWriter`、样式共享池、迭代读取、十万行导出与模板填充 | [MD](./excelize/excelize-guide.md) · [HTML](./excelize/excelize-guide.html) |
+| **Go 设计模式** | 哪些 GoF 模式在 Go 里消失 / 变形、functional options、中间件链、策略 = 函数值、观察者 = channel、并发模式与设计模式的区别、何时不该用 | [MD](./golang-design-pattern/golang-design-pattern-guide.md) · [HTML](./golang-design-pattern/golang-design-pattern-guide.html) |
 
-### 🌐 Web、微服务与治理 <sub>8 篇</sub>
+### 🌐 Web、微服务与治理 <sub>9 篇</sub>
 
 | 主题 | 覆盖要点 | 文档 |
 | --- | --- | --- |
@@ -100,14 +104,16 @@
 | **Casbin** | PERM 元模型与求值过程、ACL / RBAC / ABAC / RESTful、`g` 角色继承与多租户 domain、Adapter 与 Watcher 策略同步、Enforcer 并发与缓存、与 OPA 的边界 | [MD](./casbin/casbin-guide.md) · [HTML](./casbin/casbin-guide.html) |
 | **认证：JWT / OAuth2 / OIDC** | JWT 结构与签名算法、校验清单（alg 白名单 / iss / aud / exp）、JWKS 轮换、OAuth2 四种模式与 PKCE、OIDC、refresh 轮换与撤销 | [MD](./auth/auth-guide.md) · [HTML](./auth/auth-guide.html) |
 | **服务治理** | 限流四算法、单机 vs 集群限流、熔断三态与滑动窗口、自适应限流、重试预算与幂等、舱壁隔离、降级形态 | [MD](./service-governance/service-governance-guide.md) · [HTML](./service-governance/service-governance-guide.html) |
+| **gorilla/websocket** | 握手与 Origin 校验、帧与消息、单 reader / 单 writer 模型、deadline 与心跳、关闭握手、读上限与背压、水平扩展 | [MD](./websocket/websocket-guide.md) · [HTML](./websocket/websocket-guide.html) |
 
-### 🗄️ 数据存储与检索 <sub>15 篇</sub>
+### 🗄️ 数据存储与检索 <sub>17 篇</sub>
 
 | 主题 | 覆盖要点 | 文档 |
 | --- | --- | --- |
 | **MySQL** | B+ 树聚簇索引与回表、最左前缀与覆盖索引、MVCC / ReadView 与隔离级别、临键锁与死锁、`EXPLAIN` 慢查询、主从复制与延迟、`database/sql` 连接池 | [MD](./mysql/mysql-guide.md) · [HTML](./mysql/mysql-guide.html) |
 | **PostgreSQL** | 元组多版本 MVCC 与 VACUUM、默认 READ COMMITTED 与 SSI、B-tree / GIN / GiST / BRIN 索引、`jsonb` 与 GIN、WAL 逻辑复制、pgx v5 连接池与 `CopyFrom`、SQLSTATE 重试 | [MD](./postgresql/postgresql-guide.md) · [HTML](./postgresql/postgresql-guide.html) |
 | **分布式事务** | 2PC / XA 的代价、TCC 空回滚与悬挂、Saga 编排与补偿、Outbox 发件箱、事务消息、幂等与对账 | [MD](./distributed-transaction/distributed-transaction-guide.md) · [HTML](./distributed-transaction/distributed-transaction-guide.html) |
+| **DTM** | Saga 正序补偿逆序、TCC 三接口与空回滚 / 悬挂、子事务屏障、二阶段消息、XA 边界、工作流编排 | [MD](./dtm/dtm-guide.md) · [HTML](./dtm/dtm-guide.html) |
 | **GORM** | 链式 API、关联与预加载、事务与 SavePoint、Hook、迁移器、软删除、读写分离插件、泛型接口 | [MD](./gorm/gorm-guide.md) · [HTML](./gorm/gorm-guide.html) |
 | **go-redis** | 连接池与 `Cmdable`、Pipeline vs TxPipeline、`redis.Nil` 语义、Lua 与分布式锁、Stream 消费组、Cluster slot 与 hash tag、缓存三件套 | [MD](./redis/redis-guide.md) · [HTML](./redis/redis-guide.html) |
 | **etcd** | Raft 共识、MVCC 多版本、bbolt B+ 树、Lease / Watch / 分布式锁、clientv3 实战、v3.6 要点 | [MD](./etcd/etcd-guide.md) · [HTML](./etcd/etcd-guide.html) |
@@ -120,10 +126,11 @@
 | **OpenSearch** | 从 ES 7.10 分叉与 Apache-2.0 许可、Lucene 倒排与 NRT、分片路由、k-NN 向量检索、ISM 与 Data Streams、opensearch-go 客户端、与 ES 的兼容边界 | [MD](./opensearch/opensearch-guide.md) · [HTML](./opensearch/opensearch-guide.html) |
 | **TimescaleDB** | hypertable 与 chunk 自动分区、`time_bucket`、连续聚合、列式压缩与 segmentby / orderby、retention 与数据分层、唯一索引必须含时间列、与 InfluxDB / ClickHouse 的边界 | [MD](./timescaledb/timescaledb-guide.md) · [HTML](./timescaledb/timescaledb-guide.html) |
 | **向量数据库** | 距离度量与归一化、HNSW 的 M / efConstruction / efSearch、IVF / PQ、pre-filter vs post-filter、RRF 混合检索、pgvector / Milvus / Qdrant 实战 | [MD](./vector-database/vector-database-guide.md) · [HTML](./vector-database/vector-database-guide.html) |
+| **golang-migrate** | 版本表与 dirty 语义、up / down / steps、`embed` + `iofs`、并发与 advisory lock、不可逆迁移、与 goose / atlas 的分工 | [MD](./migrate/migrate-guide.md) · [HTML](./migrate/migrate-guide.html) |
 
 > 💡 ES 有双重身份：业务全文检索与日志检索。日志场景可与 [Zap 篇](./zap/zap-guide.md) 的 `trace_id` 配合，直接跳到 [OpenTelemetry](./opentelemetry/opentelemetry-guide.md) 链路。
 
-### 📨 消息、任务与调度 <sub>7 篇</sub>
+### 📨 消息、任务与调度 <sub>8 篇</sub>
 
 | 主题 | 覆盖要点 | 文档 |
 | --- | --- | --- |
@@ -134,10 +141,11 @@
 | **robfig/cron** | 标准 5 字段 / 6 字段 cron 表达式、标准解析器扩展（`@every` / `@daily`）、Job 包装器（`SkipIfStillRunning` 等）、时区与并发、自定义 Job | [MD](./robfig-cron/robfig-cron-guide.md) · [HTML](./robfig-cron/robfig-cron-guide.html) |
 | **RabbitMQ / RocketMQ** | Exchange/Queue 路由模型、Publisher Confirm 与手动 ACK、Quorum Queue 与 DLX、CommitLog 顺序写、顺序/事务/定时消息、at-least-once 幂等消费、与 Kafka / NATS / asynq 的边界 | [MD](./rabbitmq/rabbitmq-guide.md) · [HTML](./rabbitmq/rabbitmq-guide.html) |
 | **Temporal** | Durable Execution 与事件历史重放、确定性约束、持久计时器、Activity 幂等与重试分层、Signal / Query / Update、Saga 补偿、`GetVersion` 与 `Continue-As-New`、WorkflowReplayer 测试 | [MD](./temporal/temporal-guide.md) · [HTML](./temporal/temporal-guide.html) |
+| **Watermill** | Publisher / Subscriber 抽象、Router 与 ack 时机、中间件链（Recoverer / Retry / PoisonQueue）、CQRS、至少一次语义下的幂等 | [MD](./watermill/watermill-guide.md) · [HTML](./watermill/watermill-guide.html) |
 
 > 💡 五篇消息 / 任务文档（Kafka / NATS / asynq / RabbitMQ·RocketMQ / Temporal）末尾都有**横向选型对比表**，可直接用来做技术选型。
 
-### 🔭 可观测性 <sub>6 篇</sub>
+### 🔭 可观测性 <sub>7 篇</sub>
 
 | 主题 | 覆盖要点 | 文档 |
 | --- | --- | --- |
@@ -147,6 +155,7 @@
 | **OpenTelemetry** | Trace/Span 模型与 W3C `traceparent` 传播、Sampler / BatchSpanProcessor / OTLP、Resource 与语义约定、Gin/gRPC/asynq 埋点、把 `trace_id` 写进 Zap 日志 | [MD](./opentelemetry/opentelemetry-guide.md) · [HTML](./opentelemetry/opentelemetry-guide.html) |
 | **Grafana Loki** | 只索引标签、不索引正文的成本模型、chunk + TSDB 索引与对象存储、Distributor/Ingester/Querier 路径、LogQL 两段式与解析器、高基数禁忌、compactor 与 retention、Alloy 采集 | [MD](./loki/loki-guide.md) · [HTML](./loki/loki-guide.html) |
 | **VictoriaMetrics / Thanos** | Prometheus 本地 TSDB 的保留期与单机瓶颈、VM 单机与集群版（vminsert / vmselect / vmstorage）、MetricsQL、Thanos Sidecar / Store / Query / Compactor、对象存储降采样与副本去重、两条路线怎么选 | [MD](./victoriametrics/victoriametrics-guide.md) · [HTML](./victoriametrics/victoriametrics-guide.html) |
+| **Nightingale（夜莺）** | 告警控制面定位、业务组 / 机器 / 标签模型、`rule_config` 与 `cron_pattern`、告警引擎分片与心跳、屏蔽 / 订阅 / 通知链、事件管道、v9 内置 TSDB 与 AI / MCP | [MD](./nightingale/nightingale-guide.md) · [HTML](./nightingale/nightingale-guide.html) |
 
 > 💡 `Zap` / `slog` 管日志输出、`Loki` 管日志检索、`Prometheus` 管指标、`OpenTelemetry` 管链路，靠统一的 `service.name` 与 `trace_id` 串成完整排障链路。
 
@@ -198,6 +207,15 @@ flowchart LR
 | 要交付可维护的代码 | **Go 测试与可测性** → 表驱动 → httptest → testcontainers |
 | 做跨国 / 双时区业务 | **时区与时间处理** → 统一存 UTC、展示按目标时区，DST 要测 |
 | 依赖不稳定 / 流量突增 | **服务治理** → 限流 → 熔断 → 重试预算，超时先行 |
+| 多时序库统一告警 | **Nightingale** → 规则与通知收口，值班升级另接 PagerDuty / FlashDuty |
+| 做实时推送 | **gorilla/websocket** → 单写者模型 + 心跳，集群广播走 NATS |
+| 导出 Excel / 报表 | **Excelize** → 十万行走 StreamWriter，别用普通 API |
+| 管数据库版本 | **golang-migrate** → 版本表 + dirty 处理，生产用独立迁移 Job |
+| 要给 goroutine 加上限 | **ants** → cap 是并发上限，非阻塞模式必须处理 ErrPoolOverload |
+| 依赖多、装配乱 | **google/wire** → 编译期生成，别在启动时反射扫描 |
+| 跨服务写一致（要框架） | **DTM** → 先读分布式事务篇判断方案，再看框架落地 |
+| 换 broker 不想改业务 | **Watermill** → Router + 中间件，幂等仍是自己的事 |
+| 想系统学设计模式 | **Go 设计模式** → 先看哪些模式已经消失，再学剩下的 |
 | 做语义搜索 / RAG | **向量数据库** → pgvector 起步，规模上来再评估专用库 |
 | 服务变慢 / 内存上涨 | **Go 性能剖析** → pprof 定位热点、trace 看等待，再调 GC 参数 |
 | 跨服务写操作要一致 | **分布式事务** → 先判断能否避免，再选 Outbox / Saga |
@@ -257,7 +275,7 @@ python tools/build_html.py --stats         # 结构统计 + 内链锚点自检
 | 文件 | 作用 |
 |---|---|
 | [`tools/themes.json`](./tools/themes.json) | 每篇的配色、Hero 副标题与标签 |
-| [`tools/fragments.json`](./tools/fragments.json) | SVG 架构图、要点卡片、提示框等视觉增强（Markdown 无对应源），按章节锚点注入，共 402 块 / 104 张图 |
+| [`tools/fragments.json`](./tools/fragments.json) | SVG 架构图、要点卡片、提示框等视觉增强（Markdown 无对应源），按章节锚点注入，共 438 块 / 113 张图 |
 | [`tools/anchor_map.json`](./tools/anchor_map.json) | 旧版手工 HTML 的语义锚点 → 标题 slug 映射，保证增强块内的跳转不断链 |
 
 新增主题无需改构建配置：脚本自动发现 `*/ *.md`，未配置配色时按目录名分配稳定色板。CI（[`.github/workflows/check-html.yml`](./.github/workflows/check-html.yml)）在每次 push / PR 执行 `--check --audit`，从机制上杜绝漂移。
@@ -292,7 +310,7 @@ python tools/build_html.py --stats         # 结构统计 + 内链锚点自检
 ## 六、上游项目与版本对照
 
 <details>
-<summary><b>展开完整对照表（47 项）</b></summary>
+<summary><b>展开完整对照表（56 项）</b></summary>
 
 | 文档 | 上游仓库 | 文档对应版本 |
 | --- | --- | --- |
@@ -341,6 +359,15 @@ python tools/build_html.py --stats         # 结构统计 + 内链锚点自检
 | VictoriaMetrics / Thanos | [VictoriaMetrics](https://github.com/VictoriaMetrics/VictoriaMetrics) · [thanos-io/thanos](https://github.com/thanos-io/thanos) | v1.156.0 / v0.42.5 |
 | TimescaleDB | [timescale/timescaledb](https://github.com/timescale/timescaledb) | 2.31.0（PG 16 / 17 / 18） |
 | Casbin | [casbin/casbin](https://github.com/casbin/casbin) | v3.11.0 |
+| Nightingale | [ccfos/nightingale](https://github.com/ccfos/nightingale) | v9.3.0 · Apache-2.0（2022 年捐赠 CCF ODC） |
+| gorilla/websocket | [gorilla/websocket](https://github.com/gorilla/websocket) | v1.5.3（维护模式）· RFC 6455 |
+| Excelize | [qax-os/excelize](https://github.com/qax-os/excelize) | v2.9 |
+| golang-migrate | [golang-migrate/migrate](https://github.com/golang-migrate/migrate) | v4.20.1 |
+| ants | [panjf2000/ants](https://github.com/panjf2000/ants) | v2.12.1 |
+| google/wire | [google/wire](https://github.com/google/wire) | v0.6 |
+| DTM | [dtm-labs/dtm](https://github.com/dtm-labs/dtm) | v1.19.0 |
+| Watermill | [ThreeDotsLabs/watermill](https://github.com/ThreeDotsLabs/watermill) | v1.5.3 |
+| Go 设计模式 | [senghoo/golang-design-pattern](https://github.com/senghoo/golang-design-pattern) | Go 1.22+ |
 
 </details>
 
@@ -434,6 +461,6 @@ Copyright (c) 2026 Weisg1999
 
 [文档目录](#二文档目录) · [阅读路径](#三推荐的阅读路径) · [参与贡献](#七贡献) · [English](./README_EN.md)
 
-<sub>Markdown 是唯一真源 · HTML 由构建脚本生成 · 47 篇 / 18,400 行 · © 2026 Weisg1999</sub>
+<sub>Markdown 是唯一真源 · HTML 由构建脚本生成 · 56 篇 / 22,400 行 · © 2026 Weisg1999</sub>
 
 </div>

@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nightingale（夜莺） · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#4338ca; --accent-light:#e0e7ff; --accent-dark:#312e81;
+    --bg:#f7f7ff; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#120f33; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#312e81 0%,#4338ca 58%,#312e81 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">Nightingale（夜莺）<span class="ver">v9.3.0</span></div>
+  <div class="sub">告警控制面 · 规则 · 事件</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#它不做什么">它不做什么</a>
+  <a class="sub-link" href="#什么时候该用它">什么时候该用它</a>
+  <a href="#2-能力总览">2. 能力总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-一个进程三个角色">3.1 一个进程，三个角色</a>
+  <a class="sub-link" href="#32-元数据业务组机器标签">3.2 元数据：业务组、机器、标签</a>
+  <a class="sub-link" href="#33-告警规则从-promql-到事件">3.3 告警规则：从 PromQL 到事件</a>
+  <a class="sub-link" href="#34-告警引擎的高可用分片而不是复制">3.4 告警引擎的高可用：分片，而不是复制</a>
+  <a class="sub-link" href="#35-事件处理链屏蔽-订阅-通知">3.5 事件处理链：屏蔽 → 订阅 → 通知</a>
+  <a class="sub-link" href="#36-v9-的形态变化默认单机开箱即用">3.6 v9 的形态变化：默认「单机开箱即用」</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-用-compose-起一套完整环境">4.1 用 Compose 起一套完整环境</a>
+  <a class="sub-link" href="#42-配数据源">4.2 配数据源</a>
+  <a class="sub-link" href="#43-建业务组与机器">4.3 建业务组与机器</a>
+  <a class="sub-link" href="#44-写第一条规则">4.4 写第一条规则</a>
+  <a class="sub-link" href="#45-通知渠道-通知规则-关联">4.5 通知：渠道 → 通知规则 → 关联</a>
+  <a class="sub-link" href="#46-go把指标推进夜莺">4.6 Go：把指标推进夜莺</a>
+  <a class="sub-link" href="#47-生产配置片段">4.7 生产配置片段</a>
+  <a class="sub-link" href="#48-用-api-查当前告警">4.8 用 API 查当前告警</a>
+  <a href="#5-版本演进">5. 版本演进</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+  <a class="sub-link" href="#一句话决策">一句话决策</a>
+  <a class="sub-link" href="#与相邻篇目的分工">与相邻篇目的分工</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>Nightingale（夜莺）技术指南</h1>
+<p>夜莺不采集、不存储指标，只做告警与事件中心：把已有的 Prometheus / VictoriaMetrics / ES / Loki / ClickHouse 接进来，统一规则、屏蔽、订阅与通知。</p>
+<p style="opacity:.8;font-size:13.5px">告警控制面 · 规则 · 事件</p>
+<div class="meta"><span>多数据源</span><span>业务组隔离</span><span>告警分片</span><span>事件管道</span><span>n9e-edge</span><span>内置 TSDB</span></div>
+</div>
+<blockquote><p>夜莺不采集、不存储指标，只做告警与事件中心：把已有的 Prometheus / VictoriaMetrics / Elasticsearch / Loki / ClickHouse 接进来，统一规则、屏蔽、订阅与通知。 上游：<a href="https://github.com/ccfos/nightingale">https://github.com/ccfos/nightingale</a> <strong>v9.3.0</strong>（2026-10）· 文档：<a href="https://n9e.github.io/docs">https://n9e.github.io/docs</a>　|　协议：Apache-2.0（2022 年由滴滴捐赠 CCF 开源发展委员会）</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p>一句话：<strong>Nightingale 是监控体系里的「告警控制面」</strong>。它不替换你的采集器，也不替换你的时序库，而是把「规则怎么配、告警发给谁、什么时候不该发」从各个 Prometheus 实例里抽出来，做成一个带权限、带审计、带事件处理的平台。</p>
+<p>这一定位决定了三件事：</p>
+<ul><li><strong>指标仍在原来的 TSDB 里</strong>。夜莺通过 PromQL 查询 Prometheus / VictoriaMetrics / Thanos，通过 DSL 查询 Elasticsearch / Loki / ClickHouse。数据不搬家，Grafana 也不用下岗。</li><li><strong>规则从配置文件搬到数据库</strong>。<code>rule_files</code> 变成业务组下的规则条目，改一条规则不用 reload，也不用等配置同步；谁改的、什么时候改的、评估结果是什么，都能查。</li><li><strong>告警从「发出去」变成「处理过」</strong>。屏蔽、订阅、聚合、恢复通知、事件管道、自愈脚本，这些在 Alertmanager 里要靠组合配置或自研的部分，夜莺给了现成的模型。</li></ul>
+<h3 id="它不做什么">它不做什么</h3>
+<div class="table-wrap"><table><thead><tr><th>不做</th><th>说明</th></tr></thead><tbody><tr><td>不采集指标</td><td>采集交给 Categraf、node_exporter、OpenTelemetry Collector；夜莺只接收 Remote Write 或查询外部数据源</td></tr><tr><td>不长期存储指标</td><td>v9 起带一个<strong>可选的</strong>内置 TSDB，定位是「小规模单机开箱即用」（约 10 万活跃 series），不是替代 VictoriaMetrics</td></tr><tr><td>不做值班排班与升级</td><td>它负责「把告警送到人」，不负责「谁今晚值班、15 分钟没响应升级给谁」；后者交给 PagerDuty、FlashDuty 或自建 on-call</td></tr><tr><td>不替代 Grafana</td><td>自带看板够用，但复杂可视化、大盘拼装仍建议留给 Grafana</td></tr></tbody></table></div>
+<h3 id="什么时候该用它">什么时候该用它</h3>
+<ul><li>有<strong>多个时序库</strong>（总部 Prometheus、边缘 VictoriaMetrics、业务自建 Thanos），需要一套规则跨库生效；</li><li>想把监控能力开放给各研发团队<strong>自助配置</strong>，而不是所有人都来找 SRE 改 YAML；</li><li>需要<strong>告警分级、生效时间段、按业务组隔离</strong>、屏蔽与订阅这类「组织级」能力；</li><li>机房网络不稳定，需要<strong>边缘告警下沉</strong>（n9e-edge），断了中心连接也能本地告警。</li></ul>
+<p>反过来，如果你只有一套 Prometheus、规则不到 20 条、团队三五个人，<code>Prometheus + Alertmanager</code> 足够，引入夜莺只会多一套 MySQL/Redis 要维护。</p>
+
+</section>
+<section data-anchor="2-能力总览">
+<h2 id="2-能力总览">2. 能力总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>具体内容</th><th>与原生方案的关系</th></tr></thead><tbody><tr><td>规则管理</td><td>业务组隔离、规则导入（Prometheus rule 文件）、克隆、试运行（test-fire）、评估记录回看</td><td>替代 <code>rule_files</code> + reload</td></tr><tr><td>多数据源</td><td>Prometheus / VictoriaMetrics / Thanos、Elasticsearch / OpenSearch、Loki、ClickHouse、PostgreSQL / MySQL、TDengine、IoTDB</td><td>Prometheus 只能查自己</td></tr><tr><td>告警引擎</td><td>按 <code>cron_pattern</code> 或评估间隔执行、多实例分片、心跳注册、故障接管</td><td>替代 <code>prometheus rule evaluation</code></td></tr><tr><td>事件处理</td><td>屏蔽（mute）、订阅（subscribe）、事件管道（pipeline：relabel / enrich / 丢弃）、恢复通知</td><td>部分对应 Alertmanager 的 silence / inhibition</td></tr><tr><td>通知</td><td>钉钉、飞书、企微、Slack、Teams、邮件、短信、电话、PagerDuty、Jira、Discord、ntfy 等 20+ 渠道，支持通知模板与测试发送</td><td>Alertmanager 只有 webhook / email 等少数原生渠道</td></tr><tr><td>自愈</td><td>Ibex 执行脚本（<code>[Ibex] RPCListen</code>，默认 20090），告警触发后下发到目标机器</td><td>原生方案没有</td></tr><tr><td>边缘模式</td><td>n9e-edge 在边缘机房独立评估规则，断网时本地告警，恢复后同步事件</td><td>原生方案没有</td></tr><tr><td>AI 与 MCP</td><td>v9 内置 AI 助手（自然语言查告警、生成规则）与 MCP Server，可被 Cursor 等客户端调用</td><td>原生方案没有</td></tr><tr><td>看板与机器管理</td><td>内置仪表盘、Grafana 大盘导入、机器列表与标签、采集器安装命令</td><td>部分替代 Grafana + 自建 CMDB</td></tr></tbody></table></div>
+
+<div class="features">
+  <div class="feature"><div class="fh"><h4>规则即数据</h4></div><p>业务组、权限、评估记录都在库里，改规则不用 reload，也不用等配置同步</p></div>
+  <div class="feature"><div class="fh"><h4>多数据源</h4></div><p>Prometheus / VM / ES / Loki / ClickHouse，一套规则跨库生效</p></div>
+  <div class="feature"><div class="fh"><h4>事件可追踪</h4></div><p>屏蔽 → 订阅 → 通知，每一步都有记录，能追到「为什么没收到」</p></div>
+</div>
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-一个进程三个角色">3.1 一个进程，三个角色</h3>
+<p>默认部署只有一个二进制 <code>n9e</code>，进程内跑三件事：</p>
+<pre><code class="lang-text">                    ┌──────────────────────────── n9e ────────────────────────────┐
+ Categraf / agent ──►  Pushgw（Remote Write 接收、label 重写、转发 TSDB）           │
+                    │                                                             │
+ 浏览器 / API ──────►  Web/API（规则、机器、事件、看板、权限）──► MySQL/SQLite      │
+                    │                                      └──► Redis             │
+                    │  AlertingEngine（拉规则、查数据源、算阈值、生成事件）        │
+                    └─────────────────────────────────────────────────────────────┘
+                                             │
+                                             ▼
+                              外部 TSDB：Prometheus / VictoriaMetrics / Thanos</code></pre>
+<ul><li><strong>Pushgw</strong>：接收 Prometheus Remote Write。它会把 series 里的 <code>ident</code> 标签与机器表关联，做 label 重写，然后转发给外部 TSDB（<code>[[Pushgw.Writers]]</code>）；v9 也可以直接写内置 TSDB。</li><li><strong>Web/API</strong>：规则、机器、业务组、屏蔽、订阅、通知、看板全部走这套 API。前端是编译进二进制的静态资源，所以升级只换一个文件。</li><li><strong>AlertingEngine</strong>：按规则的 <code>cron_pattern</code> 或评估间隔，去数据源执行查询，比较阈值，生成/恢复事件。</li></ul>
+<p>大规模时可以把角色拆开部署：<code>n9e-alert</code>（只跑告警引擎）、<code>n9e-pushgw</code>（只做数据转发）、<code>n9e-edge</code>（边缘节点）。<strong>升级时必须一起升</strong>，v9 release notes 明确提示了这一点，版本不一致会出现规则不同步或事件重复。</p>
+<h3 id="32-元数据业务组机器标签">3.2 元数据：业务组、机器、标签</h3>
+<p>夜莺的所有规则都挂在<strong>业务组（busi group）</strong>下，这是它的多租户边界：</p>
+<div class="table-wrap"><table><thead><tr><th>概念</th><th>作用</th><th>关键点</th></tr></thead><tbody><tr><td>业务组</td><td>规则、机器、事件、看板的隔离单位</td><td>团队成员按业务组授权；规则默认只对组内机器生效（<code>enable_in_bg=1</code>）</td></tr><tr><td>机器（target）</td><td>被监控对象，用 <code>ident</code> 唯一标识</td><td><code>ident</code> 通常就是 hostname；Categraf 上报时自带，手工 Remote Write 必须带上</td></tr><tr><td>标签</td><td>机器的键值对，用于规则筛选与事件富化</td><td>规则里的 <code>append_tags</code> 会写进事件，通知模板可直接引用</td></tr><tr><td>数据源</td><td>被查询的 TSDB / 日志库</td><td>一个规则可以绑定多个数据源（<code>datasource_queries</code>），实现「同一规则跨集群生效」</td></tr></tbody></table></div>
+<p>规则里有一个容易忽略的开关：<code>enable_in_bg</code>。置 0 表示<strong>全局生效</strong>（对所有机器的指标都算），置 1 表示只对业务组内的机器生效。多租户环境建议保持 1，否则 A 组的规则可能被 B 组的指标触发。</p>
+<h3 id="33-告警规则从-promql-到事件">3.3 告警规则：从 PromQL 到事件</h3>
+<p>一条规则的核心是「查什么、怎么判、判多久、发给谁」。v9 的规则主体是 <code>rule_config</code>（JSON），里面包含 <code>queries</code> 与 <code>triggers</code>；老字段 <code>prom_ql</code> 仍兼容但已标记废弃。</p>
+<div class="table-wrap"><table><thead><tr><th>字段</th><th>含义</th><th>备注</th></tr></thead><tbody><tr><td><code>rule_config.queries</code></td><td>查询列表：数据源、表达式、时间范围</td><td>支持 PromQL、LogQL、ES DSL、SQL</td></tr><tr><td><code>rule_config.triggers</code></td><td>判定条件：阈值、比较符、持续次数/时长</td><td>多 query 时可做 A/B 运算</td></tr><tr><td><code>cron_pattern</code></td><td>评估节奏，如 <code>@every 15s</code></td><td>替代已废弃的 <code>prom_for_duration</code></td></tr><tr><td><code>prom_eval_interval</code></td><td>评估间隔（秒）</td><td>与 cron 二选一</td></tr><tr><td><code>recover_duration</code></td><td>恢复判定窗口（秒）</td><td>避免抖动导致反复恢复/触发</td></tr><tr><td><code>severity</code></td><td>1 Emergency / 2 Warning / 3 Notice / 4 Lowest</td><td>决定通知模板与升级策略</td></tr><tr><td><code>time_zone</code></td><td>生效时间所用时区</td><td>空表示服务端默认；跨时区团队必须显式设置</td></tr><tr><td><code>enable_stimes</code> / <code>enable_etimes</code> / <code>enable_days_of_weeks</code></td><td>生效时间段与星期</td><td>支持多组时段，不是单一窗口</td></tr><tr><td><code>notify_rule_ids</code></td><td>关联的通知规则</td><td>v9 推荐用通知规则，不再直接挂渠道</td></tr><tr><td><code>disabled</code></td><td>0 启用 / 1 禁用</td><td>禁用后引擎不再评估</td></tr></tbody></table></div>
+<p>「持续多久才告警」在夜莺里有两层：查询区间（看多长的数据）和触发条件（连续几个点满足）。<strong>只配持续时长、不配恢复窗口</strong>，是抖动误报的主要来源。</p>
+<h3 id="34-告警引擎的高可用分片而不是复制">3.4 告警引擎的高可用：分片，而不是复制</h3><div class="figure">
+  <svg viewBox="0 0 880 268" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-nightingale" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4338ca"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#312e81">一条规则的评估链路</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">规则在库里，分片到实例，命中后进入事件处理</text>
+    <rect x="36" y="82" width="175" height="80" rx="12" fill="#e0e7ff" stroke="#4338ca" stroke-width="1.5"/>
+    <text x="124" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#312e81">规则与分片</text>
+    <text x="124" y="136" text-anchor="middle" font-size="11" fill="#312e81">按业务组分配给实例</text>
+    <line x1="215" y1="122" x2="241" y2="122" stroke="#4338ca" stroke-width="2" marker-end="url(#m-nightingale)"/>
+    <rect x="247" y="82" width="175" height="80" rx="12" fill="#e0e7ff" stroke="#4338ca" stroke-width="1.5"/>
+    <text x="334" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#312e81">评估</text>
+    <text x="334" y="136" text-anchor="middle" font-size="11" fill="#312e81">cron 或固定间隔触发</text>
+    <line x1="426" y1="122" x2="452" y2="122" stroke="#4338ca" stroke-width="2" marker-end="url(#m-nightingale)"/>
+    <rect x="458" y="82" width="175" height="80" rx="12" fill="#e0e7ff" stroke="#4338ca" stroke-width="1.5"/>
+    <text x="546" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#312e81">查询数据源</text>
+    <text x="546" y="136" text-anchor="middle" font-size="11" fill="#312e81">PromQL / LogQL / SQL</text>
+    <line x1="637" y1="122" x2="663" y2="122" stroke="#4338ca" stroke-width="2" marker-end="url(#m-nightingale)"/>
+    <rect x="669" y="82" width="175" height="80" rx="12" fill="#e0e7ff" stroke="#4338ca" stroke-width="1.5"/>
+    <text x="756" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#312e81">事件</text>
+    <text x="756" y="136" text-anchor="middle" font-size="11" fill="#312e81">阈值命中与恢复</text>
+    <rect x="40" y="186" width="800" height="58" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="210" font-size="12.5" fill="#1e293b">多副本时规则按业务组哈希分配，心跳超时由其他实例接管；扩容提升容量，不提升单条规则速度。</text>
+  </svg>
+  <figcaption>一条规则的评估链路</figcaption>
+</div>
+<p>这是夜莺与 Prometheus 最大的架构差异。Prometheus 每个实例评估自己的规则，天然无协调；夜莺的规则在数据库里，多个 <code>n9e-alert</code> 实例必须<strong>分工</strong>，否则同一条规则会被评估多次、事件重复。</p>
+<p>机制是「按业务组分配 + 心跳续约」：</p>
+<pre><code class="lang-text">n9e-alert-1  ──┐
+n9e-alert-2  ──┼──► 读取 [Alert.Heartbeat] EngineName，注册存活
+n9e-alert-3  ──┘         │
+                         ▼
+              规则按 group_id 哈希分配到存活实例
+                         │
+              实例宕机 → 心跳超时 → 规则被其他实例接管</code></pre>
+<p>由此得到两条运维结论：</p>
+<ol><li><strong>扩副本提升的是容量与可用性，不是单条规则的评估速度</strong>。规则再多，也只是分散到更多实例；单条规则的查询仍然受数据源限制。</li><li><strong>必须监控「规则分配」本身</strong>。如果某个实例心跳异常但没退出，规则可能出现「以为有人在算，其实没人算」的空窗。夜莺的规则页会显示评估记录，v9 还提供 <code>[Alert.EvalLog]</code> 把每次评估的查询与判定落盘，排障时先看这里，而不是先怀疑数据源。</li></ol>
+<h3 id="35-事件处理链屏蔽-订阅-通知">3.5 事件处理链：屏蔽 → 订阅 → 通知</h3>
+<p>一条事件产生后，依次经过：</p>
+<pre><code class="lang-text">规则命中 → 事件（含 tags/severity/rule_id）
+   │
+   ├─► 屏蔽（mute）：匹配标签/规则/时间窗 → 直接抑制，不进通知
+   ├─► 事件管道（pipeline）：relabel、富化（补 owner/runbook）、丢弃
+   ├─► 订阅（subscribe）：按业务组/标签决定「谁该收到」
+   └─► 通知（notify）：模板渲染 → 渠道发送 → 记录投递结果</code></pre>
+<p>三者的分工容易混淆：</p>
+<ul><li><strong>屏蔽</strong>回答「现在不要发」（维护窗口、已知故障）；</li><li><strong>订阅</strong>回答「这类事件归谁」（团队/值班组）；</li><li><strong>通知规则</strong>回答「用什么渠道、什么模板、多久重复」。</li></ul>
+<p>把「屏蔽」当「订阅」用，会出现「规则配了但没人收到」；把「订阅」当「屏蔽」用，则会在维护窗口被电话叫醒。夜莺的屏蔽支持按标签匹配，粒度可以细到「只屏蔽某个集群的某条规则」，这是 Alertmanager silence 的等价能力。</p>
+<h3 id="36-v9-的形态变化默认单机开箱即用">3.6 v9 的形态变化：默认「单机开箱即用」</h3>
+<p>如果你看过 v6/v7 的部署文档，会记得「必须 MySQL + Redis + 外部 TSDB」。v9 的默认配置变了：</p>
+<pre><code class="lang-toml">[DB]
+DBType = "sqlite"        # 支持 mysql / postgres / sqlite
+DSN = "n9e.db"
+
+[Redis]
+RedisType = "miniredis"  # standalone / cluster / sentinel / miniredis
+
+[EmbeddedTSDB]
+Enable = true            # 内置 TSDB，自动注册名为 embedded-tsdb 的数据源
+Dir = "data/tsdb"
+RetentionDuration = "15d"
+MaxBytes = "10GiB"</code></pre>
+<p>这让「下载二进制 → 启动 → 打开 17000」就能看到数据与告警，适合评估与小规模单机。但配置注释写得很清楚：<strong>内置 TSDB 存在本机磁盘，只适合单实例</strong>；多副本部署时每个副本只持有一部分数据，必须关掉它并配置 <code>[[Pushgw.Writers]]</code> 指向外部 TSDB。SQLite 同理，多副本必须换 MySQL/PostgreSQL。</p>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-用-compose-起一套完整环境">4.1 用 Compose 起一套完整环境</h3>
+<p>官方仓库自带评估栈，包含夜莺、MySQL、Redis、VictoriaMetrics 与 Categraf：</p>
+<pre><code class="lang-bash">git clone https://github.com/ccfos/nightingale.git
+cd nightingale/docker/compose-bridge
+docker compose up -d
+# 打开 http://localhost:17000，初始账号 root / root.2020</code></pre>
+<p><code>compose-bridge</code> 里的服务名就是容器内可用的地址。配数据源时<strong>不要填 localhost</strong>——那是 n9e 容器自己的回环地址，填 <code>http://victoriametrics:8428</code> 才能连通。</p>
+<h3 id="42-配数据源">4.2 配数据源</h3>
+<p>登录后进入「数据源」，新增 Prometheus 类型：</p>
+<div class="table-wrap"><table><thead><tr><th>字段</th><th>值</th><th>说明</th></tr></thead><tbody><tr><td>名称</td><td><code>vm-local</code></td><td>自定义，规则里按 ID 引用</td></tr><tr><td>URL</td><td><code>http://victoriametrics:8428</code></td><td>Compose 内用服务名；生产用可路由地址</td></tr><tr><td>类型</td><td>Prometheus</td><td>VictoriaMetrics 兼容 Prometheus 查询 API</td></tr><tr><td>超时</td><td>10s</td><td>小于规则评估间隔，避免查询堆积</td></tr></tbody></table></div>
+<p>保存后点「测试」，能看到 <code>up</code> 之类的指标才算通。</p>
+<h3 id="43-建业务组与机器">4.3 建业务组与机器</h3>
+<ol><li>「业务组」新建 <code>demo</code>，把当前账号加进去；</li><li>「机器列表」会显示 Categraf 上报的主机，<code>ident</code> 就是 hostname；</li><li>给机器打标签，例如 <code>env=prod</code>、<code>region=cn-north</code>，后续规则用标签筛选。</li></ol>
+<p>如果没有机器，说明 Categraf 没连上，或者 <code>ident</code> 没对上。夜莺的「机器列表」页提供采集器安装命令，可以直接复制。</p>
+<h3 id="44-写第一条规则">4.4 写第一条规则</h3>
+<p>最快验证链路的方式是用一条<strong>必然触发</strong>的规则：</p>
+<pre><code class="lang-promql">vector(1) &gt; 0</code></pre>
+<p>步骤：</p>
+<ol><li>业务组 <code>demo</code> → 告警规则 → 新建；</li><li>数据源选 <code>vm-local</code>，查询填上面的表达式；</li><li>触发条件设为「大于 0」，持续时长 <code>0</code>（立即触发）；</li><li>严重级别选 <code>Warning</code>；</li><li>先不挂通知，保存并启用。</li></ol>
+<p>几十秒内「活跃告警」就会出现一条事件。确认能看到事件、能点开详情（含查询语句与触发值），再去做通知——<strong>先让事件跑通，再让通知跑通</strong>，能省掉一半排障时间。</p>
+<p>确认无误后把这条规则禁用或删掉，否则它会一直告警。</p>
+<h3 id="45-通知渠道-通知规则-关联">4.5 通知：渠道 → 通知规则 → 关联</h3>
+<p>v9 的推荐路径是三层：</p>
+<pre><code class="lang-text">通知渠道（钉钉机器人 / 飞书 / 邮件 / 短信…）
+      ↑ 被引用
+通知规则（哪些级别、什么模板、重复间隔、恢复是否通知）
+      ↑ 被关联
+告警规则（notify_rule_ids）</code></pre>
+<ol><li>「通知渠道」新增钉钉或飞书机器人，填 webhook 与签名，点「测试」；</li><li>「通知规则」新建：选渠道、选级别（如 Warning + Emergency）、选模板；</li><li>回到告警规则，把通知规则挂上。</li></ol>
+<p>顺序不能反：先建渠道再建规则，否则通知规则里选不到渠道。测试发送失败时，先看渠道的签名/关键词配置，再看网络出口——夜莺不会替你重试到成功。</p>
+<h3 id="46-go把指标推进夜莺">4.6 Go：把指标推进夜莺</h3>
+<p>夜莺的 Pushgw 接收标准的 Prometheus Remote Write。下面这段代码构造一个带 <code>ident</code> 标签的样本，推给夜莺；<code>ident</code> 必须与机器表里的标识一致，否则数据能入库但关联不到机器。</p>
+<pre><code class="lang-go">package main
+
+import (
+	"bytes"
+	"context"
+	"fmt"
+	"net/http"
+	"time"
+
+	"github.com/gogo/protobuf/proto"
+	"github.com/golang/snappy"
+	"github.com/prometheus/prometheus/prompb"
+)
+
+// push 向夜莺 Pushgw 发送一个样本，路径与内置 TSDB 的 remote write 端点一致。
+func push(ctx context.Context, endpoint, ident string, value float64) error {
+	req := &amp;prompb.WriteRequest{
+		Timeseries: []prompb.TimeSeries{{
+			Labels: []prompb.Label{
+				{Name: "__name__", Value: "demo_job_duration_seconds"},
+				{Name: "ident", Value: ident}, // 夜莺靠 ident 关联机器
+				{Name: "job", Value: "demo"},
+			},
+			Samples: []prompb.Sample{{
+				Value:     value,
+				Timestamp: time.Now().UnixMilli(),
+			}},
+		}},
+	}
+	raw, err := proto.Marshal(req)
+	if err != nil {
+		return err
+	}
+	body := snappy.Encode(nil, raw)
+
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body))
+	if err != nil {
+		return err
+	}
+	httpReq.Header.Set("Content-Type", "application/x-protobuf")
+	httpReq.Header.Set("Content-Encoding", "snappy")
+	httpReq.Header.Set("X-Prometheus-Remote-Write-Version", "0.1.0")
+
+	resp, err := http.DefaultClient.Do(httpReq)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode/100 != 2 {
+		return fmt.Errorf("remote write failed: %s", resp.Status)
+	}
+	return nil
+}
+
+func main() {
+	// 生产环境从配置读取，不要硬编码
+	err := push(context.Background(), "http://127.0.0.1:17000/prometheus/api/v1/write", "demo-host-01", 0.42)
+	fmt.Println("push err:", err)
+}</code></pre>
+<p>两个细节：<code>ident</code> 标签会被 Pushgw 重写（<code>LabelRewrite = true</code>），最终入库的标签以机器表为准；<code>ForceUseServerTS = true</code> 时服务端会覆盖客户端时间戳，跨时区机器不需要自己校准。</p>
+<h3 id="47-生产配置片段">4.7 生产配置片段</h3>
+<p>从默认的「单机模式」切到「生产模式」，需要改的是这三段：</p>
+<pre><code class="lang-toml">[DB]
+DBType = "mysql"
+DSN = "n9e:pass@tcp(mysql.internal:3306)/n9e?charset=utf8mb4&amp;parseTime=True&amp;loc=Local"
+MaxOpenConns = 150
+MaxIdleConns = 50
+
+[Redis]
+Address = "redis.internal:6379"
+RedisType = "standalone"
+Password = "***"
+DB = 0
+
+[EmbeddedTSDB]
+Enable = false            # 多副本必须关掉，改用外部 TSDB
+
+[[Pushgw.Writers]]
+Url = "http://victoriametrics.internal:8480/insert/0/prometheus/api/v1/write"
+Timeout = 10000
+DialTimeout = 3000</code></pre>
+<p>迁移期可以「双写」：<code>EmbeddedTSDB.Enable = true</code> 与 <code>[[Pushgw.Writers]]</code> 同时开，数据既进本地也进外部库，确认外部库查询正常后再关掉内置 TSDB。</p>
+<h3 id="48-用-api-查当前告警">4.8 用 API 查当前告警</h3>
+<p>夜莺的 API 用个人 Token 鉴权（Profile → Token 管理），请求头是 <code>X-User-Token</code>：</p>
+<pre><code class="lang-bash"># 拉取活跃告警，按严重级别过滤
+curl -s -H "X-User-Token: $N9E_TOKEN" \
+  "http://127.0.0.1:17000/api/n9e/alert-cur-events/list?severity=2&amp;limit=20" | jq '.dat'
+
+# 查某条规则最近一次评估记录（v9 的 EvalLog 能力）
+curl -s -H "X-User-Token: $N9E_TOKEN" \
+  "http://127.0.0.1:17000/api/n9e/alert-rule/1/eval-records?limit=5" | jq '.dat'</code></pre>
+<p>把这两个接口接进自己的值班看板，比在夜莺页面里刷新更适合做「跨系统统一视图」。</p>
+
+<div class="callout info"><p><b>实战要点：</b>上线顺序是先让事件跑通（vector(1) &gt; 0），再让通知跑通；渠道测试发送通过后，再挂到生产规则。</p></div>
+</section>
+<section data-anchor="5-版本演进">
+<h2 id="5-版本演进">5. 版本演进<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>时间</th><th>关键变化</th><th>迁移注意</th></tr></thead><tbody><tr><td>v6</td><td>2022–2023</td><td>模块化拆分：<code>n9e-alert</code>、<code>n9e-pushgw</code>、<code>n9e-edge</code> 可独立部署；业务组与权限模型成型</td><td>旧版配置文件需按新段名调整</td></tr><tr><td>v7 / v8</td><td>2024–2025</td><td>多数据源扩展（ES / Loki / ClickHouse）、通知渠道增加、看板与 Grafana 导入增强</td><td>规则字段逐步从 <code>prom_ql</code> 迁到 <code>rule_config</code></td></tr><tr><td><strong>v9</strong></td><td><strong>2026-10（v9.3.0）</strong></td><td><strong>内置 TSDB、默认 SQLite + miniredis、内置 AI 助手与 MCP Server、全新导航与表格 UI、重写规则/屏蔽/订阅/通知表单、事件管道执行追踪、新一代日志浏览器（ES / Loki / VictoriaLogs）</strong></td><td>替换二进制即可，v9.3.0 无 schema 变更；<code>n9e-edge</code> / <code>n9e-pushgw</code> 必须同步升级</td></tr></tbody></table></div>
+<p>v9 的三个变化值得单独记：</p>
+<ol><li><strong>默认形态从「三件套」变成「单文件」</strong>。SQLite、miniredis、内置 TSDB 都是默认开启的，评估成本极低，但生产多副本必须换回 MySQL/PostgreSQL + 外部 TSDB。</li><li><strong>AI 助手依赖 Redis Streams</strong>，要求 Redis 5.0+，Cluster 用户建议 7.0+（分片 Pub/Sub）。只用基础告警可以不管，但升级前要确认 Redis 版本。</li><li><strong>规则字段新旧并存</strong>。<code>prom_ql</code>、<code>prom_for_duration</code>、<code>datasource_ids</code>、<code>enable_stime/etime</code> 都标记为 Deprecated，新规则应使用 <code>rule_config</code>、<code>cron_pattern</code>、<code>datasource_queries</code>、<code>enable_stimes/etimes</code>。</li></ol>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>容器里填 localhost 当数据源</strong>。n9e 容器内的 <code>localhost:9090</code> 是它自己，不是 Prometheus。Compose 用服务名，K8s 用 Service DNS，宿主机才用 127.0.0.1。</li><li><strong>多副本仍开内置 TSDB</strong>。内置 TSDB 是单实例本地盘，多副本时每个副本只持有一部分数据，查询结果会「时有时无」。多副本必须 <code>Enable = false</code> 并配外部 TSDB。</li><li><strong>以为加副本能加快规则评估</strong>。规则是按业务组分片到实例的，加副本只提升总容量与容灾，单条规则的查询延迟仍取决于数据源。要提速，先优化 PromQL 与数据源。</li><li><strong>不监控规则分配</strong>。某个 <code>n9e-alert</code> 心跳异常但进程还在，规则可能无人评估。盯「规则评估记录」与实例心跳，比盯 CPU 更有用。</li><li><strong>把屏蔽当订阅用</strong>。屏蔽是「现在不要发」，订阅是「归谁」。维护窗口结束后忘了删屏蔽，是「告警消失」的常见原因；反之，用订阅做抑制，则会在维护期被叫醒。</li><li><strong>只配持续时长、不配恢复窗口</strong>。阈值在边界抖动时，事件会反复触发/恢复，通知渠道被刷屏。给 <code>recover_duration</code> 留出至少 2–3 个评估周期。</li><li><strong>时区不显式设置</strong>。<code>time_zone</code> 为空时用服务端默认；跨国团队配「只在工作时间告警」，不写时区就会出现「德国团队凌晨收到电话」。</li><li><strong>规则里 <code>enable_in_bg</code> 配错</strong>。置 0 是全局生效，多租户环境下 A 组规则会被 B 组指标触发。除非明确要跨组，否则保持 1。</li><li><strong>升级只升 n9e</strong>。<code>n9e-edge</code> / <code>n9e-pushgw</code> 与主程序协议耦合，版本不一致会出现规则不同步或事件重复。release notes 每年都在提醒这件事。</li><li><strong>用 SQLite 跑生产多副本</strong>。SQLite 是单文件库，多副本并发写会锁库；评估环境无所谓，生产必须换 MySQL/PostgreSQL。</li><li><strong>忘记内置 TSDB 的保留期</strong>。默认 15 天 / 10 GiB，超了会删最旧的块；把它当长期存储用，会在某天发现历史数据「凭空消失」。</li><li><strong>通知渠道只配不测</strong>。钉钉的关键词、飞书的签名、企微的 IP 白名单，任一项错都只是「没收到」。上线前必须点一次测试发送。</li></ol>
+
+<div class="callout warning"><p><b>生产警示：</b>多副本仍开内置 TSDB、用 SQLite 跑多副本、只升 n9e 不升 edge/pushgw——这三类问题不会立刻报错，只会在某天让告警静默失效。</p></div>
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>方案</th><th>规则管理</th><th>多数据源</th><th>多租户/权限</th><th>通知渠道</th><th>事件处理</th><th>值班升级</th><th>部署成本</th></tr></thead><tbody><tr><td><strong>Nightingale</strong></td><td>数据库 + UI + API，支持导入/克隆/试跑</td><td><strong>强</strong>（Prometheus / VM / ES / Loki / ClickHouse / SQL）</td><td><strong>强</strong>（业务组 + 角色）</td><td><strong>20+ 原生渠道</strong></td><td>屏蔽 / 订阅 / 管道 / 自愈</td><td>无（需接 PagerDuty 等）</td><td>中（MySQL + Redis + 外部 TSDB；单机可 SQLite）</td></tr><tr><td>Prometheus + Alertmanager</td><td>配置文件 + reload</td><td>弱（只查自身）</td><td>无</td><td>少（webhook / email）</td><td>分组 / 抑制 / 静默</td><td>无</td><td>低</td></tr><tr><td>Grafana Alerting</td><td>UI 配置，跟看板一体</td><td>中（支持多种数据源）</td><td>中（Grafana 组织/团队）</td><td>中（contact points）</td><td>静默 / 分组</td><td>无</td><td>低（已有 Grafana）</td></tr><tr><td>VictoriaMetrics vmalert</td><td>配置文件 / CRD</td><td>中（VM 集群内）</td><td>无</td><td>少</td><td>有限</td><td>无</td><td>低（已有 VM）</td></tr><tr><td>Zabbix</td><td>模板 + 触发器</td><td>弱（自带采集）</td><td>中</td><td>中</td><td>依赖动作/维护期</td><td>有（升级/值班）</td><td>高（Server + DB + Agent）</td></tr></tbody></table></div>
+<h3 id="一句话决策">一句话决策</h3>
+<ul><li><strong>只有一套 Prometheus、规则少、没人要求自助配置</strong> → 留在 <code>Prometheus + Alertmanager</code>，别折腾。</li><li><strong>已经有 Grafana、告警也想在看板里配</strong> → <code>Grafana Alerting</code> 够用，少一个系统。</li><li><strong>多个时序库 + 多团队 + 需要分级/屏蔽/订阅</strong> → 夜莺的收益最大，它的核心价值是「组织级告警治理」，不是「更强的 PromQL」。</li><li><strong>需要电话升级、值班表、MTTA/MTTR 统计</strong> → 夜莺只负责「送到」，升级链要接 PagerDuty、FlashDuty 或自建 on-call，别指望它全覆盖。</li><li><strong>纯 K8s、规则即代码、GitOps 流程</strong> → 优先 <code>vmalert</code> 或 Prometheus Operator 的 <code>PrometheusRule</code>，夜莺的 UI 优势在 GitOps 下反而变成「配置漂移源」。</li></ul>
+<h3 id="与相邻篇目的分工">与相邻篇目的分工</h3>
+<ul><li>指标存储与 PromQL：<a href="./../prometheus/prometheus-guide.html">Prometheus</a>、<a href="./../victoriametrics/victoriametrics-guide.html">VictoriaMetrics / Thanos</a>；</li><li>日志检索：<a href="./../loki/loki-guide.html">Loki</a>、<a href="./../elasticsearch/elasticsearch-guide.html">Elasticsearch</a>；</li><li>链路追踪与埋点：<a href="./../opentelemetry/opentelemetry-guide.html">OpenTelemetry</a>；</li><li>告警只是可观测性的「出口」，上游三支柱不稳，规则配得再好也只是把噪声搬到手机上。</li></ul>
+<p>参考：<a href="https://github.com/ccfos/nightingale">https://github.com/ccfos/nightingale</a> · <a href="https://n9e.github.io/docs">https://n9e.github.io/docs</a> · <a href="https://github.com/ccfos/nightingale/blob/main/etc/config.toml">https://github.com/ccfos/nightingale/blob/main/etc/config.toml</a></p>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

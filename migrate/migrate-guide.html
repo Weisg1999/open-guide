@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>golang-migrate · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#0d9488; --accent-light:#ccfbf1; --accent-dark:#134e4a;
+    --bg:#f5fdfb; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#042f2e; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#134e4a 0%,#0d9488 58%,#134e4a 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">golang-migrate<span class="ver">v4.20</span></div>
+  <div class="sub">版本表 · dirty · 迁移锁</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#安装与快速开始">安装与快速开始</a>
+  <a href="#2-能力总览">2. 能力总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-文件命名版本号必须是整数">3.1 文件命名：版本号必须是整数</a>
+  <a class="sub-link" href="#32-schema_migrations两列就决定了全部语义">3.2 schema_migrations：两列就决定了全部语义</a>
+  <a class="sub-link" href="#33-执行模型一次-exec无自动事务">3.3 执行模型：一次 Exec、无自动事务</a>
+  <a class="sub-link" href="#34-并发谁会阻塞锁在哪里">3.4 并发：谁会阻塞，锁在哪里</a>
+  <a class="sub-link" href="#35-source-与-database两侧都是可替换插件">3.5 source 与 database：两侧都是可替换插件</a>
+  <a class="sub-link" href="#36-不可逆迁移别假装-down-能还原数据">3.6 不可逆迁移：别假装 down 能还原数据</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-cli-全流程">4.1 CLI 全流程</a>
+  <a class="sub-link" href="#42-go-库embedfs-iofs-超时">4.2 Go 库：embed.FS + iofs + 超时</a>
+  <a class="sub-link" href="#43-迁移文件示例pg-与-mysql-的差异">4.3 迁移文件示例（PG 与 MySQL 的差异）</a>
+  <a class="sub-link" href="#44-ci-里验证可逆">4.4 CI 里验证「可逆」</a>
+  <a class="sub-link" href="#45-容器与-k8s迁移做成独立-job">4.5 容器与 K8s：迁移做成独立 Job</a>
+  <a href="#5-版本演进">5. 版本演进</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>golang-migrate 技术指南</h1>
+<p>迁移工具的核心不是「执行 SQL」，而是版本表、幂等、并发锁与回滚边界：跑错一次，可能比不跑更糟。 上游：<a href="https://github.com/golang-migrate/migrate">https://github.com/golang-migrate/migrate</a> <strong>v4.20.1</strong>（2026-09，CLI + 库）　|　驱动：PostgreSQL / MySQL / SQLite / ClickHouse　|　许可：MIT</p>
+<p style="opacity:.8;font-size:13.5px">版本表 · dirty · 迁移锁</p>
+<div class="meta"><span>版本表</span><span>dirty</span><span>迁移锁</span></div>
+</div>
+<blockquote><p>迁移工具的核心不是「执行 SQL」，而是版本表、幂等、并发锁与回滚边界：跑错一次，可能比不跑更糟。 上游：<a href="https://github.com/golang-migrate/migrate">https://github.com/golang-migrate/migrate</a> <strong>v4.20.1</strong>（2026-09，CLI + 库）　|　驱动：PostgreSQL / MySQL / SQLite / ClickHouse　|　许可：MIT</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p>golang-migrate（下称 <code>migrate</code>）是一个<strong>只做 schema 版本管理</strong>的迁移工具：读一组按版本号排序的 SQL 文件，按顺序执行，并把「执行到哪一版」写进数据库里的 <code>schema_migrations</code> 表。它不解析 SQL 语义、不比对目标 schema、不生成 Go 代码——因此它和 <a href="../cobra-sqlc/cobra-sqlc-guide.html">sqlc</a>、<a href="../gorm/gorm-guide.html">GORM</a> 不是竞争关系，而是同一条流水线上游的一环。</p>
+<p>设计取向非常明确：</p>
+<ul><li><strong>迁移文件就是纯 SQL</strong>，<code>.up.sql</code> / <code>.down.sql</code> 成对出现，DBA 可以直接 review，其他语言的服务也能复用同一套文件；</li><li><strong>语言无关</strong>：CLI 可以单独跑，Go 库只是把同一引擎嵌进进程；</li><li><strong>source driver / database driver 双插件</strong>：迁移从哪来（本地目录、embed、S3、GitHub）与打到哪去（PG、MySQL、SQLite……）互不影响；</li><li><strong>v3/v4 API 已冻结</strong>：官方明确不再对 v4 做破坏性改动，升级风险主要来自驱动与依赖，而不是接口。</li></ul>
+<p>代价也要说清楚：它<strong>不理解你的 schema</strong>，所以不能做「声明式 diff」，也不能保证你的 down 真的可逆；它<strong>不自动包事务</strong>，原子性取决于数据库本身；它<strong>不记录校验和</strong>，改动已发布的文件不会被发现。这三点是后面所有坑的源头。</p>
+<p>适用场景：SQL 优先的团队、需要 DBA 参与评审、多语言共用一个库、容器化部署（迁移作为独立 Job）。<strong>不适合</strong>：想要「改 struct 就自动同步表结构」的原型阶段（用 GORM AutoMigrate）、需要自动生成可回滚 DDL 的大型团队（用 <a href="https://atlasgo.io/">Atlas</a>）。</p>
+<h3 id="安装与快速开始">安装与快速开始</h3>
+<pre><code class="lang-bash"># CLI：用 build tag 选择编译进去的驱动，全编会让二进制变大
+go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.20.1
+docker run --rm -v "$PWD/db/migrations:/migrations" --network host \
+  migrate/migrate:v4.20.1 -path=/migrations -database "$DATABASE_URL" up
+go get github.com/golang-migrate/migrate/v4@v4.20.1      # 库
+
+migrate create -ext sql -dir db/migrations -seq create_users
+# → 000001_create_users.up.sql / 000001_create_users.down.sql
+migrate -path db/migrations -database "$DATABASE_URL" up</code></pre>
+<hr>
+
+</section>
+<section data-anchor="2-能力总览">
+<h2 id="2-能力总览">2. 能力总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th></tr></thead><tbody><tr><td>迁移源</td><td><code>file://</code>（本地目录）、<code>iofs</code>（<code>embed.FS</code>）、<code>http(s)://</code>、<code>github://</code>、<code>gitlab://</code>、<code>s3://</code>、<code>gcs://</code>、<code>go-bindata</code></td></tr><tr><td>数据库驱动</td><td>PostgreSQL / <code>pgx</code> / MySQL / MariaDB / SQLite3 / ClickHouse / SQL Server / MongoDB / CockroachDB / Redshift</td></tr><tr><td>版本表</td><td><code>schema_migrations(version BIGINT, dirty BOOLEAN)</code>，只有两列，无校验和、无时间戳</td></tr><tr><td>版本号</td><td>文件名前缀，必须是<strong>整数</strong>；<code>-seq</code> 生成 6 位自增，<code>-format</code> 可改成时间戳</td></tr><tr><td>命令</td><td><code>create</code> / <code>up</code> / <code>down</code> / <code>steps</code> / <code>goto</code> / <code>force</code> / <code>version</code> / <code>drop</code></td></tr><tr><td>幂等</td><td><code>up</code> 只跑大于当前版本的；没有新迁移返回 <code>ErrNoChange</code></td></tr><tr><td>并发</td><td>PG 用 <code>pg_advisory_lock</code>、MySQL 用 <code>GET_LOCK</code>、CockroachDB 用锁表；等待可能无限长</td></tr><tr><td>事务</td><td><strong>不自动包</strong>；PG 下「一个文件一条 query」由服务端隐式事务兜底，MySQL DDL 直接隐式提交</td></tr><tr><td>回滚</td><td>执行对应的 <code>.down.sql</code>；不校验是否真的可逆</td></tr><tr><td>Go 库</td><td><code>migrate.New</code> / <code>NewWithSourceInstance</code> / <code>Up</code> / <code>Steps</code> / <code>Force</code> / <code>Version</code> / <code>GracefulStop</code></td></tr><tr><td>错误语义</td><td><code>migrate.ErrNoChange</code>、<code>migrate.ErrNilVersion</code>、<code>migrate.ErrDirty</code></td></tr></tbody></table></div>
+<hr>
+
+<div class="features">
+  <div class="feature"><div class="fh"><h4>版本号必须是整数</h4></div><p>文件名 {version}_{name}.up.sql，多人同号会冲突</p></div>
+  <div class="feature"><div class="fh"><h4>没有自动事务</h4></div><p>PostgreSQL DDL 可事务，MySQL DDL 隐式提交</p></div>
+  <div class="feature"><div class="fh"><h4>锁在数据库侧</h4></div><p>PostgreSQL 用 advisory lock，多副本启动会互相等待</p></div>
+</div>
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-文件命名版本号必须是整数">3.1 文件命名：版本号必须是整数</h3>
+<pre><code class="lang-text">db/migrations/
+├── 000001_create_users.up.sql
+├── 000001_create_users.down.sql
+├── 000002_add_users_status.up.sql
+├── 000002_add_users_status.down.sql
+└── 20260901120000_add_orders_index.up.sql   # -format 时间戳，与上面的 6 位序号不能混用</code></pre>
+<p>解析规则只有一条：文件名去掉后缀后，按第一个 <code>_</code> 切出<strong>版本号</strong>，剩下的当名字。版本号用 <code>ParseUint</code> 解析，所以：</p>
+<ul><li><code>000001</code>、<code>20260901120000</code> 合法；<code>v1_init.sql</code>、<code>000001.1_x.sql</code>、<code>fix-typo.sql</code> 直接报错或不被识别；</li><li>排序按<strong>数值</strong>而非字典序（<code>9</code> 在 <code>10</code> 之前），位数不齐也不会错序，但团队内应统一位数；</li><li>同一版本必须成对出现 up/down；<code>up</code> 缺 down 可以跑，但 <code>down</code> 到这一版时找不到文件会失败——<strong>能接受不可回滚，就不要留一个假装可用的 down</strong>。</li></ul>
+<p>命名用动词开头的短句：<code>create_users</code>、<code>add_orders_index</code>、<code>drop_legacy_flag</code>。不要用 <code>update_db</code>、<code>fix</code>、<code>migration_3</code>——半年后没人知道它做了什么。</p>
+<h3 id="32-schema_migrations两列就决定了全部语义">3.2 <code>schema_migrations</code>：两列就决定了全部语义</h3><div class="figure">
+  <svg viewBox="0 0 880 268" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <defs><marker id="m-migrate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0d9488"/></marker></defs>
+    <text x="440" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#134e4a">一次迁移的状态机</text>
+    <text x="440" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">version 记录进度，dirty 表示「上下都不可信」</text>
+    <rect x="36" y="82" width="175" height="80" rx="12" fill="#ccfbf1" stroke="#0d9488" stroke-width="1.5"/>
+    <text x="124" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#134e4a">读版本</text>
+    <text x="124" y="136" text-anchor="middle" font-size="11" fill="#134e4a">schema_migrations</text>
+    <line x1="215" y1="122" x2="241" y2="122" stroke="#0d9488" stroke-width="2" marker-end="url(#m-migrate)"/>
+    <rect x="247" y="82" width="175" height="80" rx="12" fill="#ccfbf1" stroke="#0d9488" stroke-width="1.5"/>
+    <text x="334" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#134e4a">执行 up</text>
+    <text x="334" y="136" text-anchor="middle" font-size="11" fill="#134e4a">一次 Exec</text>
+    <line x1="426" y1="122" x2="452" y2="122" stroke="#0d9488" stroke-width="2" marker-end="url(#m-migrate)"/>
+    <rect x="458" y="82" width="175" height="80" rx="12" fill="#ccfbf1" stroke="#0d9488" stroke-width="1.5"/>
+    <text x="546" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#134e4a">标记 dirty</text>
+    <text x="546" y="136" text-anchor="middle" font-size="11" fill="#134e4a">失败即置位</text>
+    <line x1="637" y1="122" x2="663" y2="122" stroke="#0d9488" stroke-width="2" marker-end="url(#m-migrate)"/>
+    <rect x="669" y="82" width="175" height="80" rx="12" fill="#ccfbf1" stroke="#0d9488" stroke-width="1.5"/>
+    <text x="756" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#134e4a">人工修复</text>
+    <text x="756" y="136" text-anchor="middle" font-size="11" fill="#134e4a">force 到干净版本</text>
+    <rect x="40" y="186" width="800" height="58" rx="10" fill="#f8fafc" stroke="#e3e9f2" stroke-width="1"/>
+    <text x="60" y="210" font-size="12.5" fill="#1e293b">dirty=true 不会自动恢复：先修数据、再 force，最后才继续 up。</text>
+  </svg>
+  <figcaption>一次迁移的状态机</figcaption>
+</div>
+<pre><code class="lang-sql">CREATE TABLE IF NOT EXISTS schema_migrations (
+    version BIGINT  NOT NULL,
+    dirty   BOOLEAN NOT NULL
+);</code></pre>
+<p>表里<strong>通常只有一行</strong>：当前已完整应用到的版本，加上一个布尔标记。没有 <code>name</code>、没有 <code>applied_at</code>、没有 <code>checksum</code>。三条推论：</p>
+<ol><li><strong>改名/改内容不会被发现</strong>：已发布的迁移文件被编辑，工具只会看版本号，各环境的 schema 就会静默分叉；</li><li><strong>只有「当前版本」没有历史</strong>：想看某一版是谁什么时候上的，得靠 git 记录或另外的审计表；</li><li><strong><code>dirty</code> 是唯一的中断信号</strong>：<code>dirty=true</code> 意味着「这一版的 SQL 已经开始执行，但没走完，且工具不敢猜现在的状态」。</li></ol>
+<p><code>dirty=true</code> 的成因：执行 <code>.up.sql</code> 时报错（语法、约束冲突、锁超时、连接断开）。此时 <code>migrate</code> <strong>把版本写成该版并置 dirty</strong>，然后所有后续命令都返回 <code>ErrDirty</code>，拒绝在未知状态上继续叠加。这是刻意的设计——<strong>脏标记不是 bug，是刹车</strong>。</p>
+<p>安全恢复顺序（不要跳步）：</p>
+<pre><code class="lang-bash">migrate -path db/migrations -database "$DATABASE_URL" version
+# 20260901120000 true   ← 输出是「版本号 + dirty」，记住版本号 V
+
+# 2 连库确认「到底执行到哪一步」：表建了没？索引在不在？列加了几何？
+#    PG: \d+ users / SELECT indexname FROM pg_indexes WHERE tablename='users';
+#    MySQL: SHOW CREATE TABLE users; SHOW INDEX FROM users;
+
+# 3 手工补完剩余语句（或手工回退已执行的部分），把它当成一次线上故障处理，
+#    这段补偿 SQL 放 runbook，不要塞回迁移目录
+
+# 4 把版本表强制指向「真实已生效的版本」——补完了就是 V，回退了就是 V-1
+migrate -path db/migrations -database "$DATABASE_URL" force 20260901120000
+
+# 5 修正迁移文件（改成幂等写法），或干脆新开一版重做</code></pre>
+<p><code>force N</code> 的动作只有一句：写 <code>schema_migrations</code>（有行就 <code>UPDATE ... SET version=N, dirty=false</code>，空表则 <code>INSERT</code>）。<strong>它不执行任何 SQL，也不检查 N 对应的 schema 是否真的存在</strong>。所以：</p>
+<ul><li>force 到<strong>高于真实状态</strong>的版本 → 后续迁移被当成「已应用」跳过，schema 永久缺一段；</li><li>force 到<strong>低于真实状态</strong>的版本 → 下次 <code>up</code> 重跑已应用的 SQL，报「already exists」，可能又脏一次；</li><li>直接 <code>UPDATE schema_migrations SET dirty=false</code> 只是把刹车片拆了，风险比 force 更大（至少 force 强制你想清楚版本号）。</li></ul>
+<h3 id="33-执行模型一次-exec无自动事务">3.3 执行模型：一次 Exec、无自动事务</h3>
+<p><code>database.Driver.Run(io.Reader)</code> 的默认实现是把<strong>整个文件当成一条 query</strong> 交给驱动执行。于是同一个文件在不同库上的原子性完全不同：</p>
+<div class="table-wrap"><table><thead><tr><th></th><th>PostgreSQL</th><th>MySQL（InnoDB）</th></tr></thead><tbody><tr><td>一个文件多条语句</td><td>单次 query 内的多语句由服务端包进<strong>隐式事务</strong>，任一失败整体回滚</td><td>每条 DDL 前<strong>隐式提交</strong>，失败时前面的已生效</td></tr><tr><td>失败后状态</td><td>表结构回到执行前，但版本表被打脏</td><td>一半语句已落地，版本表被打脏</td></tr><tr><td><code>BEGIN; ... COMMIT;</code></td><td>可以显式写，DDL 可回滚</td><td>只能保护 DML；DDL 依然隐式提交</td></tr><tr><td><code>CREATE INDEX CONCURRENTLY</code></td><td>不能和别的语句同文件（隐式事务会报错）</td><td>不支持该语法</td></tr></tbody></table></div>
+<pre><code class="lang-sql">-- 000007_add_users_status.up.sql   —— 一件事一个文件
+ALTER TABLE users ADD COLUMN status text NOT NULL DEFAULT 'active';
+
+-- 000008_users_status_idx.up.sql   —— CONCURRENTLY 必须独占文件
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_users_status ON users (status);</code></pre>
+<p>把这两条塞进同一个文件，PG 会因隐式事务报 <code>cannot run inside a transaction block</code> 并把版本打脏。要同文件只能开 <code>x-multi-statement=true</code>：按分号切分逐条发送，字符串里的分号会切错，且失去文件级原子性——用得越少越好。</p>
+<p>与 goose 的关键差异：goose 默认给每个文件包事务，并允许 <code>-- +goose NO TRANSACTION</code> 标注例外；<code>migrate</code> <strong>没有这类标注</strong>，只能靠拆文件、<code>x-multi-statement</code> 或手写 <code>BEGIN/COMMIT</code> 来调节。所以拿 goose 的写法直接搬到 <code>migrate</code>，最容易在 <code>CONCURRENTLY</code> 上翻车。</p>
+<h3 id="34-并发谁会阻塞锁在哪里">3.4 并发：谁会阻塞，锁在哪里</h3>
+<p>多个副本同时启动并调用 <code>up</code> 时，行为由驱动的锁决定：A 拿到锁执行，B 在 <code>Lock()</code> 上阻塞，A 释放后 B 读到「无新迁移」返回 <code>ErrNoChange</code>。所以不会有两次并发写 schema，但会有长时间的静默等待。</p>
+<ul><li><strong>PostgreSQL / pgx</strong>：<code>SELECT pg_advisory_lock($1)</code>，锁 ID 由数据库名 + schema + 迁移表名派生；注释写得很直白——<strong>会无限期等待</strong>。所以 B 不会失败，但也可能卡几分钟，健康检查会先挂。</li><li><strong>MySQL</strong>：<code>GET_LOCK()</code> / <code>RELEASE_LOCK()</code>，同样是连接级会话锁；<code>?x-no-lock=true</code> 可以关掉（多主架构下必须只让一台机器迁移）。<strong>经过 ProxySQL / PgBouncer 的 transaction pooling 时，会话锁可能落到不同后端连接上而失效</strong>，这时锁等于没有。</li><li><strong>CockroachDB</strong>：没有 advisory lock，退化成锁表方案。</li></ul>
+<p>工程结论：</p>
+<ol><li><strong>推荐把迁移做成独立步骤</strong>（K8s <code>Job</code> / <code>initContainer</code> / 发布流水线里的一个 stage），应用只负责启动，不在 <code>main</code> 里抢锁；</li><li>若坚持启动时自动迁移，必须加<strong>超时</strong>（见 4.2），并在迁移 Job 与副本之间只允许一个写入者；</li><li>迁移耗时超过探针阈值时，把 <code>initialDelaySeconds</code> 让位于「迁移 Job 完成」这个前置条件，而不是加大探针超时。</li></ol>
+<h3 id="35-source-与-database两侧都是可替换插件">3.5 source 与 database：两侧都是可替换插件</h3>
+<pre><code class="lang-text">source driver（迁移从哪来）        migrate 引擎            database driver（打到哪去）
+file:// / iofs / s3://  ──►  版本排序、加锁、          ──►  postgres:// / mysql://
+github:// / http(s)://        执行、写 schema_migrations      sqlite3:// / clickhouse://</code></pre>
+<ul><li>source 侧用 <code>iofs</code> 最稳：迁移文件编进二进制，<strong>不再依赖进程工作目录</strong>，容器里 <code>WORKDIR</code> 改了也不会找不到文件；</li><li>database 侧用 URL scheme 选驱动，<strong>驱动必须被空导入</strong>才能注册：<code>_ "github.com/golang-migrate/migrate/v4/database/postgres"</code>；CLI 则靠编译期 <code>-tags</code>；</li><li>常用 URL 参数：<code>x-migrations-table</code>（换表名，多模块共库时用）、<code>x-statement-timeout</code>（毫秒，PG/MySQL）、<code>x-migrations-table-quoted</code>（PG schema 限定时用）、<code>x-no-lock</code>（MySQL）；</li><li>已有 <code>*sql.DB</code> 连接池时用 <code>database.WithInstance(db, &amp;Config{})</code> 复用，避免一次迁移多开一堆连接。</li></ul>
+<h3 id="36-不可逆迁移别假装-down-能还原数据">3.6 不可逆迁移：别假装 down 能还原数据</h3>
+<p><code>down</code> 只是「执行另一段 SQL」，不存在魔法。分类看：</p>
+<div class="table-wrap"><table><thead><tr><th>变更</th><th>down 能否真还原</th></tr></thead><tbody><tr><td><code>CREATE TABLE</code> / <code>ADD COLUMN</code>（可空或无默认值）</td><td>能，删回去即可</td></tr><tr><td><code>ADD COLUMN NOT NULL DEFAULT</code></td><td>能删列，但默认值写进去的数据没了</td></tr><tr><td><code>CREATE INDEX</code></td><td>能，<code>DROP INDEX</code> 即可</td></tr><tr><td><code>DROP COLUMN</code> / <code>DROP TABLE</code></td><td><strong>不能</strong>，down 只能重建空结构，行数据永久丢失</td></tr><tr><td>改类型（<code>text</code> → <code>int</code>）</td><td>单向有损，反向转换不保证等值</td></tr><tr><td>数据回填 / 拆列合并</td><td>一般不可逆，除非同时保留旧列</td></tr></tbody></table></div>
+<p>因此：</p>
+<ul><li><strong>破坏性变更用 expand-contract 两阶段</strong>：先加新列并双写 → 回填 → 切读 → 观察一两个版本 → 再单独一版删旧列。删列那一版可以写「down = 重新加回空列」，并在文件头注明<strong>数据不可恢复</strong>；</li><li><strong>不可逆的 down 要显式声明</strong>，而不是留一个空文件——空 down 会让 <code>down</code> 成功退出并把版本退回去，制造「版本说回滚了、schema 没回滚」的假象；</li><li>生产环境的基本原则：<code>down</code> 只用于<strong>发布前</strong>的验证与本地开发；线上回滚靠「前向修复 + 备份恢复」，不靠 <code>migrate down</code>。</li></ul>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-cli-全流程">4.1 CLI 全流程</h3>
+<pre><code class="lang-bash"># 生成：-seq 自增（团队协作易撞号），-format 时间戳（推荐多人并行）
+migrate create -ext sql -dir db/migrations -seq create_orders
+migrate create -ext sql -dir db/migrations -format 20060102150405 add_orders_paid_at
+
+DSN='postgres://app:secret@db:5432/app?sslmode=disable&amp;x-migrations-table=schema_migrations'
+
+migrate -path db/migrations -database "$DSN" up          # 全部前滚
+migrate -path db/migrations -database "$DSN" down 1      # 回滚 1 个
+migrate -path db/migrations -database "$DSN" steps 2     # 前滚 2 个
+migrate -path db/migrations -database "$DSN" steps -1    # 回滚 1 个
+migrate -path db/migrations -database "$DSN" goto 20260901120000
+migrate -path db/migrations -database "$DSN" version     # 打印 version 与 dirty
+migrate -path db/migrations -database "$DSN" force 20260901120000
+migrate -path db/migrations -database "$DSN" drop -f     # 删库级对象，仅开发环境</code></pre>
+<p>命令语义速查：</p>
+<div class="table-wrap"><table><thead><tr><th>命令</th><th>语义</th><th>注意</th></tr></thead><tbody><tr><td><code>up [N]</code></td><td>前滚全部或 N 个</td><td>没有新迁移 → <code>no change</code>，退出码 0</td></tr><tr><td><code>down [N]</code></td><td>回滚 N 个（默认 1）</td><td>到 0 之后再 <code>down</code> 返回 <code>ErrNilVersion</code></td></tr><tr><td><code>steps N</code></td><td>N&gt;0 前滚、N&lt;0 回滚</td><td>与 <code>up/down N</code> 等价，符号更直观</td></tr><tr><td><code>goto V</code></td><td>走到指定版本（目标高于当前则前滚，反之回滚）</td><td>会连续执行多个文件，中途失败即 dirty</td></tr><tr><td><code>version</code></td><td>打印版本与 dirty</td><td>部署前必跑</td></tr><tr><td><code>force V</code></td><td>只改版本表，不清洗 schema</td><td>见 3.2，慎用</td></tr><tr><td><code>drop -f</code></td><td>删掉 schema 内所有对象含版本表</td><td>生产禁用</td></tr></tbody></table></div>
+<h3 id="42-go-库embedfs-iofs-超时">4.2 Go 库：<code>embed.FS</code> + <code>iofs</code> + 超时</h3>
+<pre><code class="lang-go">// internal/db/migrate.go
+package db
+
+import (
+	"context"
+	"embed"
+	"errors"
+	"fmt"
+
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres" // 注册 database driver
+	"github.com/golang-migrate/migrate/v4/source/iofs"
+)
+
+//go:embed migrations/*.sql
+var migrationsFS embed.FS
+
+// Up 把 schema 推到最新版本；ctx 超时会打断阻塞中的锁等待。
+func Up(ctx context.Context, dsn string) error {
+	src, err := iofs.New(migrationsFS, "migrations") // 第二个参数是 embed 内的相对目录
+	if err != nil {
+		return fmt.Errorf("加载内嵌迁移: %w", err)
+	}
+	m, err := migrate.NewWithSourceInstance("iofs", src, dsn)
+	if err != nil {
+		return fmt.Errorf("构造 migrator: %w", err)
+	}
+	defer func() { _, _ = m.Close() }() // 关闭 source 与 database 两侧
+
+	// dirty 时不要硬跑：交给发布流程里的人工确认 + force
+	if v, dirty, verr := m.Version(); verr == nil &amp;&amp; dirty {
+		return fmt.Errorf("数据库 dirty（version=%d），先修复并 force 再启动", v)
+	} else if verr != nil &amp;&amp; !errors.Is(verr, migrate.ErrNilVersion) {
+		return fmt.Errorf("读取版本: %w", verr)
+	}
+
+	done := make(chan error, 1)
+	go func() { done &lt;- m.Up() }() // Up 内部先拿 advisory lock，可能长时间阻塞
+
+	select {
+	case err := &lt;-done:
+		if errors.Is(err, migrate.ErrNoChange) {
+			return nil // 已是最新，属正常路径
+		}
+		return err
+	case &lt;-ctx.Done():
+		m.GracefulStop() // 打断等待中的锁/语句，避免副本启动无限挂住
+		return fmt.Errorf("迁移超时: %w", ctx.Err())
+	}
+}</code></pre>
+<p>调用侧（<code>main</code> 里显式给预算，失败就别起服务）：</p>
+<pre><code class="lang-go">ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
+defer cancel()
+if err := db.Up(ctx, cfg.DSN); err != nil {
+	return fmt.Errorf("迁移失败，拒绝启动: %w", err)
+}</code></pre>
+<p>其他库 API 的用法要点：</p>
+<pre><code class="lang-go">m, _ := migrate.NewWithSourceInstance("iofs", src, dsn)
+m.Steps(-1)                  // 回滚一版，等价 CLI 的 down 1
+m.Force(20260901120000)      // 只在确认 schema 与版本一致后调用
+v, dirty, err := m.Version() // err 可能是 ErrNilVersion（空库）
+srcErr, dbErr := m.Close()   // 两个错误要分开处理，别只判一个</code></pre>
+<p>复用已有连接池：<code>postgres.WithInstance(sqlDB, &amp;postgres.Config{MigrationsTable: "schema_migrations"})</code> 拿到 <code>database.Driver</code>，再 <code>migrate.NewWithInstance("iofs", src, "postgres", drv)</code>，避免为迁移单开连接。</p>
+<h3 id="43-迁移文件示例pg-与-mysql-的差异">4.3 迁移文件示例（PG 与 MySQL 的差异）</h3>
+<pre><code class="lang-sql">-- 000001_create_orders.up.sql（PostgreSQL）
+CREATE TABLE orders (
+    id          bigserial PRIMARY KEY,
+    user_id     bigint      NOT NULL REFERENCES users (id),
+    amount      numeric(12,2) NOT NULL CHECK (amount &gt;= 0),
+    status      text        NOT NULL DEFAULT 'pending',
+    created_at  timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX idx_orders_user_created ON orders (user_id, created_at DESC);</code></pre>
+<pre><code class="lang-sql">-- 000001_create_orders.down.sql —— 与库无关，顺序与 up 相反
+DROP TABLE IF EXISTS orders;</code></pre>
+<p>MySQL 8 的等价写法要换成 <code>BIGINT UNSIGNED AUTO_INCREMENT</code>、<code>DATETIME(3)</code>、表级 <code>KEY</code> 与 <code>ENGINE=InnoDB</code>。多语句文件必须在 DSN 上开 <code>multiStatements=true</code>，否则驱动会拒绝整段文本（报语法错误，而不是「只执行了第一条」）：</p>
+<pre><code class="lang-text">mysql://app:secret@tcp(db:3306)/app?multiStatements=true&amp;x-migrations-table=schema_migrations</code></pre>
+<p>开了多语句之后，<strong>部分成功</strong>是常态：<code>CREATE TABLE</code> 成功、<code>ALTER TABLE</code> 失败，前面的表已经提交，只能靠 3.2 的流程收拾。所以 MySQL 上的硬规则是：<strong>一个文件一条 DDL</strong>。</p>
+<h3 id="44-ci-里验证可逆">4.4 CI 里验证「可逆」</h3>
+<pre><code class="lang-bash">set -euo pipefail
+migrate -path db/migrations -database "$TEST_DSN" up
+migrate -path db/migrations -database "$TEST_DSN" down 1
+migrate -path db/migrations -database "$TEST_DSN" up   # 第二次 up 必须干净通过
+migrate -path db/migrations -database "$EMPTY_DSN" up  # 再从空库全跑一遍</code></pre>
+<p><code>up → down 1 → up</code> 是最小成本的反向验证：down 少删东西会在第二次 up 报「already exists」，down 多删东西会把后续版本依赖的对象删掉。测试库的<strong>服务端大版本要与生产一致</strong>——PG 16 能过的 DDL，PG 18 上未必同价。</p>
+<h3 id="45-容器与-k8s迁移做成独立-job">4.5 容器与 K8s：迁移做成独立 Job</h3>
+<pre><code class="lang-dockerfile">FROM migrate/migrate:v4.20.1 AS migrator
+COPY db/migrations /migrations
+ENTRYPOINT ["/usr/local/bin/migrate", "-path=/migrations"]</code></pre>
+<pre><code class="lang-yaml">apiVersion: batch/v1
+kind: Job
+metadata:
+  name: app-migrate
+spec:
+  backoffLimit: 1                 # 迁移不是幂等重试友好，失败就停
+  activeDeadlineSeconds: 600      # 大表 DDL 需要时间，但必须有上限
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: registry.example.com/app-migrator:v1.42.0  # 与本次发布同版本
+          args: ["-database", "$(DATABASE_URL)", "up"]
+          envFrom: [{ secretRef: { name: app-db } }]</code></pre>
+<p>部署顺序：<code>Job</code> 成功 → 再滚动更新应用。这样「多个副本同时启动」的问题根本不会出现，也避免长迁移把 <code>livenessProbe</code> 拖死。若用 <code>initContainer</code>，要意识到<strong>每个 Pod 都会跑一次</strong>，只能靠 advisory lock 串行，且 <code>restartPolicy</code> 与超时都要单独设。</p>
+<hr>
+
+<div class="callout info"><p><b>实战要点：</b>应用启动自动迁移要加超时与锁；生产更稳的做法是独立的迁移 Job，先于所有副本运行。</p></div>
+</section>
+<section data-anchor="5-版本演进">
+<h2 id="5-版本演进">5. 版本演进<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>时间</th><th>要点</th></tr></thead><tbody><tr><td>v1 → v4</td><td>2018 起</td><td>仓库迁到 golang-migrate 组织；v3/v4 API 声明<strong>稳定冻结</strong>，迁移文件与版本表结构自此未变；驱动拆成独立子包，CLI 用 build tag 裁剪</td></tr><tr><td>v4.18.3</td><td>2025-04-24</td><td>补丁维护：驱动修复与依赖跟进</td></tr><tr><td>v4.19.0 / v4.19.1</td><td>2025-08-29 / 2025-11</td><td>常规维护，构建与测试矩阵更新</td></tr><tr><td><strong>v4.20.1</strong></td><td><strong>2026-09-09</strong></td><td>当前最新（截至 2026-11）；v4.20.0 的 CI/GoReleaser 发布失败，4.20.1 是立即修复版，命令与 API 无变化</td></tr></tbody></table></div>
+<p>升级提示：</p>
+<ul><li><strong>v4 内部升级风险主要来自驱动</strong>：PG 驱动在 <code>postgres://</code> 与 <code>pgx5://</code> 之间行为有细微差别（多语句、锁实现），换驱动等于换执行语义，先在测试库跑一遍 <code>up/down/up</code>；</li><li><strong>CLI 的 build tag 必须与 DSN scheme 匹配</strong>：镜像里只编了 <code>postgres</code>，却把 DSN 写成 <code>mysql://</code>，报的是「unknown driver」而不是连接错误；</li><li><strong>库版本与 CLI 版本保持一致</strong>：两者共用 <code>schema_migrations</code> 语义，混用不同大版本的工具去操作同一个库属于自找麻烦；</li><li>v3 已停止支持，<code>import</code> 路径仍是 <code>github.com/golang-migrate/migrate/v4</code>，没有 v5。</li></ul>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>down 写成「删表」当成回滚</strong>：<code>DROP TABLE users</code> 在 down 里执行成功、退出码 0，数据没了。down 的职责是「撤销 up 的结构变更」，涉及删除的 up 必须显式标注不可逆，并把 down 限制在开发环境使用。</li><li><strong>dirty 不看就 force</strong>：<code>force</code> 只改版本表。正确顺序永远是「查 version → 连库看真实状态 → 手工补/退 → force 到真实版本」，目标是<strong>真实已生效的版本</strong>，不是失败的那一版，也不是下一版。直接 <code>UPDATE schema_migrations SET dirty=false</code> 更糟：它拆掉了唯一的刹车，把「已知的不确定」变成「未知的错误」。</li><li><strong>多人同时提 PR 用同一个 <code>-seq</code> 号</strong>：两个分支各自生成 <code>000007_*</code>，合并后同版本两个文件，谁先跑谁赢，另一个被静默跳过。→ 多人协作用 <code>-format 20060102150405</code>（时间戳），并在 CI 检查「版本号唯一且严格递增」。</li><li><strong>改已发布的迁移文件</strong>：没有 checksum，改了也不会报错，结果是各环境 schema 悄悄分叉。→ 已合并到主干的迁移视为<strong>不可变</strong>，修正一律新开一版。</li><li><strong>把数据修复塞进 schema 迁移</strong>：<code>UPDATE ... WHERE</code> 百万行、或依赖当时的业务状态，重跑一次结果就不同；放在迁移里还会长时间持锁，卡住整个发布。→ 回填走应用侧分批任务或独立的一次性脚本（可重入、有进度、可中断）。</li><li><strong><code>embed</code> 路径写错</strong>：<code>//go:embed migrations/*.sql</code> + <code>iofs.New(fs, "migrations")</code> 是配套的；写成 <code>iofs.New(fs, ".")</code> 会找不到文件，写成 <code>embed migrations</code>（无通配符）会漏掉子目录里的文件（需要 <code>all:migrations</code>）。启动时立刻报错，别等到首次发布才发现。</li><li><strong>多副本同时启动各跑一次迁移</strong>：有 advisory lock 时只有一个真正执行，其余阻塞等待——但等待是<strong>无限期</strong>的，探针先超时；经过 transaction-mode pooler 时锁还可能失效。→ 迁移做成独立 Job，应用启动只校验版本是否满足最低要求。</li><li><strong>在启动路径上跑大表 DDL</strong>：<code>ALTER TABLE ... ADD COLUMN NOT NULL DEFAULT</code> 在 PG 11 之前会重写全表，几分钟内启动失败、滚动发布卡死。→ 大表变更单独走运维窗口，迁移 Job 的 <code>activeDeadlineSeconds</code> 要按最坏耗时设。</li><li><strong><code>CREATE INDEX CONCURRENTLY</code> 和多条语句同文件</strong>：默认整文件一条 query → 隐式事务 → 报 <code>cannot run inside a transaction block</code>，并且把版本打脏。→ 独占一个文件；确实要同文件就开 <code>x-multi-statement=true</code> 并接受失去原子性。</li><li><strong>版本号不是整数</strong>：<code>v1_init.sql</code>、<code>0001.5_fix.sql</code>、<code>2026-09-01_x.sql</code> 都无法解析。→ 只用纯数字前缀，时间戳不要带分隔符。</li><li><strong>MySQL 忘了 <code>multiStatements=true</code></strong>：整个文件被当成一条语句，报语法错误；有人误以为「工具只执行了第一条」。→ MySQL 上一个文件一条 DDL，或明确开多语句并接受部分成功。</li><li><strong><code>-path</code> 依赖当前工作目录</strong>：本地 <code>go run ./cmd/migrate</code> 能跑，容器里 <code>WORKDIR</code> 变了就 <code>file does not exist</code>。→ 一律 <code>embed</code> + <code>iofs</code>，或把路径解析成绝对路径。</li><li><strong>两套迁移工具并存</strong>：一半迁移在 <code>goose_db_version</code>，一半在 <code>schema_migrations</code>，谁都不知道库到底到哪一版。→ 一个库只留一套版本表；从 goose 迁过来时，用 <code>force</code> 对齐当前版本后<strong>删掉</strong>旧表，写进 runbook。</li><li><strong>把 <code>down</code> 当成线上回滚方案</strong>：发布出问题时先 <code>down 1</code>，结果 down 本身有 bug，故障扩大。→ 线上回滚优先「回滚应用版本 + 前向修复迁移」；<code>down</code> 只在发布前验证。</li><li><strong>不测 <code>up → down → up</code></strong>：down 少写一句 <code>DROP INDEX</code>，第二次 up 直接失败，而这个问题在本地从没暴露过。→ 把它做成 CI 的必过项，跑在空库 + 与生产同版本的服务端上。</li></ol>
+<hr>
+
+<div class="callout warning"><p><b>生产警示：</b>down 写错会丢数据、dirty 没处理直接 force、把数据修复写进迁移导致不可重跑。</p></div>
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>golang-migrate</th><th>goose</th><th>Atlas</th><th>Flyway</th><th>GORM AutoMigrate</th></tr></thead><tbody><tr><td>定位</td><td>版本化 SQL 执行器</td><td>版本化迁移 + Go migration</td><td>schema 管理平台（声明式 + 版本式）</td><td>企业级迁移工具</td><td>ORM 附带的开发期同步</td></tr><tr><td>迁移载体</td><td><code>.up/.down.sql</code></td><td>SQL 或 <code>.go</code> 文件</td><td>HCL/SQL，可生成</td><td>SQL（Java 生态）</td><td>Go struct</td></tr><tr><td>版本号</td><td>整数前缀（序号或时间戳）</td><td>序号或时间戳</td><td>时间戳目录 + <code>atlas.sum</code> 校验</td><td><code>V1__x.sql</code> 约定</td><td>无版本概念</td></tr><tr><td>变更检测</td><td>无</td><td>无</td><td><strong>声明式 diff + lint</strong></td><td>无</td><td>反射 struct 差异</td></tr><tr><td>事务</td><td>不自动包</td><td><strong>默认包</strong>，可 <code>NO TRANSACTION</code></td><td>按语句/文件策略</td><td>每迁移一事务（可关）</td><td>由 ORM 决定</td></tr><tr><td>并发锁</td><td>PG advisory / MySQL <code>GET_LOCK</code></td><td>有（含表级 Locker）</td><td>有</td><td>有</td><td>无</td></tr><tr><td>回滚</td><td>执行 down（不校验可逆性）</td><td>执行 down</td><td>生成 down，可校验</td><td>支持 undo（社区版受限）</td><td>不支持删除/收窄</td></tr><tr><td>校验和</td><td><strong>无</strong></td><td>无</td><td><strong>有（<code>atlas.sum</code>）</strong></td><td>有</td><td>不适用</td></tr><tr><td>许可</td><td>MIT</td><td>MIT</td><td>Apache-2.0（部分能力商业）</td><td>Apache-2.0（社区版功能受限）</td><td>MIT</td></tr></tbody></table></div>
+<p>分工建议，一句话版：<strong>migrate 管「版本与执行」，sqlc 管「从 schema 生成类型安全代码」，goose 是 migrate 的替代品而不是补充，Atlas 负责「diff 与治理」，AutoMigrate 只配开发环境。</strong></p>
+<ul><li><strong>和 sqlc 的分工</strong>：sqlc 把 <code>db/migrations</code> 当 catalog 读，<strong>只读不写</strong>；它不会执行迁移，也不会改版本表。所以 CI 顺序必须是「迁移目录变更 → 空库 <code>up</code> → <code>sqlc generate</code> → <code>git diff --exit-code</code>」，否则生成代码会基于一份不存在的 schema。</li><li><strong>和 goose 的分工</strong>：两者解决同一个问题，选一个即可。需要 Go 里写迁移（复杂数据变换、调用外部服务）、需要文件级 <code>NO TRANSACTION</code> 标注、想要默认事务保护 → goose（<a href="../cobra-sqlc/cobra-sqlc-guide.html">cobra-sqlc 篇</a> 里就是这套）；团队 SQL 优先、要 CLI 与语言无关、要 S3/GitHub 远程源 → migrate。</li><li><strong>和 Atlas 的关系</strong>：Atlas 能直接消费 golang-migrate 目录（<code>--dir-format golang-migrate</code>），常见组合是「Atlas 做 lint/diff 生成 SQL，migrate 负责在各环境执行」；如果已经痛在「手写 down 不可靠」，该换的是 Atlas，而不是给 migrate 加包装。</li><li><strong>和 GORM AutoMigrate 的边界</strong>：AutoMigrate 只加不减，删列/改类型/收窄长度都不做，也没有版本记录与回滚。开发期图快可以用，只要一旦有第二个环境，就必须切到版本化迁移——两套同时开着，schema 会被两边拉扯。</li></ul>
+<p>参考：<a href="https://github.com/golang-migrate/migrate">golang-migrate 仓库与 FAQ</a>、<a href="https://github.com/golang-migrate/migrate/blob/master/GETTING_STARTED.md">GETTING_STARTED</a>、<a href="https://github.com/golang-migrate/migrate/tree/master/database/postgres">database/postgres 驱动说明</a>、<a href="https://www.postgresql.org/docs/current/transaction-iso.html">PostgreSQL 事务性 DDL</a>。</p>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>
