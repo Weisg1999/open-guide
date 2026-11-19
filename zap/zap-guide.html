@@ -103,6 +103,7 @@
   <a class="sub-link" href="#32-零分配是怎么做到的">3.2 零分配是怎么做到的</a>
   <a class="sub-link" href="#33-结构化-vs-文本">3.3 结构化 vs 文本</a>
   <a class="sub-link" href="#34-采样原理">3.4 采样原理</a>
+  <a class="sub-link" href="#35-并发与派生namedwithwrapcore-的代价">3.5 并发与派生：Named、With、WrapCore 的代价</a>
   <a href="#4-使用实战">4. 使用实战</a>
   <a class="sub-link" href="#41-生产配置推荐起点">4.1 生产配置（推荐起点）</a>
   <a class="sub-link" href="#42-开发期彩色-console">4.2 开发期彩色 Console</a>
@@ -110,6 +111,9 @@
   <a class="sub-link" href="#44-上下文字段与-trace-串联">4.4 上下文字段与 trace 串联</a>
   <a class="sub-link" href="#45-运行时动态调整级别">4.5 运行时动态调整级别</a>
   <a class="sub-link" href="#46-单测断言">4.6 单测断言</a>
+  <a class="sub-link" href="#47-采样策略高频日志怎么不炸">4.7 采样策略：高频日志怎么不炸</a>
+  <a class="sub-link" href="#48-接-opentelemetry把-trace_id-span_id-写进每条日志">4.8 接 OpenTelemetry：把 trace_id / span_id 写进每条日志</a>
+  <a class="sub-link" href="#49-日志规范字段错误与脱敏">4.9 日志规范：字段、错误与脱敏</a>
   <a href="#5-版本演进速览">5. 版本演进速览</a>
   <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
   <a href="#7-选型对比">7. 选型对比</a>
@@ -209,7 +213,61 @@ CheckedEntry ──► Core.Write(entry, fields)
 结构化：{"msg":"login failed","user":"alice","ms":42}  → 可按 user 聚合、按 ms 排序告警</code></pre>
 <p>一旦日志要进集中式系统，<strong>结构化是刚需</strong>。因此字段命名要有规范（<code>user_id</code>、<code>trace_id</code>、<code>duration_ms</code>），不要同一含义在不同地方叫 <code>uid</code> / <code>userID</code> / <code>UserID</code>。</p>
 <h3 id="34-采样原理">3.4 采样原理</h3>
-<p><code>zapcore.NewSamplerWithOptions(core, tick, first, thereafter)</code>：在时间窗口 <code>tick</code> 内，同一条 <code>msg + 级别</code> 的前 <code>first</code> 条全记，之后每 <code>thereafter</code> 条记 1 条，并在被丢弃的日志上附带计数。它挡的是「依赖挂了，每个请求都打 Error」这类日志风暴，而不是替代限流。</p>
+<p><code>zapcore.NewSamplerWithOptions(core, tick, first, thereafter)</code>：在时间窗口 <code>tick</code> 内，同一条 <code>msg + 级别</code> 的前 <code>first</code> 条全记，之后每 <code>thereafter</code> 条记 1 条。它挡的是「依赖挂了，每个请求都打 Error」这类日志风暴，而不是替代限流；被丢弃的条数需要自己用 <code>SamplerHook</code> 统计（见 4.7），zap 不会自动附加字段。</p>
+<h3 id="35-并发与派生namedwithwrapcore-的代价">3.5 并发与派生：<code>Named</code>、<code>With</code>、<code>WrapCore</code> 的代价</h3>
+<p><code>*zap.Logger</code> 可以被任意多个 goroutine 直接共用，不需要自己加锁 —— 但这建立在一条<strong>接口契约</strong>上：<code>zapcore.Core</code> 必须并发安全（<code>Write</code> / <code>Sync</code> 会被并发调用）。自己写 Core 时，任何共享可变状态（map、切片、计数器）都要加锁或改 <code>atomic</code>；官方 Core 靠 <code>zapcore.Lock(ws)</code> 给 writer 加锁、编码缓冲从 <code>bufferpool</code> 取来满足这条契约。</p>
+<p>派生不是「共享一个指针」。每次 <code>With</code> 都做两件事：<code>log.clone()</code> 复制 Logger 结构体，然后 <code>l.core = l.core.With(fields)</code>；而 <code>ioCore.With</code> 的实现是 <code>addFields(clone.enc, fields)</code> —— <strong>字段当场被序列化进新 encoder 的缓冲区</strong>，并不是存成 <code>[]Field</code> 共享。所以已经绑了 10 个字段的 logger 再 <code>With</code> 一次，要把那 10 个字段的字节重拷一遍：字段越多、派生越深，单次 <code>With</code> 越贵，但之后每条日志省掉了重复编码。<code>Named("db")</code> 则是 <code>strings.Join</code> 拼前缀 + 复制 Logger，名字进每条日志的 <code>logger</code> 字段（<code>LoggerName</code>）；它不做 namespace、不产生嵌套对象，别拿它当字段分组。</p>
+<pre><code class="lang-go">package example
+
+import "go.uber.org/zap"
+
+func loadItems(logger *zap.Logger, userID, route string, ids []string) {
+	// 反例：循环里反复派生，每条日志都 clone 一次并重编码已绑定字段
+	for _, id := range ids {
+		logger.With(zap.String("user_id", userID)).Info("loaded", zap.String("item_id", id))
+	}
+
+	// 正例：入口派生一次，字段合并进一次 With，只编码一遍
+	reqLog := logger.With(zap.String("user_id", userID), zap.String("route", route))
+	for _, id := range ids {
+		reqLog.Info("loaded", zap.String("item_id", id))
+	}
+}</code></pre>
+<p><code>zap.New(core)</code> 与 <code>logger.WithOptions(...)</code> 的区别：前者从 Core 造一个全新 Logger（丢掉已绑定的 <code>name</code> / 字段，重算 caller 基准），后者是 <code>clone</code> + 改选项、<strong>保留已绑定字段</strong>。加 <code>AddCallerSkip</code>、调 caller 格式用 <code>WithOptions</code>；换一整套 Core 才用 <code>zap.New</code>。另外 <code>WithOptions</code> 每次调用都会重新 apply 选项 —— 把 <code>zap.WrapCore(f)</code> 写进 <code>WithOptions</code>，每调一次就再包一层，几周后就是五层包装。</p>
+<p><code>WrapCore</code> 做全局拦截（统一补字段、脱敏）必须在<strong>构造期</strong>用，且包装器有两个必做动作，漏一个就静默失效：</p>
+<pre><code class="lang-go">package logging
+
+import (
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+)
+
+type redactCore struct{ zapcore.Core }
+
+// ① With 之后要返回包装器自身，否则派生一次就退化成内层 Core
+func (c redactCore) With(fields []zapcore.Field) zapcore.Core {
+	return redactCore{c.Core.With(fields)}
+}
+
+// ② Check 必须把 c 自己塞进 CheckedEntry，不能让内层去 AddCore
+func (c redactCore) Check(e zapcore.Entry, ce *zapcore.CheckedEntry) *zapcore.CheckedEntry {
+	if c.Enabled(e.Level) {
+		return ce.AddCore(e, c)
+	}
+	return ce
+}
+
+func (c redactCore) Write(e zapcore.Entry, fields []zapcore.Field) error {
+	out := append([]zapcore.Field{zap.String("env", "prod")}, fields...) // 统一补字段
+	for i := range out {
+		switch out[i].Key {
+		case "password", "token", "id_card":
+			out[i] = zap.String(out[i].Key, "***")
+		}
+	}
+	return c.Core.Write(e, out)
+}</code></pre>
+<p>装回去用 <code>zap.New(redactCore{core}, zap.AddCaller())</code>。<code>Write</code> 里的这次拷贝只发生在「已确定要写」的日志上，成本压在 I/O 之下可忽略；但热路径仍优先在调用点控制字段（见 4.9 的 <code>Safe</code>）。</p>
 <hr>
 
 </section>
@@ -281,12 +339,19 @@ func WithContext(ctx context.Context, l *zap.Logger) context.Context {
 }</code></pre>
 <h3 id="45-运行时动态调整级别">4.5 运行时动态调整级别</h3>
 <pre><code class="lang-go">var atom = zap.NewAtomicLevelAt(zap.InfoLevel)
-cfg := zap.NewProductionConfig()
-cfg.Level = atom
-logger, _ := cfg.Build()
 
-atom.SetLevel(zap.DebugLevel) // 排障时临时开 Debug，无需重启
-defer atom.SetLevel(zap.InfoLevel)</code></pre>
+func newLogger() *zap.Logger {
+	cfg := zap.NewProductionConfig()
+	cfg.Level = atom
+	logger, _ := cfg.Build()
+	return logger
+}
+
+// 排障时临时开 Debug，无需重启；用完恢复
+func enableDebugTemporarily() {
+	atom.SetLevel(zap.DebugLevel)
+	defer atom.SetLevel(zap.InfoLevel)
+}</code></pre>
 <p>生产环境可把 <code>atom</code> 暴露到一个受控的 admin 接口（务必鉴权），或接配置中心，实现「出问题临时降级别、完事恢复」。</p>
 <h3 id="46-单测断言">4.6 单测断言</h3>
 <pre><code class="lang-go">func TestWarnOnRetry(t *testing.T) {
@@ -300,13 +365,119 @@ defer atom.SetLevel(zap.InfoLevel)</code></pre>
     require.Equal(t, "retrying", entries[0].Message)
     require.Equal(t, int64(3), entries[0].ContextMap()["attempt"])
 }</code></pre>
+<h3 id="47-采样策略高频日志怎么不炸">4.7 采样策略：高频日志怎么不炸</h3>
+<p>采样器按 <code>(级别, 消息)</code> 分组计数：每个 <code>tick</code> 窗口内，同一组的前 <code>initial</code> 条原样输出，之后每 <code>thereafter</code> 条抽 1 条，其余丢弃。v1.28 的计数器是 <code>[级别][4096]</code> 的原子数组，key 走 FNV 哈希落到槽位 —— 所以<strong>不同消息可能撞槽、共享同一个计数</strong>，这是为了「内存有界 + 无锁」有意做的取舍。</p>
+<div class="table-wrap"><table><thead><tr><th>参数</th><th>含义</th><th>调参经验</th></tr></thead><tbody><tr><td><code>tick</code></td><td>统计窗口（默认 1s）</td><td>窗口越短，突发越容易被完整放行；窗口太长会把「每秒一条」的正常日志也误杀</td></tr><tr><td><code>initial</code></td><td>窗口内前 N 条全记</td><td>取「正常峰值 1~2 秒的条数」，太小会丢掉排障最需要的头几条</td></tr><tr><td><code>thereafter</code></td><td>之后每 M 条记 1 条</td><td>100 起步，等于把后续部分压到约 1%</td></tr></tbody></table></div>
+<pre><code class="lang-json">{"level":"info","encoding":"json","sampling":{"initial":100,"thereafter":100}}</code></pre>
+<p><code>zap.Config</code> 只能表达 <code>initial</code> / <code>thereafter</code>（<code>tick</code> 固定 1s），要自定义窗口就手写 <code>NewSamplerWithOptions</code>。</p>
+<p><strong>采样日志必须能算出丢了多少</strong>：采样后日志条数 ≠ 真实事件数，如果不知道丢了多少，Error 率、告警阈值、容量规划全是错的。两种补法 —— 用 <code>SamplerHook</code> 把丢弃数打成指标（推荐，聚合本就该交给指标系统），或给每条采样日志加 <code>sampled</code> / <code>dropped</code> 字段（下游可求和）：</p>
+<pre><code class="lang-go">package logging
+
+import (
+	"sync/atomic"
+	"time"
+
+	"go.uber.org/zap/zapcore"
+)
+
+// Dropped 累计被采样器丢弃的条数，挂到 /metrics 上
+var Dropped atomic.Uint64
+
+func newSampler(core zapcore.Core) zapcore.Core {
+	return zapcore.NewSamplerWithOptions(core, time.Second, 100, 100,
+		zapcore.SamplerHook(func(_ zapcore.Entry, dec zapcore.SamplingDecision) {
+			if dec&amp;zapcore.LogDropped != 0 {
+				Dropped.Add(1)
+			}
+		}))
+}</code></pre>
+<p><strong>分级别采样</strong>：Error 不采样。做法不是「采样整个 logger」，而是用 <code>NewTee</code> 拼两条链路 —— Info/Warn 那条 Core 外面套 sampler，Error 那条用 <code>zapcore.NewCore(enc, errSink, zapcore.ErrorLevel)</code> 全量写并单独告警。采样器只作用在它包住的那个 Core 上，Tee 的另一支不受影响。</p>
+<ul><li><strong>消息里不要拼变量</strong>。采样 key 是整条 <code>msg</code>，<code>"user "+id+" failed"</code> 会让每条都成为独立 key，采样彻底失效（同时也违反 4.9 的字段规范）。</li><li><strong>应用层采样是第一道，采集端限流是最后一道</strong>：Loki 侧的 <code>ingestion_rate_mb</code> / <code>per_stream_rate_limit</code> 一旦触发就返回 429，Promtail 重试后丢批次 —— 那是「不可控的丢」；应用层采样才是「可解释、有计数」的丢，别指望采集端兜底。</li></ul>
+<h3 id="48-接-opentelemetry把-trace_id-span_id-写进每条日志">4.8 接 OpenTelemetry：把 trace_id / span_id 写进每条日志</h3>
+<p>分工一句话：<strong>trace 记录「一次请求经过谁、各花多久」，log 记录「当时发生了什么」</strong>；日志里带 <code>trace_id</code> 是把两者缝起来成本最低的手段，链路侧的细节（Span、Propagator、Collector）见 <a href="../opentelemetry/opentelemetry-guide.html">OpenTelemetry 篇</a>。</p>
+<p>字段名要对齐 OTel 语义约定：<code>trace_id</code>（32 位小写 hex）、<code>span_id</code>（16 位小写 hex），不要写 <code>traceId</code> / <code>TraceID</code> / <code>trace-id</code> —— Grafana、Tempo、Jaeger 的默认解析都按这套来。取 SpanContext 的小工具：</p>
+<pre><code class="lang-go">package observability
+
+import (
+	"context"
+
+	"go.opentelemetry.io/otel/trace"
+	"go.uber.org/zap"
+)
+
+// TraceFields 从 ctx 提取 trace_id / span_id；没有有效 span 时返回 nil。
+// OTel 的零值 SpanContext 是 invalid，别把全 0 的 id 打进日志。
+func TraceFields(ctx context.Context) []zap.Field {
+	sc := trace.SpanContextFromContext(ctx)
+	if !sc.IsValid() {
+		return nil
+	}
+	return []zap.Field{
+		zap.String("trace_id", sc.TraceID().String()),
+		zap.String("span_id", sc.SpanID().String()),
+	}
+}</code></pre>
+<p>注入时机只能<strong>在调用点</strong>：zap 的 <code>Logger</code> 不携带 <code>context.Context</code>（<code>zapcore.Entry</code> 里也没有 ctx 字段），Core 拿不到请求上下文。所以要在入口派生 logger、写回 ctx 往下传（<code>WithContext</code> 见 4.4）：</p>
+<pre><code class="lang-go">package observability
+
+import (
+	"net/http"
+
+	"go.opentelemetry.io/otel"
+	"go.uber.org/zap"
+)
+
+var tracer = otel.Tracer("http")
+
+// 在 OTel 中间件里派生 logger：span 必须先 Start，trace_id 才有值
+func LoggingMiddleware(base *zap.Logger, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx, span := tracer.Start(r.Context(), r.Method+" "+r.URL.Path)
+		defer span.End()
+
+		l := base.With(TraceFields(ctx)...)
+		next.ServeHTTP(w, r.WithContext(WithContext(ctx, l)))
+	})
+}</code></pre>
+<p><strong>与 <code>otelzap</code> bridge 的关系</strong>：<code>go.opentelemetry.io/contrib/bridges/otelzap</code> 能把 zap Core 换成「直接产出 OTel LogRecord」的 Core，由 SDK 自动补当前 span 的 <code>trace_id</code> / <code>span_id</code>。代价是每条日志都走一遍 <code>LoggerProvider</code>（属性转换 + batch 开销），且整条采集链必须走 OTLP。<strong>已有 Loki / Promtail / Alloy 体系的项目，继续让 zap 打 JSON、由采集器解析 <code>trace_id</code> 更简单</strong>；只有「日志也要和 trace / metrics 走同一个 OTLP Collector」时才值得上 bridge。</p>
+<p>双向跳转靠 Grafana 的 derived field：在 Loki 数据源里加一条 <code>matcherRegex: "\"trace_id\":\"([0-9a-f]+)\""</code> 指向 Tempo，点日志上的 <code>trace_id</code> 直接跳过去；反向（Tempo → Loki）由 Trace 视图按 <code>service.name</code> + 时间范围反查，所以 <code>service</code> 字段必须和 OTel 的 <code>service.name</code> 资源属性<strong>逐字一致</strong>，否则两边对不上。</p>
+<h3 id="49-日志规范字段错误与脱敏">4.9 日志规范：字段、错误与脱敏</h3>
+<div class="table-wrap"><table><thead><tr><th>约定</th><th>内容</th></tr></thead><tbody><tr><td>固定字段</td><td><code>service</code>、<code>version</code>、<code>env</code> 由构造期 <code>zap.New(..., zap.Fields(...))</code> 或 <code>WrapCore</code> 统一注入；<code>ts</code> / <code>level</code> / <code>caller</code> / <code>msg</code> 由 encoder 负责，业务代码不要重复写</td></tr><tr><td>命名</td><td>全 <code>snake_case</code>，单位进名字（<code>duration_ms</code>、<code>size_bytes</code>），时间统一 ms 整数或 RFC3339；布尔用肯定式（<code>cached</code>、<code>ok</code>），别造 <code>not_ready</code></td></tr><tr><td>消息</td><td><code>msg</code> 是<strong>常量</strong>，描述「发生了什么」，所有变量进字段。<code>fmt.Sprintf</code> / 字符串拼接会把结构化压回文本，检索、聚合、采样三件事同时失效；同一含义也只允许一个名字（<code>uid</code> / <code>userID</code> / <code>userId</code> 并存等于下游要写三套查询）</td></tr></tbody></table></div>
+<p>错误的边界要拎清：<code>zap.Error(err)</code> 只编码 error 的类型与消息，<strong>不产生堆栈</strong>。堆栈有两个来源，二选一即可 —— 全局 <code>zap.AddStacktrace(zapcore.ErrorLevel)</code>，或单点 <code>zap.Stack("stack")</code>。两处都加就是每行日志两份栈，白白撑大存储。</p>
+<pre><code class="lang-go">package logging
+
+import "go.uber.org/zap"
+
+// Safe：字段级脱敏，敏感 key 一律掩码。命不中的日志零额外开销。
+func Safe(key, value string) zap.Field {
+	switch key {
+	case "password", "token", "authorization", "id_card", "phone":
+		if len(value) &gt; 4 {
+			return zap.String(key, value[:2]+"***"+value[len(value)-2:])
+		}
+		return zap.String(key, "***")
+	}
+	return zap.String(key, value)
+}
+
+func logFailure(l *zap.Logger, orderID string, err error) {
+	l.Error("charge failed",
+		zap.String("order_id", orderID),
+		zap.Error(err),     // 结构化 err 字段，nil 也安全
+		zap.Stack("stack"), // zap.Error 不带栈，要栈就显式加
+	)
+}</code></pre>
+<p>脱敏三条路，按成本从低到高：<strong>①</strong> 字段级 helper（上面的 <code>Safe</code>，只在调用点生效，最便宜）；<strong>②</strong> 干脆不打（白名单，敏感字段根本进不了日志，最可靠）；<strong>③</strong> 自定义 <code>zapcore.Encoder</code> 或 3.5 那种 <code>WrapCore</code> 兜底（覆盖全链路，但每条日志都过一遍判断）。实践是 ① + ②，③ 作为最后一道防线。</p>
+<p>级别判断标准（写进 code review 清单，比写在文档里有效）：</p>
+<div class="table-wrap"><table><thead><tr><th>级别</th><th>语义</th><th>例子</th><th>是否告警</th></tr></thead><tbody><tr><td><code>Debug</code></td><td>排障细节，生产默认关</td><td>请求/响应体、SQL、缓存 key</td><td>否</td></tr><tr><td><code>Info</code></td><td>关键业务事件，能重建「发生了什么」</td><td>启停、配置加载、订单状态迁移</td><td>否</td></tr><tr><td><code>Warn</code></td><td>可自愈 / 已降级</td><td>重试后成功、缓存穿透回源、慢查询</td><td>看趋势</td></tr><tr><td><code>Error</code></td><td><strong>需要人介入</strong></td><td>依赖不可用、数据不一致、recover 到的 panic</td><td>是</td></tr></tbody></table></div>
+<p>日志量预算：<strong>每请求 ≤ 3 条</strong>（入口一条、结果一条、异常一条）。中间的每一步不该用日志表达，那是 span 的职责 —— 一条请求 20 条日志的系统，采样只能救急，救不了成本。</p>
 <hr>
 
 <div class="callout info"><p><b>实战要点：</b>生产环境用 zap.NewProductionConfig() 起步，把 ErrorOutput 与采样单独配置；热路径避免 SugaredLogger 的格式化拼接。</p></div>
 </section>
 <section data-anchor="5-版本演进速览">
 <h2 id="5-版本演进速览">5. 版本演进速览<span class="lvl b">版本</span></h2>
-<div class="table-wrap"><table><thead><tr><th>阶段</th><th>关键变化</th></tr></thead><tbody><tr><td>早期 v1.x</td><td><code>Logger</code> / <code>SugaredLogger</code> 双 API、<code>zapcore</code> 分层、JSON/Console encoder、<code>NewProduction</code> 预设</td></tr><tr><td>v1.1x~1.2x</td><td><code>AtomicLevel</code>、<code>zaptest/observer</code>、<code>RegisterHooks</code>、<code>zap.Inline</code> / <code>zap.Object</code> 等字段能力完善</td></tr><tr><td>v1.2x 起</td><td><code>DPanic</code>、<code>NewStdLog</code> 桥接标准库、Sinks（<code>zap.Open</code> 支持 URL 形式输出目标）、采样器选项化</td></tr><tr><td>近年 v1.26~1.27</td><td>依赖升级、<code>zapcore.NewSamplerWithOptions</code>、错误与 <code>Any</code> 字段行为细化；<strong>API 长期稳定，无破坏性变更</strong></td></tr></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>阶段</th><th>关键变化</th></tr></thead><tbody><tr><td>早期 v1.x</td><td><code>Logger</code> / <code>SugaredLogger</code> 双 API、<code>zapcore</code> 分层、JSON/Console encoder、<code>NewProduction</code> 预设</td></tr><tr><td>v1.1x~1.2x</td><td><code>AtomicLevel</code>、<code>zaptest/observer</code>、<code>RegisterHooks</code>、<code>zap.Inline</code> / <code>zap.Object</code> 等字段能力完善</td></tr><tr><td>v1.2x 起</td><td><code>DPanic</code>、<code>NewStdLog</code> 桥接标准库、Sinks（<code>zap.Open</code> 支持 URL 形式输出目标）、采样器选项化</td></tr><tr><td>v1.15</td><td><code>zapcore.NewSamplerWithOptions</code> 与 <code>SamplerHook</code> 引入（可拿到 <code>LogDropped</code> 决策并自行计数）</td></tr><tr><td>近年 v1.26~1.27</td><td>依赖升级、错误与 <code>Any</code> 字段行为细化；<strong>API 长期稳定，无破坏性变更</strong></td></tr></tbody></table></div>
 <p><strong>与标准库 <code>log/slog</code>（Go 1.21+）的关系</strong>：slog 已把结构化日志纳入标准库，通过 <code>zap.NewStdLog</code> 或 <code>slog.New(zapslog.NewHandler(core))</code>（<code>go.uber.org/zap/exp/zapslog</code>）可互操作。<strong>新项目若不想引第三方依赖，slog 是合理选择</strong>；已有 zap 生态、需要采样/Tee/极致性能的场景继续用 zap。</p>
 <blockquote class="warn"><p>zap 的 v1 已稳定多年，升级成本极低；锁 <code>go.mod</code> 版本即可，注意 <code>go.uber.org/multierr</code> 等间接依赖一起升。</p></blockquote>
 <hr>
@@ -314,7 +485,7 @@ defer atom.SetLevel(zap.InfoLevel)</code></pre>
 </section>
 <section data-anchor="6-常见坑与最佳实践">
 <h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
-<ol><li><strong>忘记 <code>Sync()</code></strong>：<code>NewProduction</code> 带缓冲，进程被 <code>SIGKILL</code> 或 <code>os.Exit</code> 时最后一批日志会丢。在 <code>main</code> 里 <code>defer logger.Sync()</code>；注意 <code>Fatal</code> 会直接 <code>os.Exit(1)</code>，<strong>defer 不会执行</strong>，关键场景先 <code>Sync</code> 再 <code>Fatal</code>，或改用 <code>Error</code> + 显式返回。</li><li><strong>热路径滥用 <code>SugaredLogger</code> 与 <code>fmt.Sprintf</code></strong>：<code>logger.Info(fmt.Sprintf("user %s cost %dms", u, ms))</code> 把结构化字段又压回字符串，既慢又不可索引。改成 <code>logger.Info("request done", zap.String("user", u), zap.Int64("ms", ms))</code>。</li><li><strong>日志里打敏感信息</strong>：密码、token、身份证、完整请求体。建一个字段白名单或在 encoder 层做脱敏 Hook，比靠 code review 可靠。</li><li><strong>不设采样</strong>：下游故障时的循环重试能在一分钟内写满磁盘。至少给 <code>Info/Warn</code> 配 <code>Sampling</code>，Error 单独分流并告警。</li><li><strong>以为「级别过滤」能省掉参数计算</strong>：<code>logger.Debug("x", zap.String("k", expensive()))</code> 里 <code>expensive()</code> <strong>仍会执行</strong>（Go 的函数参数先求值）。昂贵字段要自己先判 <code>logger.Core().Enabled(zap.DebugLevel)</code>。</li><li><strong>用 <code>zap.Any</code> 打大对象</strong>：<code>Any</code> 走反射，结构体大时开销陡增且可能输出海量字段。热路径用具体类型 Field，或只挑关键字段。</li><li><strong>Error 级别滥用</strong>：把「用户输入不合法」打成 <code>Error</code> 会让告警全是噪音。约定：<code>Error</code> = 需要人介入的系统故障，<code>Warn</code> = 可自愈/降级，<code>Info</code> = 关键业务事件。</li><li><strong><code>zap.Error(err)</code> 而不是 <code>zap.String("error", err.Error())</code></strong>：前者保留结构化 error 字段，且对 nil 安全；后者丢类型、易 panic。</li><li><strong>封装后 Caller 指错文件</strong>：自己包一层 <code>log.Info()</code> 会导致 <code>caller</code> 显示封装文件。用 <code>zap.AddCallerSkip(1)</code> 或 <code>logger.WithOptions(zap.AddCallerSkip(1))</code>。</li><li><strong>每次请求新建 Logger</strong>：<code>cfg.Build()</code> 很重。全局建一次，用 <code>logger.With(...)</code> 派生轻量子 logger（它只复制字段切片）。</li><li><strong>多 goroutine 写同一个 <code>os.File</code> 不加 Lock</strong>：日志行交错、JSON 被撕坏。用 <code>zapcore.Lock(os.Stdout)</code> 或让每个 Core 独占 writer。</li><li><strong>字段名不统一</strong>：同一含义出现 <code>userID</code> / <code>user_id</code> / <code>uid</code>，下游聚合要写三套查询。制定字段词典并写进 lint / code review 清单。</li><li><strong>把日志当指标/链路用</strong>：<code>duration_ms</code> 可以辅助排障，但 SLO 与 P99 应交给 <a href="https://prometheus.io/">Prometheus 类指标系统</a>，跨服务调用链交给 OpenTelemetry，三者不要互相替代。</li></ol>
+<ol><li><strong>忘记 <code>Sync()</code></strong>：<code>NewProduction</code> 带缓冲，进程被 <code>SIGKILL</code> 或 <code>os.Exit</code> 时最后一批日志会丢。在 <code>main</code> 里 <code>defer logger.Sync()</code>；注意 <code>Fatal</code> 会直接 <code>os.Exit(1)</code>，<strong>defer 不会执行</strong>，关键场景先 <code>Sync</code> 再 <code>Fatal</code>，或改用 <code>Error</code> + 显式返回。</li><li><strong>热路径滥用 <code>SugaredLogger</code> 与 <code>fmt.Sprintf</code></strong>：<code>logger.Info(fmt.Sprintf("user %s cost %dms", u, ms))</code> 把结构化字段又压回字符串，既慢又不可索引。改成 <code>logger.Info("request done", zap.String("user", u), zap.Int64("ms", ms))</code>。</li><li><strong>日志里打敏感信息</strong>：密码、token、身份证、完整请求体。建一个字段白名单或在 encoder 层做脱敏 Hook，比靠 code review 可靠。</li><li><strong>不设采样</strong>：下游故障时的循环重试能在一分钟内写满磁盘。至少给 <code>Info/Warn</code> 配 <code>Sampling</code>，Error 单独分流并告警。</li><li><strong>以为「级别过滤」能省掉参数计算</strong>：<code>logger.Debug("x", zap.String("k", expensive()))</code> 里 <code>expensive()</code> <strong>仍会执行</strong>（Go 的函数参数先求值）。昂贵字段要自己先判 <code>logger.Core().Enabled(zap.DebugLevel)</code>。</li><li><strong>用 <code>zap.Any</code> 打大对象</strong>：<code>Any</code> 走反射，结构体大时开销陡增且可能输出海量字段。热路径用具体类型 Field，或只挑关键字段。</li><li><strong>Error 级别滥用</strong>：把「用户输入不合法」打成 <code>Error</code> 会让告警全是噪音。约定：<code>Error</code> = 需要人介入的系统故障，<code>Warn</code> = 可自愈/降级，<code>Info</code> = 关键业务事件。</li><li><strong><code>zap.Error(err)</code> 而不是 <code>zap.String("error", err.Error())</code></strong>：前者保留结构化 error 字段，且对 nil 安全；后者丢类型、易 panic。</li><li><strong>封装后 Caller 指错文件</strong>：自己包一层 <code>log.Info()</code> 会导致 <code>caller</code> 显示封装文件。用 <code>zap.AddCallerSkip(1)</code> 或 <code>logger.WithOptions(zap.AddCallerSkip(1))</code>。</li><li><strong>每次请求新建 Logger</strong>：<code>cfg.Build()</code> 很重。全局建一次，用 <code>logger.With(...)</code> 派生带上下文的 logger；但 <code>With</code> 会 clone encoder 并把已绑定字段重新编码，字段多、循环里反复派生时并不便宜（见 3.5）。</li><li><strong>多 goroutine 写同一个 <code>os.File</code> 不加 Lock</strong>：日志行交错、JSON 被撕坏。用 <code>zapcore.Lock(os.Stdout)</code> 或让每个 Core 独占 writer。</li><li><strong>字段名不统一</strong>：同一含义出现 <code>userID</code> / <code>user_id</code> / <code>uid</code>，下游聚合要写三套查询。制定字段词典并写进 lint / code review 清单。</li><li><strong>把日志当指标/链路用</strong>：<code>duration_ms</code> 可以辅助排障，但 SLO 与 P99 应交给 <a href="https://prometheus.io/">Prometheus 类指标系统</a>，跨服务调用链交给 OpenTelemetry，三者不要互相替代。</li></ol>
 <hr>
 
 <div class="callout warning"><p><b>生产警示：</b>Sync() 在 stdout/stderr 上会返回 EINVAL，别把它当成致命错误；日志里禁止写入密码、token、身份证等敏感字段，脱敏要在 Encoder 或 Field 构造处完成。</p></div>

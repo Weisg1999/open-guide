@@ -79,7 +79,7 @@ message WatchRequest  { string name = 1; }
 
 ### 3.1 一次 Unary 调用发生了什么
 
-```
+```text
 Client                                             Server
   │ ① hello.SayHello(ctx, req)                       │
   │ ② proto.Marshal(req) → []byte                   │
@@ -105,7 +105,7 @@ Client                                             Server
 
 ### 3.4 拦截器链
 
-```
+```text
 Unary:  client interceptor → 网络 → server interceptor 1 → interceptor 2 → Handler
 ```
 
@@ -113,7 +113,7 @@ Unary:  client interceptor → 网络 → server interceptor 1 → interceptor 2
 
 ### 3.5 名称解析与负载均衡
 
-```
+```text
 target "dns:///svc:50051"
    → Resolver 解析出 []Address
    → Balancer 建立 SubConn 并维护状态（CONNECTING / READY / TRANSIENT_FAILURE）
@@ -121,6 +121,146 @@ target "dns:///svc:50051"
 ```
 
 默认 `pick_first`（只用第一条可用地址，故障才切换），生产通常显式配 `round_robin` 或接入 xDS / 自定义 etcd resolver。注意：**gRPC 的负载均衡是客户端侧、每连接复用**，与 L4/L7 代理的行为不同。
+
+### 3.6 deadline 与取消：跨进程怎么传、为什么总超时
+
+客户端的 `context.WithTimeout` 不只是本地定时器。发起 RPC 时 gRPC 读取 ctx 里的 deadline，把它塞进 HEADERS 的 `grpc-timeout` 头：
+
+```text
+grpc-timeout: 800m
+              ^^^^ 最多 8 位十进制数字
+                  ^ 单位：H 时 / M 分 / S 秒 / m 毫秒 / u 微秒 / n 纳秒
+```
+
+编码取「能放进 8 位数字的最粗单位」，800ms 走 `800m`、2s 走 `2S`、50µs 走 `50u` 而不是 `50000n`。这带来两个副作用：一是**精度被单位截断**，1500ms 会被写成 `1S`（小数部分直接丢），服务端拿到的是 1s 而不是 1.5s；二是抓包看到的数字通常比客户端设的略小，因为中间还有 RTT、连接排队与实现层的少量扣减。所以「客户端设 800ms、服务端 `ctx.Deadline()` 只剩 780ms」是正常现象，不是 bug。
+
+```text
+Client（预算 800ms）                      Server                    下游
+  │ ctx.WithTimeout(800ms)                 │                          │
+  │ ── HEADERS grpc-timeout: 800m ───────► │                          │
+  │                                        │ ctx.Deadline() = T-Δ     │
+  │                                        │ ── 复用同一 ctx ───────► │ 剩余 T-Δ-Δ'
+  │                                        │                          │
+  │ ◄── 本地 deadline 先触发（DeadlineExceeded）                        │
+  │ ── RST_STREAM(CANCEL) ───────────────► │ ctx.Done() → Canceled    │
+```
+
+```go
+package biz
+
+import (
+    "context"
+    "log"
+    "time"
+
+    "google.golang.org/grpc/status"
+
+    pb "example.com/app/gen/greeter/v1"
+)
+
+type GreetingStore interface {
+    Greeting(ctx context.Context, name string) (string, error)
+}
+
+type Server struct{ store GreetingStore }
+
+// 服务端：沿用上游给的剩余预算，而不是自己再拍一个 3s
+func (s *Server) SayHello(ctx context.Context, req *pb.HelloRequest) (*pb.HelloReply, error) {
+    if dl, ok := ctx.Deadline(); ok {
+        log.Printf("remaining budget: %s", time.Until(dl))
+    }
+
+    // 检查点：贵操作之前先看是否已取消，避免白算
+    if err := ctx.Err(); err != nil {
+        return nil, status.FromContextError(err).Err()
+    }
+
+    // 关键：下游复用同一个 ctx，deadline 与取消才会逐跳传递
+    msg, err := s.store.Greeting(ctx, req.GetName())
+    if err != nil {
+        return nil, err
+    }
+    return &pb.HelloReply{Message: msg}, nil
+}
+```
+
+- **逐跳递减必须做**：服务端若用 `context.Background()` 另起一个「5s」调下游，就丢掉了上游只剩 200ms 的事实。上游早已超时返回，下游还在跑满 5s——这就是**幽灵请求**（goroutine、连接、数据库连接池全被无效占用）。正确做法是全程复用入参 ctx，需要留余量就在其基础上 `context.WithTimeout(ctx, min(剩余, 预期))` 收窄。
+- **两个超时谁生效**：gRPC 只看发起 RPC 那一刻 ctx 链上的 deadline。ctx 只能收窄不能放宽，所以「更短的那个」赢；在拦截器里再 `WithTimeout` 只会在原预算内进一步收紧。想放大预算只能改调用方，改服务端无效。
+- **取消如何传播**：客户端 `cancel()` 或超时 → gRPC 发 `RST_STREAM(CANCEL)` → 服务端 ctx 立刻 `Done()`，`ctx.Err()` 为 `context.Canceled`（超时则是 `DeadlineExceeded`）。取消是**尽力而为**的异步信号，靠 handler 主动检查才生效。
+- **检查点放在哪**：长循环每轮、每次外部 IO 前、每批处理之间。已经在阻塞 IO 里的 goroutine 收不到信号，所以给下游库也要传 ctx（`db.QueryContext`、`http.NewRequestWithContext`），别用不带 ctx 的版本。
+- **重试与 deadline 的关系**：所有重试共享同一个总预算，重试不会延长 deadline。`maxAttempts=3` + 总预算 300ms，意味着三次尝试共用 300ms，单次实际只有约 100ms。要么把预算按尝试次数预留，要么只让最后一次尝试吃满。
+
+### 3.7 错误模型：status code、details 与 HTTP 映射
+
+Go 的 `error` 在 gRPC 里被压成 `Status{code, message, details}`，线上落在 trailer 的 `grpc-status` 与 `grpc-message`（后者是 percent-encoded 的 UTF-8）。**code 是给程序判断的，message 是给人看的**，任何基于 message 字符串的匹配都会在下次改文案时崩掉。
+
+| code | HTTP | 含义与典型用法 |
+|---|---|---|
+| `Canceled` | 499 | 调用方主动取消（客户端超时也常表现成它） |
+| `Unknown` | 500 | 服务端直接 `return err`，语义已丢失 |
+| `InvalidArgument` | 400 | 参数本身不合法，重试无意义 |
+| `DeadlineExceeded` | 504 | 超出 deadline |
+| `NotFound` | 404 | 资源不存在（含「无权查看」时的掩蔽） |
+| `AlreadyExists` | 409 | 唯一键冲突，创建型接口 |
+| `PermissionDenied` | 403 | 已认证但无权限 |
+| `ResourceExhausted` | 429 | 配额/限流/消息过大 |
+| `FailedPrecondition` | 400 | 参数格式没错，但当前状态不允许（账号未激活、库存不足） |
+| `Aborted` | 409 | 并发冲突（乐观锁版本不匹配），可立即重试 |
+| `OutOfRange` | 400 | 参数越界（分页 offset 超总长） |
+| `Unimplemented` | 501 | 方法未实现（旧版本服务端收到新方法） |
+| `Internal` | 500 | 服务端 bug 或不可恢复状态，**不该重试** |
+| `Unavailable` | 503 | 暂时不可达/过载，**可重试** |
+| `DataLoss` | 500 | 数据损坏，通常要人介入 |
+| `Unauthenticated` | 401 | 没带/带错凭证 |
+
+最容易搞混的两组：
+
+- `InvalidArgument` vs `FailedPrecondition`：前者「这个参数永远不对」（负数年龄），后者「这次不行，改状态后可能行」（余额不足）。前者改代码，后者改数据。
+- `Unavailable` vs `Internal`：前者是「现在联系不上/忙」，重试有意义；后者是「我算错了」，重试只会重复错一次。把 `Internal` 标成可重试是重试风暴的常见源头。
+
+结构化错误用 `WithDetails`，让客户端能拿到字段级信息而不是解析文案：
+
+```go
+package biz
+
+import (
+    "google.golang.org/genproto/googleapis/rpc/errdetails"
+    "google.golang.org/grpc/codes"
+    "google.golang.org/grpc/status"
+)
+
+// 服务端：带回字段级信息，而不是让客户端解析文案
+func invalidRequest() error {
+    st, err := status.New(codes.InvalidArgument, "invalid request").WithDetails(
+        &errdetails.BadRequest{FieldViolations: []*errdetails.BadRequest_FieldViolation{
+            {Field: "name", Description: "must be 1~64 chars"},
+            {Field: "email", Description: "not a valid address"},
+        }})
+    if err != nil { // 打包失败（该 proto 类型未注册）
+        return status.Error(codes.InvalidArgument, "invalid request")
+    }
+    return st.Err()
+}
+
+// 客户端：先按 code 分支，再解 details 做字段级提示
+func fieldErrs(err error) map[string]string {
+    out := map[string]string{}
+    if st, ok := status.FromError(err); ok && st.Code() == codes.InvalidArgument {
+        for _, d := range st.Details() {
+            if br, ok := d.(*errdetails.BadRequest); ok {
+                for _, v := range br.GetFieldViolations() {
+                    out[v.GetField()] = v.GetDescription()
+                }
+            }
+        }
+    }
+    return out
+}
+```
+
+- **判等不要用 `==`**：`status.Error(codes.NotFound, "x") != status.Error(codes.NotFound, "x")`，两次调用是两个指针。统一用 `status.Code(err)` 或 `status.FromError` 后的 `st.Code()`；`errors.Is(err, context.DeadlineExceeded)` 对 gRPC 错误只在部分路径成立，别依赖。
+- **details 是 proto**：`WithDetails` 只接受 `proto.Message`，且解码要靠全局 proto registry 还原类型；裁剪过 registry 的二进制解不出具体类型，此时 `Details()` 里对应的那一项是 `error`（如 `protoregistry.NotFound`），要用 `if _, ok := d.(error); ok` 兜底。
+- **HTTP 映射可改，且可重试判定要集中**：上表是 grpc-gateway 的默认表，要统一错误体就用 `runtime.WithErrorHandler` 自己转。客户端把「哪些 code 可重试」（通常 `Unavailable` / `Aborted` / `ResourceExhausted` + 幂等方法）收进一个函数复用，别散落在各处。
 
 ---
 
@@ -281,6 +421,206 @@ grpcurl -plaintext localhost:50051 list
 grpcurl -plaintext -d '{"name":"world"}' localhost:50051 greeter.v1.GreeterService/SayHello
 ```
 
+### 4.6 重试与幂等：重试策略的坑
+
+gRPC 的重试有两种完全不同的实现：
+
+- **内置重试**：写在 service config 里，由传输层执行。重试发生在「收到 trailer 之后、错误返回应用之前」，同一个 RPC 在应用看来只调用了一次，拦截器也只走一次（日志里不会出现三条记录）；同时受内建的 token bucket 节流保护。
+- **拦截器重试**：业务代码里 for 循环重调。灵活（能改请求、能换节点），但绕开了节流，也容易在日志/指标里放大调用量。
+
+能用内置就用内置：
+
+```go
+package client
+
+import (
+    "google.golang.org/grpc"
+    "google.golang.org/grpc/credentials/insecure"
+)
+
+// timeout 是这条 RPC 的总预算，重试共享它，不是每次尝试各一份
+const retryConfig = `{
+  "methodConfig": [{
+    "name": [{"service": "greeter.v1.GreeterService", "method": "SayHello"}],
+    "timeout": "1s",
+    "retryPolicy": {
+      "maxAttempts": 3,
+      "initialBackoff": "0.1s",
+      "maxBackoff": "1s",
+      "backoffMultiplier": 2.0,
+      "retryableStatusCodes": ["UNAVAILABLE"]
+    }
+  }]
+}`
+
+func NewConn(addr string) (*grpc.ClientConn, error) {
+    return grpc.NewClient(addr,
+        grpc.WithTransportCredentials(insecure.NewCredentials()),
+        grpc.WithDefaultServiceConfig(retryConfig),
+    )
+}
+```
+
+- **`maxAttempts` 默认上限是 5**（含首次），写 10 不会生效，超过会被截断到 5。真需要更多次重试，说明该换的是熔断/降级，而不是重试。
+- **只对幂等方法重试**。`SayHello` 重试安全，`CreateOrder` 重试可能下两单。服务端保证不了幂等时，客户端就不要配 `retryableStatusCodes`——配置按 `methodConfig.name` 生效：示例写的是 `method: "SayHello"`，只影响这个方法；只有 name 省略 method 时才覆盖整个 service。
+- **重试风暴**：故障时若所有客户端同时重试，QPS 会翻倍砸向正在恢复的服务，把它彻底压死。内置重试可以配 `retryThrottling` 做令牌桶节流，但**需要显式配置**；示例没配，等于没有刹车。自研重试必须自带抖动（jitter）+ 上限。
+- **`WaitForReady` 与快速失败**：默认 `grpc.WaitForReady(false)`，连接未就绪立刻返回 `Unavailable`，由调用方决定重试；`WaitForReady(true)` 会把 RPC 挂到连接就绪或 deadline 到期为止。前者适合在线请求（快速失败 + 上层降级），后者适合后台任务。
+- **幂等键放请求体还是 metadata**：放请求体（如 `request_id`）才进得了业务语义与唯一索引，能真正做「已存在则返回原结果」；放 metadata 只适合做链路追踪/去重窗口，服务端一旦没读到就完全失效。两者都做也行，但**幂等的真相在存储层**，不在传输层。
+- **超时预算怎么分**：总预算 1s、最多 3 次，别让第一次就吃掉 900ms。给单次尝试设上限（`timeout` 或每轮 `WithTimeout`），并用 `initialBackoff` 留出退避空间，否则重试还没发出预算就没了。也**别把 `DEADLINE_EXCEEDED` 列进 `retryableStatusCodes`**——预算已耗尽，重试只会立刻再超时一次。
+
+### 4.7 grpc-gateway：一份 proto 两种协议
+
+对外要给 REST，对内要保留 gRPC，不必写两套 handler。在 proto 上加 HTTP 注解，`protoc-gen-grpc-gateway` 会生成一个反向代理：对外收 JSON、对内转成 gRPC 调你的服务。
+
+```protobuf
+import "google/api/annotations.proto";
+
+service GreeterService {
+  rpc SayHello (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = { post: "/v1/greeter:sayHello" body: "*" };
+  }
+}
+```
+
+```yaml
+# buf.gen.yaml：一次生成消息、stub 与网关（buf generate）
+version: v2
+plugins:
+  - local: protoc-gen-go
+    out: gen
+    opt: paths=source_relative
+  - local: protoc-gen-go-grpc
+    out: gen
+    opt: paths=source_relative
+  - local: protoc-gen-grpc-gateway
+    out: gen
+    opt: paths=source_relative
+```
+
+```go
+package main
+
+import (
+    "context"
+    "log"
+    "net/http"
+
+    "github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+    "google.golang.org/grpc"
+    "google.golang.org/grpc/credentials/insecure"
+    "google.golang.org/protobuf/encoding/protojson"
+
+    pb "example.com/app/gen/greeter/v1"
+)
+
+func main() {
+    conn, err := grpc.NewClient("localhost:50051",
+        grpc.WithTransportCredentials(insecure.NewCredentials()))
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer conn.Close()
+
+    mux := runtime.NewServeMux(
+        runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
+            MarshalOptions: protojson.MarshalOptions{
+                UseProtoNames:   true,  // JSON 用 snake_case，与 proto 字段名一致
+                EmitUnpopulated: false, // 零值字段不输出，响应更小
+            },
+            UnmarshalOptions: protojson.UnmarshalOptions{DiscardUnknown: true},
+        }),
+    )
+    if err := pb.RegisterGreeterServiceHandler(context.Background(), mux, conn); err != nil {
+        log.Fatal(err)
+    }
+    log.Fatal(http.ListenAndServe(":8080", mux)) // 对外 :8080 → 对内 :50051
+}
+```
+
+- **`UseProtoNames` 决定兼容性**：默认 false 会把 `user_id` 输出成 `userId`。对外开放后必须固定一种，混用会让前端字段时有时无。
+- **`EmitUnpopulated`**：默认不输出零值字段，前端拿到的是「字段不存在」而不是 `0`/`""`，移动端常因此空指针。打开它换来可预测的结构，代价是响应变大。
+- **错误体是数字 code**：`Status` 会被转成 `{"code":14,"message":"...","details":[...]}`，前端按 `"UNAVAILABLE"` 判断会永远失败；要换格式用 `runtime.WithErrorHandler` 改写。
+- **取舍**：网关多一层序列化与一跳网络，延迟增加 0.5~2ms，流式在 HTTP/1.1 下只能 chunked。纯内部调用别绕网关，只有对外暴露的接口才值得；OpenAPI 也从 proto 注解生成（`protoc-gen-openapiv2`），比手写 YAML 可靠。
+
+### 4.8 测试：bufconn 与 mock
+
+单测里 `net.Listen(":0")` 起真端口既慢又不稳（端口冲突、防火墙、CI 沙箱）。`bufconn` 提供一条纯内存的双向管道，`grpc.Server` 与 `ClientConn` 直接对接，**无端口、无网络栈、无 TLS**。
+
+```go
+package greeter_test
+
+import (
+    "context"
+    "net"
+    "testing"
+    "time"
+
+    "google.golang.org/grpc"
+    "google.golang.org/grpc/codes"
+    "google.golang.org/grpc/credentials/insecure"
+    "google.golang.org/grpc/status"
+    "google.golang.org/grpc/test/bufconn"
+
+    pb "example.com/app/gen/greeter/v1"
+)
+
+type greeter struct{ pb.UnimplementedGreeterServiceServer }
+
+func (g *greeter) SayHello(ctx context.Context, req *pb.HelloRequest) (*pb.HelloReply, error) {
+    if req.GetName() == "" {
+        return nil, status.Error(codes.InvalidArgument, "name is required")
+    }
+    return &pb.HelloReply{Message: "hello, " + req.GetName()}, nil
+}
+
+// 起一个进程内 server，返回已连好的 client
+func newTestClient(t *testing.T) pb.GreeterServiceClient {
+    t.Helper()
+
+    lis := bufconn.Listen(1 << 20) // 1 MiB 内存缓冲
+    s := grpc.NewServer()
+    pb.RegisterGreeterServiceServer(s, &greeter{})
+    go func() { _ = s.Serve(lis) }() // Stop/GracefulStop 后 Serve 返回 nil；只有非 nil 才需要处理
+    t.Cleanup(s.Stop)
+
+    conn, err := grpc.NewClient("passthrough:///bufnet",
+        grpc.WithContextDialer(func(ctx context.Context, _ string) (net.Conn, error) {
+            return lis.DialContext(ctx)
+        }),
+        grpc.WithTransportCredentials(insecure.NewCredentials()),
+    )
+    if err != nil {
+        t.Fatalf("new client: %v", err)
+    }
+    t.Cleanup(func() { _ = conn.Close() })
+
+    return pb.NewGreeterServiceClient(conn)
+}
+
+func TestSayHello(t *testing.T) {
+    cli := newTestClient(t)
+    cases := map[string]codes.Code{"alice": codes.OK, "": codes.InvalidArgument}
+    for name, want := range cases {
+        t.Run(name, func(t *testing.T) {
+            t.Parallel()
+            ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+            defer cancel()
+
+            _, err := cli.SayHello(ctx, &pb.HelloRequest{Name: name})
+            if got := status.Code(err); got != want {
+                t.Fatalf("code = %v, want %v (err: %v)", got, want, err)
+            }
+        })
+    }
+}
+```
+
+- **target 写 `passthrough:///bufnet`**：`grpc.NewClient` 必须解析 scheme，`passthrough` 表示「原样交给 dialer」，名字随意但要非空。少了 scheme 会直接报 `missing port in address`。
+- **每个子测试自带 `context.WithTimeout`**：bufconn 也会卡死（handler 死循环、忘记 `Send`），没有 deadline 的测试会在 CI 上挂到全局超时。
+- **并发与数据竞争**：同一个 `ClientConn` 可被多个 goroutine 共用，`t.Parallel()` 直接并发调是合法用法；跑 `go test -race ./...` 才能抓到 handler 里共享 map / 计数器的问题，这是 gRPC 服务最常见的线上事故来源。
+- **mock 业务依赖，不要 mock gRPC 层**：给 handler 注入 `UserStore` 之类的接口，测试里传内存实现即可。用 gomock 生成 `GreeterServiceClient` 的假实现去「测 handler」是错位的——它测不到序列化、拦截器、状态码转换，恰恰是 gRPC 最容易出错的部分。
+- **集成测试复用同一个 server**：`TestMain` 里起一个 bufconn server 给所有用例共享，用完统一 `Stop`；只有需要验证「服务端重启」「连接断开」的用例才单独起。`grpc.NewClient` 是惰性的，重复创建 ClientConn 开销很小，但 server 不必重建。
+
 ---
 
 ## 5. 版本演进速览
@@ -289,7 +629,7 @@ grpcurl -plaintext -d '{"name":"world"}' localhost:50051 greeter.v1.GreeterServi
 |---|---|
 | 早期 v1.x | Unary/Streaming、拦截器、TLS、resolver/balancer 骨架成型 |
 | v1.3x 起 | `grpc.DialContext` 成为主流；`balancer` API 重构、支持 `round_robin` 与优先级 |
-| v1.4x~1.5x | 与 `google.golang.org/protobuf`（APIv2）对齐，`protoc-gen-go-grpc` **拆成独立插件**（旧 `plugins=grpcl` 已废弃） |
+| v1.4x~1.5x | 与 `google.golang.org/protobuf`（APIv2）对齐，`protoc-gen-go-grpc` **拆成独立插件**（旧 `--go_out=plugins=grpc` 写法已废弃） |
 | 近年 v1.6x+ | **`grpc.NewClient` 取代 `grpc.Dial`**（不再默认立即建连）、xDS 支持完善、健康检查/反射/重试策略稳定、Go 版本基线上移 |
 
 **迁移要点**：

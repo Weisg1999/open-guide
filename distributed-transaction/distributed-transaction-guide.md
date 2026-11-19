@@ -159,6 +159,40 @@ UPDATE orders SET status = 'PAID' WHERE order_no = 'A1001' AND status = 'PENDING
 
 **「最终一致」的时长要写进产品文档**：同步双写约等于 RPC 耗时（几十 ms）；Outbox 轮询 100ms~5s；CDC 100ms~1s；人工兜底小时级。前端不要「转圈等一致」，而是**乐观展示 + 明确中间态**（「处理中，预计 10 秒内完成」）+ 可查询进度。用户能接受「稍后到账」，不能接受「页面显示成功但实际没有」。
 
+### 3.7 从业务不变量反推方案：一张决策树
+
+方案选择不该从「我们有什么框架」开始，而该从「这笔业务绝对不能出现什么状态」开始。四个问题按顺序问，前一个能收口就不要看后一个：
+
+```text
+Q1 这两个写能否放进同一个库、同一个本地事务？
+   能（多数场景，尤其系统早期）──► 本地事务。到此结束
+   不能 ──► Q2
+
+Q2 中间态（钱扣了券没发）能否被用户看到并容忍几分钟？
+   不能（余额、额度、库存不能为负）──► 强一致：XA / Seata AT
+                                        仅限同机房、短事务、低并发
+   能 ──► Q3
+
+Q3 失败那一步的补偿是否可逆？
+   可逆（解冻、退款、取消预占、回滚状态）──► Saga 或 TCC
+   不可逆（短信、已发货、已结算、券已核销）──► 不可逆步骤后置 + 人工兜底
+
+Q4 吞吐与延迟预算还剩多少？
+   紧（单机 >1k TPS 或 P99 <100ms）──► 必须异步化，Outbox / Saga
+   松 ──► 同步方案也可以接受
+```
+
+四个真实业务的落地结论：
+
+| 业务 | 必须守住的不变量 | 中间态能否被看到 | 补偿可逆性 | 结论 |
+|---|---|---|---|---|
+| **下单扣库存** | 库存不为负、不超卖 | 能（「待支付」本身就是中间态） | 可逆（关单释放） | 同库则本地事务；跨库用 Outbox + 幂等扣减 + 超时关单释放。**不需要 TCC**，除非要做「下单即预占」 |
+| **跨行转账** | 钱不能凭空出现或消失 | 不能（用户盯着余额） | 跨行不可逆（已入对方账） | 行内两账户同库 → 本地事务。跨行**根本不存在 2PC**：本地记账 + 清算指令 + 人行对账文件，错账靠 T+1 冲正 |
+| **订单发券** | 不重复发、不超发 | 能（「发放中」可接受） | **不可逆**（券可能已被核销） | 落「发券任务」表 + 消费幂等 + 重试 + 死信 + 人工补发。绝不 Saga 反向「收回券」 |
+| **跨系统开户** | 核心有户则外围必有档 | 能（分钟级） | 可逆但很重（要销户） | 编排式 Saga：核心开户 → 外围建档，失败走销户补偿；销户失败转人工工单 |
+
+一条反直觉的结论：**上表四个场景里，三个的第一选择都不是分布式事务框架，而是「改边界」或「异步 + 对账」。** 「不要为了分布式而分布式」不是口号：引入 TM/TC 集群、TCC 三套接口、Saga 编排引擎，换来的常常只是把「数据不一致」变成「锁等待 + 悬挂事务 + 更复杂的排障」。真正的成本项永远是 3.6 的三层兜底——幂等、重试、对账；缺了它们，用什么协议都会在半年后还债。
+
 ---
 
 ## 4. 使用实战
@@ -177,10 +211,13 @@ CREATE TABLE outbox (
   retry_count   INT          NOT NULL DEFAULT 0,
   next_retry_at DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   claimed_at    DATETIME(3)  NULL,
+  sent_at       DATETIME(3)  NULL,                        -- 投递成功时间，便于排查「多久才送达」
   created_at    DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   KEY idx_pending (status, next_retry_at, id)
 ) ENGINE=InnoDB;
 ```
+
+### 4.1 写入侧：业务行与事件行同事务
 
 写入侧（`internal/order/create.go`）——业务行与事件行同事务，没有第二种写法：
 
@@ -223,6 +260,8 @@ func Create(ctx context.Context, db *sql.DB, orderNo, sku string, qty, amount in
 	return tx.Commit()
 }
 ```
+
+### 4.2 Relay：CAS 认领与投递
 
 投递侧（`internal/relay/relay.go`）——先 CAS 认领 `0→1`，抢到才发布；网络调用放在事务外，不持锁做 IO：
 
@@ -284,7 +323,11 @@ func PublishOnce(ctx context.Context, db *sql.DB, w *kafka.Writer) error {
 }
 ```
 
-后台用 `time.Ticker` 每 200ms 调一次 `PublishOnce`，每轮再顺手回收「认领后崩溃」的行：`UPDATE outbox SET status = 0 WHERE status = 1 AND claimed_at < NOW(3) - INTERVAL 60 SECOND`。`kafka.Writer` 用 `&kafka.Hash{}` 作 Balancer（同 key 落同一分区 → 单聚合保序）+ `RequiredAcks: kafka.RequireAll`。消费侧（`internal/consumer/inventory.go`）——去重表与业务写入同事务，唯一键冲突直接当成功：
+后台用 `time.Ticker` 每 200ms 调一次 `PublishOnce`，每轮再顺手回收「认领后崩溃」的行：`UPDATE outbox SET status = 0 WHERE status = 1 AND claimed_at < NOW(3) - INTERVAL 60 SECOND`。`kafka.Writer` 用 `&kafka.Hash{}` 作 Balancer（同 key 落同一分区 → 单聚合保序）+ `RequiredAcks: kafka.RequireAll`。
+
+### 4.3 消费端：幂等扣减
+
+消费侧（`internal/consumer/inventory.go`）——去重表与业务写入同事务，唯一键冲突直接当成功：
 
 ```go
 package consumer
@@ -293,6 +336,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/go-sql-driver/mysql"
 )
@@ -335,6 +379,309 @@ func isDuplicate(err error) bool {
 ```
 
 不想自研 relay 就用 CDC 等价替代：Debezium 的 Outbox Event Router 只认 INSERT，直接把 outbox 行转成 Kafka 消息，`aggregateid` 作 key、`id` 进 header（默认列 `id/aggregatetype/aggregateid/type/payload`，需按现有表结构配置映射）。生产上必须监控 `status IN (0,1)` 的行数与最老 `created_at` 的年龄，并对账「订单 = 支付流水 = 库存扣减」三方金额。
+
+### 4.4 端到端实战：下单 → 扣库存 → 发券
+
+前面各讲一个零件，这里把它们装成一台能跑的机器。和 4.1–4.3 的区别只有一处：**券服务会失败，而库存已经扣了**——「库存扣了券没发」的真实形态就在这里。代码用内存 broker + map 存储，`go run .` 直接可跑；换 Kafka/MySQL 只替换 `Broker` 实现与那几个 map。
+
+`broker.go`：一条消息给每个订阅者各投一份（等价两个消费组），失败重投、三次进死信：
+
+```go
+package main
+
+import (
+	"context"
+	"sync"
+)
+
+type Event struct {
+	ID, Type, OrderNo, SKU string // ID 必须是业务唯一号：order-created-A1001
+	Qty                    int64
+	Attempt                int // 重投次数，用来判死信
+}
+
+type Broker interface {
+	Publish(ctx context.Context, topic string, e Event) error
+	Subscribe(topic string, buf int) chan Event
+}
+
+var deadLetter = make(chan Event, 64) // 生产是 order-events.DLQ
+
+type memBroker struct {
+	mu   sync.Mutex
+	subs map[string][]chan Event
+}
+
+func NewMemBroker() *memBroker { return &memBroker{subs: map[string][]chan Event{}} }
+
+func (b *memBroker) Subscribe(topic string, buf int) chan Event {
+	ch := make(chan Event, buf)
+	b.mu.Lock()
+	b.subs[topic] = append(b.subs[topic], ch)
+	b.mu.Unlock()
+	return ch
+}
+
+func (b *memBroker) Publish(ctx context.Context, topic string, e Event) error {
+	b.mu.Lock()
+	targets := append([]chan Event(nil), b.subs[topic]...)
+	b.mu.Unlock()
+	for _, ch := range targets {
+		select {
+		case ch <- e:
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}
+	return nil
+}
+
+// run 是「至少一次」的消费骨架：失败重投，第 3 次进死信，别让一条毒消息堵住分区。
+func run(ctx context.Context, ch chan Event, handle func(context.Context, Event) error) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case e := <-ch:
+			if err := handle(ctx, e); err != nil {
+				if e.Attempt++; e.Attempt >= 3 {
+					deadLetter <- e // 落地后由 4.6 的人工补偿入口接管
+					continue
+				}
+				ch <- e
+			}
+		}
+	}
+}
+```
+
+`app.go`（同 package）：写订单与写 outbox 在同一把锁里，等价于同一个本地事务；relay 发成功才删行：
+
+```go
+package main
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"sync"
+	"time"
+)
+
+var (
+	mu      sync.Mutex
+	orders  = map[string]string{}
+	outbox  = map[string]Event{}
+	seen    = map[string]bool{} // consumed_event(consumer, event_id) 唯一键
+	stock   = map[string]int64{"SKU-1": 100}
+	coupons = map[string][]string{}
+)
+
+func CreateOrder(orderNo, sku string, qty int64) {
+	mu.Lock()
+	defer mu.Unlock()
+	orders[orderNo] = "PENDING"
+	outbox["order-created-"+orderNo] = Event{
+		ID: "order-created-" + orderNo, Type: "order.created",
+		OrderNo: orderNo, SKU: sku, Qty: qty,
+	}
+}
+
+// relay：两个 topic 都发成功才删 outbox。券 topic 失败就整批留到下轮重发，
+// 库存会收到重复消息 —— 这正是 3.6 幂等必须存在的原因。
+func relay(ctx context.Context, b Broker) {
+	t := time.NewTicker(100 * time.Millisecond)
+	defer t.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-t.C:
+			mu.Lock()
+			batch := make([]Event, 0, len(outbox))
+			for _, e := range outbox {
+				batch = append(batch, e)
+			}
+			mu.Unlock()
+			for _, e := range batch {
+				if b.Publish(ctx, "inventory", e) != nil {
+					continue
+				}
+				if b.Publish(ctx, "coupon", e) != nil {
+					continue // 券没发出去，下一轮重试
+				}
+				mu.Lock()
+				delete(outbox, e.ID)
+				mu.Unlock()
+			}
+		}
+	}
+}
+
+func handleInventory(_ context.Context, e Event) error {
+	mu.Lock()
+	defer mu.Unlock()
+	if seen["inventory:"+e.ID] {
+		return nil // 重复投递，直接 ACK
+	}
+	if stock[e.SKU] < e.Qty {
+		return fmt.Errorf("insufficient stock: %s", e.SKU) // 重试无意义，进死信
+	}
+	stock[e.SKU] -= e.Qty
+	seen["inventory:"+e.ID] = true
+	return nil
+}
+
+func handleCoupon(_ context.Context, e Event) error {
+	mu.Lock()
+	defer mu.Unlock()
+	if seen["coupon:"+e.ID] {
+		return nil
+	}
+	if e.Attempt < 2 {
+		return errors.New("coupon svc timeout") // 模拟前两次失败，触发重投
+	}
+	coupons[e.OrderNo] = append(coupons[e.OrderNo], "CASH-10")
+	seen["coupon:"+e.ID] = true
+	return nil
+}
+
+func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	b := NewMemBroker()
+	go run(ctx, b.Subscribe("inventory", 16), handleInventory)
+	go run(ctx, b.Subscribe("coupon", 16), handleCoupon)
+	go relay(ctx, b)
+	CreateOrder("A1001", "SKU-1", 2)
+	time.Sleep(time.Second)
+	mu.Lock()
+	fmt.Printf("stock=%d coupons=%v outbox=%d dlq=%d\n",
+		stock["SKU-1"], coupons["A1001"], len(outbox), len(deadLetter))
+	mu.Unlock()
+}
+```
+
+输出应为 `stock=98 coupons=[CASH-10] outbox=0 dlq=0`。
+
+**券服务彻底失败（不是超时，是业务拒绝）时怎么办**，这是本节的真正考点，四条缺一不可：
+
+| 环节 | 做法 | 不做的后果 |
+|---|---|---|
+| **重试上限** | 示例代码是立即重投（`ch <- e`）；生产应改为 3 次、间隔 1s/4s/16s 的指数退避 + 抖动（`time.AfterFunc` 或延迟队列） | 无限重试把分区打死，库存消息排在后面全部阻塞 |
+| **死信** | 超限进 `order-events.DLQ`，**同时**写 `compensation_task(biz_no, action, status)` | 只进 DLQ 没人看，等于静默丢单 |
+| **人工补偿入口** | `POST /admin/compensations`，带 `biz_no / reason / operator / idempotency_key`，先落 `compensation_log` 再异步执行 | 运维直接改库，无法审计、无法重放、无法回答「谁改的」 |
+| **对账兜底** | T+1 比对「订单已支付」vs「券已发」，差异落 `recon_diff`，见 4.6 | 死信被清理或补偿接口没调，问题永远暴露不了 |
+
+顺序很重要：**库存扣减不可回滚，所以券必须只做「补发」，不做「回滚」**。消费者只认 `event_id` 幂等，任何重放都只会补发一次；对账负责发现「连死信都丢了」的极端情况。
+
+### 4.5 故障注入：把「至少一次」打成真的
+
+「至少一次」在 PPT 上是一句话，在代码里是一堆没被跑过的分支。上线前这四次演练必做，本地或预发都能完成：
+
+```bash
+# ① 重复投递：消费组 offset 回拨 1，最后一条必然重放
+kafka-consumer-groups.sh --bootstrap-server localhost:9092 \
+  --group order-inventory --topic order-events \
+  --reset-offsets --shift-by -1 --execute
+
+# ② 乱序：同一聚合拆成两个 key，落到不同分区并发消费
+kafka-console-producer.sh --bootstrap-server localhost:9092 \
+  --topic order-events --property parse.key=true <<'EOF'
+A1001#v2	{"event_id":"order-updated-A1001-v2","status":"PAID"}
+A1001#v1	{"event_id":"order-created-A1001-v1","status":"PENDING"}
+EOF
+
+# ③ 消费者中途崩溃：处理函数里 sleep 30s，第 10 秒动手
+kill -9 $(pgrep -f 'order-consumer')
+
+# ④ broker 不可用：让 relay 连续失败，观察重试与积压告警
+docker pause kafka && sleep 120 && docker unpause kafka && docker logs --tail 20 kafka
+```
+
+```text
+演练            注入点                  应该观察到
+① 重复投递      offset 回拨             库存只扣一次；日志出现 duplicate/skip；
+                                        consumed_event 行数不增
+② 乱序          同聚合拆 key + 并发消费   状态机 CAS 影响 0 行；不出现「已支付」被改回
+                                        「待支付」（状态机只允许单向迁移）
+③ 消费中崩溃    事务提交前 kill -9        消息未提交 offset，重启后重放；业务只生效一次；
+                                        outbox 的 status=1 行由 sweeper 回收（见 4.2 末尾的 `claimed_at` 超时回置）
+④ broker 不可用 relay Publish 失败        outbox 行不删除、retry_count 增长、最老事件年龄告警；
+                                        恢复后自动追平，无需人工介入
+```
+
+三种「看起来有去重、实际完全失效」的幂等键，几乎每个团队都写过至少一种：
+
+| 写法 | 为什么失效 | 现场现象 |
+|---|---|---|
+| 用自增 `id` 作键 | 每次重放都是新行，自增必然不同 | 去重表永远为空，库存被扣两次 |
+| 用 `time.Now().UnixNano()` | 重放时间不同，键必然不同 | 同上，且代码评审时看着「有幂等逻辑」 |
+| 用 `uuid.New()` 每次现生成 | 随机值无法由事件内容推导 | 同一条消息的两个副本拿到两个 UUID，双写都成功 |
+| **正确**：`order-created-{order_no}` | 由业务唯一号稳定推导，重放恒定 | 第二次插入唯一键冲突 → 直接 ACK |
+
+演练要进预发发布清单，不是一次性动作：**每次改消费逻辑，重跑 ① 和 ③**。幂等分支没被执行过的代码，等于没有。
+
+### 4.6 对账与人工补偿：最终一致的最后一公里
+
+对账不是「跑个脚本比一下」，而是三张表 + 一套状态机。铁律：**只写差异表，不改业务库**——所有修复都走独立的补偿接口，否则对账脚本本身就是最大的脏数据来源。
+
+```sql
+CREATE TABLE biz_flow (          -- ① 业务流水：一行 = 一次真实发生的业务
+  biz_no    VARCHAR(64)   NOT NULL,   -- 订单号 / 支付号，对账主键
+  biz_type  VARCHAR(32)   NOT NULL,   -- order / pay / stock / coupon
+  amount    DECIMAL(18,2) NOT NULL DEFAULT 0,
+  status    VARCHAR(16)   NOT NULL,
+  created_at DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),  -- 对账按天切分要用
+  PRIMARY KEY (biz_no, biz_type),
+  KEY idx_type_status_time (biz_type, status, created_at)
+);
+CREATE TABLE event_log (         -- ② 事件流水：进出 MQ 的每条消息都留痕
+  event_id  VARCHAR(96) NOT NULL,
+  topic     VARCHAR(64) NOT NULL,
+  direction ENUM('out','in') NOT NULL,
+  biz_no    VARCHAR(64) NOT NULL,
+  PRIMARY KEY (event_id, direction, topic)
+);
+CREATE TABLE recon_diff (        -- ③ 差异表：对账唯一输出，结构天然支持重跑
+  biz_date  DATE        NOT NULL,
+  biz_no    VARCHAR(64) NOT NULL,
+  diff_type VARCHAR(24) NOT NULL,   -- MISSING / DUPLICATE / AMOUNT_MISMATCH / STATUS_MISMATCH
+  detail    JSON        NOT NULL,
+  status    TINYINT     NOT NULL DEFAULT 0,  -- 0 待处理 / 1 自动修复 / 2 人工工单 / 3 已关闭
+  PRIMARY KEY (biz_date, biz_no, diff_type)
+);
+```
+
+T+1 任务必须幂等可重跑：固定 `biz_date`、`ON DUPLICATE KEY UPDATE`、**不覆盖 `status IN (2,3)`**（人工刚处理完不能被脚本改回去）：
+
+```sql
+-- 找出「订单已支付但券没发」，昨天全量，按业务号左连接比对
+INSERT INTO recon_diff (biz_date, biz_no, diff_type, detail)
+SELECT DATE(o.created_at), o.biz_no, 'MISSING',
+       JSON_OBJECT('expect', 'coupon', 'found', 'none')
+FROM biz_flow o
+LEFT JOIN biz_flow c ON c.biz_no = o.biz_no AND c.biz_type = 'coupon'
+WHERE o.biz_type = 'order' AND o.status = 'PAID'
+  AND DATE(o.created_at) = CURDATE() - INTERVAL 1 DAY
+  AND c.biz_no IS NULL
+ON DUPLICATE KEY UPDATE detail = VALUES(detail);
+```
+
+| 差异类型 | 典型成因 | 处理边界 |
+|---|---|---|
+| `MISSING`（漏发） | relay 挂、消息被清、进死信后被清 | **可自动**：按 `event_id` 重投，同一差异自动修复 ≤3 次 |
+| `DUPLICATE`（重发） | 至少一次 + 幂等键失效 | 可自动冲正，**仅当**幂等键能反查到唯一业务行；否则人工 |
+| `AMOUNT_MISMATCH` | 口径、优惠、汇率、退款未同步 | **只告警不改数**，金额差异一律人工 |
+| `STATUS_MISMATCH` | 状态机漏推、事件丢失 | 可重放；终态（已退款、已核销）转人工 |
+
+三条纪律：
+
+1. **阈值**：`diff_count / total > 0.0001`（0.01%）即电话告警，别等日报；单笔金额 > 1000 元的差异无条件置顶。
+2. **补偿是接口不是 SQL**：`POST /admin/compensations`，body 带 `biz_no / action / reason / operator / idempotency_key`，先写 `compensation_log`（唯一键 = idempotency_key）再异步执行，结果回写 `recon_diff.status`。直接 `UPDATE orders SET status=...` 的「临时修数」不可审计、不可重放，就是下一次事故的种子。
+3. **自动/人工的边界只按「可逆性 + 金额」划**：可逆且金额小 → 自动；不可逆或金额大 → 工单。不要让脚本去猜。
+
+对账跑通的标准不是「差异为 0」，而是**「每一笔差异都有归属」**：自动修复、工单跟进、或明确记为可接受差异。剩下没人认领的那部分，才是真正的技术债。
 
 ---
 

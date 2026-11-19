@@ -80,7 +80,7 @@ func main() {
 
 ### 3.1 InnoDB 的物理结构
 
-```
+```text
 表空间 (.ibd)
   └─ 段 (segment：叶子段 / 非叶子段 / 回滚段)
       └─ 区 (extent，1MB = 64 个连续页)
@@ -92,7 +92,7 @@ func main() {
 
 ### 3.2 B+ 树索引：聚簇与回表
 
-```
+```text
 聚簇索引（主键）              二级索引 idx_name
       [P1|P2|P3]                  [P1|P2|P3]
        /   |   \                   /  |  \
@@ -145,7 +145,7 @@ UPDATE users SET status = 1 WHERE age > 20;
 
 ### 3.6 主从复制与延迟
 
-```
+```text
 主库: 写 binlog ──► dump thread ──► 从库 IO thread ──► relay log ──► SQL thread 重放
 ```
 
@@ -161,6 +161,112 @@ UPDATE users SET status = 1 WHERE age > 20;
 | `SetMaxIdleConns` | 空闲连接数 | 设太小会频繁建连，设太大浪费服务端资源 |
 | `SetConnMaxLifetime` | 连接最长存活 | 应**小于** MySQL `wait_timeout` 或代理（如 ProxySQL）的空闲超时，否则拿到已断的连接 |
 | `SetConnMaxIdleTime` | 空闲多久回收 | 防止长空闲连接被中间件静默断开 |
+
+### 3.8 索引设计：联合索引的顺序、覆盖与下推
+
+**最左前缀的真实含义**：联合索引 `(a, b, c)` 的 B+ 树先按 `a` 排序、`a` 相同再按 `b`、再按 `c`。跳过 `a` 直接查 `b = ?`，相当于在一张「按 a 分区」的有序表里找一个 b 值——每个 a 分区里都可能有，只能全扫。不是优化器「不想用」，而是**索引结构上无法二分定位**。
+
+**范围列会截断后续列**：
+
+```sql
+-- 索引 idx_user_status_time (user_id, status, created_at)
+-- ✅ 两个等值列定位，最后一列做范围 + 排序
+SELECT id, amount FROM orders
+WHERE user_id = 42 AND status = 1 AND created_at >= '2026-01-01 00:00:00'
+ORDER BY created_at DESC LIMIT 20;
+
+-- ⚠️ 索引 idx_user_time_status (user_id, created_at, status)
+-- user_id 定位 + created_at 范围之后，status 已无法参与定位
+SELECT id, amount FROM orders
+WHERE user_id = 42 AND created_at >= '2026-01-01 00:00:00' AND status = 1;
+```
+
+| 索引 | 同一查询 `user_id=? AND status=? AND created_at>=?` 用到的列 | 结果 |
+|---|---|---|
+| `(user_id, status, created_at)` | user_id 等值 + status 等值 + created_at 范围 | 三列全用上 |
+| `(user_id, created_at, status)` | user_id 等值 + created_at 范围 | status 只能靠 ICP 过滤 |
+
+**索引下推（ICP）**：范围列之后的条件虽然不能定位，但如果它也在索引里，存储引擎可以在**回表之前**先用它过滤，减少回表次数。判断依据是 `EXPLAIN` 的 `Extra` 出现 `Using index condition`；若同时出现 `Using where`，说明 server 层在回表后还要再过滤一遍，不代表没走 ICP。ICP 只在二级索引、且条件下推的列在索引内时生效；聚簇索引没有「回表」这一步，谈不上下推。
+
+**覆盖索引是双刃剑**：把查询列都放进索引可以彻底避免回表（`Using index`），代价是索引变宽——叶子节点多存这些列，写入放大、buffer pool 有效容量下降。适合「高频、列少、稳定」的查询，不适合把 `SELECT *` 硬塞进索引。
+
+**区分度（选择性）怎么算**：
+
+```sql
+SELECT
+  COUNT(DISTINCT status)   / COUNT(*) AS sel_status,
+  COUNT(DISTINCT user_id)  / COUNT(*) AS sel_user,
+  COUNT(DISTINCT order_no) / COUNT(*) AS sel_order_no
+FROM orders;
+```
+
+选择性越接近 1 越适合放索引左侧。`status` 只有几个枚举值，选择性接近 0，**单独建索引几乎没用**，必须与其他列组合；`order_no` 接近 1，适合做唯一索引。
+
+三个真实场景的索引对照：
+
+| 场景 | 典型查询 | 推荐索引 | 关键点 |
+|---|---|---|---|
+| 订单列表 | `user_id=? AND status=? ORDER BY created_at DESC LIMIT 20` | `(user_id, status, created_at)` | 等值列在前、排序列在后，排序由索引直接提供，避免 `Using filesort` |
+| 消息未读红点 | `user_id=? AND is_read=0` 求 `COUNT(*)` | `(user_id, is_read)` | 计数完全走覆盖索引；`is_read` 选择性低，但作为第二列固定值仍然有效 |
+| 软删除 + 时间范围 | `deleted_at IS NULL AND created_at > ?` | 优先 `(created_at)` + 历史归档/分区；数据分布特殊时再考虑 `(deleted_at, created_at)` | `deleted_at` 绝大多数为 NULL，放最左等于用索引扫全表；先看真实分布再决定 |
+
+**索引越多写入越慢**：每多一个二级索引，INSERT 就要多维护一棵 B+ 树（随机页写入 + 可能的页分裂），UPDATE 改到索引列时还要删旧项插新项。一张有 8 个二级索引的表，一次插入约等于 9 次 B+ 树修改；索引还占 buffer pool，挤掉真正热的数据页。经验阈值：单表二级索引控制在 5 个以内，新增前先确认能否被更优的联合索引覆盖。
+
+### 3.9 读写分离：读到旧数据的三种处理
+
+3.6 讲了复制链路，这里讲**延迟从哪来**和**应用怎么兜**。延迟主要来自三处：
+
+- **单线程 apply**：5.7+ 支持并行复制，但并行粒度受组提交限制，且**一个大事务只能由一个 worker 回放**——主库跑 10 分钟的批量 UPDATE，从库就得单线程追 10 分钟；
+- **从库自身压力**：报表、备份、大查询抢走 CPU / IO，SQL thread 跟不上；
+- **主库写入突增**：短时间大量小事务，回放速度追不上提交速度。
+
+**`Seconds_Behind_Master` 为什么不可靠**：它算的是「SQL thread 正在回放的事件时间戳」与「IO thread 已拉到的最新事件时间戳」之差。主库长时间无写入时两个时间戳一起停住，显示 0 但数据并未同步；复制中断时可能返回 `NULL`；主从时钟不一致时直接失真。生产上应该用 **`pt-heartbeat`**：在主库定时写一行带时间戳的心跳，从库读这行与本地时间对比，得到端到端真实延迟。
+
+三种处理策略，按代价从低到高：
+
+1. **强制走主**：一致性要求高的读（支付结果、库存、刚写入的数据）直接读主库。最简单，代价是放弃这部分读扩展。
+2. **会话粘滞（read-your-own-writes）**：写完 N 秒内该会话的读都路由到主库，用 Redis / Session 记录「最后写入时间」。适合「提交表单后跳转详情页」，成本低，但窗口要按实测的 P99 延迟设。
+3. **半同步 + 等待位点**：半同步只保证「至少一个从库收到 binlog」，**收到 ≠ 回放完**；要读到最新数据还得在从库上等 GTID 执行到位：
+
+```sql
+-- 主库提交后取当前已执行的 GTID 集合（形如 3e11fa47-...:1-120）
+SELECT @@GLOBAL.gtid_executed;
+
+-- 在从库、同一个连接上阻塞等待；返回 0 = 已追上，1 = 超时
+-- timeout 单位秒，0 表示一直等
+SELECT WAIT_FOR_EXECUTED_GTID_SET('3e11fa47-...:1-120', 1);
+```
+
+> `WAIT_FOR_EXECUTED_GTID_SET` **必须在执行读的那条连接上调用**，连接池换一条连接就等于没等。它会阻塞连接，超时时间要远小于业务超时。
+
+Go 侧用 **context 值 + 路由层**标记「必须读主」：
+
+```go
+type readPolicyKey struct{}
+
+const readFromPrimary = "primary"
+
+// 写操作成功后，把「读主」标记打到请求的 context 上
+func WithPrimaryRead(ctx context.Context) context.Context {
+    return context.WithValue(ctx, readPolicyKey{}, readFromPrimary)
+}
+
+func mustReadPrimary(ctx context.Context) bool {
+    v, _ := ctx.Value(readPolicyKey{}).(string)
+    return v == readFromPrimary
+}
+
+type Router struct{ primary, replica *sql.DB }
+
+func (r *Router) reader(ctx context.Context) *sql.DB {
+    if mustReadPrimary(ctx) {
+        return r.primary
+    }
+    return r.replica
+}
+```
+
+> 同请求内的「写后读」用 context 传递最干净；跨请求的粘滞不能只靠 context（请求结束就丢了），要落到 Session / Redis 上带 TTL。别把「读主」做成全局开关——那等于放弃读写分离。
 
 ---
 
@@ -191,7 +297,7 @@ func Open(dsn string) (*sql.DB, error) {
 
 DSN 关键参数：
 
-```
+```text
 user:pass@tcp(host:3306)/db
   ?charset=utf8mb4          # 一定要 utf8mb4，否则 emoji / 4 字节字符写不进
   &parseTime=True           # 否则 DATETIME/TIMESTAMP 只能 Scan 成 []byte
@@ -308,6 +414,180 @@ func BulkInsert(ctx context.Context, db *sql.DB, rows []User) error {
 ```
 
 > 单条 INSERT 循环是最常见的性能反模式。批量大小控制在 500~1000，避免超过 `max_allowed_packet` 与单事务过大。表结构变更用 `golang-migrate` / `goose` 管理版本化迁移；大表加字段用 `gh-ost` / `pt-online-schema-change` 在线变更，不要直接 `ALTER TABLE` 锁表。
+
+### 4.7 EXPLAIN 逐列解读与反例
+
+4.5 给了「看哪四列」，这里把每一列的**判读标准**和**常见误判**讲透。
+
+`type` 的优先级（从好到坏）：
+
+```text
+system > const > eq_ref > ref > fulltext > ref_or_null > index_merge
+       > unique_subquery > index_subquery > range > index > ALL
+```
+
+| type | 含义 | 可接受度 |
+|---|---|---|
+| `const` / `system` | 主键或唯一索引等值命中至多一行 | 最好 |
+| `eq_ref` | 关联查询中被驱动表按主键/唯一索引命中一行 | 好 |
+| `ref` | 普通二级索引等值命中多行 | 好，OLTP 常态 |
+| `range` | 索引范围扫描 | 可接受，重点看 `rows` 规模 |
+| `index` | 全索引扫描（走完整棵索引树） | 警戒，通常缺合适的索引 |
+| `ALL` | 全表扫描 | 大表上必须消除 |
+
+`key` 与 `key_len`：`key` 只说命中了哪个索引，**`key_len` 才告诉你用了联合索引的哪几列**。按列定义宽度累加即可推算：`INT` 占 4 字节、`INT NULL` 占 5 字节（多 1 字节空标志）、`VARCHAR(64)` utf8mb4 占 `64×4+2+1 = 259` 字节。于是 `(a INT NOT NULL, b INT NULL, c VARCHAR(64) NULL)` 的 key_len：只用 a = 4，用 a,b = 9，三列全用 = 268。它是按**定义长度**算的上限，不是实际字节数。
+
+`rows` 是**估算值**，来自索引统计信息（8.0 默认 index dive，小范围查询会精确采样），不是真实扫描行数；要真实值用 `EXPLAIN ANALYZE`（8.0.18+）或 `EXPLAIN FORMAT=JSON` 中的 `rows_examined_per_scan`。`filtered` 是「经过 WHERE 后剩余行的百分比」，`rows × filtered / 100` 约等于传给下一步的行数；`rows` 大而 `filtered` 低（比如 5%）说明索引只筛掉一点，大部分靠回表后过滤——这是加联合索引的强信号。
+
+`Extra` 关键项：
+
+| Extra | 含义 | 处理方向 |
+|---|---|---|
+| `Using index` | 覆盖索引，不回表 | 理想状态 |
+| `Using index condition` | 索引下推（ICP），回表前先过滤 | 正常且通常有益 |
+| `Using where` | 取到行后在 Server 层再过滤 | 结合 `filtered`，低则考虑加索引 |
+| `Using filesort` | 无法利用索引顺序，额外排序 | 把排序列加入索引 |
+| `Using temporary` | 使用临时表（GROUP BY / DISTINCT / UNION） | 改写或调整索引顺序 |
+| `Using MRR` | 多范围读，回表主键排序后批量读 | 通常有益，随机 IO 变顺序 IO |
+
+三个典型反例：
+
+```sql
+-- 反例 1：隐式类型转换。phone 是 VARCHAR，传数字会让索引整体失效
+SELECT * FROM users WHERE phone = 13800138000;    -- type=ALL
+SELECT * FROM users WHERE phone = '13800138000';  -- type=ref
+
+-- 反例 2：函数包裹索引列，索引无法用于定位
+SELECT * FROM orders WHERE DATE(created_at) = '2026-11-19';       -- type=ALL
+SELECT * FROM orders WHERE created_at >= '2026-11-19 00:00:00'
+                       AND created_at <  '2026-11-20 00:00:00';   -- type=range
+
+-- 反例 3：OR 连接了未索引列，整个条件退化为全表扫描
+SELECT * FROM users WHERE email = 'a@b.com' OR nickname = 'neo';  -- type=ALL
+
+-- 改写：拆成两段 UNION ALL，各自走各自的索引
+SELECT * FROM users WHERE email = 'a@b.com'
+UNION ALL
+SELECT * FROM users WHERE nickname = 'neo' AND email <> 'a@b.com';
+```
+
+> 隐式转换还有一个隐蔽版本：JOIN 两边字段类型不一致（`varchar` 对 `bigint`），被驱动表无法用索引，表现为「单表很快，一 JOIN 就慢」。
+
+### 4.8 在线 DDL：怎么改表不锁业务
+
+`ALTER TABLE` 的代价由两个参数决定：`ALGORITHM`（怎么改）和 `LOCK`（改的时候让不让读写）。
+
+- `ALGORITHM=COPY`：建临时表 → 逐行拷贝 → 改名。全程阻塞写入，大表上等于停服；
+- `ALGORITHM=INPLACE`：在**存储引擎层**完成，不经过 Server 层逐行拷贝，通常快得多，但部分操作仍会**重建表**并短暂阻塞写入；
+- `LOCK=NONE`：允许并发读写，才是真正「不锁业务」；`LOCK=SHARED` 只允许读，`LOCK=EXCLUSIVE` 读写全禁。
+
+能不能用，先让 MySQL 自己回答——把 `ALGORITHM` / `LOCK` 显式写进语句，不支持会直接报错，而不是偷偷降级：
+
+```sql
+ALTER TABLE orders ADD COLUMN remark VARCHAR(255) DEFAULT NULL,
+  ALGORITHM=INPLACE, LOCK=NONE;
+-- 若报 ERROR 1846 (0A000): ALGORITHM=INPLACE is not supported. Reason: ...
+-- 说明该操作只能退到 COPY，需要换 gh-ost / pt-osc 方案
+```
+
+四类常见操作的行为矩阵（MySQL 8.0+）：
+
+| 操作 | 默认算法 | 是否重建表 | 能否 `LOCK=NONE` |
+|---|---|---|---|
+| `ADD COLUMN`（末尾、可空或有默认值） | **INSTANT**（8.0.12+） | 否，只改元数据 | 是，秒级 |
+| `ADD COLUMN ... AFTER x` / `DROP COLUMN` | **INSTANT**（8.0.29+） | 否 | 是 |
+| `MODIFY COLUMN` 改类型 / 长度 | COPY 或 INPLACE 重建 | 是 | 改类型通常不行 |
+| `ADD INDEX` / `DROP INDEX` | INPLACE | 否（在线建索引） | 是 |
+| `CONVERT TO CHARACTER SET` | COPY | 是 | 否，全程阻塞写入 |
+
+> INSTANT 加列有边界：列必须可空或带默认值、不能是 `AUTO_INCREMENT`、不能是生成列；8.0.12~8.0.28 只能加在**最后一列**，8.0.29 起支持任意位置。反复 INSTANT 加/删列会让行格式元数据变复杂，最终仍可能触发一次真实重建。
+
+超出在线 DDL 能力时（改字符集、改主键、超大表重建），用外部工具：
+
+```bash
+# gh-ost：读 binlog 追增量，不建触发器，可随时暂停 / 按延迟限流
+gh-ost \
+  --host=127.0.0.1 --port=3306 --user=ghost --password='***' \
+  --database=app --table=orders --alter="MODIFY COLUMN remark VARCHAR(512) DEFAULT NULL" \
+  --max-lag-millis=1500 --allow-on-master \
+  --execute
+```
+
+`pt-online-schema-change` 思路类似，但用**触发器**同步增量，对写入有额外开销，且表上已有触发器时会拒绝执行。两者共同代价：**影子表占一倍磁盘**、双写带来额外 IO、cut-over 瞬间需要短暂表锁。
+
+DDL 执行期间的监控项：
+
+```sql
+-- 谁在等元数据锁：DDL 本身不可怕，可怕的是它后面排队的业务查询
+SELECT OBJECT_SCHEMA, OBJECT_NAME, LOCK_TYPE, LOCK_STATUS, OWNER_THREAD_ID
+FROM performance_schema.metadata_locks
+WHERE OBJECT_TYPE = 'TABLE' AND OBJECT_SCHEMA = 'app';
+
+-- 复制延迟：DDL 期间从库回放压力会上升
+SHOW REPLICA STATUS\G  -- 看 Replica_SQL_Running / Seconds_Behind_Source
+```
+
+> 最常见的生产事故不是 DDL 慢，而是 **DDL 等 MDL、业务查询再等 DDL**：一条长事务不提交，DDL 拿不到排他 MDL 就排队，后面所有访问该表的查询全部堵死。执行前先用 `SELECT * FROM information_schema.innodb_trx` 确认没有长事务。
+
+### 4.9 慢查询治理闭环
+
+慢查询治理不是「看到慢就加索引」，而是**采集 → 聚合 → 归因 → 修复 → 回归**的闭环。
+
+开启与配置（`my.cnf`）：
+
+```ini
+[mysqld]
+slow_query_log                = ON
+slow_query_log_file           = /var/log/mysql/slow.log
+long_query_time               = 0.2    # 秒；OLTP 建议 0.1~0.5，别用默认的 10
+min_examined_row_limit        = 100    # 扫描行数很少的语句不记，压掉噪声
+log_queries_not_using_indexes = OFF    # 打开会被小表全扫刷屏，按需临时开
+log_slow_replica_statements   = ON     # 从库回放产生的慢查询也要记录
+```
+
+日志是逐条的，直接看没有意义，先聚合：
+
+```bash
+pt-query-digest /var/log/mysql/slow.log > slow-report.txt
+```
+
+输出头部按**总耗时**排序，读三个字段就够：
+
+```text
+# Rank Query ID          Response time   Calls  R/Call   V/M   Item
+# ==== ================= =============== ====== ======== ===== ============
+#    1 0x8F3A2B...       120.5s  60.2%     2400  50.2ms   8.1  SELECT orders
+#    2 0x2C91D4...        45.1s  22.5%      900  50.1ms   3.2  UPDATE messages
+```
+
+- `Response time` 占比：**先修占 60% 的那一条**，而不是先修单次最慢的；
+- `R/Call`：平均耗时，判断是否已经影响用户体验；
+- `V/M`（方差 / 均值）：大于 1 说明耗时极不稳定，通常是**锁等待或缓存未命中**，而非单纯扫描量大。
+
+把「慢」拆成四类，对症下药：
+
+| 类型 | 判据 | 处理 |
+|---|---|---|
+| 扫得多 | `rows` 大、`Handler_read_next` / `Handler_read_rnd_next` 高 | 加/改联合索引、覆盖索引、去掉 `SELECT *` |
+| 排序多 | `Using filesort`、`Sort_merge_passes` 增长 | 让排序列进索引、减少排序数据量 |
+| 锁等待 | `Innodb_row_lock_time` 高、1213/1205 频发 | 缩短事务、按固定顺序更新、必要时降到 RC |
+| 网络回传 | `Rows_sent` 大、返回字节多 | 分页、只取必要列、大字段拆分或归档 |
+
+治理顺序：**先改 SQL / 加索引，再谈改表结构，最后才考虑分库分表**。前两者分钟级可回滚，后者是天级、不可逆的架构变更。也不要一上来加机器——慢 SQL 加机器只是把雪崩推迟。
+
+上线后做回归验证，对比状态变量的**差值**：
+
+```sql
+-- 上线前后各采一次，看差值而不是绝对值（实例重启会清零）
+SHOW GLOBAL STATUS WHERE Variable_name IN (
+  'Handler_read_key',       -- 走索引点查次数，应上升
+  'Handler_read_next',      -- 索引范围扫描行数
+  'Handler_read_rnd_next',  -- 全表扫描行数，应显著下降
+  'Created_tmp_disk_tables' -- 磁盘临时表，应下降
+);
+```
+
+> 判断「有没有变好」的硬指标是**扫描行数 / 返回行数**的比值，而不是单次耗时——耗时受缓存与并发影响波动大，扫描量才是索引设计的直接结果。
 
 ---
 

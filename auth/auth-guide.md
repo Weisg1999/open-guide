@@ -106,6 +106,69 @@ access token 的典型寿命是 5–15 分钟，放内存或 BFF 的 `HttpOnly` 
 
 **JWT vs 服务端 session**：前者无状态、天然横向扩展、跨域/移动端友好，但撤销难、体积大、权限变更要等令牌过期；后者每请求查存储、撤销即时、体积只有一个 id，但要集中式存储、跨域受 Cookie 限制。**多服务传播**两种范式：网关统一校验（边缘验签后注入 `X-User-Id`，内部信任网段，简单但内网被突破即失守）与每服务自校验（零信任，各自缓存 JWKS，需处理时钟与轮换）。折中做法是网关校验 + 内部 mTLS + 透传**原始令牌**让下游按需再验；无论哪种，令牌都**不得写入日志、URL query 或透传给第三方**。
 
+### 3.7 攻击面：JWT 的六个真实漏洞
+
+JWT 的坑几乎不在密码学，而在**校验方的实现选择**。下面六条是从真实事件里反复出现的模式，任意一条都能打穿一套「看起来验了签」的系统。
+
+| 漏洞 | 怎么打 | 怎么防 |
+|---|---|---|
+| `alg: none` 与算法混淆 | header 改 `{"alg":"none"}` 并清空签名段；或把 `RS256` 改成 `HS256`，用**公开的 RSA 公钥字节**当 HMAC 密钥重签 | 算法由校验方写死：`WithValidMethods([]string{"RS256"})`；`Keyfunc` 里再断言 `t.Method` 类型，绝不信 header 里的 `alg` |
+| `kid` 注入 | `kid` 被拼进文件路径（`../../etc/passwd`）、拼进 shell 命令或模板；也能让它指向攻击者可控的 JWKS | `kid` 只当**查表键**，不拼路径、不进命令；未知 `kid` 直接拒绝；JWKS 地址固定，不从令牌里读 |
+| 不校验 `aud`/`iss` | 同一 AS 发给订单服务的令牌原样打管理服务；多租户下 A 租户令牌打 B 租户 | 每个资源服务写死自己的 `aud`；多 IdP 按 `iss` 路由到对应密钥集，`iss` 做全等比较 |
+| `exp` 只在前端校验 | 后端只解析 `sub`，把「是否过期」交给网关或前端；绕过网关的内网直连、旧版本服务、调试端口照样放行 | 校验放在**每个接受令牌的进程**里；`WithExpirationRequired()` + `WithLeeway(30s)`，并断言 `exp - iat` 不超过预期上限 |
+| JWT 放 localStorage | 同源任一 XSS（第三方脚本、富文本、供应链投毒）都能 `localStorage.getItem` 带走，没有 HttpOnly 兜底 | BFF 模式放 `HttpOnly; Secure; SameSite=Lax` Cookie；纯 SPA 至少内存保存 + 短期 access + refresh 轮换 |
+| 重放与泄露后撤销难 | 抓包、日志、浏览器插件拿到令牌后在有效期内无限重放；AS 拉黑不会自动生效 | `jti` + Redis 黑名单（TTL = 剩余寿命）、access 压到 5–15 分钟、敏感操作一次性 `nonce`；强制下线靠 `token_version` |
+
+**`kid` 注入为什么比想象中严重**：很多实现把 `kid` 当「密钥文件名」，于是 `kid=../../../../etc/passwd` 能让服务把任意文件当密钥读；若后端再用 `openssl`/`ssh-keygen` 拼命令，直接变成 RCE。`kid` 的语义只有一个——**在当前可信密钥集合里选一把**；它是不可信输入，任何「用它构造资源定位符」的写法都是洞。
+
+```go
+// 反例（可编译，勿上线）：四个错误叠加，任意一条都足以让攻击者伪造任意身份。
+// 依赖：crypto/rsa、os、os/exec、path/filepath、jwt/v5
+func badVerify(raw string, pub *rsa.PublicKey) (*jwt.Token, error) {
+	return jwt.Parse(raw, func(t *jwt.Token) (any, error) {
+		if t.Method.Alg() == "HS256" { // ① 按 header 选算法：这里把模数的十进制串当 HMAC 密钥（攻击者拿同一个串就能签）
+			return []byte(pub.N.String()), nil
+		}
+		kid, _ := t.Header["kid"].(string)
+		b, err := os.ReadFile(filepath.Join("/etc/keys", kid)) // ② kid 路径穿越
+		if err != nil {
+			return nil, err
+		}
+		_ = exec.Command("sh", "-c", "openssl rsa -pubin -in /etc/keys/"+kid).Run() // ③ 命令注入
+		return jwt.ParseRSAPublicKeyFromPEM(b)
+	}) // ④ 缺 WithValidMethods / WithAudience / WithExpirationRequired
+}
+```
+
+**「只在前端校验」是最容易被放过的一条**：前端把 `exp` 做成倒计时、过期就跳登录页，看起来体验完整，但攻击者直接用 curl 就能绕过。令牌的每一道校验都必须是**服务端默认拒绝**，而不是前端尽力而为。
+
+**重放没有银弹**：`jti` 黑名单把无状态变回有状态，短 TTL 只是缩小窗口。工程折中是分层——access 5–15 分钟、refresh 一用一换、改密码/转账/删账号这类敏感操作要求 `auth_time` 足够新或当场二次验证。
+
+### 3.8 无状态 JWT vs 有状态会话：什么时候必须用后者
+
+「JWT 省掉一次数据库查询」被严重夸大：一次主键查询在连接池 + 本地缓存下是微秒级，而**无法撤销**的代价是安全响应从秒级退化为「等令牌过期」。选型不该从「哪个更快」出发，而该从「失效语义要多强」出发。
+
+| 维度 | 无状态 JWT | 服务端 session / opaque token |
+|---|---|---|
+| 校验成本 | 本地验签，零 IO | 每请求一次存储查询（可加 Redis） |
+| 撤销 | 只能等 `exp`，或自建黑名单/版本号 | 删记录即生效 |
+| 权限变更 | 等下一次签发 | 下一次请求即生效 |
+| 体积 | 几百字节到几 KB，随每个请求走 | 一个随机 id，几十字节 |
+| 横向扩展 | 天然无共享状态 | 需共享存储（Redis/PG） |
+| 跨域/移动端 | Header 友好 | 依赖 Cookie 或额外封装 |
+| 泄露影响 | 有效期内完全可用 | 可即时踢下线 |
+
+**四种必须用有状态会话（或 opaque token）的场景**：
+
+1. **强制下线 / 封号**：风控判定账号被盗，要求「立即全部失效」。JWT 做不到，除非维护黑名单——那已经是状态；
+2. **权限即时变更**：管理员撤权、降级、移出组织，下一次请求就必须拒绝。JWT 里的 `roles` 在过期前是冻结的；
+3. **单点登录的全局登出**：用户在 A 应用点登出，B/C 也要退出。需要服务端会话表，或 OIDC `end_session` + back-channel logout；
+4. **敏感操作二次验证**：改密码、转账、删数据要求「刚刚验证过」。`auth_time` 只能说明「最近登录过」，不能强制「现在再验一次」。
+
+**混合方案**是多数生产系统的实际形态：**短寿命 access JWT（5–15 分钟）+ 服务端 refresh token 表**。access 无状态、可横向扩展；refresh 有状态、可撤销、一用一换；强制下线时删 refresh 并把 `token_version` +1，最迟一个 access TTL 后全网生效。想更快就把 `jti` 或 `ver` 放进 Redis 校验——用「每请求一次 Redis」换「秒级撤销」，这是明确的成本交换，不是免费的。
+
+**`aud`/`scope` 做粗粒度授权的边界**：`scope=orders:read` 能表达「这个令牌能读订单」，但表达不了「只能读本部门的订单」「金额小于 1 万才自动通过」。前者是**令牌级**能力声明，后者是**资源级**策略判定，必须落到 Casbin/OPA 这类引擎，用请求上下文（`sub`、资源归属、时间、金额）现场算。把细粒度规则塞进 JWT 会让令牌体积爆炸、权限被冻结、且无法审计；正确分工是 **JWT 传身份与粗粒度 scope，策略引擎做最终裁决**。
+
 ---
 
 ## 4. 使用实战
@@ -369,6 +432,210 @@ func newOpaqueToken() (string, error) {
 ```
 
 access token 用 4.1 的 `issue()` 现场签，refresh 只给 BFF/移动端安全存储；`errors.Join(业务错误, tx.Commit())` 保证撤销失败与提交失败都不会被吞。
+
+### 4.6 第三方登录：账号绑定与冲突处理
+
+OIDC 回调拿到 `(iss, sub)` 后，本地一定面临同一个问题：**这个 `sub` 没见过，怎么办**。三条路径必须显式选一条，不能靠「邮箱一样就合并」蒙混：
+
+| 路径 | 适用 | 风险 |
+|---|---|---|
+| 自动注册 | B2C、自助注册 | 垃圾账号；未验证邮箱可能抢占他人身份 |
+| 绑定已有账号 | B2B、老系统迁移 | 绑定瞬间必须已登录，否则等于账号接管 |
+| 拒绝并提示 | 高敏感系统（金融/医疗） | 转化率低，但最安全 |
+
+**「邮箱相同」不等于「同一个人」**：`alice@corp.com` 在 Google 和 GitHub 是两个独立主体，离职后邮箱还可能被重新分配。唯一稳定的身份键是 `(provider, subject)`，`email` 只是展示属性与客服线索。**`email_verified` 也不能全信**：部分 IdP 对自建域名恒返回 `true`，企业租户管理员可任意建号；只有在你接受「该 IdP 的邮箱就是身份」时才用它做合并依据，且必须要求 `email_verified=true`。
+
+表设计用 **user + identity 两张表**：`app_user` 存本地主体，`user_identity` 存每个 provider 的 `(provider, subject)` 映射；一个用户可挂多个 identity（Google + GitHub + 企业 IdP），解绑只删一行。
+
+```sql
+CREATE EXTENSION IF NOT EXISTS citext;
+CREATE TABLE app_user (id BIGSERIAL PRIMARY KEY, email CITEXT UNIQUE,        -- 可空：第三方账号可能不给邮箱
+    email_verified BOOLEAN NOT NULL DEFAULT false, created_at TIMESTAMPTZ NOT NULL DEFAULT now());
+CREATE TABLE user_identity (id BIGSERIAL PRIMARY KEY, user_id BIGINT NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,
+    provider TEXT NOT NULL,                      -- 'keycloak-main' / 'google' / 'github'
+    subject TEXT NOT NULL,                       -- IdP 的 sub：稳定、不可变
+    email CITEXT, UNIQUE (provider, subject));   -- 同一 IdP 的身份唯一
+```
+
+`bind` 把三条路径收在一处：老用户直接登录；已登录用户走显式绑定；否则自动注册。关键分支是**邮箱已存在但未绑定**——必须要求先登录，不能静默合并。
+
+```go
+// 依赖：context、database/sql、errors、fmt
+var ErrAccountConflict = errors.New("account conflict")
+
+// bind：老用户直接登录；已登录走显式绑定；否则自动注册（绝不按邮箱静默合并）。
+func bind(ctx context.Context, db *sql.DB, provider, subject, email string, verified bool, currentUser int64) (int64, error) {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil { return 0, err }
+	defer tx.Rollback()
+
+	var uid int64
+	err = tx.QueryRowContext(ctx, `SELECT user_id FROM user_identity WHERE provider=$1 AND subject=$2`, provider, subject).Scan(&uid)
+	if err == nil {
+		// 命中已有绑定：登录流程直接返回；显式绑定流程必须确认是自己的，否则等于把别人的账号交出去
+		if currentUser > 0 && uid != currentUser {
+			return 0, ErrAccountConflict
+		}
+		return uid, tx.Commit()
+	}
+	if !errors.Is(err, sql.ErrNoRows) { return 0, err }
+
+	if currentUser > 0 { // 已登录：只允许绑到自己名下
+		if _, err = tx.ExecContext(ctx, `INSERT INTO user_identity (user_id,provider,subject,email) VALUES ($1,$2,$3,$4)`,
+			currentUser, provider, subject, email); err != nil {
+			return 0, fmt.Errorf("bind: %w", err)
+		}
+		return currentUser, tx.Commit()
+	}
+	if !verified { return 0, ErrAccountConflict } // 未验证邮箱：拒绝自动注册（先验证再登录），更不按邮箱合并
+	if email != "" { // 第三方可能不给邮箱：空串必须走 NULL，否则第二个无邮箱账号会撞唯一键
+		var existing int64
+		switch err = tx.QueryRowContext(ctx, `SELECT id FROM app_user WHERE lower(email)=lower($1)`, email).Scan(&existing); {
+		case err == nil:
+			return 0, ErrAccountConflict // 邮箱已存在：先登录再绑定，防抢占
+		case !errors.Is(err, sql.ErrNoRows):
+			return 0, err
+		}
+	}
+	var emailArg any
+	if email != "" { emailArg = email }
+	if err = tx.QueryRowContext(ctx, `INSERT INTO app_user (email,email_verified) VALUES ($1,$2) RETURNING id`,
+		emailArg, verified).Scan(&uid); err != nil {
+		return 0, err
+	}
+	if _, err = tx.ExecContext(ctx, `INSERT INTO user_identity (user_id,provider,subject,email) VALUES ($1,$2,$3,$4)`,
+		uid, provider, subject, email); err != nil {
+		return 0, err
+	}
+	return uid, tx.Commit()
+}
+```
+
+**解绑要保护最后一个登录方式**，否则用户会把自己锁在门外；并发下两个请求各删一个，必须在事务里锁用户行再数：
+
+```go
+// unlink 解绑一个 provider，但拒绝删掉最后一个登录方式（锁用户行防并发双删）。
+func unlink(ctx context.Context, db *sql.DB, userID int64, provider string) error {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil { return err }
+	defer tx.Rollback()
+	var id int64
+	if err = tx.QueryRowContext(ctx, `SELECT id FROM app_user WHERE id=$1 FOR UPDATE`, userID).Scan(&id); err != nil {
+		return err
+	}
+	var n int
+	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM user_identity WHERE user_id=$1`, userID).Scan(&n); err != nil {
+		return err
+	}
+	if n <= 1 { return errors.New("cannot unlink the last login method") }
+	if _, err = tx.ExecContext(ctx, `DELETE FROM user_identity WHERE user_id=$1 AND provider=$2`, userID, provider); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+```
+
+**合并账号是最高危的操作**：把「未验证邮箱的第三方身份」直接并进本地账号，等于给攻击者一条「注册同邮箱 → 接管」的路径。安全做法是合并前必须**双方都完成验证**（本地密码或邮箱验证码 + IdP `email_verified`），并把合并做成可审计、可回滚的独立操作，而不是登录流程里的隐式副作用。
+
+### 4.7 测试：伪造、过期与时钟偏移
+
+认证测试**永远不连真实 IdP**：网络、限流、环境差异会让 CI 变成玄学。用固定密钥本地签令牌，把「当前时间」变成可注入的选项，才能稳定覆盖过期、`nbf`、leeway 这些分支。
+
+```go
+// 依赖：testing、time、jwt/v5
+const testKey = "0123456789abcdef0123456789abcdef" // 仅测试；生产从 KMS/环境注入
+
+func signAt(t *testing.T, mod func(*jwt.RegisteredClaims)) string {
+	t.Helper()
+	now := time.Now()
+	rc := jwt.RegisteredClaims{Issuer: "https://auth.example.com", Subject: "user-1001",
+		Audience: jwt.ClaimStrings{"orders-api"}, IssuedAt: jwt.NewNumericDate(now),
+		ExpiresAt: jwt.NewNumericDate(now.Add(time.Minute))}
+	if mod != nil { mod(&rc) }
+	s, err := jwt.NewWithClaims(jwt.SigningMethodHS256, rc).SignedString([]byte(testKey))
+	if err != nil { t.Fatal(err) }
+	return s
+}
+
+func TestVerifyRejects(t *testing.T) {
+	keyfunc := func(*jwt.Token) (any, error) { return []byte(testKey), nil }
+	for name, raw := range map[string]string{
+		"aud":     signAt(t, func(c *jwt.RegisteredClaims) { c.Audience = jwt.ClaimStrings{"admin-api"} }),
+		"iss":     signAt(t, func(c *jwt.RegisteredClaims) { c.Issuer = "https://evil.example.com" }),
+		"expired": signAt(t, func(c *jwt.RegisteredClaims) { c.ExpiresAt = jwt.NewNumericDate(time.Now().Add(-time.Minute)) }),
+	} {
+		t.Run(name, func(t *testing.T) {
+			_, err := jwt.ParseWithClaims(raw, &jwt.RegisteredClaims{}, keyfunc,
+				jwt.WithValidMethods([]string{"HS256"}),
+				jwt.WithIssuer("https://auth.example.com"), jwt.WithAudience("orders-api"),
+				jwt.WithExpirationRequired())
+			if err == nil { t.Fatal("want error, got nil") }
+		})
+	}
+}
+
+func TestClockSkew(t *testing.T) {
+	base := time.Now()
+	raw := signAt(t, func(c *jwt.RegisteredClaims) { c.NotBefore = jwt.NewNumericDate(base.Add(10 * time.Second)) })
+	slow := jwt.WithTimeFunc(func() time.Time { return base }) // v4 的全局 jwt.TimeFunc 在 v5 已移除；WithTimeFunc 按 parser 实例生效，并发安全
+	parse := func(opts ...jwt.ParserOption) error {
+		_, err := jwt.ParseWithClaims(raw, &jwt.RegisteredClaims{},
+			func(*jwt.Token) (any, error) { return []byte(testKey), nil }, opts...)
+		return err
+	}
+	if parse(slow) == nil { t.Fatal("want nbf error without leeway") } // 校验方慢 10 秒，nbf 在未来
+	if err := parse(slow, jwt.WithLeeway(30*time.Second)); err != nil { t.Fatal(err) }
+}
+```
+
+中间件测试用 `httptest` 直接伪造 header，覆盖「无令牌 / 错 scheme / 篡改 / 正常」四条路径；同一个令牌再丢给 64 个 goroutine，配合 `-race` 暴露密钥缓存与全局变量的共享写。
+
+```go
+// 依赖：crypto/rand、crypto/rsa、net/http、net/http/httptest、sync、testing、gin、jwt/v5
+func TestAuthMiddleware(t *testing.T) {
+	priv, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil { t.Fatal(err) }
+	keyfunc := func(*jwt.Token) (any, error) { return &priv.PublicKey, nil }
+	good, err := jwt.NewWithClaims(jwt.SigningMethodRS256, &AccessClaims{
+		TenantID: "t-42", RegisteredClaims: jwt.RegisteredClaims{
+			Issuer: "https://auth.example.com", Subject: "user-1001",
+			Audience: jwt.ClaimStrings{"orders-api"}, ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute)),
+		}}).SignedString(priv)
+	if err != nil { t.Fatal(err) }
+
+	r := gin.New()
+	r.Use(Auth(keyfunc, "https://auth.example.com", "orders-api"))
+	r.GET("/me", func(c *gin.Context) { c.String(http.StatusOK, c.GetString("sub")) })
+	cases := map[string]struct{ h string; want int }{
+		"missing": {"", http.StatusUnauthorized}, "scheme": {"Basic abc", http.StatusUnauthorized},
+		"tamper": {"Bearer " + good + "x", http.StatusUnauthorized}, "ok": {"Bearer " + good, http.StatusOK},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, "/me", nil)
+			if tc.h != "" { req.Header.Set("Authorization", tc.h) }
+			w := httptest.NewRecorder()
+			r.ServeHTTP(w, req)
+			if w.Code != tc.want { t.Fatalf("got %d want %d", w.Code, tc.want) }
+		})
+	}
+
+	var wg sync.WaitGroup // -race 下并发校验：密钥缓存或时间注入有共享写会在这里暴露
+	for i := 0; i < 64; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if _, err := jwt.ParseWithClaims(good, &AccessClaims{}, keyfunc,
+				jwt.WithValidMethods([]string{"RS256"}), jwt.WithAudience("orders-api")); err != nil {
+				t.Error(err)
+			}
+		}()
+	}
+	wg.Wait()
+}
+```
+
+**JWKS 轮换**要单独用 `httptest.Server` 模拟：先只发布旧 `kid`，签一个旧令牌验过；再切到只含新 `kid`，断言旧 `kid` 未命中会触发一次刷新、新 `kid` 能拉到；最后两把并存，旧令牌仍可验。**时钟偏移**用例的意义是防止有人「为了让测试变绿」把 leeway 调到 5 分钟——它应该精确断言「无 leeway 必失败、30 秒 leeway 必通过」。CI 固定跑 `go test -race ./...`，并发校验是密钥缓存与时间注入最易出问题的地方。
 
 ---
 

@@ -7,7 +7,7 @@
 Manuals you can read, search, and copy working code from — not another Hello World.
 
 [![Docs](https://img.shields.io/badge/docs-56%20guides-16a34a?style=for-the-badge)](./README_EN.md)
-[![Lines](https://img.shields.io/badge/text-22%2C466%20lines-0ea5e9?style=for-the-badge)](./README_EN.md)
+[![Lines](https://img.shields.io/badge/text-26%2C345%20lines-0ea5e9?style=for-the-badge)](./README_EN.md)
 [![Format](https://img.shields.io/badge/format-Markdown%20%2B%20HTML-f59e0b?style=for-the-badge)](./README_EN.md)
 
 [![License](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square)](./LICENSE)
@@ -29,7 +29,7 @@ Manuals you can read, search, and copy working code from — not another Hello W
 
 | 📚 Guides | 📝 Text | 📄 Offline manuals | 🖼️ Diagrams | ✅ Writing rules | ⚖️ License |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| **56** | **≈ 22,466 lines** | **56 pages** | **113 SVG** | **7 required elements** | **MIT** |
+| **56** | **≈ 26,345 lines** | **56 pages** | **116 SVG** | **7 required elements** | **MIT** |
 
 </div>
 
@@ -275,7 +275,7 @@ The builder uses only the Python 3 standard library — no third-party packages.
 | File | Purpose |
 |---|---|
 | [`tools/themes.json`](./tools/themes.json) | Per-guide colours, hero subtitle and tags |
-| [`tools/fragments.json`](./tools/fragments.json) | SVG architecture diagrams, feature cards and callouts that have no Markdown equivalent, injected by chapter anchor (438 blocks / 113 diagrams) |
+| [`tools/fragments.json`](./tools/fragments.json) | SVG architecture diagrams, feature cards and callouts that have no Markdown equivalent, injected by chapter anchor (441 blocks / 116 diagrams) |
 | [`tools/anchor_map.json`](./tools/anchor_map.json) | Legacy semantic anchors -> heading slugs, so links inside those blocks keep working |
 
 A new topic needs no build configuration: the script auto-discovers `*/ *.md` and assigns a stable palette from the directory name. CI ([`.github/workflows/check-html.yml`](./.github/workflows/check-html.yml)) runs `--check --audit` on every push / PR, which mechanically prevents MD/HTML drift.
@@ -461,6 +461,6 @@ You are free to use, copy, modify, merge, publish and distribute these documents
 
 [Guide Index](#2-guide-index) · [Reading Paths](#3-suggested-reading-paths) · [Contributing](#7-contributing) · [中文](./README.md)
 
-<sub>Markdown is the single source of truth · HTML is a build artifact · 56 guides / 22,466 lines · © 2026 Weisg1999</sub>
+<sub>Markdown is the single source of truth · HTML is a build artifact · 56 guides / 26,345 lines · © 2026 Weisg1999</sub>
 
 </div>

@@ -113,7 +113,7 @@ curl localhost:8080/healthz
 
 ### 3.1 镜像分层与容器本质
 
-```
+```text
 镜像（只读层）
   ├─ base 层（distroless / alpine）
   ├─ COPY go.mod → 依赖层（缓存关键：先 COPY 依赖文件再下载）
@@ -128,7 +128,7 @@ curl localhost:8080/healthz
 
 ### 3.2 Pod 与声明式协调循环
 
-```
+```text
 用户提交 Deployment (期望: replicas=3, image=v2)
    │
    ▼
@@ -149,7 +149,7 @@ Scheduler 按资源/亲和性把 Pod 绑到 Node ──► kubelet 调 CRI 起�
 
 ### 3.3 Service 与流量路径
 
-```
+```text
 Client ──► Service (稳定 ClusterIP + DNS: svc.namespace.svc.cluster.local)
               │ kube-proxy 维护的转发规则（iptables / IPVS / eBPF）
               ▼
@@ -188,7 +188,7 @@ liveness 依赖外部服务是经典事故：数据库一抖，所有 Pod 同时
 
 ### 3.6 优雅下线的时序
 
-```
+```text
 kubectl rollout / 缩容
   → Pod 标记 Terminating，从 Endpoints 摘除（异步！）
   → 执行 preStop hook
@@ -198,6 +198,136 @@ kubectl rollout / 缩容
 ```
 
 **摘流量与 SIGTERM 是异步的**，旧 Pod 可能仍收到新请求。所以 `preStop: exec: sleep 5` 给 Endpoints 收敛留时间，是生产清单的标配。
+
+### 3.7 调度：为什么 Pod 一直 Pending
+
+`Pending` 的含义很明确：**调度器没能给这个 Pod 找到节点，容器根本没被创建**。它和 `CrashLoopBackOff`（容器起来了又挂）是两类完全不同的问题，排查方向不要混。
+
+```text
+kube-scheduler
+  ├─ Filter（过滤）：排除不满足硬性条件的节点
+  │    资源余量、nodeSelector / 亲和性、污点、PVC 可用区、端口冲突
+  └─ Score（打分）：在剩余节点里挑最优
+       ImageLocality（镜像已在节点上）、LeastAllocated（最空闲）、
+       topologySpread（打散是否均匀）
+```
+
+**`requests` 决定调度，`limits` 决定运行时**——这条区别必须刻在脑子里：
+
+| 字段 | 生效时机 | 后果 |
+|---|---|---|
+| `requests.cpu` / `requests.memory` | **调度时** | 节点可分配量必须 ≥ 该节点所有 Pod 的 requests 之和，决定 Pod 落到哪 |
+| `limits.cpu` | 运行时 | cgroup 配额，超了被**节流**（throttling），不会 OOM |
+| `limits.memory` | 运行时 | 超了内核 OOMKill，容器 `terminated.reason: OOMKilled` |
+
+由此可得两个常见误判：节点 `kubectl top` 显示 CPU 只用了 20%，Pod 却 Pending——因为 requests 已经把节点「账面」占满（资源碎片化）；反过来 requests 写得太小，节点严重超卖，几个 Pod 挤在一起互相抢 CPU，P99 抖得莫名其妙。
+
+三种「定向调度」手段的适用场景：
+
+| 手段 | 表达什么 | 典型用途 |
+|---|---|---|
+| `nodeSelector` / `nodeAffinity` | 我要去这类节点 | GPU 节点、本地 SSD 节点、专用节点池 |
+| `podAntiAffinity` | 我不要和谁待在一起 | 同一服务的多个副本打散到不同节点 |
+| `taints` + `tolerations` | 节点拒绝谁（有容忍才准进） | 节点池隔离、标记有问题的节点 |
+
+> 方向别搞反：**污点是节点上的「禁止入内」，容忍是 Pod 上的「通行证」**。给节点打上污点却没给工作负载加容忍，那台机器就再也调度不上新 Pod——很多「扩容不生效」都是这么来的。
+
+跨可用区打散用 `topologySpreadConstraints`，比 `podAntiAffinity` 更精细（它管的是「差值」而不是「绝对不同」）：
+
+```yaml
+spec:
+  topologySpreadConstraints:
+    - maxSkew: 1                        # 各可用区副本数最大差值
+      topologyKey: topology.kubernetes.io/zone
+      whenUnsatisfiable: DoNotSchedule  # 硬约束；ScheduleAnyway 为软约束（尽量打散）
+      labelSelector:
+        matchLabels: {app: app}
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:   # 用 preferred，避免副本数 > 节点数时死锁
+        - weight: 100
+          podAffinityTerm:
+            topologyKey: kubernetes.io/hostname
+            labelSelector:
+              matchLabels: {app: app}
+```
+
+Pending 的排查顺序（按出现频率，逐条排除）：
+
+```bash
+kubectl describe pod <pod> | sed -n '/Events/,$p'   # 先看事件，多数答案在这里
+```
+
+1. **资源不足**：`0/6 nodes are available: 6 Insufficient cpu`。降 requests、扩节点池，或让 Cluster Autoscaler 加机器。注意大规格 Pod（如 8C16G）在小节点池里可能**永远**放不下。
+2. **亲和 / 反亲和冲突**：`node(s) didn't match Pod's node affinity` 或 `didn't satisfy existing pods anti-affinity rules`。用了 `requiredDuringScheduling` 的反亲和且副本数大于节点数时，多出来的副本会永久 Pending。
+3. **污点未容忍**：`node(s) had untolerated taint {dedicated: gpu}`。补 toleration，或确认这个负载是否真该进那个池。
+4. **PVC 未绑定**：`pod has unbound immediate PersistentVolumeClaims`。查 `kubectl get pvc`：StorageClass 不存在、容量不足，或 `WaitForFirstConsumer` 模式下必须等 Pod 先调度才会创建卷。
+5. **镜像拉取失败**：此时通常已是 `ContainerCreating` / `ImagePullBackOff` 而非 Pending——`Failed to pull image`、`unauthorized`，查镜像地址、`imagePullSecrets`、私有仓库证书。
+6. **配额与准入**：`exceeded quota: compute-resources`。ResourceQuota 打满，清理闲置负载或提配额；LimitRange 的默认值过大也会让 Pod 创建直接被拒。
+
+`describe` 的 Events 只需看最后 5~10 行（按时间正序排列，末尾最新），重点认三类关键字：`Insufficient`（资源）、`didn't match`（亲和）、`untolerated taint`（污点）。
+
+### 3.8 配置与密钥：ConfigMap / Secret 的更新语义
+
+「改了 ConfigMap 怎么没生效」是配置类问题里最高频的一个。答案完全取决于**注入方式**：
+
+| 注入方式 | 更新后是否生效 | 原因 / 延迟 |
+|---|---|---|
+| `env` / `envFrom` | **不会** | 进程启动时值已固化进环境变量，必须重启容器 |
+| `volumeMounts`（挂整个 ConfigMap） | 会 | kubelet 同步周期 + 缓存 TTL，通常 30s~2min |
+| `volumeMounts` + `subPath` | **不会** | 已知限制：kubelet 不更新 subPath 挂载的文件 |
+| `immutable: true` 的 ConfigMap | 不能改 | 只能新建一个再切换引用 |
+
+`subPath` 是最常见的坑：为了「只挂一个文件、不覆盖目录里已有内容」而用了 `subPath`，结果配置永远停在启动那一刻的版本。需要热更新的配置**不要用 subPath**。
+
+```yaml
+spec:
+  containers:
+    - name: app
+      volumeMounts:
+        - name: config
+          mountPath: /etc/app            # 挂整个目录 → 可以热更新
+          readOnly: true
+        # - mountPath: /etc/app/config.yaml
+        #   subPath: config.yaml         # 挂单个文件 → 永远不更新，别用于需热更新的配置
+  volumes:
+    - name: config
+      configMap:
+        name: app-config
+        items: [{key: config.yaml, path: config.yaml}]
+```
+
+Secret 支持 `stringData`（写明文，apiserver 自动 base64）与 `data`（自己编码）：
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata: {name: app-secret}
+type: Opaque
+immutable: true                # 不可变：降低 apiserver watch 压力，也防误改
+stringData:
+  DB_PASSWORD: "s3cr3t"
+```
+
+> **Secret 只是 base64，不是加密**。能 `exec` 进 Pod、或能 `get secrets` 的人都能读到明文。真正的防护靠：etcd 静态加密（`EncryptionConfiguration`）、RBAC 收紧 `get/list/watch secrets`、按需关闭 `automountServiceAccountToken`，以及引入外部密钥管理——**External Secrets Operator** 从 Vault / 云 KMS 拉取并生成 Secret（密文不进 Git），**Sealed Secrets** 则把加密后的密文直接提交到仓库（适合 GitOps 但轮换较弱）。它们解决的是「密钥从哪来、谁能看」，不改变 K8s 里 Secret 本身的语义。
+
+`immutable: true` 的收益容易低估：kubelet 不必为它维护 watch，大规模集群里成千上万个不会被修改的配置能省下可观的 apiserver 连接与内存。代价是升级配置要「新建 + 改引用」。
+
+让配置变更生效的两种方式：
+
+```bash
+# 一、直接滚动重启：环境变量注入场景下唯一可行的办法
+kubectl rollout restart deploy/app
+```
+
+```yaml
+# 二、checksum 注解：配置内容变 → Pod 模板变 → 自动触发滚动（Helm 常用）
+metadata:
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+```
+
+Kustomize 的 `configMapGenerator` 默认就会追加内容哈希后缀（`disableNameSuffixHash` 可关闭）：名字变了，引用跟着变，滚动自然发生。`nameSuffix` 是自定义的固定后缀，本身不含哈希。
 
 ---
 
@@ -237,22 +367,26 @@ bin/
 ### 4.2 健康检查与优雅关闭（Go 侧）
 
 ```go
+// 启动阶段：注册就绪探针，进程就绪后把 ready 置为 true
 var ready atomic.Bool
-ready.Store(true)
 
-mux.HandleFunc("/readyz", func(w http.ResponseWriter, _ *http.Request) {
-    if !ready.Load() {
-        http.Error(w, "shutting down", http.StatusServiceUnavailable)
-        return
-    }
-    w.WriteHeader(http.StatusOK)
-})
+func registerHealth(mux *http.ServeMux) {
+    mux.HandleFunc("/readyz", func(w http.ResponseWriter, _ *http.Request) {
+        if !ready.Load() {
+            http.Error(w, "shutting down", http.StatusServiceUnavailable)
+            return
+        }
+        w.WriteHeader(http.StatusOK)
+    })
+}
 
-// SIGTERM 到达后先摘流量，再等一小段时间让 Endpoints 收敛，最后关服务
-<-sigCtx.Done()
-ready.Store(false)
-time.Sleep(5 * time.Second)
-_ = srv.Shutdown(shutdownCtx)
+// 关闭阶段：SIGTERM 到达后先摘流量，等 Endpoints 收敛，再关服务
+func gracefulShutdown(sigCtx, shutdownCtx context.Context, srv *http.Server) {
+    <-sigCtx.Done()
+    ready.Store(false)
+    time.Sleep(5 * time.Second)
+    _ = srv.Shutdown(shutdownCtx)
+}
 ```
 
 [gRPC 服务](../grpc/grpc-guide.md) 同理，把 `Shutdown` 换成 `GracefulStop()`，并配超时后降级 `Stop()`。
@@ -419,6 +553,172 @@ kubectl exec -it <pod> -- sh            # distroless 没有 shell，改用 kubec
 kubectl get endpoints app               # 确认就绪 Pod 是否登记
 kubectl get pdb                         # 是否有 PodDisruptionBudget
 ```
+
+### 4.6 镜像：瘦身、缓存与漏洞
+
+三个目标其实是同一件事：**构建快（缓存命中）、拉取快（体积小）、上线安全（漏洞少）**。
+
+```dockerfile
+# syntax=docker/dockerfile:1
+FROM --platform=$BUILDPLATFORM golang:1.25-alpine AS build
+WORKDIR /src
+# 第一层：只碰依赖文件，改代码时这层缓存不失效
+COPY go.mod go.sum ./
+RUN --mount=type=cache,target=/go/pkg/mod go mod download
+# 第二层：源码 + 编译，只有代码变动才重跑
+COPY . .
+ARG TARGETOS TARGETARCH
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH \
+    go build -trimpath -ldflags="-s -w" -o /out/app ./cmd/app
+
+FROM gcr.io/distroless/static-debian12:nonroot
+COPY --from=build /out/app /app
+USER nonroot:nonroot
+ENTRYPOINT ["/app"]
+```
+
+层次的划分逻辑是「**变动频率**」：`go.mod` 极少变 → 依赖下载层几乎永久命中；源码天天变 → 只重跑编译层（有 `--mount=type=cache` 时编译缓存也复用）。反过来写（先 `COPY . .` 再 `go mod download`）会让每次改一行代码都重新下载全部依赖。
+
+基础镜像的取舍：
+
+| 基础镜像 | 体积 | 有 shell | CA 证书 / 时区 | 适用 |
+|---|---|---|---|---|
+| `scratch` | 最小（×仅二进制） | 无 | **都没有，须手工拷入** | 纯静态 Go 二进制、极致体积 |
+| `distroless/static` | ~2MB + 应用 | 无（另有 `:debug` 变体） | 有 CA、有时区（tzdata 内置） | 大多数 Go 服务的默认选择 |
+| `alpine` | ~5MB | 有（`/bin/sh`） | 有 CA，`tzdata` 需装 | 需要进容器排查、跑启动脚本 |
+| `debian-slim` | ~30MB | 有 | 齐全 | 依赖 glibc / CGO 的程序 |
+
+- 没有 CA 证书 → HTTPS 调用报 `x509: certificate signed by unknown authority`；没有时区 → 日志时间全变 UTC，`time.LoadLocation("Asia/Shanghai")` 直接失败。
+- `distroless:debug` 是折中方案：平时用 `static`，排查时临时切 `debug`（带 busybox）再切回。
+
+`.dockerignore` 不只是「省体积」，它首先影响**构建上下文**：`COPY . .` 会把 `.git`（常上百 MB）、`node_modules`、本地 `.env` 一起上传给 BuildKit，CI 上这项经常占掉一半构建时间。
+
+体积最终换算成两点：**拉取时间**与**冷启动**。节点首次起 Pod 要拉镜像——1GB 镜像跨区拉可能几十秒，HPA 扩容、节点故障转移、批量重启全被拖慢；压到 20MB 后通常 1~2s 完成。
+
+漏洞扫描接进 CI（构建后、推送前）：
+
+```bash
+# 只报 HIGH/CRITICAL，有则退出码非 0 → 阻断流水线
+trivy image --severity HIGH,CRITICAL --exit-code 1 \
+  --ignore-unfixed registry.example.com/app:v1.2.3
+
+# 产出 SBOM，事后某个 CVE 爆出来时能快速反查影响面
+trivy image --format cyclonedx --output sbom.json registry.example.com/app:v1.2.3
+```
+
+> 「高危阻断」务必区分**可修复**与**上游未修**：`--ignore-unfixed` 让流水线只对「有补丁但你没升级」的漏洞报红。否则基础镜像里一堆上游尚未修复的 CVE 会长期卡住发布，团队最后一定会把门禁整个绕过——那比不扫更糟。
+
+多架构构建：
+
+```bash
+docker buildx create --use --name multi
+docker buildx build --platform linux/amd64,linux/arm64 \
+  -t registry.example.com/app:v1.2.3 --push .
+```
+
+> 产出的是 manifest list：同一个 tag 下按节点架构自动选层。Apple Silicon 本地开发、amd64 上生产时，漏了 `--platform` 会得到一个跑不起来的镜像（`exec format error`）。瘦身的另一面是**调试能力**：镜像越小，容器里能用的工具越少，这正是 4.8 节 `kubectl debug` 存在的原因。
+
+### 4.7 发布：maxSurge / maxUnavailable 与 PDB
+
+```yaml
+spec:
+  replicas: 4
+  minReadySeconds: 10          # 就绪后再观察 10s 才算可用，挡掉「起来就崩」的假就绪
+  progressDeadlineSeconds: 600 # 600s 无进展 → ProgressDeadlineExceeded
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1              # 允许超出 replicas 的数量（可为数量或百分比，向上取整）
+      maxUnavailable: 0        # 滚动期间可用副本不得低于 replicas
+```
+
+以 `replicas: 4` 为例，两个参数的组合效果：
+
+| maxSurge | maxUnavailable | 滚动期 Pod 总数 | 可用副本下限 | 特点 |
+|---|---|---|---|---|
+| 1 | 0 | 4~5 | 4 | **不降容**，最稳，峰值多占 25% 资源 |
+| 0 | 1 | 3~4 | 3 | 不超卖，但发布期容量下降 |
+| 1 | 1 | 3~5 | 3 | 快，容量波动最大 |
+| 25% | 25%（默认） | 3~5 | 3 | 通用默认值 |
+| 0 | 0 | — | — | **非法**，两者不能同时为 0 |
+
+> `maxUnavailable: 0` 是「发布不 502」的前提之一，但它要求集群有富余资源容纳 surge 出来的 Pod。节点资源吃紧时新 Pod 卡在 Pending，发布就永远走不完——这是「发布卡住」最常见的非代码原因。
+
+「就绪」由 readiness 探针判定，`minReadySeconds` 在其后再加一道时间闸：探针通过、但容器随即因配置错误 panic 的场景能被它拦住，避免流量切过去又切回来。
+
+**PDB 保护的是「自愿中断」，而且只管 Eviction API 那条路径**：`kubectl drain`（节点维护、集群升级）与 Cluster Autoscaler 缩容会先查 PDB 再动手；Deployment 的滚动更新**不看 PDB**，它由 `maxSurge` / `maxUnavailable` 控制。节点宕机这类非自愿中断，PDB 也管不了。
+
+```yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata: {name: app}
+spec:
+  minAvailable: 3        # 或 maxUnavailable: 1，二选一，不要都写
+  selector:
+    matchLabels: {app: app}
+```
+
+- `minAvailable` 表达「至少留几个」，适合容量不能降的服务；`maxUnavailable` 表达「最多停几个」，适合副本多、可按比例容忍的服务。
+- `minAvailable` 设为等于（或 `100%`）replicas 会让 `kubectl drain` **永久卡住**：没有可驱逐的余量。单副本服务配 PDB 等于禁止一切节点维护。
+- `drain` 被挡住时的信号：`Cannot evict pod as it would violate the pod's disruption budget`，同时 `kubectl get pdb` 的 `ALLOWED DISRUPTIONS` 为 0。
+
+```bash
+kubectl get pdb                                  # ALLOWED DISRUPTIONS=0 就先扩容，再 drain
+kubectl drain <node> --ignore-daemonsets --delete-emptydir-data
+kubectl rollout status deploy/app --timeout=300s # CI 里返回非 0 即判失败
+kubectl rollout undo deploy/app                  # 异常时的第一反应
+kubectl rollout history deploy/app --revision=3
+```
+
+`progressDeadlineSeconds` 只是**标记失败**，不会自动回滚：需要 CI 里 `rollout status` 返回非 0 后触发 `rollout undo`，或交给 Argo Rollouts / Flagger 做指标分析式自动回滚。
+
+发布失败的判定信号，按发现顺序：`rollout status` 超时 → 新 Pod `CrashLoopBackOff` / `ImagePullBackOff` → `kubectl get rs` 里新旧 ReplicaSet 长时间共存且新 RS 的 `READY` 不涨 → 切流后 5xx 率与 P99 抬升（说明新版本「就绪但功能坏」，探针查不出来，只能靠指标与金丝雀）。
+
+### 4.8 排障：kubectl debug 与临时容器
+
+`kubectl exec -it <pod> -- sh` 在 distroless 上直接失败（里面没有 shell）。三种进入方式，用途完全不同：
+
+```bash
+# 1) 临时容器：注入现有 Pod，共享网络栈；--target 还能共享目标容器的进程命名空间
+kubectl debug -it <pod> --image=nicolaka/netshoot --target=app -- bash
+
+# 2) 复制 Pod：原 Pod 不动，起一个改了镜像/命令的副本（排查启动即退出）
+kubectl debug <pod> -it --copy-to=app-debug --container=app \
+  --image=golang:1.25 -- sh
+
+# 3) 节点调试：起一个带 host 命名空间的 Pod，宿主机根目录挂在 /host
+kubectl debug node/<node> -it --image=nicolaka/netshoot
+```
+
+| 模式 | 影响原 Pod | 能看到什么 | 典型场景 |
+|---|---|---|---|
+| 临时容器 | 无（只加入，之后不可移除） | 目标容器进程、共享网络栈 | 无 shell 镜像里 `curl` / `ss` / `tcpdump` |
+| 复制 Pod | 无 | 一个能改 entrypoint 的新 Pod | 容器启动即退出，来不及 exec |
+| 节点调试 | 无 | 宿主机 `/host`、节点进程 | 节点 NotReady、Pod 网络不通、磁盘满 |
+
+> 临时容器是**一次性**的：加进去删不掉，只能重建 Pod。别在生产长期留着，用完滚动一次清掉（`EphemeralContainers` 自 1.23 起默认可用）。
+
+事件与指标：
+
+```bash
+kubectl events --for pod/app-xxxx          # 单对象事件流，比 describe 更好翻
+kubectl events -A --types=Warning          # 全集群只看告警
+kubectl get events --field-selector involvedObject.name=app-xxxx,reason=FailedMount
+kubectl top pod -l app=app                 # 报 "Metrics API not available" 即未装 metrics-server
+kubectl get pod app-xxxx -o jsonpath='{.status.containerStatuses[*].restartCount}'
+kubectl get pod app-xxxx -o jsonpath='{.status.containerStatuses[*].lastState}'
+```
+
+`restartCount` 持续上涨 = 容器反复退出；`lastState.terminated` 是最有信息量的字段：`reason: OOMKilled`（超 memory limit）、`reason: Error` + `exitCode: 1`（应用自己退的，看 `--previous` 日志）、`reason: Completed`（正常结束——多为命令写错，进程跑完就退）。
+
+**「Pod 是 Running，但服务就是不可用」的四步顺序**（由近及远，别跳步）：
+
+1. **就绪探针**：`kubectl describe pod` 看 `Readiness` 是否为 `False`。readiness 失败 → 该 Pod 不在 Endpoints 里，Service 自然没有后端。
+2. **Service 与 Endpoints**：`kubectl get endpoints <svc>` 是否为空。为空先查 selector 是否匹配 Pod 标签，再查 `targetPort` 与应用实际监听端口是否一致——「应用听 8080、targetPort 写 80」是出现率最高的一处配置错误。
+3. **网络策略**：`kubectl get networkpolicy -A` 是否有默认拒绝。被 NetworkPolicy 拦掉时 `curl` 表现为**超时**而不是 connection refused，很容易被误判成服务没起。
+4. **应用日志**：`kubectl logs <pod> --tail=200`，必要时 `--previous` 看上一个实例。走到这一步才是业务代码问题。
 
 ---
 

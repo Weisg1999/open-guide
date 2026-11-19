@@ -104,6 +104,7 @@
   <a class="sub-link" href="#33-四种指标类型与-rate">3.3 四种指标类型与 rate()</a>
   <a class="sub-link" href="#34-tsdb-内部为什么标签查询这么快">3.4 TSDB 内部：为什么标签查询这么快</a>
   <a class="sub-link" href="#35-staleness-与采样间隔">3.5 staleness 与采样间隔</a>
+  <a class="sub-link" href="#36-高基数是什么怎么打爆怎么发现">3.6 高基数：是什么、怎么打爆、怎么发现</a>
   <a href="#4-使用实战">4. 使用实战</a>
   <a class="sub-link" href="#41-自定义-registry推荐做法">4.1 自定义 Registry（推荐做法）</a>
   <a class="sub-link" href="#42-埋点中间件接-gin-篇gingin-guidemd">4.2 埋点中间件（接 [Gin 篇](../gin/gin-guide.md)）</a>
@@ -111,6 +112,9 @@
   <a class="sub-link" href="#44-常用-promql-速查">4.4 常用 PromQL 速查</a>
   <a class="sub-link" href="#45-告警规则与-alertmanager">4.5 告警规则与 Alertmanager</a>
   <a class="sub-link" href="#46-单测断言">4.6 单测断言</a>
+  <a class="sub-link" href="#47-promql-进阶子查询-与聚合陷阱">4.7 PromQL 进阶：子查询、@ 与聚合陷阱</a>
+  <a class="sub-link" href="#48-告警规则设计for-的误用与分级">4.8 告警规则设计：for 的误用与分级</a>
+  <a class="sub-link" href="#49-容量与性能series-估算抓取调优与何时换后端">4.9 容量与性能：series 估算、抓取调优与何时换后端</a>
   <a href="#5-版本演进速览">5. 版本演进速览</a>
   <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
   <a href="#7-选型对比">7. 选型对比</a>
@@ -223,6 +227,35 @@ histogram_quantile(0.99,
 <ul><li>样本值用 XOR + 变长编码压缩，时间戳用 delta-of-delta；单样本约 1~2 字节</li><li><strong>倒排索引</strong>把 <code>label="value"</code> 映射到 series ID 集合，所以 <code>sum(rate(...{code="500"}))</code> 不用扫全量数据</li><li>代价是：series 越多，倒排索引与内存 Head 越大 → 高基数直接拖垮 TSDB</li></ul>
 <h3 id="35-staleness-与采样间隔">3.5 staleness 与采样间隔</h3>
 <p>目标抓取失败或实例下线后，Prometheus 会在 5 分钟（staleness marker）后认为该 series 停止，图线中断而不是沿用旧值。这解释了「Pod 重启后曲线出现断口」和「<code>rate()</code> 在刚启动时样本不足返回空」两个常见现象。</p>
+<h3 id="36-高基数是什么怎么打爆怎么发现">3.6 高基数：是什么、怎么打爆、怎么发现</h3>
+<p><strong>基数（cardinality）= 某个标签不同取值的数量</strong>；一个指标的 series 数 = 各标签基数的<strong>乘积</strong>。<code>method</code>（4）× <code>route</code>（50）× <code>code</code>（10）= 2000 条，完全可控；一旦混进 <code>user_id</code>（100 万），立刻变成 20 亿条。</p>
+<div class="table-wrap"><table><thead><tr><th>标签</th><th>基数</th><th>可用</th><th>说明</th></tr></thead><tbody><tr><td><code>method</code> / <code>code</code></td><td>个位数 ~ 几十</td><td>✅</td><td>有界枚举</td></tr><tr><td><code>route</code>（模板）</td><td>几十 ~ 几百</td><td>✅</td><td>必须是 <code>/users/:id</code>，不是 <code>/users/123</code></td></tr><tr><td><code>instance</code></td><td>与副本数同阶</td><td>✅</td><td>有界，但弹性伸缩会让它持续增长</td></tr><tr><td>原始 URL / 带 query</td><td>无界</td><td>❌</td><td><code>?utm_source=...</code> 每个来源一条 series</td></tr><tr><td><code>user_id</code> / <code>order_id</code></td><td>无界</td><td>❌</td><td>明细属于日志 / 链路 / OLAP</td></tr><tr><td><code>trace_id</code> / <code>request_id</code></td><td>无界</td><td>❌</td><td>用 exemplar 关联，不做标签</td></tr></tbody></table></div>
+<p><strong>四个典型爆炸源</strong>，事故基本都能归到其中之一：</p>
+<ol><li><strong>把业务主键当标签</strong>：「加个 <code>user_id</code> 方便按用户查」——这一句话能让 TSDB 在几小时内 OOM。按用户维度的分析是 OLAP 的活，不是 Prometheus 的活。</li><li><strong><code>trace_id</code> / <code>request_id</code> 做标签</strong>：每请求一条 series，写完即成垃圾，倒排索引却永久膨胀。</li><li><strong>URL 未模板化</strong>：<code>path</code> 直接取 <code>r.URL.Path</code>，<code>/users/123</code>、<code>/users/124</code> 各算一条。</li><li><strong>错误信息当标签</strong>：<code>err.Error()</code> 值域无限，且天然带随机 ID。</li></ol>
+<p><strong>怎么发现</strong>——先在表达式浏览器里按指标名数 series：</p>
+<pre><code class="lang-promql"># 每个指标名有多少条 series，取前 20
+topk(20, count by (__name__) ({__name__=~".+"}))
+
+# 某个可疑指标内部，哪个 user_id 贡献了最多 series
+topk(10, count by (user_id) (http_requests_total))</code></pre>
+<p>再查 TSDB 自带的统计接口，不用装任何插件：</p>
+<pre><code class="lang-bash">curl -s localhost:9090/api/v1/status/tsdb | jq '.data.headStats.numSeries'
+curl -s localhost:9090/api/v1/status/tsdb | jq '.data.seriesCountByMetricName[:5]'</code></pre>
+<p><code>numSeries</code> 就是 Head 中的活跃 series 数，<strong>内存与它近似线性</strong>：每条 1~3 KB（chunk + 索引 + 标签符号表 + 抓取缓冲），100 万条约 2~3 GB 常驻，再叠加查询临时内存与 compaction 峰值。它是容量规划的第一指标。</p>
+<p><strong>已经进去了怎么救</strong>：只能在抓取入库前丢，事后删不掉历史索引。</p>
+<pre><code class="lang-yaml">scrape_configs:
+  - job_name: "app"
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: "debug_.*"
+        action: drop            # 整条指标不要
+      - regex: "user_id|request_id|trace_id"
+        action: labeldrop       # 只摘标签，指标保留
+      - source_labels: [path]
+        regex: "/users/[0-9]+"
+        target_label: path
+        replacement: "/users/:id"</code></pre>
+<p><code>metric_relabel_configs</code> 在<strong>入库前</strong>执行，是唯一真正能减少 series 的地方；<code>labeldrop</code> 会让原本不同的 series 合并成一条，但这不是「相加」而是<strong>丢弃</strong>：同一时间点标签集相同的样本只保留第一条，其余静默丢弃（计入 <code>prometheus_target_scrapes_sample_duplicate_timestamp_total</code>）。counter 的 reset 语义随之被破坏，<code>rate()</code> 会给出偏高的荒谬值——所以这是纯风险，不是收益。</p>
 <hr>
 
 </section>
@@ -371,6 +404,101 @@ http_requests_total{code="200",method="GET",route="/ping"} 1
         t.Fatalf("metric mismatch: %v", err)
     }
 }</code></pre>
+<h3 id="47-promql-进阶子查询-与聚合陷阱">4.7 PromQL 进阶：子查询、<code>@</code> 与聚合陷阱</h3>
+<p><strong>子查询 <code>[range:step]</code></strong> 是「对一个表达式的计算结果再做区间运算」。它很贵：外层每个 step 都要把内层整个窗口重算一遍。</p>
+<pre><code class="lang-promql"># 最近 1 小时内，5xx 比例的 5 分钟滑动最大值
+max_over_time(
+  (sum(rate(http_requests_total{code=~"5.."}[5m]))
+   / sum(rate(http_requests_total[5m])))[1h:1m]
+)</code></pre>
+<p><code>[1h:1m]</code> = 过去 1 小时、每 1 分钟取一个点，内层表达式会被算 60 次。成本随 <code>窗口/步长</code> 线性增长，<strong>告警规则里出现子查询通常意味着该上 Recording rule 了</strong>。</p>
+<p><strong><code>@</code> 与 <code>offset</code></strong>：<code>@</code> 把求值时刻钉死在某个 Unix 时间戳，<code>offset</code> 是相对偏移，可叠加。</p>
+<pre><code class="lang-promql"># 与当前值对比 1 小时前
+sum(rate(http_requests_total[5m])) - sum(rate(http_requests_total[5m] offset 1h))
+
+# 钉住结束时刻再往前挪一天 = 昨天同一时刻的同一段窗口
+sum(rate(http_requests_total[5m] @ end() offset 1d))</code></pre>
+<p>注意 <code>@</code> 修饰的是<strong>求值时刻</strong>而非样本时间，<code>offset</code> 在它之上生效；顺序反过来含义就变了。</p>
+<p><strong><code>rate</code> vs <code>irate</code></strong>：前者用窗口首尾两点做外推，后者只看最后两个点。</p>
+<div class="table-wrap"><table><thead><tr><th></th><th><code>rate(d[5m])</code></th><th><code>irate(d[5m])</code></th></tr></thead><tbody><tr><td>用几个点</td><td>窗口内全部（首尾外推）</td><td>最后两个</td></tr><tr><td>平滑度</td><td>平滑，适合画图与告警</td><td>灵敏，看瞬时尖刺</td></tr><tr><td>风险</td><td>窗口内 counter reset 会低估</td><td>抓取抖动被放大成假尖峰</td></tr><tr><td>告警</td><td>✅</td><td>❌ 值会跳，容易误报</td></tr></tbody></table></div>
+<p>一次慢抓取就能让 <code>irate</code> 翻倍。<strong>任何带 <code>for</code> 的告警都不该用 <code>irate</code>。</strong></p>
+<p><strong><code>sum</code> 与 <code>rate</code> 的顺序</strong>：永远先 <code>rate</code> 再 <code>sum</code>。</p>
+<pre><code class="lang-promql"># 正确：每条 series 各自求速率，再按维度求和
+sum by (route) (rate(http_requests_total[5m]))
+
+# 错误：多条 counter 先相加再求速率
+rate(sum by (route) (http_requests_total)[5m:1m])</code></pre>
+<p>多条 counter 相加后，任意一条 reset 都会在合并曲线上造成下跳，<code>rate</code> 会把它当作一次 counter reset 补偿进去，结果系统性偏大（<code>rate</code> 从不返回负值）。先 <code>rate</code> 时每条 series 的 reset 由 Prometheus 单独补偿，结果才正确。</p>
+<p><strong>缺失告警：<code>absent()</code> 与 <code>unless</code></strong>：阈值只能发现「值不对」，发现不了「数据没了」。</p>
+<pre><code class="lang-promql"># 整个 job 一条 series 都没有 → 返回 1
+absent(up{job="app"})
+
+# 用 unless 表达「现在有、5 分钟前没有」
+sum(up{job="app"}) unless sum(up{job="app"} offset 5m)</code></pre>
+<p><code>absent()</code> 对「部分实例消失」无能——只要还剩一条 series 就不为空，这种情况要靠 <code>up == 0</code> 或 <code>count</code> 兜底。</p>
+<p><strong><code>histogram_quantile</code> 必须保留 <code>le</code></strong>：<code>le</code> 是桶边界，丢了它分位数无从计算。</p>
+<pre><code class="lang-promql"># 正确
+histogram_quantile(0.99, sum by (le, route) (rate(http_request_duration_seconds_bucket[5m])))
+
+# 错误：sum by (route) 把 le 抹平，输出无意义
+histogram_quantile(0.99, sum by (route) (rate(http_request_duration_seconds_bucket[5m])))</code></pre>
+<p>分位数也<strong>不能先算再平均</strong>：<code>avg(histogram_quantile(...))</code> 不是「全局 P99」。要全局值就把所有实例的桶加在一起再算。</p>
+<p><strong><code>topk</code> 不能直接做告警</strong>：榜上成员随时换人，超标的那个今天在、明天掉出去，告警就会「自己好了」。<code>topk</code> 只用于看板展示；告警要固定维度写在 <code>by</code> 里。</p>
+<h3 id="48-告警规则设计for-的误用与分级">4.8 告警规则设计：<code>for</code> 的误用与分级</h3>
+<p><strong><code>for</code> 不是「持续多久」，而是「连续多少次求值为真」</strong>。每个 <code>evaluation_interval</code> 评估一次，中间任何一次为假就清零重来。</p>
+<div class="table-wrap"><table><thead><tr><th>现象</th><th>原因</th></tr></thead><tbody><tr><td>配 <code>for: 5m</code> 却十几分钟才响</td><td>表达式在 true/false 之间跳，计时反复重置</td></tr><tr><td><code>for: 10s</code> 形同虚设</td><td>小于 2× <code>evaluation_interval</code>，最坏只评估一次</td></tr><tr><td>反复 firing / resolved</td><td>值在阈值附近抖动，<code>for</code> 抵不住</td></tr></tbody></table></div>
+<p>经验值：<strong><code>for</code> ≥ 3~4 倍 <code>evaluation_interval</code></strong>，且表达式自身先用较长的 <code>rate</code> 窗口平滑。<code>interval: 1m</code> + <code>for: 1m</code> 基本等于没有。</p>
+<pre><code class="lang-yaml">groups:
+  - name: app-slo
+    interval: 30s                     # 覆盖全局，评估更密
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_requests_total{code=~"5.."}[5m]))
+            / sum(rate(http_requests_total[5m])) &gt; 0.05
+        for: 5m                       # 连续 10 次为真（30s × 10）
+        keep_firing_for: 5m           # 2.42+：恢复后仍保持 firing，压抖动
+        labels:
+          severity: page
+        annotations:
+          summary: "{{ $labels.job }} 5xx 比例 {{ $value | humanizePercentage }}"
+          runbook_url: "https://runbook.internal/alert/HighErrorRate"
+          dashboard_url: "https://grafana.internal/d/app?var-job={{ $labels.job }}"</code></pre>
+<p><code>keep_firing_for</code>（Prometheus 2.42+）解决的是另一半问题：值刚跌破阈值就 resolved、一分钟后又 firing，通知渠道被刷屏。它要求<strong>持续恢复</strong>一段时间才真正 resolved。</p>
+<p><strong>分级</strong>：<code>severity</code> 不是装饰，它直接决定通知渠道与响应时限。</p>
+<div class="table-wrap"><table><thead><tr><th>级别</th><th>含义</th><th>通知渠道</th><th>响应</th><th>典型规则</th></tr></thead><tbody><tr><td><code>page</code></td><td>用户已受影响 / SLO 在烧</td><td>电话、PagerDuty、值班群 @人</td><td>立即</td><td>错误率 &gt; 5% 持续 5m、核心接口全挂</td></tr><tr><td><code>ticket</code></td><td>有风险但用户无感</td><td>工单、邮件</td><td>一个工作日</td><td>磁盘 80%、副本不足、证书 30 天到期</td></tr><tr><td><code>warning</code></td><td>趋势 / 容量类</td><td>群消息，不 @人</td><td>观察</td><td>QPS 同比翻倍、P99 缓慢上升</td></tr></tbody></table></div>
+<p>原则：<strong><code>page</code> 必须少</strong>。一个 page 告警若经常被静默，说明阈值或分级错了，而不是值班的人不上心。</p>
+<p><strong><code>expr</code> 里要避开的写法</strong>：</p>
+<ul><li><strong>不要 <code>topk</code></strong>：成员会换，告警会自己 resolved。要监控维度超标就把维度写进 <code>by</code>。</li><li><strong>不要裸 <code>absent</code></strong>：粒度太粗容易整片误报，用 <code>absent(metric{job="app"})</code> 并配合 <code>unless</code>。</li><li><strong>不要塞子查询</strong>：每次评估全量重算，几十条规则叠加足以拖垮 Prometheus。</li></ul>
+<p><strong>Recording rule 是告警的成本开关</strong>：被多个面板 / 多条告警复用的表达式，录成指标后只读结果。</p>
+<pre><code class="lang-yaml">- record: job:http_requests_error_ratio:rate5m
+  expr: |
+    sum by (job) (rate(http_requests_total{code=~"5.."}[5m]))
+      / sum by (job) (rate(http_requests_total[5m]))</code></pre>
+<p><strong>注解里必须有 runbook</strong>：告警只说「出了什么事」，runbook 说「怎么办」。没有 runbook 的 page 级告警，等于把压力原样丢给凌晨三点的人。</p>
+<h3 id="49-容量与性能series-估算抓取调优与何时换后端">4.9 容量与性能：series 估算、抓取调优与何时换后端</h3>
+<p><strong>第一步是数 series</strong>，而不是拍脑袋加内存：</p>
+<pre><code class="lang-bash">curl -s localhost:9090/api/v1/status/tsdb | jq '.data.headStats.numSeries'</code></pre>
+<pre><code class="lang-promql">prometheus_tsdb_head_series                                 # 当前活跃 series
+sum(rate(prometheus_tsdb_head_samples_appended_total[5m]))   # 每秒写入样本数
+prometheus_tsdb_storage_blocks_bytes / 1024 / 1024 / 1024    # 落盘 block 大小（GB）</code></pre>
+<p><strong>内存换算</strong>：Head 中每条 series 约 <strong>1~3 KB</strong>（chunk + 索引 + 标签符号表），按 3 KB 做上限估算：</p>
+<div class="table-wrap"><table><thead><tr><th>series 数</th><th>Head 内存（≈3KB/series）</th><th>结论</th></tr></thead><tbody><tr><td>10 万</td><td>~300 MB</td><td>单机轻松</td></tr><tr><td>100 万</td><td>~3 GB</td><td>4~8 GB 堆，需盯 GC</td></tr><tr><td>500 万</td><td>~15 GB</td><td>接近单机上限，考虑分片</td></tr><tr><td>&gt; 1000 万</td><td>&gt; 30 GB</td><td>单 Prometheus 不划算，上 VM / Mimir</td></tr></tbody></table></div>
+<p>这是稳态占用；查询临时内存、WAL replay、compaction 峰值会再叠一层，<strong>规划时至少留 2 倍余量</strong>。</p>
+<p><strong>抓取参数三件套</strong>：</p>
+<div class="table-wrap"><table><thead><tr><th>参数</th><th>作用</th><th>约束</th></tr></thead><tbody><tr><td><code>scrape_interval</code></td><td>抓取周期，决定采样密度</td><td>直接决定 <code>samples/s = series / interval</code></td></tr><tr><td><code>scrape_timeout</code></td><td>单次抓取超时</td><td><strong>必须 &lt; <code>scrape_interval</code></strong>，否则会层层叠加超时</td></tr><tr><td><code>evaluation_interval</code></td><td>规则评估周期</td><td>与 <code>for</code> 配合，见 4.8</td></tr></tbody></table></div>
+<p>100 万 series、15s 间隔 ≈ 6.7 万 samples/s，这个量级已接近单机可持续上限；把间隔缩到 5s 就是三倍压力。<strong>缩间隔前先算这笔账。</strong></p>
+<p><strong>保留期与磁盘</strong>：</p>
+<pre><code class="lang-bash">--storage.tsdb.retention.time=15d
+--storage.tsdb.retention.size=500GB   # 双保险，先到先触发</code></pre>
+<p>磁盘 ≈ <code>samples/s × 86400 × 保留天数 × 1~2 字节</code>（压缩后），6.7 万 samples/s × 15 天约 100 GB 量级。<strong>只配 <code>retention.time</code> 不够</strong>：磁盘会先满，然后 Prometheus 崩溃。</p>
+<p><strong>remote write 的背压</strong>：接长期存储后，队列落后是第一报警信号。</p>
+<pre><code class="lang-promql">prometheus_remote_storage_highest_timestamp_in_seconds
+  - prometheus_remote_storage_queue_highest_sent_timestamp_seconds   # 落后秒数
+rate(prometheus_remote_storage_samples_dropped_total[5m])            # &gt; 0 即事故
+rate(prometheus_remote_storage_samples_failed_total[5m])             # 发送失败</code></pre>
+<p>落后持续增大且 <code>dropped</code> 上升，说明后端消费不动，Prometheus 会丢样本保本地。此时该扩后端或加 shard，而不是盲目调大 <code>max_shards</code> 硬顶。</p>
+<p><strong>什么时候该换 VictoriaMetrics</strong>：单机 series 上千万、保留期要几个月、remote write 长期追不上——这些是单进程 Prometheus 的结构性瓶颈。VM 兼容 PromQL（MetricsQL 是超集），同等数据量下内存与磁盘通常只有几分之一，参见 <a href="../victoriametrics/victoriametrics-guide.html">VictoriaMetrics 篇</a>。但<strong>别一上来就换</strong>：先清高基数标签、补 Recording rule，多数「Prometheus 撑不住」其实是基数问题，不是引擎问题。</p>
 <hr>
 
 <div class="callout info"><p><b>实战要点：</b>Counter 永远配合 rate()/increase() 使用；Histogram 的分桶边界要按真实 SLO 设计，否则算不出有意义的分位数。</p></div>

@@ -7,7 +7,7 @@
 能读、能查、能直接抄代码的「技术手册」，而不是又一份 Hello World。
 
 [![Docs](https://img.shields.io/badge/docs-56%20篇-16a34a?style=for-the-badge)](./README.md)
-[![Lines](https://img.shields.io/badge/正文-22%2C466%20行-0ea5e9?style=for-the-badge)](./README.md)
+[![Lines](https://img.shields.io/badge/正文-26%2C345%20行-0ea5e9?style=for-the-badge)](./README.md)
 [![Format](https://img.shields.io/badge/format-Markdown%20%2B%20HTML-f59e0b?style=for-the-badge)](./README.md)
 
 [![License](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square)](./LICENSE)
@@ -27,7 +27,7 @@
 
 | 📚 指南 | 📝 正文 | 📄 离线手册 | 🖼️ 架构图 | ✅ 写作规范 | ⚖️ 许可 |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| **56 篇** | **≈ 22,466 行** | **56 份** | **113 张 SVG** | **7 个必备要素** | **MIT** |
+| **56 篇** | **≈ 26,345 行** | **56 份** | **116 张 SVG** | **7 个必备要素** | **MIT** |
 
 </div>
 
@@ -275,7 +275,7 @@ python tools/build_html.py --stats         # 结构统计 + 内链锚点自检
 | 文件 | 作用 |
 |---|---|
 | [`tools/themes.json`](./tools/themes.json) | 每篇的配色、Hero 副标题与标签 |
-| [`tools/fragments.json`](./tools/fragments.json) | SVG 架构图、要点卡片、提示框等视觉增强（Markdown 无对应源），按章节锚点注入，共 438 块 / 113 张图 |
+| [`tools/fragments.json`](./tools/fragments.json) | SVG 架构图、要点卡片、提示框等视觉增强（Markdown 无对应源），按章节锚点注入，共 441 块 / 116 张图 |
 | [`tools/anchor_map.json`](./tools/anchor_map.json) | 旧版手工 HTML 的语义锚点 → 标题 slug 映射，保证增强块内的跳转不断链 |
 
 新增主题无需改构建配置：脚本自动发现 `*/ *.md`，未配置配色时按目录名分配稳定色板。CI（[`.github/workflows/check-html.yml`](./.github/workflows/check-html.yml)）在每次 push / PR 执行 `--check --audit`，从机制上杜绝漂移。
@@ -461,6 +461,6 @@ Copyright (c) 2026 Weisg1999
 
 [文档目录](#二文档目录) · [阅读路径](#三推荐的阅读路径) · [参与贡献](#七贡献) · [English](./README_EN.md)
 
-<sub>Markdown 是唯一真源 · HTML 由构建脚本生成 · 56 篇 / 22,466 行 · © 2026 Weisg1999</sub>
+<sub>Markdown 是唯一真源 · HTML 由构建脚本生成 · 56 篇 / 26,345 行 · © 2026 Weisg1999</sub>
 
 </div>

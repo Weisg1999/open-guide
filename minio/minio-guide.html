@@ -102,12 +102,17 @@
   <a class="sub-link" href="#23-元数据内联">2.3 元数据内联</a>
   <a class="sub-link" href="#24-iam-与安全">2.4 IAM 与安全</a>
   <a class="sub-link" href="#25-数据生命周期能力">2.5 数据生命周期能力</a>
+  <a class="sub-link" href="#26-2026-年的现实社区版归档与替代选型">2.6 2026 年的现实：社区版归档与替代选型</a>
+  <a class="sub-link" href="#27-一致性与并发读己之写覆盖与锁">2.7 一致性与并发：读己之写、覆盖与锁</a>
   <a href="#3-架构与数据路径">3. 架构与数据路径</a>
   <a href="#4-使用实战">4. 使用实战</a>
   <a class="sub-link" href="#41-启动与-mc">4.1 启动与 mc</a>
   <a class="sub-link" href="#42-go-sdkminio-gos3-风格">4.2 Go SDK（minio-go，S3 风格）</a>
   <a class="sub-link" href="#43-presigned-url最常见的集成模式">4.3 Presigned URL（最常见的集成模式）</a>
   <a class="sub-link" href="#44-版本控制-事件通知">4.4 版本控制 + 事件通知</a>
+  <a class="sub-link" href="#45-分片上传与断点续传">4.5 分片上传与断点续传</a>
+  <a class="sub-link" href="#46-生命周期对象锁与成本">4.6 生命周期、对象锁与成本</a>
+  <a class="sub-link" href="#47-迁移从-minio-到其他-s3-实现">4.7 迁移：从 MinIO 到其他 S3 实现</a>
   <a href="#5-与-s3-的兼容性说明">5. 与 S3 的兼容性说明</a>
   <a href="#6-版本与产品线20252026-重大变化">6. 版本与产品线（2025–2026 重大变化）</a>
   <a href="#7-常见坑与最佳实践">7. 常见坑与最佳实践</a>
@@ -285,7 +290,7 @@
 <p>传统三副本存储存 1TB 要花 3TB；MinIO 用 Reed-Solomon 纠删码把对象切成 <strong>N 个数据块 + M 个校验块</strong>，分散到独立磁盘：</p>
 <pre><code class="lang-text">对象 (1MB) ──EC 编码──► [D1][D2][D3][D4] [P1][P2]   （EC:4+2，共 6 块 6 盘）
                          └── 任意坏 2 块，仍可完整还原 ──┘</code></pre>
-<ul><li>读写比例可配：<code>EC:4+2</code>（1.5x 空间开销，容忍 2 盘坏）、<code>EC:8+4</code>（1.5x）、<code>EC:8+8</code>（2x，容忍一半盘坏）；</li><li><strong>读写 quorum</strong>：写需 ≥ N/2 块盘可用；读只需任意 N 块；</li><li>每个数据块附 HighwayHash 校验——磁盘静默损坏（bit-rot）在读时被发现并<strong>用其余块在线修复</strong>，这是 MinIO 相比"rsync + 多副本"方案的本质优势；</li><li>纠删集（EC set）= 一组独立磁盘（4/6/8/12/16 盘）；集群扩容按 server pool 横向加。</li></ul>
+<ul><li>读写比例可配：<code>EC:4+2</code>（1.5x 空间开销，容忍 2 盘坏）、<code>EC:8+4</code>（1.5x）、<code>EC:8+8</code>（2x，容忍一半盘坏）；</li><li><strong>读写 quorum</strong>：设数据块 K、校验块 M（N=K+M）。读需要 K 块；写也需要 K 块（当 M 恰为 N/2 时需 K+1，防脑裂）——写永远不会比读更宽松；</li><li>每个数据块附 HighwayHash 校验——磁盘静默损坏（bit-rot）在读时被发现并<strong>用其余块在线修复</strong>，这是 MinIO 相比"rsync + 多副本"方案的本质优势；</li><li>纠删集（EC set）= 一组独立磁盘（4/6/8/12/16 盘）；集群扩容按 server pool 横向加。</li></ul>
 <h3 id="23-元数据内联">2.3 元数据内联</h3>
 <p>对象元数据（连同纠删配置、版本信息）<strong>与数据块一起原子地写进纠删组</strong>，不依赖外部元数据数据库——没有"元数据服务器"这个单点/瓶颈，这是 MinIO 能横向扩展到 EB 级的架构根基。</p>
 <h3 id="24-iam-与安全">2.4 IAM 与安全</h3>
@@ -333,6 +338,33 @@
     <figcaption>图 3 · 数据生命周期能力辐射图：版本控制、ILM、复制、对象锁定（WORM）、事件通知全部围绕 bucket 配置，构成完整的数据治理平面</figcaption>
   </div>
 <ul><li><strong>版本控制</strong>：bucket 开版本后，删除/覆盖产生 delete marker 与历史版本，可回滚；</li><li><strong>ILM（生命周期）</strong>：按天数/版本数/标签做过期、转 Tier（远程 S3/Azure/GCS）；</li><li><strong>复制（Replication）</strong>：桶级/站点级（active-active），含元数据与删除同步；</li><li><strong>对象锁定</strong>：WORM 合规（金融留痕）、法定保留；</li><li><strong>事件通知</strong>：put/delete 等事件推到 Kafka/NATS/AMQP/Redis/Webhook——可作事件驱动架构的源头。</li></ul>
+<h3 id="26-2026-年的现实社区版归档与替代选型">2.6 2026 年的现实：社区版归档与替代选型</h3>
+<p>事实先摊开（完整时间线见第 6 章）：社区版最后版本 <code>RELEASE.2025-10-15T17-29-55Z</code>；2025-10 起不再发布预编译二进制与 Docker 镜像；2026-04 仓库归档为只读。结论很直接——<strong>新部署不要再选社区版</strong>，存量集群的问题则从"怎么用"变成"怎么退"。</p>
+<p>四类可行替代的定位差别很大：</p>
+<div class="table-wrap"><table><thead><tr><th>方案</th><th>形态</th><th>最适规模</th><th>优势</th><th>代价</th></tr></thead><tbody><tr><td><strong>Garage</strong></td><td>Rust 单二进制</td><td>中小规模（TB ~ 百 TB）</td><td>部署极简、地理分布、资源占用低</td><td>企业特性少（无冷热分层、对象锁弱）、生态工具少</td></tr><tr><td><strong>SeaweedFS</strong></td><td>Go，master/volume/filer</td><td>海量小文件（亿级对象）</td><td>小文件元数据高效、可 POSIX 挂载、内置 S3 网关</td><td>组件多、运维模型不同、大对象吞吐需调优</td></tr><tr><td><strong>Ceph RGW</strong></td><td>C++，需完整 Ceph 集群</td><td>已有 Ceph / PB 级</td><td>块/文件/对象一体、生态成熟、有商业支持</td><td>部署重（MON/OSD/MGR）、要专职存储运维</td></tr><tr><td><strong>云厂商 S3 / OSS / COS</strong></td><td>托管服务</td><td>任意，含爆发增长</td><td>零运维、弹性、功能最全</td><td>长期单价高、<strong>出口流量费</strong>、数据主权与锁定</td></tr></tbody></table></div>
+<p>选型不是比谁跑分高，而是看<strong>你的存量用法落在哪些维度上</strong>。先把用法盘出来，这份输出就是迁移需求清单：</p>
+<pre><code class="lang-bash">mc admin info local                                     # 节点/磁盘/容量
+mc ls --recursive local/mybucket | wc -l                # 当前对象数
+mc ilm ls local/mybucket                                # 生命周期规则
+mc version info local/mybucket                          # 是否开了版本控制
+mc event list local/mybucket                            # 事件通知目标
+mc admin policy list local                              # 自定义 IAM 策略</code></pre>
+<p>迁移成本按四个维度评估，缺一项就会在上线后才发现功能没了：</p>
+<ul><li><strong>S3 API 兼容度</strong>：<code>PutObject</code>/<code>GetObject</code> 能跑不等于兼容。重点验 <code>ListObjectsV2</code> 分页、<code>CopyObject</code> 大对象（&gt;5GB 必须走分片复制）、预签名 URL 的 header 签名、<code>x-amz-meta-*</code> 自定义元数据保真；</li><li><strong>IAM 模型</strong>：Garage/SeaweedFS 多为"静态 key + 粗粒度策略"，MinIO 那种 ARN 级策略与 STS 临时凭证常无对应物——<strong>依赖 STS 的应用改造成本最高</strong>；</li><li><strong>版本控制</strong>：不是所有实现都有"删除标记 + 历史版本"完整语义，开了版本再迁会把差异放大；</li><li><strong>事件通知</strong>：Kafka/NATS 目标通常可替代，但事件字段与 delete marker 事件的触发时机不完全一致，消费端要做兼容。</li></ul>
+<p><strong>存量 MinIO 还能用多久？</strong> 实话是：软件不会自己过期。归档版本没有 license 到期机制，硬件不坏、依赖不变，跑三年五年都正常。真正的风险只有三条——<strong>没有安全补丁</strong>（S3 网关暴露在网上的，新 CVE 只能自己评估）、<strong>依赖腐化</strong>（Go 版本、基础镜像、TLS 库逐渐与 OS 脱节，某次系统升级后可能编不起来）、<strong>无人应答</strong>（出问题只能读源码）。</p>
+<p>所以务实策略是：<strong>存量不动、新量不添、常备退路</strong>。把归档版本当"冻结的稳定设施"运营（锁定镜像 digest、收紧网络与审计），同时用 <code>mc mirror</code> 维持一条到新集群的冷备通道——退出成本最低的状态，是数据始终在两个地方。</p>
+<h3 id="27-一致性与并发读己之写覆盖与锁">2.7 一致性与并发：读己之写、覆盖与锁</h3>
+<p><strong>语义演进</strong>：AWS S3 在 2020-12 之前，覆盖写与删除是最终一致（写完立刻 GET 可能读到旧值），之后改为强一致。MinIO 从第一天就是<strong>强一致</strong>：PUT 返回 200 后，任何节点上的 GET 都能读到新数据——这正是它当年被当作"本地 S3"的主要原因。仍维护的替代品（Garage/SeaweedFS/Ceph RGW）核心路径同样强一致，但<strong>跨站点复制是异步的</strong>，异地读到旧值属于预期行为。</p>
+<p><strong>同一 key 并发 PUT：最后写入者胜（LWW）</strong>。对象存储没有文件锁，两个客户端同时写 <code>a.txt</code>，服务端既不报错也不合并，谁最后完成谁留下，另一份静默消失。这不是 bug，是"对象不可变 + 整体替换"模型的必然结果。</p>
+<pre><code class="lang-text">t0  A: PUT a.txt (v1)  ─────────► 200 OK
+t1  B: PUT a.txt (v2)        ─────────► 200 OK     最终 a.txt = v2，v1 无痕迹
+t2  A: GET a.txt  ──► 读到 v2（A 以为自己的写生效了）</code></pre>
+<p>要避免静默覆盖，用<strong>条件写</strong>：</p>
+<div class="table-wrap"><table><thead><tr><th>请求头</th><th>语义</th><th>典型用途</th></tr></thead><tbody><tr><td><code>If-None-Match: *</code></td><td>仅当对象不存在才写入</td><td>创建型写、去重、防覆盖</td></tr><tr><td><code>If-Match: &lt;etag&gt;</code></td><td>仅当当前 ETag 匹配才写入</td><td>乐观锁 / CAS（读-改-写）</td></tr><tr><td><code>x-amz-copy-source-if-match</code></td><td>校验复制源版本</td><td>服务端复制时防源被并发改</td></tr></tbody></table></div>
+<p>兼容性务必实测：<code>If-None-Match</code> 创建语义 AWS 在 2024 年才正式支持，各家实现程度不一，<strong>不支持时服务端会静默忽略该头</strong>，等于没有保护。真不支持，只能退回应用层用 Redis/etcd 串行化，代价是多一个依赖。</p>
+<p><strong>分片上传的生命周期</strong>：<code>CreateMultipartUpload</code> 返回 <code>uploadId</code>，之后 <code>UploadPart</code> 可任意并发、乱序，<code>CompleteMultipartUpload</code> 时按 part number 组装。要点：</p>
+<ul><li><code>uploadId</code> 不是永久资源，未完成上传的 part <strong>一直占着容量并计入存储</strong>；</li><li>必须配 <code>AbortIncompleteMultipartUpload</code> 规则（如 7 天）自动清理，否则孤儿分片会缓慢吃光空间；</li><li>完成之后 <code>uploadId</code> 立即失效，重试返回 <code>NoSuchUpload</code>——所以完成操作自身要幂等（先 HEAD 确认对象是否已存在）。</li></ul>
+<p><strong>删除标记与版本控制的交互</strong>：未开版本时 <code>DELETE</code> 是真删；开了版本后，不带 <code>versionId</code> 的 <code>DELETE</code> 只插入一个 <strong>delete marker</strong>，数据仍在，<code>GET</code> 返回 404、<code>LIST</code> 默认看不到。要真删必须指定 <code>versionId</code>。这意味着<strong>"删了"不等于"空间释放了"</strong>——清理得靠生命周期按天数/版本数过期非当前版本，否则桶只会单向变大。</p>
 <hr>
 
 </section>
@@ -436,7 +468,7 @@ mc cp ./report.pdf local/mybucket/docs/
 mc ls local/mybucket --recursive
 mc mirror local/mybucket ./backup-dir      # 目录/桶互相同步
 mc admin info local                        # 集群与磁盘状态
-mc ilm add --expiry-days 90 local/mybucket # 生命周期</code></pre>
+mc ilm rule add --expiry-days 90 local/mybucket # 生命周期（旧写法 mc ilm add 已废弃）</code></pre>
 <h3 id="42-go-sdkminio-gos3-风格">4.2 Go SDK（minio-go，S3 风格）</h3>
 <pre><code class="lang-bash">go get github.com/minio/minio-go/v7</code></pre>
 <pre><code class="lang-go">package main
@@ -515,6 +547,194 @@ mc admin config set local notify_kafka:1 \
 mc event add local/mybucket arn:minio:sqs::1:kafka \
   --event put,delete                       # 对象事件推 Kafka</code></pre>
 <p>事件负载（JSON）包含 bucket/key/size/etag 等——配合 Kafka/NATS 即"对象落库 → 触发处理"的流水线。</p>
+<h3 id="45-分片上传与断点续传">4.5 分片上传与断点续传</h3>
+<p>单个 <code>PutObject</code> 是一次 HTTP 请求，中途断网就得从头再来；超过百 MB 的对象应走<strong>分片上传（Multipart Upload）</strong>：拆成 N 片并发送，服务端按 part number 拼接。</p>
+<div class="table-wrap"><table><thead><tr><th>约束</th><th>数值</th><th>说明</th></tr></thead><tbody><tr><td>单片大小</td><td>5 MiB ~ 5 GiB</td><td>最后一片可小于 5 MiB</td></tr><tr><td>分片数量</td><td>≤ 10000</td><td>决定单对象上限：5 GiB × 10000 ≈ 48.8 TiB（实现上限多为 5 TiB）</td></tr><tr><td>建议分片</td><td>8 ~ 64 MiB（GB 级）；64 ~ 256 MiB（百 GB 级）</td><td><strong>100 MB 以下的对象不必分片</strong>，并发收益抵不过三次往返</td></tr></tbody></table></div>
+<p>下面的例子覆盖完整链路：开启上传 → 查 <code>ListParts</code> 续传 → 并发上传（片内重试）→ 按序提交，失败时显式 Abort。</p>
+<pre><code class="lang-go">package main
+
+import (
+	"context"
+	"fmt"
+	"io"
+	"log"
+	"os"
+	"sync"
+
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
+)
+
+const (
+	bucket, object = "backup", "db/full-2026-11.dump"
+	partSize       = 64 &lt;&lt; 20 // 64 MiB
+	workers        = 8
+)
+
+func main() {
+	ctx := context.Background()
+	cli, err := minio.New("127.0.0.1:9000", &amp;minio.Options{
+		Creds: credentials.NewStaticV4("minioadmin", "minioadmin", ""), Secure: false,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	f, err := os.Open("./full-2026-11.dump")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+	st, _ := f.Stat()
+	size := st.Size()
+	total := int((size + partSize - 1) / partSize)
+
+	// 1) 复用上次崩溃遗留的 uploadId 即断点续传，否则新建
+	uploadID := ""
+	for info := range cli.ListIncompleteUploads(ctx, bucket, object, true) {
+		if info.Err == nil &amp;&amp; info.Key == object {
+			uploadID = info.UploadID
+			break
+		}
+	}
+	if uploadID == "" {
+		if uploadID, err = cli.NewMultipartUpload(ctx, bucket, object, minio.PutObjectOptions{}); err != nil {
+			log.Fatal(err)
+		}
+	}
+	abort := func(msg string, e error) {
+		_ = cli.AbortMultipartUpload(context.Background(), bucket, object, uploadID)
+		log.Fatalf("%s: %v", msg, e) // 不 Abort 就留下永久计费的孤儿分片
+	}
+
+	// 2) ListParts 拿到续传基线
+	parts := map[int]minio.CompletePart{}
+	marker := 0
+	for {
+		res, err := cli.ListObjectParts(ctx, bucket, object, uploadID, marker, 1000)
+		if err != nil {
+			abort("list parts", err)
+		}
+		for _, p := range res.Parts {
+			parts[p.PartNumber] = minio.CompletePart{PartNumber: p.PartNumber, ETag: p.ETag}
+		}
+		// 单页最多 1000 片；超过时必须翻页，否则已上传的分片会被当成「未上传」重复传
+		if !res.IsTruncated {
+			break
+		}
+		marker = res.NextPartNumberMarker
+	}
+
+	// 3) 并发补传缺失分片，每片重试 3 次
+	jobs := make(chan int)
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+	for w := 0; w &lt; workers; w++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for num := range jobs {
+				off := int64(num-1) * partSize
+				n := min(int64(partSize), size-off)
+				r := io.NewSectionReader(f, off, n) // ReadAt 并发安全，可多 goroutine 共享
+				var pi minio.PartInfo
+				var perr error
+				for i := 0; i &lt; 3; i++ {
+					r.Seek(0, io.SeekStart) // 重试只需回卷，不必重开文件
+					if pi, perr = cli.PutObjectPart(ctx, bucket, object, uploadID, num,
+						r, n, minio.PutObjectPartOptions{}); perr == nil {
+						break
+					}
+				}
+				if perr != nil {
+					abort("upload part", fmt.Errorf("part %d: %w", num, perr))
+				}
+				mu.Lock()
+				parts[num] = minio.CompletePart{PartNumber: pi.PartNumber, ETag: pi.ETag}
+				mu.Unlock()
+			}
+		}()
+	}
+	for i := 1; i &lt;= total; i++ {
+		if _, ok := parts[i]; !ok { // 已传的分片直接跳过
+			jobs &lt;- i
+		}
+	}
+	close(jobs)
+	wg.Wait()
+
+	// 4) 按 part number 升序提交，ETag 用服务端返回值
+	list := make([]minio.CompletePart, 0, total)
+	for i := 1; i &lt;= total; i++ {
+		if _, ok := parts[i]; !ok {
+			abort("missing part", fmt.Errorf("part %d not uploaded", i))
+		}
+		list = append(list, parts[i])
+	}
+	info, err := cli.CompleteMultipartUpload(ctx, bucket, object, uploadID, list, minio.PutObjectOptions{})
+	if err != nil {
+		if minio.ToErrorResponse(err).Code == "NoSuchUpload" {
+			return // 上一次其实已成功，幂等返回
+		}
+		abort("complete", err)
+	}
+	log.Printf("uploaded %s, %d bytes, etag=%s", object, info.Size, info.ETag)
+}</code></pre>
+<p>几个容易踩的点：</p>
+<ul><li><strong>part 顺序</strong>：<code>CompleteMultipartUpload</code> 只认 part number 升序，乱序提交会被拒；但 <code>UploadPart</code> 本身可以完全乱序并发；</li><li><strong>ETag 校验</strong>：分片对象的 ETag 形如 <code>&lt;md5&gt;-&lt;part 数&gt;</code>，<strong>不是整个文件的 MD5</strong>，拿它和本地 md5sum 对比必然不等。要端到端校验，自己算全文件 MD5 塞进 <code>x-amz-meta-*</code> 元数据，下载后重算比对；</li><li><strong>进程被杀 ≠ 上传失败</strong>：这正是续传的价值——重启后 <code>ListIncompleteUploads</code> 找到同一个 <code>uploadId</code>，<code>ListParts</code> 跳过已传分片，只补缺失的；</li><li><strong>显式放弃</strong>：业务判定不再续传时立刻 <code>AbortMultipartUpload</code>，配合桶级 <code>AbortIncompleteMultipartUpload</code>（7 天）兜底，两件事都要做。</li></ul>
+<h3 id="46-生命周期对象锁与成本">4.6 生命周期、对象锁与成本</h3>
+<p>ILM 规则既可以用 <code>mc ilm rule add</code> 逐条加，也可以直接导入一份 AWS lifecycle JSON（团队协作时更易 review）：</p>
+<pre><code class="lang-bash"># 常用三条：转低频存储、过期删除、清理历史版本与孤儿分片
+mc ilm rule add local/mybucket --prefix "logs/" \
+  --transition-days 30 --transition-tier COLDTIER \
+  --expire-days 180 --noncurrent-expire-days 30 \
+  --expire-delete-marker
+
+mc ilm import local/mybucket &lt; lifecycle.json    # 等价于上面的声明式写法
+mc ilm ls local/mybucket --json                  # 核对生效规则</code></pre>
+<pre><code class="lang-json">{
+  "Rules": [
+    {
+      "ID": "logs-tier-then-expire",
+      "Status": "Enabled",
+      "Filter": { "Prefix": "logs/" },
+      "Transitions": [{ "Days": 30, "StorageClass": "COLDTIER" }],
+      "Expiration": { "Days": 180, "ExpiredObjectDeleteMarker": true },
+      "NoncurrentVersionExpiration": { "NoncurrentDays": 30 },
+      "AbortIncompleteMultipartUpload": { "DaysAfterInitiation": 7 }
+    }
+  ]
+}</code></pre>
+<p><code>StorageClass</code> 必须对应 <code>mc admin tier add</code> 注册过的远程层（S3/Azure/GCS），否则规则导入成功但转换静默失败。</p>
+<p><strong>版本控制下的"删除"语义</strong>（这是最容易出事故的一张表）：</p>
+<div class="table-wrap"><table><thead><tr><th>操作</th><th>未开版本</th><th>已开版本</th></tr></thead><tbody><tr><td><code>DELETE object</code></td><td>真删，空间释放</td><td>插入 delete marker，数据仍在</td></tr><tr><td><code>DELETE object?versionId=X</code></td><td>不适用</td><td>真删该版本，<strong>不可恢复</strong></td></tr><tr><td><code>GET object</code></td><td>正常</td><td>若最新是 delete marker 则 404</td></tr><tr><td><code>LIST</code></td><td>只看到现存对象</td><td>默认只列当前版本，<code>--versions</code> 才见全量</td></tr><tr><td>空间回收</td><td>删即回收</td><td>必须靠 <code>NoncurrentVersionExpiration</code> 或 <code>--expire-all-object-versions</code></td></tr></tbody></table></div>
+<p><strong>对象锁（WORM）</strong>：开启版本控制是前提，之后可设保留期——<code>GOVERNANCE</code> 模式特权用户可提前解除，<code>COMPLIANCE</code> 模式到期前<strong>任何人也删不掉</strong>（含 root），选错模式等于把桶焊死。合规留痕（金融、医疗影像、审计日志）用 <code>COMPLIANCE</code>；防误删用 <code>GOVERNANCE</code> 更灵活。两者都能叠加 legal hold（无到期时间，需显式解除）。</p>
+<pre><code class="lang-bash">mc retention set --default GOVERNANCE 30d local/mybucket/audit/
+mc legalhold set local/mybucket/audit/2026-11.log
+mc rm --incomplete --recursive --force local/mybucket/tmp/   # 清孤儿分片</code></pre>
+<p><strong>"看起来便宜实际很贵"的三个坑</strong>：</p>
+<div class="table-wrap"><table><thead><tr><th>坑</th><th>机制</th><th>对策</th></tr></thead><tbody><tr><td>请求费</td><td>小文件多 → PUT/GET/LIST 次数爆炸，请求费可能超过存储费</td><td>合并小文件（打包成 tar/parquet）、客户端批量、减少 LIST 轮询</td></tr><tr><td>跨区/出口流量</td><td>跨 AZ 复制、公网下载、跨区读都单独计费</td><td>计算与存储同区、用预签名 URL 让客户端直连、CDN 回源收敛</td></tr><tr><td>小文件元数据</td><td>每对象有最小计费单元（IA 类常按 128 KB 起算）与元数据开销</td><td>别把 KB 级文件直接丢对象存储；&lt;1 MB 的对象先聚合</td></tr></tbody></table></div>
+<p>再加一条常被忘的：低频/归档层的<strong>取回费</strong>与<strong>最短存储期</strong>——存 10 天就删，账单按 30/90 天算。分层之前先算清访问频率，别为了省存储费换来更贵的取回费。</p>
+<h3 id="47-迁移从-minio-到其他-s3-实现">4.7 迁移：从 MinIO 到其他 S3 实现</h3>
+<p>迁移按"先搬数据、再切流量、最后拆旧"三步走，任何时候都保留可回滚的旧集群。</p>
+<pre><code class="lang-bash"># 0) 目标端别名（任何 S3 兼容实现都可以）
+mc alias set target https://s3.new.example.com ACCESS_KEY SECRET_KEY
+
+# 1) 首轮全量（在线，业务不停；--preserve 保留元数据与时间戳）
+mc mirror --overwrite --preserve --retry local/mybucket target/mybucket
+
+# 2) 增量追平（--watch 持续监听，直到切换窗口）
+mc mirror --overwrite --preserve --watch --exclude "tmp/*" local/mybucket target/mybucket
+
+# 3) 校验：对象数 + 抽样大小/ETag
+mc ls --recursive --json local/mybucket  | wc -l
+mc ls --recursive --json target/mybucket | wc -l
+mc stat local/mybucket/db/full.dump  target/mybucket/db/full.dump</code></pre>
+<p><strong>双写过渡有两种做法</strong>，选哪种取决于你能改多少代码：</p>
+<ul><li><strong>应用层双写</strong>：写成功一处再写另一处，读仍走旧集群。实现简单，但要处理"一处成功一处失败"的不一致（重试 + 对账任务），且延迟翻倍；</li><li><strong>网关层双写</strong>：在应用与存储之间放一个 S3 代理（或带 mirror 的 sidecar），应用只改 endpoint。对业务透明，代价是多一跳与一个需要高可用的组件。</li></ul>
+<p><strong>校验别只看 ETag</strong>：不同实现对分片对象的 ETag 计算方式不同（MinIO 是 <code>md5-N</code>，Ceph 也类似但分片阈值不同），直接比对会大面积"不一致"。可靠做法是<strong>比对象数 + 比 size + 抽样下载算 MD5</strong>（优先比 <code>x-amz-meta-md5</code> 这类自定义元数据）。</p>
+<p><strong>切换顺序与回滚</strong>：</p>
+<ol><li>进入窗口，暂停写入（或让双写只写旧集群）；</li><li><code>mc mirror</code> 最后一轮追平，确认无 pending；</li><li>改 DNS / 配置中心的 endpoint，灰度一批应用；</li><li>观察错误率与 P99 延迟，稳定后再扩全量；</li><li><strong>旧集群转为只读并保留至少一个业务周期</strong>，别急着下线。</li></ol>
+<p>回滚就是把 endpoint 改回去——这正是"旧集群只读保留"的意义。<strong>迁移期的一致性边界要说清</strong>：切换前写入只在一个集群，切换后也只在一个集群，中间靠 mirror 单向追平；不要双向 mirror，否则同一个 key 在两边被并发更新会产生互删/回滚的循环。</p>
 <hr>
 
 </section>

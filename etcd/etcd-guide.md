@@ -59,7 +59,7 @@ etcd --name node1 --data-dir /var/lib/etcd \
 
 ### 3.1 三层架构
 
-```
+```text
 客户端 (etcdctl / clientv3)
     │ gRPC
     ▼
@@ -117,6 +117,129 @@ auto-compaction-retention: "1h"   # 只保留 1 小时历史
 | 5 | 3 | 2 |
 
 **永远用奇数节点**：4 节点与 3 节点同样只能容忍 1 台故障，却多付一份复制成本、更大分区脑裂风险。
+
+### 3.7 Watch 风暴：慢消费者、revision 增长与缓冲
+
+Watch 在语义上是两件事的拼接：**从指定 revision 重放历史事件 + 持续推送增量**。客户端传 `WithRev(rv+1)`，意思是"rv 之后的事件我全要"。这个 rv 在 etcd 原生 API 里叫 revision，在 K8s 里叫 `resourceVersion`——全部容错逻辑都由它决定。
+
+服务端据此把 watcher 分两类：
+
+- **synced**：起始 revision 已追平当前值，之后只需在每次事务提交时扇出事件；
+- **unsynced**：起始 revision 落后，需要先从内存 `keyIndex` 回放历史，回放完才转 synced。
+
+**起始 revision 一旦已被 compaction 裁掉，服务端只能返回 `ErrCompacted`。** 这是正常运维事件不是 bug：客户端必须放弃增量，重新全量 `Get --prefix` 拿到快照与 `header.Revision`，再从那里续订。只 Watch 不 List 的实现，压缩之后必然静默丢数据。
+
+慢消费者的传导链条：
+
+```text
+客户端消费慢（apply 逻辑重 / GC 停顿 / 网络拥塞）
+        │
+        ▼
+服务端 send 队列积压 ──► watchableStore 中该 watcher 的 pending 事件堆积
+        │
+        ▼
+内存上涨（不是磁盘），etcd_debugging_mvcc_slow_watcher_total 上升
+        │
+        ▼
+跟不上就被判为 victim 取消，客户端收到 Canceled，只能重建 watch
+```
+
+每个 watch stream 在服务端占一个 goroutine 加一条 gRPC 流，缓冲不是无限的。另外单条请求上限 `--max-request-bytes`（默认 1.5MB）间接限制了单次 watch 响应里能打包多少事件——大 value 配高频写，很容易把消费者打挂。
+
+两个常被忽略的开关：`WithProgressNotify()` 让服务端每 `--watch-progress-notify-interval`（3.6 转正；3.4.11–3.5 叫 `--experimental-watch-progress-notify-interval`，默认 10min）推一次空事件、只带 `header.revision` 的响应，证明"你已追平"（K8s 的 bookmark 事件就来自这里）；`clientv3.WithRequireLeader(ctx)` 让 watch 在集群失去 leader 时直接返回 `ErrNoLeader`，否则它会安静地不动，调用方无法区分"没变化"和"集群坏了"。
+
+规模化方面，N 个客户端 watch 同一前缀 = N 条流 + N 个服务端 goroutine + 每事件 N 次序列化。一万个进程各自 watch 自己的 key 是反模式，应该**在一个进程内合并成一条前缀 watch、本地按 key 分发**。K8s 正是这么做的（apiserver 的 watch cache 对 etcd 只开一路 watch，所有客户端共享）；1.27+ 又加了 `WatchList`（`sendInitialEvents`），把全量与增量合并进一个流式请求，从快照 revision 直接续上，消掉了 `List → Watch` 之间因 rv 过期而反复重试的窗口。
+
+一个不丢事件又不会被压缩打死的循环：
+
+```go
+// watchLoop 从 rv 起监听 prefix，遇 ErrCompacted 自动全量重列后续订。
+// apply 把一次 KV 变更合并进本地状态，reset 在重列前清空本地状态；返回最后处理到的 revision。
+func watchLoop(ctx context.Context, cli *clientv3.Client, prefix string, rv int64,
+	apply func(k, v []byte), reset func()) (int64, error) {
+	for {
+		wch := cli.Watch(clientv3.WithRequireLeader(ctx), prefix,
+			clientv3.WithPrefix(), clientv3.WithRev(rv+1), clientv3.WithProgressNotify())
+	replay:
+		for resp := range wch {
+			if err := resp.Err(); err != nil {
+				if !errors.Is(err, rpctypes.ErrCompacted) {
+					return rv, err
+				}
+				gresp, gerr := cli.Get(ctx, prefix, clientv3.WithPrefix())
+				if gerr != nil {
+					return rv, gerr
+				}
+				reset() // 先清空：只 upsert 会让压缩窗口内删除的 key 永久残留在本地状态
+				for _, kv := range gresp.Kvs {
+					apply(kv.Key, kv.Value)
+				}
+				rv = gresp.Header.Revision
+				break replay // 拿新基线重新 Watch
+			}
+			for _, ev := range resp.Events {
+				apply(ev.Kv.Key, ev.Kv.Value)
+				rv = ev.Kv.ModRevision
+			}
+			if len(resp.Events) == 0 && resp.Header.Revision > rv {
+				rv = resp.Header.Revision // progress notify：只推进水位，不改状态
+			}
+		}
+		if err := ctx.Err(); err != nil {
+			return rv, err
+		}
+	}
+}
+```
+
+### 3.8 压缩与碎片：为什么磁盘不降、快照怎么恢复
+
+MVCC 的代价是**写入即新增**：每次 Put 产生新 revision，旧 revision 仍在 bbolt 里，`keyIndex` 也保留完整版本链。所以磁盘用量跟着"写过多少次"涨，而不是跟着"现在有多少 key"涨。压缩是唯一的止血手段，但它只是**逻辑删除**——把 ≤ 目标 revision 的版本标记成墓碑，bbolt 里这些页变成 free page，文件本身不缩小。
+
+| 操作 | 做了什么 | 代价 |
+|---|---|---|
+| compaction | 逻辑删除 ≤ N 的历史 revision | 走 Raft 提案、全网广播，CPU 尖刺 |
+| defrag | 重写 bbolt 文件，回收 free page | 该成员短暂阻塞读写（秒~分钟） |
+| snapshot save | 热备份全量状态 | 磁盘 IO，不影响可用性 |
+| restore | 从快照重建集群 | 全集群停机，member/cluster ID 全部重生成 |
+
+自动压缩两个开关：`--auto-compaction-mode=periodic`（默认，按时间，retention 写 `"1h"` 这类时长）或 `=revision`（按版本数，retention 写 `1000`，保留最近 1000 个 revision）。periodic 更贴合"我最多能容忍多长的 Watch 断线窗口"这个直觉；revision 模式适合写入速率稳定的集群，磁盘增长可预测。
+
+defrag 的纪律：**逐节点、低峰、follower 先做、leader 最后**。同一时刻只做一台，否则集群失去多数派直接不可用；期间该节点读写被阻塞（客户端会看到 `etcdserver: defragmentation is in progress`）。是否需要 defrag，看 `DB SIZE` 与 `DB SIZE IN USE` 的差距：
+
+```bash
+etcdctl endpoint status --cluster -w table
+etcdctl endpoint status --cluster -w json \
+  | jq '[.[] | {ep: .Endpoint, size: .Status.dbSize, inUse: .Status.dbSizeInUse}]'
+```
+
+备份与恢复的完整流程。注意 **restore 生成的是新集群**：member ID 与 cluster ID 全部重写，原 data-dir 作废：
+
+```bash
+# 1) 备份：任意一个成员即可，快照是一致性快照
+etcdctl snapshot save /backup/etcd-$(date +%F).db \
+  --endpoints=https://10.0.0.1:2379 \
+  --cacert=/etc/etcd/ca.crt --cert=/etc/etcd/server.crt --key=/etc/etcd/server.key
+etcdutl snapshot status /backup/etcd-2026-11-19.db -w table   # 校验 revision 与 key 数
+
+# 2) 恢复：每个节点各自执行，参数用的是"新集群"的成员表
+etcdutl snapshot restore /backup/etcd-2026-11-19.db \
+  --name node1 \
+  --initial-cluster node1=https://10.0.0.1:2380,node2=https://10.0.0.2:2380,node3=https://10.0.0.3:2380 \
+  --initial-cluster-token etcd-restore-1 \
+  --initial-advertise-peer-urls https://10.0.0.1:2380 \
+  --data-dir /var/lib/etcd-restored    # 不覆盖原 data-dir，留作事后取证
+
+# 3) 三节点都指向 /var/lib/etcd-restored 启动，集群以快照时刻的状态对外服务
+#    只恢复一个成员再拉回旧集群是行不通的：member ID 对不上，peer 校验直接失败
+```
+
+**`alarm NOSPACE` 的处置顺序**（告警触发后集群只读，连 `del` 都会被拒）：
+
+1. `etcdctl alarm list` 确认是 NOSPACE，并看 `endpoint status` 里 `DB SIZE` 是否顶到 `--quota-backend-bytes`；
+2. 先 `etcdctl alarm disarm` 腾出写窗口（不解除告警就删不掉数据，这是个鸡生蛋问题）；
+3. 删掉可回收的大前缀 → `etcdctl compaction <rev>` → 逐节点 `etcdctl defrag`；
+4. 复查 `DB SIZE IN USE` 确实降下来。降不下来就只能提配额或迁移数据——告警不会自愈。
 
 ---
 
@@ -184,14 +307,18 @@ go func() { for range ch {} }() // 消费续约应答
 ### 4.4 事务：分布式锁的核心（concurrency 包）
 
 ```go
-import "go.etcd.io/etcd/client/v3/concurrency"
+// 简单方式：官方封装的分布式锁（需 import "go.etcd.io/etcd/client/v3/concurrency"）
+func tryLock(cli *clientv3.Client) error {
+	session, _ := concurrency.NewSession(cli)
+	defer session.Close()
 
-// 简单方式：官方封装的分布式锁
-session, _ := concurrency.NewSession(cli)
-mutex := concurrency.NewMutex(session, "/lock/order-job")
-mutex.Lock(context.Background())   // 底层：Txn(create key) + 自旋
-// ... 临界区 ...
-mutex.Unlock(context.Background())
+	mutex := concurrency.NewMutex(session, "/lock/order-job")
+	if err := mutex.Lock(context.Background()); err != nil { // 底层：Txn(create key) + 自旋
+		return err
+	}
+	// ... 临界区 ...
+	return mutex.Unlock(context.Background())
+}
 ```
 
 手写 CAS 一窥事务原语：
@@ -227,6 +354,89 @@ etcdutl snapshot restore backup.db --data-dir /new-data  # 恢复（v3.6 起命�
 etcdctl compaction 1000                    # 压缩到 revision 1000
 etcdctl defrag                             # 碎片整理
 ```
+
+### 4.6 集群运维：成员增删、learner 与迁移
+
+**成员变更本身就是 Raft 提案**，所以纪律是：一次只改一台，等集群稳定（`endpoint status` 里所有成员的 `raftIndex` 基本齐平）再动下一台。扩容顺序是"先加后删"：新成员先加入、追平日志、确认能服务，再移除旧成员——绝不要先删后加，中间那段时间 quorum 会变小。
+
+learner 是扩容的缓冲垫：只接收日志、**不投票、不计入 quorum**，追平后 `member promote` 才成为正式成员。它解决两个问题：新节点从零回放几 GB 日志时不会拖慢提交（voting member 落后会卡住 commit 的确认路径）；跨机房加入时不会因高延迟抖动影响选举。默认最多 1 个 learner（`--max-learners`）。
+
+跨机房/跨 AZ 的核心参数是心跳与选举超时：
+
+- `--heartbeat-interval` 默认 100ms——leader 多久发一次心跳；
+- `--election-timeout` 默认 1000ms——follower 多久没收到心跳就开始选举，**必须是心跳的 5~10 倍**；
+- RTT 接近或超过心跳时，follower 会误判 leader 失联，陷入无休止重选（`etcd_server_leader_changes_seen_total` 疯涨、写入全超时）。跨 AZ 把心跳提到 RTT 的 2~3 倍（200~300ms），选举相应提到 2000~3000ms，代价是真实故障的检测与切换变慢；
+- 地域间 RTT > 50ms 就别放进同一个集群：写延迟等于最慢那个多数派的往返时间。
+
+**多数派丢失时的决策树**：
+
+| 现状 | 能做什么 |
+|---|---|
+| 仍有多数派 | 正常服务；挂掉的成员修好后 `member remove` 再重新 `member add` |
+| 失去多数派、数据盘都在 | 无法读写，也无法 `member remove`（remove 同样要 quorum）。先恢复网络/机器，实在不行走快照恢复 |
+| 只剩一个存活成员、且没有快照 | 只能在该成员上用 `--force-new-cluster`（丢弃未提交日志，成员数变 1），再逐个 `member add` 重建；其他成员必须清空 data-dir，否则校验失败拒绝启动 |
+
+没有快照的恢复是最后手段——这正是"每天 `snapshot save` + 异地留存"的唯二理由之一（另一个是升级前回滚）。
+
+大 value 的量化边界：`--max-request-bytes` 默认 **1.5MB**，限制的是**整个请求**（key + value + Txn 内所有操作的总和），超了直接报 `etcdserver: request is too large`；`--quota-backend-bytes` 默认 **2GiB**。经验值：单 value < 100KB，单 key 写频率 < 10 次/秒，总量 < 1GiB。因为大 value 会被复制进 Raft 日志、写进 WAL、打进 snapshot，一次写的成本被放大好几倍。
+
+```bash
+export ETCDCTL_API=3                       # v3.4+ 默认即 3，老脚本里仍在设
+alias ectl='etcdctl --endpoints=https://10.0.0.1:2379,https://10.0.0.2:2379,https://10.0.0.3:2379 \
+  --cacert=/etc/etcd/ca.crt --cert=/etc/etcd/client.crt --key=/etc/etcd/client.key'
+
+# 扩容：先加 learner，等追平再提升
+ectl member add node4 --peer-urls=https://10.0.0.4:2380 --learner
+# 用输出里的 ETCD_NAME / ETCD_INITIAL_CLUSTER / ETCD_INITIAL_CLUSTER_STATE=existing 启动新节点
+ectl endpoint status -w table               # 看 node4 的 raftIndex 是否追上 leader
+ectl member promote <node4-member-id>
+
+# 缩容：确认剩余成员仍是奇数且构成多数派，一次删一个
+ectl member remove <old-member-id>
+ectl member list -w table
+```
+
+`member add` 的输出就是新节点启动时该用的环境变量。抄错一个字母，新节点会以错误的 member ID 加入，之后只能 `member remove` 重来。
+
+### 4.7 性能与调优：fsync、批量与请求大小
+
+一次 Put 的物理成本是**两次落盘**：Raft 日志 append 时的 WAL fsync，以及 apply 到 MVCC 时的 bbolt commit（后者按 `--backend-batch-interval` / `--backend-batch-limit` 合并，默认 100ms / 10000 条，所以并发写会被批处理摊薄）。串行单条写的吞吐上限 ≈ 1 / fsync 延迟：SSD 上 1ms 就是 1000 QPS，机械盘或共用云盘 10ms 就只剩 100 QPS。**写瓶颈在 fsync，不在 CPU，也不在 etcd 的代码。**
+
+优化的方向也就三条：
+
+- **合并事务**：N 个 Put 塞进一个 `Txn`，只有一次 Raft 往返、一次 fsync，吞吐接近 N 倍。约束是 `--max-txn-ops`（默认 128）与 `--max-request-bytes`（1.5MB）；也别贪多，超大 Txn 会让 apply 变慢，`etcd_server_slow_apply_total` 跟着涨。
+- **复用连接**：一个进程一个 `clientv3.Client`（内置 gRPC 连接与 stream 复用），不要每次请求都 `clientv3.New`。TLS 双向认证的握手成本远高于单次 KV 操作，启用 `--client-cert-auth` 后尤其明显；watch 多的客户端还要留意 `--max-concurrent-streams`——单连接上流太多时，一条慢流会拖累同连接的其他流。
+- **读分级**：默认线性一致读要走 ReadIndex（一次心跳往返，可能还要等 leader 确认），延迟约 1 个 RTT；`clientv3.WithSerializable()` 直接读本地 bbolt，延迟降到百微秒级，但可能读到落后的数据（follower 落后没有上限）。巡检、dashboard、配置展示用 serializable，选主、配置下发、加锁必须 linearizable。
+
+配额与告警：`--quota-backend-bytes` 默认 2GiB，用量到 60%~70% 就该处理（压缩 + defrag，或提配额），打满即 NOSPACE 只读。
+
+```bash
+# 生产基线参数（SSD、独立盘、3 节点）
+etcd \
+  --quota-backend-bytes=8589934592 \
+  --auto-compaction-mode=periodic \
+  --auto-compaction-retention=1h \
+  --snapshot-count=10000 \
+  --max-request-bytes=1572864 \
+  --max-txn-ops=128 \
+  --heartbeat-interval=100 --election-timeout=1000
+# quota 8GiB；snapshot-count 10000 是 v3.6 起的默认值（内存更省）；
+# max-request-bytes 1.5MB 也是默认值，显式写出来便于审计
+
+etcdctl check perf --load=m     # 单机基线体检，PASS 说明磁盘/网络够用
+```
+
+必盯的五个指标（其余大多是它们的派生）：
+
+| 指标 | 关注阈值 | 异常说明什么 |
+|---|---|---|
+| `etcd_server_leader_changes_seen_total` | 24h 内为 0 | 非 0 就是选举在抖：网络分区、CPU 饥饿、election-timeout 太小 |
+| `etcd_server_proposals_failed_total` | 增长速率为 0 | 提案失败：leader 切换、成员失联、quorum 不完整 |
+| `etcd_mvcc_db_total_size_in_bytes` / `_in_use_bytes` | 配额 70% 告警 | 前者涨是历史版本多（该压缩），两者差距大是碎片多（该 defrag） |
+| `etcd_disk_backend_commit_duration_seconds` | p99 < 25ms | bbolt 提交慢 = 磁盘扛不住，直接体现为写延迟 |
+| `etcd_server_slow_apply_total` | 增长速率为 0 | apply 跟不上提交：CPU 不足或单次 Txn 太大 |
+
+再补一个底层指标：`etcd_disk_wal_fsync_duration_seconds` 的 p99 就是写延迟的"天花板"，它超过 10ms 该换盘，而不是继续调 etcd 参数。
 
 ---
 

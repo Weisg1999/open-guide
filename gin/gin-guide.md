@@ -75,7 +75,7 @@ func main() {
 
 ### 3.1 三大核心对象
 
-```
+```text
 Engine ──持有──► 路由树（每 HTTP 方法一棵基数树）
    │                 │ 匹配
    ▼                 ▼
@@ -133,16 +133,195 @@ type LoginReq struct {
 
 ### 3.5 Context 的生命周期（最重要的心智模型）
 
-```
+```text
 请求到达 → pool.Get(Context) → 路由匹配 → 中间件链 → handler
        → 请求结束 → Context 归还 pool
 ```
 
 推论：
 
-1. **异步任务别带 Context**：`go func() { ... c ... }()` 里用旧 Context 是数据竞争——正确做法是 `c.Copy()`（深拷贝）或只传需要的值；
-2. **响应只能写一次**：`c.JSON` 后再写会 panic（`http: superfluous response.WriteHeader`）；
+1. **异步任务别带 Context**：`go func() { ... c ... }()` 里用旧 Context 是数据竞争——正确做法是 `c.Copy()`（复制一份，共享 Request，Writer 置空）或只传需要的值；
+2. **响应只能写一次**：重复 `WriteHeader` 不会 panic，而是打一条 `superfluous response.WriteHeader call` 日志，响应体仍可能被追加，客户端拿到脏数据；
 3. 长轮询/SSE 场景用 `c.Writer.Flush()` 主动推。
+
+### 3.6 `Next()` 与 `Abort()`：中间件到底怎么排队
+
+`Context.handlers` 是一条切片，`index` 是当前执行位置。`c.Next()` 的本质就是「`index < len(handlers)` 就取出下一个 handler 调用」的循环；框架在 `ServeHTTP` 末尾还会再推一次，所以 handler 不写 `Next()` 也照样执行——你写的 `c.Next()` 只是**提前手动下钻**。三条硬规则由此而来：
+
+1. `c.Next()` 之前是前置逻辑，之后是后置逻辑（此时响应已写出，`c.Writer.Status()` 可读）；
+2. 注册顺序 = 前置顺序，后置顺序完全相反；
+3. 省略 `c.Next()` 不报错，但从此没有「后置」能力（耗时统计就写不出来）。
+
+```text
+r.Use(A, B) + r.GET("/x", H)
+
+A 前置 ──► B 前置 ──► H ──► B 后置 ──► A 后置
+   │                                    ▲
+   └────────── c.Next() 逐层下钻 ────────┘
+```
+
+```go
+package main
+
+import (
+	"log"
+
+	"github.com/gin-gonic/gin"
+)
+
+func Tag(name string) gin.HandlerFunc { // 可复用的打点中间件
+	return func(c *gin.Context) {
+		log.Println(name, "pre")
+		c.Next() // 下钻：下一个中间件 → handler
+		log.Println(name, "post, status =", c.Writer.Status())
+	}
+}
+
+func main() {
+	r := gin.New()
+	r.Use(Tag("A"), func(c *gin.Context) { // 注册顺序决定前置顺序
+		c.Set("trace", "req-1") // Keys 是 map，后续层都能读
+		log.Println("B pre, trace =", c.GetString("trace")) // GetString 免类型断言
+		c.Next()
+		log.Println("B post, trace =", c.GetString("trace"))
+	})
+	r.GET("/hello", func(c *gin.Context) {
+		log.Println("handler, trace =", c.GetString("trace"))
+		c.String(200, "ok") // 响应在此写出，A/B 的后置代码仍会执行
+	})
+	_ = r.Run(":8080")
+}
+```
+
+`Abort` 的语义最容易被误解：
+
+- `c.Abort()` 只把 `index` 置成常量 `abortIndex`，让后续 `Next()` 再也推不动；**它不 return、不 panic、也不终止当前函数**；
+- 因此 `Abort` 后面必须自己 `return`，否则同函数内的后续语句（包括第二次写响应）照跑；
+- `c.AbortWithStatusJSON(code, obj)` = `Abort()` + `JSON(code, obj)`，同样不 return；
+- `c.IsAborted()` 用来在后置逻辑里判断本次请求是否已被短路。
+
+```go
+// 反例：Abort 后没 return，同一函数里的下一行照跑，第二次写响应直接乱掉
+func BadAuth() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if c.GetHeader("Authorization") == "" {
+			c.AbortWithStatusJSON(401, gin.H{"code": "UNAUTHORIZED"})
+			c.JSON(401, gin.H{"code": "UNAUTHORIZED"}) // superfluous WriteHeader
+		}
+	}
+}
+
+// 正解：Abort 与 return 成对出现
+func GoodAuth() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if c.GetHeader("Authorization") == "" {
+			c.AbortWithStatusJSON(401, gin.H{"code": "UNAUTHORIZED"})
+			return
+		}
+		c.Set("currentUser", "u-1")
+		c.Next()
+	}
+}
+```
+
+线上典型事故：`AbortWithStatusJSON` 后漏了 `return`，日志中间件读到的状态是 401，但 handler 又写了一次响应。**Abort 与 return 是两件事，必须成对。**
+
+### 3.7 绑定与校验的深水区
+
+3.4 已交代 Must 系与 Should 系的差别（`AbortWithError` 会写响应、塞 `c.Errors`、置 aborted），生产统一用 Should 系；这里只讲绑定与校验本身会踩的坑。
+
+三个高频陷阱：
+
+- **零值即「未传」**：`required` 判断的是零值，`Age int` 传 `0` 会被判为缺失。要区分「没传」与「显式传 0」，字段必须用 `*int`（nil 表示没传）；
+- **`omitempty` 的位置**：写在 `binding` tag 最前面，nil/零值时跳过后续规则；对指针字段建议始终带上，否则 nil 也会去跑 `min=2`；
+- **`dive` 的必须性**：切片/映射的元素不会自动校验，`dive` 之后的规则作用于每个元素；`dive,keys,...,endkeys` 用于 map 的键。切片里的结构体会被递归校验字段 tag，但结构体字段本身仍要 `dive` 才会被遍历。
+
+```go
+type Address struct {
+	City string `json:"city" binding:"required"`
+	Zip  string `json:"zip" binding:"required,len=6"`
+}
+
+type UpdateProfileReq struct {
+	Nickname *string    `json:"nickname" binding:"omitempty,min=2,max=16"`     // nil = 没传
+	Age      *int       `json:"age" binding:"omitempty,gte=0,lte=150"`         // *int 才能表达"传了 0"
+	Tags     []string   `json:"tags" binding:"omitempty,max=10,dive,min=1,max=8"` // max=10 管长度，dive 后管元素
+	Items    []Address  `json:"items" binding:"omitempty,max=20,dive"`          // 切片里的结构体必须 dive
+	Address  *Address   `json:"address" binding:"omitempty"`                   // 嵌套结构体自动递归校验
+}
+
+// 把 validator 的错误拆成字段级响应：前端可以直接把 fields 贴到表单上
+func fieldErrors(err error) map[string]string {
+	out := make(map[string]string, 4)
+	var ve validator.ValidationErrors
+	if errors.As(err, &ve) {
+		for _, fe := range ve {
+			out[fe.Field()] = fe.Tag() // 生产可换成 i18n 文案，必要时拼上 fe.Param()
+		}
+		return out
+	}
+	var ute *json.UnmarshalTypeError
+	if errors.As(err, &ute) {
+		out[ute.Field] = "type_mismatch" // "age": "abc" 这类，前端好定位
+	}
+	return out
+}
+
+func UpdateProfile(c *gin.Context) {
+	var req UpdateProfileReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"code": "INVALID_ARGUMENT", "fields": fieldErrors(err)})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 0}) // req.Age 为 nil 表示没传，非 nil 且为 0 表示显式置零
+}
+```
+
+自定义规则用 `binding.Validator.Engine()` 拿到全局 `*validator.Validate` 注册；`DisallowUnknownFields` 则是另一个开关，用来把「字段名拼错被静默忽略」变成显式报错：
+
+```go
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
+)
+
+func init() {
+	v, ok := binding.Validator.Engine().(*validator.Validate)
+	if !ok {
+		return
+	}
+	_ = v.RegisterValidation("mobile", func(fl validator.FieldLevel) bool {
+		s := fl.Field().String()
+		if len(s) != 11 || s[0] != '1' {
+			return false
+		}
+		for _, r := range s {
+			if r < '0' || r > '9' {
+				return false
+			}
+		}
+		return true
+	})
+	// 全局开启：JSON body 出现结构体里没有的字段时直接 Bind 失败
+	gin.EnableJsonDecoderDisallowUnknownFields()
+}
+```
+
+规则这样用：``Phone string `json:"phone" binding:"required,mobile"``。`DisallowUnknownFields` 是**不向后兼容**的：老客户端多传一个废弃字段就会 400。对接第三方或灰度期，宁可先关着，用日志统计未知字段再收紧。
+
+### 3.8 路由冲突与优先级：panic 从哪来
+
+gin 的树在同一路径段上按 **静态 > `:param` > `*wildcard`** 的优先级匹配，所以 `/user/new` 与 `/user/:id` 可以共存，`GET /user/new` 命中的一定是静态节点（`/user` 下：`/new` 静态优先 → `/:id` 兜单段 → `/*rest` 吃剩余，而 `*rest` 与 `:id` 同节点会冲突）。
+
+启动期 panic 的四种典型来源：
+
+1. **同位置参数名不一致**：`/user/:id` 与 `/user/:name` → `':name' in new path ... conflicts with existing wildcard ':id'`。参数名以整棵树为准，同类资源务必统一叫 `:id`；
+2. **同一 method+path 重复注册**：`handlers are already registered for path '/x'`（路由组前缀拼完相同也算）；
+3. **`*wildcard` 与 `:param` 同节点**：`/files/*path` 会吃掉剩余全部（含空串），与 `/files/:name` 语义重叠，不允许共存；
+4. **`*wildcard` 不在末尾**：`/files/*path/edit` 直接 panic，通配必须独占最后一段。
+
+基数树只做「逐字节前缀比较 + 参数捕获」，**不支持正则约束**：`/order/:id` 里 `id` 是不是数字，只能进 handler 后用 `strconv` 校验，或者另注册静态路由。`NoRoute` 负责兜底 404（把默认的纯文本 `404 page not found` 换成统一 JSON），`NoMethod`/`r.HandleMethodNotAllowed = true` 负责 405，`RedirectTrailingSlash` 负责 `/x/` → `/x` 的 301/307。上线前的自检很简单：把所有路由注册跑一遍（`go test` 里只 `gin.New()` + 注册），有冲突当场 panic 而不是等第一条请求。
 
 ---
 
@@ -150,7 +329,7 @@ type LoginReq struct {
 
 ### 4.1 项目组织（社区惯例）
 
-```
+```text
 myapp/
 ├── main.go              # 装配：engine、中间件、路由
 ├── router/router.go     # 路由注册集中管理
@@ -269,8 +448,10 @@ func Upload(c *gin.Context) {
     c.JSON(200, gin.H{"size": file.Size})
 }
 
-// 静态目录（防目录列举用 OnlyFilesFS 包 embed.FS）
-r.Static("/assets", "./assets")
+// 静态目录（防目录列举用 OnlyFilesFS 包 embed.FS）：在路由注册处调用
+func registerStatic(r *gin.Engine) {
+    r.Static("/assets", "./assets")
+}
 ```
 
 ### 4.6 优雅关闭（生产必抄）
@@ -314,6 +495,109 @@ func TestPing(t *testing.T) {
 }
 ```
 
+### 4.8 SSE 与流式响应
+
+服务端推送用 SSE 最省事：一条长连接、纯文本协议、天然穿透 HTTP 代理与鉴权中间件。`c.Stream(step)` 帮你做了「调用 step → Flush → 循环」这三件事，`step` 返回 `false` 就结束：
+
+```go
+package main
+
+import (
+	"fmt"
+	"io"
+	"time"
+
+	"github.com/gin-gonic/gin"
+)
+
+func Events(c *gin.Context) {
+	c.Header("Content-Type", "text/event-stream")
+	c.Header("Cache-Control", "no-cache")
+	c.Header("Connection", "keep-alive")
+	c.Header("X-Accel-Buffering", "no") // 关键：要求 Nginx 不缓冲该响应
+
+	ticker := time.NewTicker(2 * time.Second)
+	defer ticker.Stop()
+
+	i := 0
+	c.Stream(func(w io.Writer) bool {
+		select {
+		case <-c.Request.Context().Done(): // 客户端断开 / 客户端超时
+			return false
+		case <-ticker.C:
+			i++
+			fmt.Fprintf(w, "id: %d\ndata: {\"tick\":%d}\n\n", i, i) // 每条消息以空行结尾
+			return true
+		}
+	})
+}
+
+func main() {
+	r := gin.New()
+	r.GET("/events", Events)
+	_ = r.Run(":8080")
+}
+```
+
+要点与踩坑：
+
+- Frame 格式固定为 `field: value\n`，消息之间用**空行**分隔，`: xxx` 开头是注释帧（心跳就用它）；
+- `c.Stream` 内部已调用 `c.Writer.Flush()`，前提是 writer 实现了 `http.Flusher`——`httptest.ResponseRecorder` 也实现了，但它不模拟真实网络；测「逐帧到达」要用 `httptest.NewServer` + 真实 `http.Client`；
+- **Nginx 默认 `proxy_buffering on`**，会把你的帧攒到 4k/8k 再一次吐给客户端，表现就是「日志里在推、浏览器里不动」。除了响应头 `X-Accel-Buffering: no`，也可以在 location 里写 `proxy_buffering off`；
+- 客户端断开后 `c.Request.Context().Done()` 关闭，必须退出循环。忘记退出就是 goroutine 与数据库游标双泄漏；
+- 心跳：空闲超过 30s 时写一帧 `: ping\n\n`，避免中间设备按空闲超时切连接；
+- 与 WebSocket 怎么选：单向服务端推送、要复用现有 HTTP 中间件/鉴权、要过企业代理 → SSE；需要双向、二进制或低延迟高频交互 → WebSocket。SSE 受浏览器 6 连接/域名限制（HTTP/1.1），HTTP/2 下无此问题。
+
+### 4.9 性能：Context 复用、`sync.Pool` 与基准
+
+`ServeHTTP` 的骨架是 `c := engine.pool.Get().(*Context)` → `c.reset()` → 处理 → `engine.pool.Put(c)`。所以：
+
+- **Context 的归还时机固定在请求处理结束**，业务代码既不需要也不能手动归还；想「借用」就只能 `c.Copy()` 拿一份副本；
+- `c.Copy()` 会新建一个 Context 并复制 `Keys`，但 `Request` 仍是同一个指针、`Writer` 被置空。所以它只能在 goroutine 里读，**不能写响应**——写会撞上已被复用的 writer，或者直接对 nil 操作；
+- 自己实现类似对象池（例如复用序列化 buffer）才需要关心 `Put` 时机：归还前必须把所有字段清零，否则下一个请求读到上一请求的残留。
+
+其余影响吞吐的几个点：
+
+- **JSON 序列化通常是最大开销**。gin 支持编译期切换：`-tags=jsoniter` 换 json-iterator，`-tags=go_json` 换 sonic（amd64 走 JIT，非 amd64 回退到 encoding/json）。sonic 最快但对 `map[string]any` 等动态结构有额外拷贝开销，且行为与标准库存在细微差异（HTML 转义、浮点格式），涉及对外协议时先跑一致性测试；
+- **路由数量几乎不影响匹配次数**（O(路径长度)），但树越大前缀比较的 cache 局部性越差，几十万条路由时才会看到可观退化。真到这个量级，应该按业务拆服务而不是调框架；
+- **pprof 定位框架开销**：`import _ "net/http/pprof"` 后用 `go tool pprof http://localhost:8080/debug/pprof/profile?seconds=30`，火焰图里 `gin.(*Context).Next` 占比高说明中间件层数太多（尤其是每层都 `ShouldBind` 或打日志的），`encoding/json.Marshal` 占比高就先换序列化器。
+
+基准对比（同一个 `_test.go` 里，依赖 `net/http`、`net/http/httptest`、`testing`、`gin`；注意 `b.ReportAllocs()` 才是关键指标）：
+
+```go
+func bench(b *testing.B, h http.Handler) {
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/ping", nil)
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		h.ServeHTTP(w, req) // 路由匹配 + 中间件链 + 渲染，全都在内
+	}
+}
+
+func BenchmarkGinJSON(b *testing.B) {
+	gin.SetMode(gin.ReleaseMode)
+	r := gin.New()
+	r.GET("/ping", func(c *gin.Context) { c.JSON(http.StatusOK, gin.H{"message": "pong"}) })
+	bench(b, r)
+}
+
+func BenchmarkStdJSON(b *testing.B) {
+	bench(b, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		_, _ = w.Write([]byte(`{"message":"pong"}`))
+	}))
+}
+```
+
+```bash
+go test -run '^$' -bench . -benchmem -count=5 ./... | tee bench.txt   # 多次采样，单次结果噪声很大
+go install golang.org/x/perf/cmd/benchstat@latest
+benchstat bench.txt
+```
+
+读结果只看三列：`ns/op`（延迟）、`allocs/op`（每请求分配次数）、`B/op`（字节数）。gin 比裸 handler 多出的分配通常只有个位数，来自 Context 取用与 `gin.H` 的 map；若 `allocs/op` 随 QPS 线性增长，多半是某处把 Context 或 body 存进了长生命周期结构。
+
 ---
 
 ## 5. 版本演进速览（v1.10 → v1.12）
@@ -339,7 +623,7 @@ func TestPing(t *testing.T) {
 7. **panic 恢复靠 Recovery**：handler panic 不装 Recovery 会拖垮整个连接处理（http.Server 会断连接）；Recovery 必须是第一个中间件；
 8. **JSON 里的数字精度**：`c.JSON` 走 encoding/json，int64 大数给 JS 前端会丢精度——用字符串序列化或自定义 MarshalJSON；
 9. **Map 响应顺序**：`gin.H` 是 map，键序随机；需要稳定输出（快照测试）用结构体；
-10. **热路径避免反射**：ShouldBind 每次反射创建 validator 实例有开销，超高 QPS 接口可手写解析；常规业务无需在意。
+10. **热路径避免反射**：ShouldBind 走的是包级 `binding.Validator` 单例，validator 实例不随请求创建；开销主要在反射解码与规则遍历。超高 QPS 接口可手写解析，常规业务无需在意。
 
 ---
 

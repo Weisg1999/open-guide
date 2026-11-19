@@ -124,6 +124,102 @@ sqlc 的边界很硬：**WHERE 子句、排序列、表名都不能在运行期�
 
 迁移工具与 sqlc 的分工是「**迁移拥有 schema，sqlc 只读不写**」：goose 用版本化文件管理真实库演进，文件里 `-- +goose Up` / `-- +goose Down` 分段；sqlc 的 `schema` 直接指向 `db/migrations` 目录，它只解析 Up 段（遇到 `Down` 会跳过），因此**一份 DDL 同时喂给迁移和代码生成**，从根上消除「手写 schema.sql 与迁移不一致」的漂移。代价是迁移文件必须**可被解析**：sqlc 按文件名顺序应用，`ALTER TABLE ... RENAME` 这类语句要写全；用 squash / out-of-order 迁移时务必在 CI 里从空库 `goose up` 后再 `sqlc generate && git diff --exit-code`，让漂移变成红灯而不是线上事故。goose 的 `-- +goose StatementBegin/End` 用于函数、触发器这类含分号的语句，漏写会被切成两半。
 
+### 3.7 Cobra：动态子命令与插件式扩展
+
+命令树默认在编译期定型，但运维工具经常需要「从配置读一批任务名、每条生成一个子命令」。先接受三条硬约束：
+
+- **`AddCommand` 必须发生在 `Execute` 之前**。`ExecuteC` 第一步就是 `Find(args)`，树在那一刻已定型；在 `PersistentPreRunE` 甚至 `RunE` 里注册对「尚不存在的名字」毫无意义——`Find` 早已失败，钩子根本不会跑。
+- 因此动态命令要求**配置先于命令树**：`main` 里先用「固定路径 + 环境变量」这份最小配置构造 `App`，再 `RegisterFromConfig(root, app)`，最后 `ExecuteContext`（此时还没有 flag，`--config` 自然用不上）。别为省事在 `init()` 里读配置（原因见 4.8）。
+- 运行期加入的命令自动参与 `help`、补全与拼写建议，无需额外登记；`cmd.HasSubCommands()` 可判断「这是一组命令还是一件事」，空树时提前报错比打印一页空帮助体面。
+
+```go
+// internal/cli/dynamic.go —— Find 早于任何钩子，注册只能放在 Execute 之前
+func RegisterFromConfig(root *cobra.Command, app *App) error {
+	for _, t := range app.cfg.Tasks { // config.yaml: tasks: [{name, short, sql}]
+		root.AddCommand(&cobra.Command{
+			Use: t.Name, Short: t.Short, Args: cobra.NoArgs,
+			RunE: func(cmd *cobra.Command, _ []string) error {
+				return app.runTask(cmd.Context(), t) // Go 1.22+ 每轮循环独占 t
+			},
+			// 子命令名由 Cobra 的命令树自动补全；该命令是 NoArgs，位置参数补全没有意义，
+			// 挂 ValidArgsFunction 只会补出「一按回车就被 NoArgs 拒绝」的候选。
+		})
+	}
+	if !root.HasSubCommands() {
+		return errors.New("配置里没有任务，命令树为空")
+	}
+	return nil
+}
+```
+
+默认顺序是「先找命令、再解析 flag」：`Find` 会跳过 `--addr :9090` 找到 `serve`，再由 `serve` 自己的 FlagSet 解析，所以**叶子命令的 local flag 放在子命令名前也能用**。真正会失败的是 **root 的 local flag**——`app --config prod.yaml serve` 里的 `--config` 只定义在 root 上，默认流程下 `serve` 不认识它。`root.TraverseChildren = true` 让 Cobra 逐层解析，root 的 local flag 才在子命令名前生效；代价是未在 root 定义的 flag 会在 root 层直接报 unknown，短 flag 组合与 `--` 的语义也更绕，只在「包装既有 CLI」时开启。透传场景（`app exec -- psql -c ...`）用 `DisableFlagParsing: true`：该命令不再解析任何 flag（连 `-h` 也不认），`args` 原样交给 `RunE`，此时别再指望 `cmd.Flags()` 有值。
+
+外部插件要守三条边界：**路径**——`filepath.Join(插件目录, name)` 且 `name` 先命中白名单 map，绝不允许 `../` 或用户指定的绝对路径；**参数**——`exec.CommandContext` 传 slice，不经 shell，杜绝 `sh -c` 拼接；**环境**——只追加受控变量，不要把带凭据的环境整体泄给第三方二进制。
+
+```go
+// internal/cli/exec.go —— 透传给外部插件：不解析 flag，也不经过 shell
+func newExec(app *App) *cobra.Command {
+	return &cobra.Command{
+		Use: "exec PLUGIN [ARGS...]", Short: "运行已注册的外部插件",
+		DisableFlagParsing: true, // -h/--flag 也原样透传，帮助要自己处理
+		Args: func(_ *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return errors.New("需要一个插件名")
+			}
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			name := args[0]
+			if _, ok := app.plugins[name]; !ok { // 白名单：拒绝 ../、绝对路径与任意 PATH 查找
+				return fmt.Errorf("未知插件 %q", name)
+			}
+			c := exec.CommandContext(cmd.Context(), filepath.Join(app.pluginDir, name), args[1:]...)
+			c.Stdin, c.Stdout, c.Stderr = os.Stdin, cmd.OutOrStdout(), cmd.ErrOrStderr()
+			c.Env = append(os.Environ(), "APP_PLUGIN=1") // 不额外泄露凭据
+			return c.Run()                               // 非 0 退出 → *exec.ExitError
+		},
+	}
+}
+```
+
+### 3.8 sqlc：类型映射矩阵与 NULL 的代价
+
+PostgreSQL 下 sqlc v1.31 的默认映射（未做 `overrides`）：
+
+| db_type | NOT NULL（pgx/v5） | 可空（pgx/v5） | database/sql 可空 |
+|---|---|---|---|
+| `bool` | `bool` | `pgtype.Bool` | `sql.NullBool` |
+| `int4` / `serial` | `int32` | `pgtype.Int4` | `sql.NullInt32` |
+| `int8` / `bigserial` | `int64` | `pgtype.Int8` | `sql.NullInt64` |
+| `numeric` | `pgtype.Numeric` | 同左（自带 `Valid`） | `string`（保精度，需自行解析） |
+| `text` / `varchar` | `string` | `pgtype.Text` | `sql.NullString` |
+| `timestamptz` | `time.Time` | `pgtype.Timestamptz` | `sql.NullTime` |
+| `uuid` | `pgtype.UUID` | `pgtype.UUID` | `uuid.UUID` / 可空 `uuid.NullUUID`（默认走 google/uuid，需 override 才换） |
+| `jsonb` / `json` | `[]byte` | `[]byte` | `[]byte` |
+| `text[]` | `[]string` | `[]string` | 取决于驱动，多半要自定义 `Scanner` |
+| `CREATE TYPE ... AS ENUM` | 具名 `type Status string` + 常量 | `NullStatus` 或 `*Status` | 同左 |
+
+「可空」不是零成本：`pgtype.Text` 的零值是 `{Valid:false}`，但 `row.Name.String` 照样返回 `""`；`pgtype.Timestamptz` 在 `Valid=false` 时 JSON 序列化是 `null`，可一旦直接取 `.Time` 字段就会拿到零值 `0001-01-01T00:00:00Z`——后者才是被误用的坑。NULL 的真实代价在于——**它把「有没有值」挪到了第二个字段上，而编译器不会提醒你去检查**。
+
+三档策略按**值域语义**选，别按手感选：能 `NOT NULL DEFAULT` 就别开可空（「未知」与「空」在业务上确实不等价时才用 NULL）；在 SQL 层用 `COALESCE` 消灭空值，让 Go 侧零分支；在类型层打开 `emit_pointers_for_null_types` 全局改 `*T`，或按 `column:` 精确 override（写法见 4.4）。指针与 JSON 配合最好（`nil → null`，`omitempty` 生效），但处处要判 `nil`，也不能在模板里直接调方法。
+
+```sql
+-- name: UpdateProfile :one
+UPDATE users
+SET name   = COALESCE(sqlc.narg('name')::text, name),          -- 没传就保持原值，免读-改-写
+    status = COALESCE(sqlc.narg('status')::user_status, status)
+WHERE id = sqlc.arg('id')
+RETURNING id, email, COALESCE(name, '') AS name, status;
+```
+
+读侧 `COALESCE` 的收益直接体现在 API 契约上：可空字段会以 `null` 穿透到客户端，而前端处理 `null` 与 `""` 是两套逻辑。
+
+```json
+{"id": 7, "email": "a@b.c", "name": null, "created_at": "2026-11-19T08:00:00Z"}
+```
+
+`pgx/v5` 与 `database/sql` 的差别不只是类型名：pgx 走二进制协议，数组、`jsonb`、`numeric` 能原生编解码，且 `:copyfrom`、`:batchexec` 这些高效路径**只有 pgx 有**；`database/sql` 生成 `sql.NullX`、任何驱动都能接，但数组与 `numeric` 得靠驱动或自定义 `Scanner`。选了 pgx 就别再套一层 `database/sql` 求「可移植」——两套可空语义混用会让判断逻辑分叉；反之，已支持 MySQL/SQLite 的库就老实 `database/sql`，把 `numeric` 用 `overrides` 落到 `string` 或 `decimal.Decimal`。
+
 ---
 
 ## 4. 使用实战
@@ -358,7 +454,7 @@ func (s *UserService) Page(ctx context.Context, status *string, page, size int32
 }
 
 func (s *UserService) Import(ctx context.Context, pool *pgxpool.Pool, in []store.BatchCreateUsersParams) (int64, error) {
-	tx, err := pool.Begin(ctx) // CopyFrom 必须在事务内
+	tx, err := pool.Begin(ctx) // CopyFrom 本身是单条 COPY、自带原子性；包事务是为了与后续写操作同生共死
 	if err != nil {
 		return 0, err
 	}
@@ -376,6 +472,135 @@ func (s *UserService) Import(ctx context.Context, pool *pgxpool.Pool, in []store
 ### 4.7 补全脚本与动态补全
 
 生成脚本是三条重定向：`go build -o bin/app ./cmd/app` 之后，`bin/app completion bash > /usr/local/etc/bash_completion.d/app`（zsh 写 `${fpath[1]}/_app`、fish 写 `~/.config/fish/completions/app.fish`），`bin/app __complete migrate ""` 可查看补全输出与 `ShellCompDirective`。静态补全只能补命令名与 flag；要补「数据库里已有的租户 ID」，给命令挂 `ValidArgsFunction`（或 `RegisterFlagCompletionFunc`），返回候选值 + `cobra.ShellCompDirectiveNoFileComp` 表示别再补文件名。补全函数跑在独立进程里，**必须快**：别连数据库做全表扫描，超过几百毫秒用户会明显卡顿。
+
+### 4.8 Cobra：配置与命令生命周期的解耦
+
+不要在 `init()` 里读配置，四条理由：**时机**——`init` 早于 `main`、早于 flag 解析，此时 `--config` 还没有值，只能猜路径；**错误无处可去**——`init` 不能返回 `error`，只能 `panic` 或静默吞掉；**状态共享**——包级单例让同一进程内的多次 `Execute` 互相污染，测试无法并行；**顺序隐式**——多个包的 `init` 只按导入顺序执行，配置与 logger 的先后变成没人写下来的契约。
+
+正确形态是 `main` 里显式构造、根命令钩子里装载：`PersistentPreRunE` 在 flag 解析之后、`RunE` 之前执行，且在 `--help` 时**不会**触发——所以 `app --help` 不需要一份有效配置也能跑，这是它比 `init()` 好的地方。
+
+真正的坑在下一层：**`PersistentPreRunE` 沿父链只执行最近的一个**。某个子命令为了自己的初始化定义了 `PersistentPreRunE`，root 的 `app.load()` 就此静默失效，`app.cfg.DSN` 是零值，用户看到的报错会是「解析 dsn: 空」这种毫无线索的文本。三种解法：全局只让 root 定义钩子，子命令的额外初始化放 `RunE` 开头；子钩子里显式串联父逻辑（下例）；或把不返回 error 的初始化交给 `cobra.OnInitialize`（它在 flag 解析后、`RunE` 前为所有命令执行），失败时写进 `app.initErr`、由 root 钩子统一返回。
+
+```go
+func newReport(app *App) *cobra.Command {
+	cmd := &cobra.Command{Use: "report", Args: cobra.NoArgs}
+	cmd.PersistentPreRunE = func(c *cobra.Command, args []string) error {
+		// 自己定义了钩子，root 的 load() 就不会自动执行，必须手动补一次
+		if root := c.Root(); root != nil && root != c && root.PersistentPreRunE != nil {
+			if err := root.PersistentPreRunE(c, args); err != nil {
+				return err
+			}
+		}
+		return app.warmCache(c.Context())
+	}
+	return cmd
+}
+```
+
+上下文同理：`ExecuteContext(ctx)` 把 `cmd.Context()` 一路带到 `RunE`，配合 `main` 里的 `signal.NotifyContext`，Ctrl-C 才能中断正在跑的查询。**任何一层都别用 `context.Background()`**，否则取消信号断在那里。长任务在 `RunE` 开头自设预算：`ctx, cancel := context.WithTimeout(cmd.Context(), 5*time.Minute)`、`defer cancel()`，这样「用户按 Ctrl-C」与「任务超时」共用同一条退出路径。想支持「第二次 Ctrl-C 立即硬退」，再挂一个 `signal.Notify` 的 goroutine 做 `os.Exit(130)`。
+
+测试的关键是**走完整条 Execute 而不是直接调 `RunE`**——`Args`、flag 解析、必填校验、钩子都在 `Execute` 里，绕过它们等于只测了业务函数：
+
+```go
+// internal/cli/cli_test.go —— 一个进程里构造多棵树，flag 不会串味
+func TestMigrateRequiresDSN(t *testing.T) {
+	app := &App{v: viper.New(), db: &fakeDB{}} // 依赖注入：不连真库
+	root := NewRoot(app)
+	var buf bytes.Buffer
+	root.SetOut(&buf)
+	root.SetErr(&buf)
+	root.SetArgs([]string{"migrate"}) // 等价于用户输入 app migrate
+	err := root.ExecuteContext(t.Context())
+	if err == nil || !strings.Contains(err.Error(), "dsn") {
+		t.Fatalf("期望缺少 dsn 的错误，得到 %v", err)
+	}
+}
+```
+
+`t.Setenv("APP_DSN", "...")` 能顺带覆盖环境变量分支；因为每个用例各持一份 `App` 与 `viper.New()`，`t.Parallel()` 也不会互相干扰——这正是「别用包级 `rootCmd`」的回报。唯一要留神的是 `StringVar` 绑定的变量地址：构造函数里用**局部变量**再传 `StringVar`，每次 `NewRoot` 都是全新的一份，重复 `SetArgs` 才不会有残留值。
+
+### 4.9 sqlc：批量、事务组合与性能
+
+写入有三条路，性能差异来自**往返次数与解析/规划次数**，而不是 Go 代码快慢：单条 `:exec` / `:one` 一次往返一条语句；`:batchexec` 把多条塞进一次往返（pgx 的 pipeline，仍逐条规划）；`:copyfrom` 走 `COPY ... FROM STDIN`，跳过逐行 parse/bind/execute，万行以上通常比多值 INSERT 快一个数量级。
+
+`CopyFrom` 的边界很硬：PostgreSQL 下 `sql_package` 需为 `pgx/v4` 或 `pgx/v5`，MySQL 下走 `database/sql` + `sql_driver: github.com/go-sql-driver/mysql`（LOAD DATA）；签名是 `([]Params) (int64, error)`；不支持 `ON CONFLICT`、不支持 `RETURNING`；表上的触发器仍逐行执行。所以导入场景的常见配方是**先 COPY 进 staging 表，再一条 `INSERT ... SELECT ... ON CONFLICT` 合并**——吞吐与去重两头都要。
+
+```sql
+-- name: BatchCreateUsers :copyfrom
+INSERT INTO users (email, name) VALUES ($1, $2);   -- CopyFrom 必须列全，不能省略
+
+-- name: UpsertUser :execrows
+INSERT INTO users (email, name, updated_at) VALUES ($1, $2, now())
+ON CONFLICT (email) DO UPDATE
+SET name = EXCLUDED.name, updated_at = now()
+WHERE users.name IS DISTINCT FROM EXCLUDED.name;  -- 值没变就不写：少一半 WAL 与死元组
+
+-- name: ListUsersByIDs :many
+SELECT * FROM users WHERE id = ANY(sqlc.arg('ids')::bigint[]); -- PostgreSQL 的正解
+
+-- name: AddOrderItems :many
+WITH ins AS (
+    INSERT INTO orders (user_id, total) VALUES ($1, $2) RETURNING id
+)
+INSERT INTO order_items (order_id, sku, qty)
+SELECT ins.id, v.sku, v.qty FROM ins, unnest($3::text[], $4::int[]) AS v(sku, qty)
+RETURNING order_id;   -- 父子两表一条语句写完，省一次网络往返
+```
+
+`sqlc.slice` 的适用面比想象中窄：它只在 MySQL / SQLite 生成 `IN (?, ?, ...)`，PostgreSQL 必须写 `= ANY(...)`（见上例）。而且 `IN` 是按切片长度生成**不同**的 SQL 文本，长度一变就击穿 prepared statement 缓存；几百个元素还会撞 `max_allowed_packet` 或 SQLite 的变量上限（3.32 之前是 999）。**ID 列表超过一两百个就别用 IN**，改临时表 JOIN 或数组。
+
+事务组合没有额外抽象层：`Queries.WithTx(tx)` 把同一套方法绑到 `pgx.Tx` 上，`store.New(tx)` 等价；需要更严隔离级别时用 `pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.Serializable})`。要点是**事务里别夹带外部 IO**（HTTP、发消息），长事务持锁会把整张表拖住。
+
+```go
+func (s *UserService) Import(ctx context.Context, in []store.BatchCreateUsersParams) (int64, error) {
+	if len(in) < 1000 { // 小批量：逐条 upsert，才有 ON CONFLICT 语义
+		var n int64
+		err := pgx.BeginFunc(ctx, s.pool, func(tx pgx.Tx) error {
+			q := s.q.WithTx(tx) // 同一事务内复用全部生成方法，失败自动回滚
+			for _, p := range in {
+				affected, err := q.UpsertUser(ctx, store.UpsertUserParams{Email: p.Email, Name: p.Name})
+				if err != nil {
+					return fmt.Errorf("upsert %s: %w", p.Email, err)
+				}
+				n += affected // DO UPDATE 的 WHERE 不成立时是 0
+			}
+			return nil
+		})
+		return n, err
+	}
+	// 不要用 TEMP 表：池化连接下 COPY 与合并可能落在不同会话，临时表会「消失」或读到别人的表。
+	// 用 UNLOGGED staging 表 + batch_id，既不受会话限制，也能让并发导入互不干扰。
+	batchID := newBatchID()
+	if err := s.copyToStaging(ctx, batchID, in); err != nil {
+		return 0, fmt.Errorf("装载 staging 表: %w", err)
+	}
+	return s.q.MergeFromStaging(ctx, batchID) // INSERT ... SELECT ... WHERE batch_id=$1 ON CONFLICT
+}
+```
+
+最后是验证。生成 SQL 是**静态文本**，这是 sqlc 相对 ORM 的隐形优势：把它原样贴进 psql 跑 `EXPLAIN (ANALYZE, BUFFERS)`，得到的计划与线上执行的一模一样，不需要「先把 ORM 生成的 SQL 打印出来」这一步。把它固化成开发期的自检也不难：
+
+```go
+// Explain 用真实参数跑一次计划：看到 Seq Scan 就该回头加索引，而不是加机器
+func (s *UserService) ExplainList(ctx context.Context, ids []int64) error {
+	const q = `SELECT * FROM users WHERE id = ANY($1::bigint[])`
+	rows, err := s.pool.Query(ctx, "EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT) "+q, ids)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var line string
+		if err := rows.Scan(&line); err != nil {
+			return err
+		}
+		s.log.Info("plan", "line", line)
+	}
+	return rows.Err()
+}
+```
+
+配套再上两层：`sqlc vet` 启用 `sqlc/db-prepare` 规则（每条查询在真实库上 `PREPARE` 一次，抓出运行期才会暴露的类型/权限错误）；线上用 `pg_stat_statements` 按 `mean_exec_time` 排序，把 Top N 的归一化语句与 `db/queries` 里的原文对照——两者形状一致，正是 sqlc 让「慢查询定位」变简单的根本原因。
 
 ---
 
