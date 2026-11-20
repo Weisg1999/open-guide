@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>open-guide · Go 后端技术栈中文深度指南</title>
-<meta name="description" content="56 篇 Go 后端技术栈中文深度指南：覆盖语言核心、服务治理、数据存储、消息调度、可观测性与部署，每篇含原理、实战、坑与选型。">
+<meta name="description" content="66 篇 Go 后端技术栈中文深度指南：覆盖语言核心、服务治理、数据存储、消息调度、可观测性与部署，每篇含原理、实战、坑与选型。">
 <meta name="theme-color" content="#0f172a">
 <style>
 :root{
@@ -96,11 +96,11 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;paddi
   <div class="wrap">
     <p class="eyebrow">open-guide · Go backend handbook</p>
     <h1>Go 后端技术栈<br><em>中文深度指南</em></h1>
-    <p class="lede">56 篇长文，覆盖语言核心、服务治理、数据存储、消息调度、可观测性与部署。每篇都按「原理 → 实战 → 版本 → 坑 → 选型」重写，不是 API 翻译。</p>
+    <p class="lede">66 篇长文，覆盖语言核心、服务治理、数据存储、消息调度、可观测性与部署。每篇都按「原理 → 实战 → 版本 → 坑 → 选型」重写，不是 API 翻译。</p>
     <div class="stats">
-      <div><b>56</b><span>篇指南</span></div>
+      <div><b>66</b><span>篇指南</span></div>
       <div><b>6</b><span>个分类</span></div>
-      <div><b>26,345</b><span>行正文</span></div>
+      <div><b>31,572</b><span>行正文</span></div>
     </div>
     <div class="search">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
@@ -110,13 +110,13 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;paddi
 </header>
 
 <nav class="filters wrap" id="filters">
-      <button class="chip active" data-c="all">全部<span>56</span></button>
+      <button class="chip active" data-c="all">全部<span>66</span></button>
       <button class="chip" data-c="Go 语言核心"><i style="background:#0d9488"></i>🔤 Go 语言核心<span>13</span></button>
-      <button class="chip" data-c="Web、微服务与治理"><i style="background:#2563eb"></i>🌐 Web、微服务与治理<span>9</span></button>
-      <button class="chip" data-c="数据存储与检索"><i style="background:#7c3aed"></i>🗄️ 数据存储与检索<span>17</span></button>
+      <button class="chip" data-c="Web、微服务与治理"><i style="background:#2563eb"></i>🌐 Web、微服务与治理<span>12</span></button>
+      <button class="chip" data-c="数据存储与检索"><i style="background:#7c3aed"></i>🗄️ 数据存储与检索<span>21</span></button>
       <button class="chip" data-c="消息、任务与调度"><i style="background:#ea580c"></i>📨 消息、任务与调度<span>8</span></button>
       <button class="chip" data-c="可观测性"><i style="background:#0891b2"></i>🔭 可观测性<span>7</span></button>
-      <button class="chip" data-c="部署与编排"><i style="background:#475569"></i>🐳 部署与编排<span>2</span></button>
+      <button class="chip" data-c="部署与编排"><i style="background:#475569"></i>🐳 部署与编排<span>5</span></button>
 </nav>
 
 <main class="wrap">
@@ -310,6 +310,30 @@ const DATA = [
 "m": "./websocket/websocket-guide.md"
 },
 {
+"t": "Sentinel-Go",
+"d": "资源与 Entry 生命周期、LeapArray 滑动窗口、快速失败 / Warm Up / 匀速排队、慢调用与异常比例熔断、热点参数限流、规则推送到 etcd / Nacos、与 Gin / gRPC 中间件集成",
+"c": "Web、微服务与治理",
+"e": "🌐",
+"u": "./sentinel/sentinel-guide.html",
+"m": "./sentinel/sentinel-guide.md"
+},
+{
+"t": "GraphQL（gqlgen）",
+"d": "Schema first 与代码生成、字段级 Resolver 执行模型、N+1 与 DataLoader、Relay 游标分页、错误 extensions、订阅与 graphql-ws、深度与复杂度限制",
+"c": "Web、微服务与治理",
+"e": "🌐",
+"u": "./graphql/graphql-guide.html",
+"m": "./graphql/graphql-guide.md"
+},
+{
+"t": "Go 工程分层",
+"d": "依赖倒置与接口归属、domain / application / infrastructure / interface 四层职责、贫血模型与不变量、仓储边界、事务放在用例层、模块化单体与 internal 约束",
+"c": "Web、微服务与治理",
+"e": "🌐",
+"u": "./architecture/architecture-guide.html",
+"m": "./architecture/architecture-guide.md"
+},
+{
 "t": "MySQL",
 "d": "B+ 树聚簇索引与回表、最左前缀与覆盖索引、MVCC / ReadView 与隔离级别、临键锁与死锁、EXPLAIN 慢查询、主从复制与延迟、database/sql 连接池",
 "c": "数据存储与检索",
@@ -446,6 +470,38 @@ const DATA = [
 "m": "./migrate/migrate-guide.md"
 },
 {
+"t": "CDC（Debezium / Canal）",
+"d": "binlog row 模式、快照与增量衔接（GTID / file+pos）、Debezium 事件信封、Canal 伪装从库、outbox 路由、schema 演进、延迟与积压监控、大事务与位点失效",
+"c": "数据存储与检索",
+"e": "🗄️",
+"u": "./cdc/cdc-guide.html",
+"m": "./cdc/cdc-guide.md"
+},
+{
+"t": "分库分表",
+"d": "垂直与水平拆分、分片键与基因法、取模 / 范围 / 一致性哈希路由、跨片查询三种解法、双写迁移与翻倍扩容、ShardingSphere-Proxy 与 Vitess",
+"c": "数据存储与检索",
+"e": "🗄️",
+"u": "./sharding/sharding-guide.html",
+"m": "./sharding/sharding-guide.md"
+},
+{
+"t": "本地缓存",
+"d": "TinyLFU 与 LRU 的差别、bigcache 分片与免 GC、freecache 堆外内存、singleflight 防击穿、二级缓存失效顺序、多实例广播失效",
+"c": "数据存储与检索",
+"e": "🗄️",
+"u": "./local-cache/local-cache-guide.html",
+"m": "./local-cache/local-cache-guide.md"
+},
+{
+"t": "分布式 ID",
+"d": "雪花结构与时钟回拨、机器号分配（etcd 注册）、号段双 buffer、UUIDv7 与 B+ 树插入、基因法、int64 精度与不可预测性",
+"c": "数据存储与检索",
+"e": "🗄️",
+"u": "./distributed-id/distributed-id-guide.html",
+"m": "./distributed-id/distributed-id-guide.md"
+},
+{
 "t": "asynq ⭐",
 "d": "本仓库最完整的一篇（1300+ 行）。Redis 分布式任务队列：任务生命周期、延时/重试/死信、优先级与加权队列、任务去重、任务聚合、超时与截止、Prometheus 指标、Asynqmon Web UI 部署",
 "c": "消息、任务与调度",
@@ -580,6 +636,30 @@ const DATA = [
 "e": "🐳",
 "u": "./k8s-operator/k8s-operator-guide.html",
 "m": "./k8s-operator/k8s-operator-guide.md"
+},
+{
+"t": "Helm",
+"d": "Chart 目录与四类文件、.Values / .Release / .Capabilities 上下文、values 合并与 --set 类型陷阱、_helpers.tpl、Hooks 与执行时机、依赖开关、helm diff / rollback、helm-unittest",
+"c": "部署与编排",
+"e": "🐳",
+"u": "./helm/helm-guide.html",
+"m": "./helm/helm-guide.md"
+},
+{
+"t": "ArgoCD",
+"d": "GitOps 控制循环、Application / AppProject / ApplicationSet、selfHeal 与 prune、Sync Waves 与钩子、多集群、SOPS / Sealed Secrets、漂移检测与回滚",
+"c": "部署与编排",
+"e": "🐳",
+"u": "./argocd/argocd-guide.html",
+"m": "./argocd/argocd-guide.md"
+},
+{
+"t": "发布策略",
+"d": "蓝绿 / 金丝雀 / A-B / 流量镜像、Ingress 注解与 APISIX traffic-split、Argo Rollouts 自动判定、流量染色透传、数据库 expand-contract、灰度期缓存与 MQ 的坑",
+"c": "部署与编排",
+"e": "🐳",
+"u": "./release-strategy/release-strategy-guide.html",
+"m": "./release-strategy/release-strategy-guide.md"
 }
 ];
 const COLORS = {"Go 语言核心": "#0d9488", "Web、微服务与治理": "#2563eb", "数据存储与检索": "#7c3aed", "消息、任务与调度": "#ea580c", "可观测性": "#0891b2", "部署与编排": "#475569"};

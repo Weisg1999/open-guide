@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>分库分表 · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#4f46e5; --accent-light:#eef2ff; --accent-dark:#312e81;
+    --bg:#f8f9ff; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#151a3a; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#312e81 0%,#4f46e5 58%,#312e81 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">分库分表<span class="ver">ShardingSphere 5.5 / Vitess 21</span></div>
+  <div class="sub">分片键 · 路由 · 扩容</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a href="#2-能力总览">2. 能力总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-垂直拆分-vs-水平拆分">3.1 垂直拆分 vs 水平拆分</a>
+  <a class="sub-link" href="#32-分片键选择一个键决定全局">3.2 分片键选择：一个键决定全局</a>
+  <a class="sub-link" href="#33-路由算法取模范围一致性哈希基因法">3.3 路由算法：取模、范围、一致性哈希、基因法</a>
+  <a class="sub-link" href="#34-跨分片查询的三种解法">3.4 跨分片查询的三种解法</a>
+  <a class="sub-link" href="#35-分布式事务与全局-id">3.5 分布式事务与全局 ID</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-shardingsphere-proxy-部署与规则配置">4.1 ShardingSphere-Proxy 部署与规则配置</a>
+  <a class="sub-link" href="#42-go-应用接入proxy-模式是唯一选择">4.2 Go 应用接入：Proxy 模式是唯一选择</a>
+  <a class="sub-link" href="#43-双写迁移单库-分片的三阶段">4.3 双写迁移：单库 → 分片的三阶段</a>
+  <a class="sub-link" href="#44-扩容翻倍迁移与一致性哈希">4.4 扩容：翻倍迁移与一致性哈希</a>
+  <a class="sub-link" href="#45-监控与慢查询先看路由再看执行计划">4.5 监控与慢查询：先看路由，再看执行计划</a>
+  <a href="#5-版本与生态">5. 版本与生态</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>分库分表技术介绍与使用指南（Go 后端视角）</h1>
+<p><strong>一句话定位</strong>：单库单表扛不住之后，把数据按规则拆到多个库表，同时不让业务代码感知到「拆了」。 <strong>上游仓库</strong>：<a href="https://github.com/apache/shardingsphere">apache/shardingsphere</a>、<a href="https://github.com/vitessio/vitess">vitessio/vitess</a> · <strong>版本基线</strong>：ShardingSphere 5.5.x、Vitess 21.x · <strong>协议</strong>：Apache-2.0</p>
+<p style="opacity:.8;font-size:13.5px">分片键 · 路由 · 扩容</p>
+<div class="meta"><span>分片</span><span>路由</span><span>迁移</span></div>
+</div>
+<blockquote><p><strong>一句话定位</strong>：单库单表扛不住之后，把数据按规则拆到多个库表，同时不让业务代码感知到「拆了」。</p>
+<p><strong>上游仓库</strong>：<a href="https://github.com/apache/shardingsphere">apache/shardingsphere</a>、<a href="https://github.com/vitessio/vitess">vitessio/vitess</a> · <strong>版本基线</strong>：ShardingSphere 5.5.x、Vitess 21.x · <strong>协议</strong>：Apache-2.0</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p><a href="../mysql/mysql-guide.html">MySQL 篇</a> 的 4.9 给过一条治理顺序：<strong>先改 SQL / 加索引，再谈改表结构，最后才考虑分库分表</strong>。本篇讲的就是「最后」这一步——索引、归档、读写分离都做完了，单机仍然顶不住时，数据该怎么拆。两者边界要分清：90% 的「MySQL 撑不住」根因是索引缺失、长事务或把报表跑在主库上，不是表不够多。</p>
+<p>先回答最常见的问题：<strong>单表 2000 万行不是硬线</strong>。B+ 树三到四层就能覆盖上亿行，一次点查仍是 3~4 次页访问；2000 万行的表只要索引合适、热数据能进 buffer pool，性能完全够用。真正的硬约束只有三个：</p>
+<div class="table-wrap"><table><thead><tr><th>约束</th><th>量化信号</th><th>说明</th></tr></thead><tbody><tr><td>写入吞吐</td><td>单表持续 &gt; 5000 TPS，或单实例 &gt; 2~3 万 TPS</td><td>受 redo log、行锁、唯一索引维护限制，加从库救不了写</td></tr><tr><td>单表容量</td><td>单表 &gt; 1~2 亿行且无法归档，或单实例磁盘 &gt; 2TB</td><td>备份/恢复窗口、DDL 时长随数据量线性增长</td></tr><tr><td>DDL 窗口</td><td>加字段、建索引超过业务可接受的停机时间</td><td>在线 DDL 也有边界，超大表最终只能 gh-ost 跑数小时</td></tr></tbody></table></div>
+<p>反过来说，下面这些症状<strong>不该</strong>用分片解决：</p>
+<div class="table-wrap"><table><thead><tr><th>症状</th><th>真实根因</th><th>先做什么</th></tr></thead><tbody><tr><td>单表 8000 万，主键点查 3ms</td><td>正常水位</td><td>什么都不用做</td></tr><tr><td>订单列表页 2s</td><td>缺 <code>(user_id, status, created_at)</code> 联合索引</td><td>加索引、消除深分页</td></tr><tr><td>写入 TPS 打满、CPU 100%</td><td>单机 IO 或热点行竞争</td><td>先归档冷数据、拆热点、再评估分片</td></tr><tr><td>凌晨备份跑 6 小时、磁盘 2TB 告警</td><td>全量窗口不够、冷热未分离</td><td>从库备份、按时间归档到 OLAP</td></tr></tbody></table></div>
+<p><strong>拆分的代价必须先说清</strong>，它不是一个「加了中间件就线性扩展」的免费升级：</p>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>单库单表</th><th>分片之后</th></tr></thead><tbody><tr><td>JOIN</td><td>随意关联</td><td>只能同片 JOIN；跨片要么广播成 N×M，要么冗余宽表</td></tr><tr><td>事务</td><td>一个 <code>BEGIN/COMMIT</code></td><td>跨片只能最终一致或 XA，代价见 3.5</td></tr><tr><td>分页</td><td><code>LIMIT offset, n</code> 直接返回</td><td>每个分片各取 <code>offset+n</code> 行再归并，深分页放大 N 倍</td></tr><tr><td>聚合</td><td><code>COUNT/SUM/GROUP BY</code> 一次算完</td><td>分片聚合 + 内存归并，<code>DISTINCT</code> 可能算错</td></tr><tr><td>唯一约束</td><td>全局唯一索引</td><td>只在片内唯一，跨片唯一靠全局 ID 或业务校验</td></tr><tr><td>DDL</td><td>一条 <code>ALTER TABLE</code></td><td>每个分片都要执行，漏一个就出现表结构漂移</td></tr></tbody></table></div>
+<p>所以判断标准只有一句：<strong>能不能接受「部分查询变慢、部分功能改写、运维复杂度上升」，换取写入与容量的线性扩展</strong>。不能接受，就继续在单机上做索引与归档。</p>
+<hr>
+
+</section>
+<section data-anchor="2-能力总览">
+<h2 id="2-能力总览">2. 能力总览<span class="lvl b">速览</span></h2>
+<p>分片中间件真正提供的是一组能力的组合，不只是「按 ID 取模」：</p>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>说明</th><th>代价</th></tr></thead><tbody><tr><td>分片路由</td><td>按分片键把逻辑 SQL 改写成实际 SQL，支持取模、范围、哈希、自定义</td><td>路由键选错就退化为全分片广播</td></tr><tr><td>读写分离</td><td>同一逻辑库下挂主库与多个从库，按策略路由读流量</td><td>主从延迟导致读到旧数据，需要强制读主</td></tr><tr><td>分布式事务</td><td>LOCAL（默认）、XA、BASE（接 Seata）三种模式</td><td>XA 持锁时间长；BASE 依赖外部协调器</td></tr><tr><td>弹性扩缩</td><td>新增分片后迁移数据、校验、切换路由</td><td>取模扩容要搬大量数据，需双写与回滚预案</td></tr><tr><td>数据加密</td><td>写入自动加密、查询自动解密，支持模糊查询列</td><td>加密列无法范围比较，索引失效</td></tr><tr><td>广播表</td><td>小字典表在每个分片存一份，避免跨片 JOIN</td><td>写入要同步所有分片，只适合低频变更</td></tr><tr><td>数据脱敏 / 影子库</td><td>返回结果掩码；压测流量打到影子库隔离</td><td>脱敏不改存储；影子库需链路染色</td></tr></tbody></table></div>
+<pre><code class="lang-text">应用 (Go) ──MySQL 协议──► ShardingSphere-Proxy ──┬──► ds_0.t_order_0..7
+                                                  └──► ds_1.t_order_0..7</code></pre>
+<hr>
+
+<div class="features">
+  <div class="feature"><div class="fh"><h4>水平扩展</h4></div><p>写入与容量随分片数线性增长</p></div>
+  <div class="feature"><div class="fh"><h4>透明路由</h4></div><p>Proxy 模式下应用仍写标准 SQL</p></div>
+  <div class="feature"><div class="fh"><h4>平滑扩容</h4></div><p>双写迁移 + 一致性哈希，停机窗口为零</p></div>
+</div>
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-垂直拆分-vs-水平拆分">3.1 垂直拆分 vs 水平拆分</h3>
+<p>三个维度经常被混为一谈，解决的问题完全不同：</p>
+<pre><code class="lang-text">垂直拆库（按业务域）:  app_db → order_db / user_db / item_db
+垂直拆表（按列）:      user(40 列) → user_core / user_ext
+水平拆分（按行）:      t_order → ds_0.t_order_0..7
+                              → ds_1.t_order_0..7</code></pre>
+<div class="table-wrap"><table><thead><tr><th>方式</th><th>解决什么</th><th>不解决什么</th><th>典型场景</th></tr></thead><tbody><tr><td>垂直拆库</td><td>业务耦合、单库连接数与锁竞争</td><td>单表仍然很大</td><td>订单、用户、商品分库</td></tr><tr><td>垂直拆表</td><td>宽表 IO 放大、大字段拖慢主表</td><td>行数不变</td><td>用户主表 + 扩展信息表</td></tr><tr><td>水平拆分</td><td>单表行数、写入吞吐、单机容量</td><td>JOIN、事务、聚合变复杂</td><td>订单、流水、消息</td></tr></tbody></table></div>
+<p>工程上通常<strong>先垂直、后水平</strong>：垂直拆完每个库的表都变小了，很多表根本不需要再水平拆；上来就水平拆 40 张表，是典型的过度设计。</p>
+<h3 id="32-分片键选择一个键决定全局">3.2 分片键选择：一个键决定全局</h3>
+<p>分片键（sharding key）是路由的唯一依据，选错之后所有优化都是补丁。三条判据按优先级排列：</p>
+<ol><li><strong>区分度足够</strong>：基数要远大于分片数。<code>status</code> 只有几个枚举值，哈希后必然倾斜；</li><li><strong>覆盖高频查询</strong>：最频繁的查询条件必须带它，否则每次都是广播；</li><li><strong>能避免跨片事务</strong>：同一业务聚合根的数据落在同一片，比如「一个用户的所有订单」。</li></ol>
+<div class="table-wrap"><table><thead><tr><th>候选键</th><th>区分度</th><th>查询覆盖</th><th>跨片风险</th><th>结论</th></tr></thead><tbody><tr><td><code>user_id</code></td><td>高</td><td>我的订单、我的消息都带</td><td>按订单号查会广播</td><td><strong>订单域首选</strong></td></tr><tr><td><code>order_id</code></td><td>高</td><td>详情、支付回调都带</td><td>「我的订单」列表要广播</td><td>与 <code>user_id</code> 二选一</td></tr><tr><td><code>merchant_id</code></td><td>中</td><td>商家后台带</td><td>用户侧查询广播</td><td>商家域单独建冗余表</td></tr><tr><td><code>created_at</code></td><td>高</td><td>报表带</td><td>最新分片成写热点</td><td>只适合归档，不适合分片</td></tr><tr><td><code>status</code></td><td>极低</td><td>偶尔带</td><td>数据倾斜 + 广播</td><td><strong>禁用</strong></td></tr></tbody></table></div>
+<p><strong>用户 ID 与订单 ID 的冲突</strong>是分片设计里最经典的矛盾：按 <code>user_id</code> 分片，「我的订单」单片命中，但支付回调只带 <code>order_id</code>；按 <code>order_id</code> 分片反过来。解法是<strong>基因法</strong>——生成订单号时，把 <code>user_id</code> 的低位编进 <code>order_id</code> 的低位：</p>
+<pre><code class="lang-text">order_id (64 bit) = [ 序列号 / 时间戳 高位 ][ user_id 低 10 位 ]
+                              │                    │
+                              └─ 保证唯一、单调     └─ 取模 1024 即还原</code></pre>
+<p>这样 <code>order_id % 1024 == user_id % 1024</code>，用任一字段算出的分片号都一致。前提是<strong>分片数必须整除 1024</strong>（比如 2 库 × 8 表 = 16 片），否则低位对齐失效；代价是订单号不再纯自增，且只有低 10 位参与，多个用户可能落到同一片——这没关系，分片本来就允许一片承载多个用户。</p>
+<h3 id="33-路由算法取模范围一致性哈希基因法">3.3 路由算法：取模、范围、一致性哈希、基因法</h3>
+<div class="table-wrap"><table><thead><tr><th>算法</th><th>规则</th><th>优点</th><th>缺点</th><th>适用</th></tr></thead><tbody><tr><td>取模</td><td><code>hash(key) % N</code></td><td>分布均匀、实现最简单</td><td>扩容要迁移大量数据</td><td>分片数稳定</td></tr><tr><td>范围</td><td>按时间/ID 区间</td><td>扩容简单、易归档</td><td>最新区间成写热点</td><td>日志、流水、时序</td></tr><tr><td>一致性哈希</td><td>环上顺时针找节点</td><td>扩容只迁移 <code>1/N</code></td><td>需虚拟节点防倾斜，实现复杂</td><td>节点频繁增减</td></tr><tr><td>基因法</td><td>低位携带另一键信息</td><td>双键同片，避免广播</td><td>ID 生成受限，分片数受限</td><td>订单/用户双查询路径</td></tr></tbody></table></div>
+<p><strong>取模的真实扩容代价</strong>：从 2 片扩到 4 片，<code>id % 2</code> 与 <code>id % 4</code> 只有一半结果相同，意味着<strong>约 50% 的数据要搬家</strong>；从 4 片扩到 8 片同理。所谓「翻倍扩容只搬一半」不是优点，是取模绕不开的代价。</p>
+<pre><code class="lang-go">func shardOf(id int64, shards int) int { return int(id % int64(shards)) }</code></pre>
+<p><strong>范围分片</strong>按时间切，写入永远落在最后一个分片，形成单点写热点；好处是历史分片只读、可以直接归档或下线。所以它适合日志、账单这类「只写最新、旧数据只读」的场景，不适合订单主表。</p>
+<p><strong>一致性哈希</strong>把节点和键都映射到一个 <code>2^32</code> 的环上，键顺时针找到第一个节点。节点增减时只影响相邻区间，迁移量约为 <code>1/N</code>。单节点容易倾斜，所以每个物理节点放几百个虚拟节点：</p>
+<pre><code class="lang-go">type Ring struct {
+	nodes []uint32          // 虚拟节点哈希，已排序
+	owner map[uint32]string // 虚拟节点 → 物理节点
+}
+
+func (r *Ring) Add(physical string, vnodes int) {
+	for i := 0; i &lt; vnodes; i++ {
+		h := crc32.ChecksumIEEE([]byte(fmt.Sprintf("%s#%d", physical, i)))
+		r.nodes, r.owner[h] = append(r.nodes, h), physical
+	}
+	sort.Slice(r.nodes, func(i, j int) bool { return r.nodes[i] &lt; r.nodes[j] })
+}
+
+func (r *Ring) Get(key string) string {
+	h := crc32.ChecksumIEEE([]byte(key))
+	idx := sort.Search(len(r.nodes), func(i int) bool { return r.nodes[i] &gt;= h })
+	if idx == len(r.nodes) {
+		idx = 0 // 回绕到环首
+	}
+	return r.owner[r.nodes[idx]]
+}</code></pre>
+<p><strong>基因法</strong>在 Go 侧只是一个位运算，但顺序不能反——低位放基因，高位放序列：</p>
+<pre><code class="lang-go">const geneBits = 10
+
+// NewOrderID: 低位 10 位放 user_id 的低位，高位放序列号
+func NewOrderID(userID, seq int64) int64 {
+	return seq&lt;&lt;geneBits | (userID &amp; ((1 &lt;&lt; geneBits) - 1))
+}
+
+// ShardOfOrder: 从订单号直接算出分片，与按 user_id 取模的结果一致
+func ShardOfOrder(orderID int64, shards int) int {
+	return int(orderID&amp;((1&lt;&lt;geneBits)-1)) % shards
+}</code></pre>
+<blockquote><p>若序列号放在低位、<code>user_id</code> 放高位，取模结果就只由序列号决定，基因法失效。这类位序错误线上很难发现——它不报错，只是路由到了错误的片，表现为「偶发查不到数据」。</p></blockquote>
+<h3 id="34-跨分片查询的三种解法">3.4 跨分片查询的三种解法</h3>
+<p>跨片查询无法消除，只能选择在哪一层消化：</p>
+<div class="table-wrap"><table><thead><tr><th>解法</th><th>做法</th><th>优点</th><th>代价</th></tr></thead><tbody><tr><td>广播 + 内存归并</td><td>中间件把一条逻辑 SQL 发到所有分片，内存里合并排序</td><td>对业务透明、无需改表</td><td>分片越多越慢，内存与连接数放大</td></tr><tr><td>冗余表（异构索引）</td><td>按另一个维度再存一份，用 CDC/binlog 同步</td><td>查询单片命中、性能稳定</td><td>存储翻倍、同步有延迟、要保证一致</td></tr><tr><td>离线宽表</td><td>明细同步到 ClickHouse / ES，复杂查询走 OLAP</td><td>不占 OLTP 资源、支持任意维度</td><td>有延迟，不适合强一致读</td></tr></tbody></table></div>
+<p><strong>广播查询</strong>是最容易踩坑的一种：<code>SELECT * FROM t_order WHERE status = 1 ORDER BY id DESC LIMIT 20</code> 会被改写成 16 条 SQL，每条各取 20 行，再在 Proxy 内存里排序取前 20。分片数 16 时还扛得住；分片数 64、并发一上来，归并内存和连接数会先崩。</p>
+<pre><code class="lang-sql">SELECT * FROM t_order WHERE status = 1 ORDER BY id DESC LIMIT 20;   -- 广播：16 片全扫
+SELECT * FROM t_order WHERE user_id = 42 ORDER BY id DESC LIMIT 20; -- 单片命中</code></pre>
+<p><strong>冗余表</strong>解决「换个维度查」：订单按 <code>user_id</code> 分片，商家后台却按 <code>merchant_id</code> 查，于是再建一张 <code>t_order_by_merchant</code>，按 <code>merchant_id</code> 分片，通过 binlog/CDC 异步同步。它本质是<strong>用存储和一致性换查询性能</strong>，同步延迟通常秒级，商家后台能接受，支付链路不能。</p>
+<h3 id="35-分布式事务与全局-id">3.5 分布式事务与全局 ID</h3>
+<p>跨片写入没有单机事务可用。四种选择：</p>
+<div class="table-wrap"><table><thead><tr><th>方案</th><th>一致性</th><th>性能</th><th>侵入性</th><th>适用</th></tr></thead><tbody><tr><td>LOCAL（默认）</td><td>无全局保证，各片独立提交</td><td>最高</td><td>无</td><td>能保证同一分片内，或可接受最终一致</td></tr><tr><td>XA</td><td>强一致</td><td>低（两阶段、持锁）</td><td>低</td><td>同机房、短事务、低并发</td></tr><tr><td>BASE / Seata AT</td><td>最终一致</td><td>中</td><td>中（需 Seata）</td><td>跨片长流程、可补偿</td></tr><tr><td>本地消息表 / Outbox</td><td>最终一致</td><td>高</td><td>中（多一张表）</td><td>跨服务 + 跨片，<strong>推荐</strong></td></tr></tbody></table></div>
+<blockquote><p>最常见的误用：以为开了 Proxy 就自动有分布式事务。默认的 LOCAL 模式下，<code>BEGIN</code> 跨两个分片时会<strong>各自提交</strong>，中间失败就一半成功一半失败。要么把一次写入收敛到同一分片（靠分片键设计），要么显式上 XA/Outbox。</p></blockquote>
+<p><strong>全局 ID</strong> 是分片的孪生问题：自增主键在每个分片独立计数，必然冲突。两种主流方案：</p>
+<pre><code class="lang-sql">-- 号段模式：一次取 1000 个，DB 只承担低频更新
+BEGIN;
+UPDATE id_segment SET max_id = max_id + 1000 WHERE biz_tag = 'order';
+SELECT max_id FROM id_segment WHERE biz_tag = 'order';  -- 本段上界
+COMMIT;</code></pre>
+<pre><code class="lang-text">雪花 ID (64 bit) = 1 符号位 | 41 时间戳(ms) | 10 机器位 | 12 序列号
+                   ↑ 恒为 0    ↑ 可用 69 年    ↑ 1024 节点  ↑ 每 ms 4096 个</code></pre>
+<p>号段模式依赖 DB，应用在内存中从 <code>max_id-999</code> 发到 <code>max_id</code>，一次网络往返换 1000 个 ID，吞吐足够；雪花不依赖存储，但<strong>机器位必须唯一</strong>，K8s 里 Pod 重启拿到相同 worker-id 就会生成重复 ID。发放 worker-id 用 etcd/Redis 租约，细节见 <a href="../distributed-id/">distributed-id 篇</a>。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-shardingsphere-proxy-部署与规则配置">4.1 ShardingSphere-Proxy 部署与规则配置</h3>
+<p>Proxy 是独立进程，对应用暴露 MySQL 协议，默认端口 3307。容器部署时注意两点：配置文件挂载进 <code>conf/</code>，MySQL JDBC 驱动放进 <code>ext-lib/</code>（官方镜像不自带）。</p>
+<pre><code class="lang-bash">docker run -d --name ssp-proxy \
+  -p 3307:3307 \
+  -v "$PWD/conf:/opt/shardingsphere-proxy/conf" \
+  -v "$PWD/ext-lib:/opt/shardingsphere-proxy/ext-lib" \
+  apache/shardingsphere-proxy:5.5.2
+# ext-lib 里至少要有 mysql-connector-j，否则启动时报找不到驱动</code></pre>
+<p><code>conf/config-sharding.yaml</code> 完整示例（2 库 × 8 表，订单按 <code>user_id</code> 分库、<code>order_id</code> 分表）：</p>
+<pre><code class="lang-yaml">databaseName: sharding_db
+
+dataSources:
+  ds_0:
+    url: jdbc:mysql://mysql-0:3306/app?useSSL=false&amp;serverTimezone=UTC&amp;allowPublicKeyRetrieval=true
+    username: app
+    password: apppass
+    maxPoolSize: 50
+  ds_1:
+    url: jdbc:mysql://mysql-1:3306/app?useSSL=false&amp;serverTimezone=UTC&amp;allowPublicKeyRetrieval=true
+    username: app
+    password: apppass
+    maxPoolSize: 50
+
+rules:
+  - !SHARDING
+    tables:
+      t_order:
+        actualDataNodes: ds_${0..1}.t_order_${0..7}
+        tableStrategy:
+          standard:
+            shardingColumn: order_id
+            shardingAlgorithmName: order_table_inline
+        keyGenerateStrategy:
+          column: order_id
+          keyGeneratorName: snowflake
+      t_order_item:
+        actualDataNodes: ds_${0..1}.t_order_item_${0..7}
+        tableStrategy:
+          standard:
+            shardingColumn: order_id
+            shardingAlgorithmName: order_item_table_inline
+    bindingTables:
+      - t_order,t_order_item          # 绑定表：同一 order_id 落在同片，JOIN 不跨片
+    broadcastTables:
+      - t_dict                        # 字典表：每个分片各存一份
+    defaultDatabaseStrategy:
+      standard:
+        shardingColumn: user_id
+        shardingAlgorithmName: user_db_inline
+    defaultTableStrategy:
+      none:
+    shardingAlgorithms:
+      user_db_inline:
+        type: INLINE
+        props: {algorithm-expression: "ds_${user_id % 2}"}
+      order_table_inline:
+        type: INLINE
+        props: {algorithm-expression: "t_order_${order_id % 8}"}
+      order_item_table_inline:
+        type: INLINE
+        props: {algorithm-expression: "t_order_item_${order_id % 8}"}
+    keyGenerators:
+      snowflake:
+        type: SNOWFLAKE
+        props: {worker-id: 1}</code></pre>
+<p><code>conf/server.yaml</code> 里再打开两个开关：<code>sql-show: true</code> 打印 Logic SQL 与实际 SQL（排查广播的第一手材料），<code>max-connections-size-per-query: 4</code> 限制单条查询占用的后端连接数，防广播打爆连接池。</p>
+<p>连接并建表。<strong>通过 Proxy 建表，DDL 会自动广播到所有实际分片</strong>：</p>
+<pre><code class="lang-sql">-- mysql -h 127.0.0.1 -P 3307 -u root -p sharding_db
+CREATE TABLE t_order (
+  order_id   BIGINT        NOT NULL,
+  user_id    BIGINT        NOT NULL,
+  amount     DECIMAL(12,2) NOT NULL,
+  status     TINYINT       NOT NULL DEFAULT 0,
+  created_at DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (order_id),
+  KEY idx_user_created (user_id, created_at)
+) ENGINE=InnoDB;
+
+-- 命中 1 库 1 表
+PREVIEW SELECT * FROM t_order WHERE user_id = 42 AND order_id = 10086;
+-- 命中 1 库 8 表 = 8 条实际 SQL（表无法用 user_id 定位）
+PREVIEW SELECT * FROM t_order WHERE user_id = 42 ORDER BY created_at DESC LIMIT 20;</code></pre>
+<blockquote class="warn"><p>注意第二个 <code>PREVIEW</code> 的结果：数据库按 <code>user_id</code> 路由到 1 个库，但表按 <code>order_id</code> 路由，只有 <code>user_id</code> 时无法定位表，于是<strong>该库内 8 张表全部广播</strong>。这正是 3.2 说的「一个键无法覆盖所有路径」——要么把表分片键也改成 <code>user_id</code>（订单号只做全局 ID），要么按 3.4 建冗余表。</p></blockquote>
+<h3 id="42-go-应用接入proxy-模式是唯一选择">4.2 Go 应用接入：Proxy 模式是唯一选择</h3>
+<p>这是 Go 团队最容易走错的一步：<strong>ShardingSphere-JDBC 是 Java 库（jar 包），Go 用不了</strong>。它是把分片逻辑织入 Java 应用的 <code>DataSource</code>，没有跨语言实现；Go 侧能用的只有 Proxy——走标准 MySQL 协议，<code>database/sql</code> 完全无感。</p>
+<div class="table-wrap"><table><thead><tr><th>接入方式</th><th>语言</th><th>部署形态</th><th>Go 可用</th><th>说明</th></tr></thead><tbody><tr><td>ShardingSphere-JDBC</td><td>Java</td><td>嵌入应用进程</td><td><strong>否</strong></td><td>零额外跳数，但只支持 JVM</td></tr><tr><td>ShardingSphere-Proxy</td><td>任意</td><td>独立进程</td><td><strong>是</strong></td><td>多一跳网络，运维多一个组件</td></tr><tr><td>Vitess VTGate</td><td>任意</td><td>独立进程</td><td><strong>是</strong></td><td>MySQL 协议，适合 K8s 大集群</td></tr><tr><td>应用层分片</td><td>任意</td><td>代码内</td><td>是</td><td>无中间件，但路由/归并全自己写</td></tr></tbody></table></div>
+<pre><code class="lang-go">package db
+
+import (
+	"database/sql"
+	"time"
+
+	_ "github.com/go-sql-driver/mysql"
+)
+
+func OpenProxy() (*sql.DB, error) {
+	// 注意库名是逻辑库 sharding_db，不是底层物理库
+	dsn := "root:root@tcp(127.0.0.1:3307)/sharding_db" +
+		"?charset=utf8mb4&amp;parseTime=True&amp;loc=Local&amp;timeout=3s&amp;readTimeout=5s"
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		return nil, err
+	}
+	// 这里是逻辑连接数；Proxy 后端还会按分片数放大，别照搬单库的 200
+	db.SetMaxOpenConns(30)
+	db.SetMaxIdleConns(10)
+	db.SetConnMaxLifetime(30 * time.Minute)
+	return db, db.Ping()
+}</code></pre>
+<p>四条实战约束：</p>
+<ol><li><strong>SQL 里必须带分片键</strong>。ORM 生成的 <code>WHERE id = ?</code> 若 <code>id</code> 不是分片键，就是全分片广播；GORM 场景下要显式加条件，别指望中间件猜。</li><li><strong><code>LastInsertId()</code> 不可靠</strong>。<code>order_id</code> 由 Proxy 的雪花生成器产生，单条插入能拿到，批量插入在部分版本上只返回第一个或 0；重要链路用业务唯一键回查。</li><li><strong>事务不要跨片</strong>。默认 LOCAL 模式下跨片 <code>BEGIN</code> 等于两个独立事务，失败即脏数据；确实需要就把同一聚合根的数据设计到同一片。</li><li><strong><code>SHOW</code> / <code>SET</code> 会被转发但语义可能不同</strong>。<code>SET autocommit=0</code> 这类会话状态在 Proxy 上行为受限，用标准 <code>BeginTx</code> 而不是手写事务语句。</li></ol>
+<h3 id="43-双写迁移单库-分片的三阶段">4.3 双写迁移：单库 → 分片的三阶段</h3>
+<p>不能停机就不能「导出再导入」。标准路径是<strong>双写 + 校验 + 切读 + 停旧写</strong>，每一步都可回滚：</p>
+<pre><code class="lang-text">阶段 0  存量同步   全量导出 + binlog 增量追平，按分片键重算目标片
+阶段 1  双写       写旧库（事实源，失败即失败）+ 写分片（失败只记补偿）
+阶段 2  灰度切读   按 user_id 哈希灰度 1% → 10% → 50% → 100%，双读比对
+阶段 3  停旧写     旧库转只读，保留 7~30 天回滚窗口后下线</code></pre>
+<pre><code class="lang-go">// 双写：旧库是事实源，新库失败不阻塞主流程，交给补偿任务
+func CreateOrder(ctx context.Context, oldDB, newDB *sql.DB, o *Order) error {
+	if err := insertOld(ctx, oldDB, o); err != nil {
+		return err // 旧库失败就是失败，不能让用户以为下单成功
+	}
+	if err := insertNew(ctx, newDB, o); err != nil {
+		dualWriteFailure.Inc()             // 打点告警
+		enqueueCompensation(ctx, o.OrderID) // 按主键回放，幂等 upsert
+	}
+	return nil
+}</code></pre>
+<p>每一步都要有<strong>对账</strong>，否则「双写成功」只是你以为的成功：</p>
+<pre><code class="lang-sql">-- 源库与目标分片各算一遍，按 user_id 的桶逐段比对
+SELECT COUNT(*) AS cnt, COALESCE(SUM(amount), 0) AS total, MAX(order_id) AS max_id
+FROM t_order WHERE user_id &gt;= ? AND user_id &lt; ?;</code></pre>
+<p>比对三个指标：<strong>行数、金额汇总、最大主键</strong>。行数对但金额不对，通常是双写时更新丢了；金额对但行数多，通常是补偿任务重复插入（缺唯一索引）。差异率低于十万分之一再切读，不要凭感觉。</p>
+<h3 id="44-扩容翻倍迁移与一致性哈希">4.4 扩容：翻倍迁移与一致性哈希</h3>
+<p>扩容的本质是<strong>把一部分数据搬到新分片，并让路由规则指向新位置</strong>。取模扩容的迁移量是固定的：</p>
+<div class="table-wrap"><table><thead><tr><th>扩容</th><th>路由变化</th><th>需迁移比例</th><th>说明</th></tr></thead><tbody><tr><td>2 → 4</td><td><code>%2</code> → <code>%4</code></td><td>~50%</td><td>原 0 片的一半去 2 片，1 片的一半去 3 片</td></tr><tr><td>4 → 8 / 8 → 9（一致性哈希）</td><td><code>%4</code>→<code>%8</code> / 环上插节点</td><td>~50% / ~1/9</td><td>取模永远搬一半；一致性哈希只影响相邻区间</td></tr></tbody></table></div>
+<p>翻倍扩容的迁移脚本思路：<strong>先双写，再按主键游标批量搬历史，最后切路由</strong>。批量大小控制在 500~1000，避免大事务与长锁。下面的 SQL 假设两个库在同一实例，跨实例时改成 SELECT 导出 + 批量 INSERT（或走 CDC）：</p>
+<pre><code class="lang-sql">-- 从 ds_0 搬到 ds_2：只搬 user_id % 4 = 2 的部分
+-- 用主键游标而非 OFFSET，避免深分页
+INSERT INTO ds_2.t_order_0 (order_id, user_id, amount, status, created_at)
+SELECT order_id, user_id, amount, status, created_at
+FROM ds_0.t_order_0
+WHERE user_id % 4 = 2 AND order_id &gt; ?
+ORDER BY order_id
+LIMIT 1000
+ON DUPLICATE KEY UPDATE amount = VALUES(amount), status = VALUES(status);</code></pre>
+<p>搬完必须做<strong>逐片计数校验</strong>（<code>src</code> 与 <code>dst</code> 的 <code>COUNT(*)</code> 相等才切路由），再做抽样比对。</p>
+<blockquote class="warn"><p><code>ON DUPLICATE KEY UPDATE</code> 让迁移可重入——中断后从上次的 <code>order_id</code> 继续即可；没有这一条，重跑就会主键冲突，有了它最多重复写（前提是更新列覆盖全）。注意 <code>user_id % 4</code> 无法走索引，生产上要按 <code>user_id</code> 区间分段扫，别一条 SQL 扫全表。</p></blockquote>
+<p>Vitess 把这套流程产品化了：<code>MoveTables</code> 做库表搬迁、<code>Reshard</code> 做分片拆分，底层都是 VReplication 追 binlog，切换时短暂只读。ShardingSphere 5.x 也自带 Scaling 迁移作业，但生产上仍建议自己掌控校验与回滚点。</p>
+<h3 id="45-监控与慢查询先看路由再看执行计划">4.5 监控与慢查询：先看路由，再看执行计划</h3>
+<p>分片下的性能问题分两层：<strong>路由层</strong>（一条 SQL 被放大成几条）和<strong>执行层</strong>（单条 SQL 在单片上慢）。MySQL 篇 3.8 的联合索引顺序、4.5/4.7 的 <code>EXPLAIN</code> 判读依然成立，只是作用域变成了「单片」。</p>
+<p>第一层用 <code>sql-show</code> 日志识别：</p>
+<pre><code class="lang-text">[INFO] Logic SQL : SELECT id, amount FROM t_order WHERE user_id = 42 ORDER BY created_at DESC LIMIT 20
+[INFO] Actual SQL: ds_0 ::: SELECT ... FROM t_order_3 WHERE user_id = 42 ...
+[INFO] Actual SQL: ds_0 ::: SELECT ... FROM t_order_7 ...</code></pre>
+<p>判断标准很直接：<strong>一条 Logic SQL 对应几条 Actual SQL</strong>。1 条是理想；等于分片数是全广播；介于两者之间说明只路由到了部分分片（通常是 <code>IN</code> 或范围条件）。</p>
+<p>第二层用 <code>PREVIEW</code> 确认路由后再 <code>EXPLAIN</code>：</p>
+<pre><code class="lang-sql">PREVIEW SELECT * FROM t_order WHERE order_id = 10086;
+-- 再对单片做执行计划；Proxy 返回多个结果集，用 mysql CLI 看，别用 Go 的 Query
+EXPLAIN SELECT * FROM t_order WHERE user_id = 42 AND order_id = 10086;</code></pre>
+<p>分片下 <code>EXPLAIN</code> 的三个语义变化：</p>
+<div class="table-wrap"><table><thead><tr><th>项</th><th>单库含义</th><th>分片下含义</th></tr></thead><tbody><tr><td>结果集个数</td><td>一个</td><td>每个实际 SQL 一个，Go 侧 <code>Query</code> 只读第一个</td></tr><tr><td><code>rows</code></td><td>该表扫描行数</td><td>单个分片的扫描行数，总量要乘以分片数</td></tr><tr><td><code>Extra: Using filesort</code></td><td>单表排序</td><td>单片内排序；跨片归并排序发生在 Proxy 内存，<code>EXPLAIN</code> 看不到</td></tr></tbody></table></div>
+<p>慢查询治理要加一个维度：<strong>归并开销</strong>。跨片 <code>ORDER BY ... LIMIT</code> 会让每个分片各返回 <code>offset+limit</code> 行，Proxy 再做堆排序——<code>LIMIT 100000, 20</code> 在 16 个分片上就是 160 万行进入归并，99.99% 的数据白传。<code>GROUP BY</code> / <code>DISTINCT</code> 则要把所有分组的中间结果拉回内存，分片数 16、每片 10 万行时，Proxy 的堆内存会先于数据库崩溃。</p>
+<p>对策与单库一致，但更紧迫：<strong>游标分页</strong>（记住上一页的 <code>order_id</code>）、<strong>限制最大页数</strong>、<strong>把导出类需求赶到 OLAP</strong>。</p>
+<hr>
+
+</section>
+<section data-anchor="5-版本与生态">
+<h2 id="5-版本与生态">5. 版本与生态<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>项目</th><th>版本基线</th><th>定位</th><th>关键点</th></tr></thead><tbody><tr><td>ShardingSphere-Proxy</td><td>5.5.x</td><td>独立代理，MySQL/PG 协议</td><td>Go 可用；DistSQL 在线改规则；需自带 JDBC 驱动</td></tr><tr><td>ShardingSphere-JDBC</td><td>5.5.x</td><td>Java 嵌入式</td><td>零跳数，仅 JVM；Go 不可用</td></tr><tr><td>Vitess</td><td>21.x</td><td>云原生 MySQL 分片</td><td>VTGate/VTTablet/topology；K8s Operator；VReplication</td></tr><tr><td>TiDB</td><td>8.x</td><td>原生分布式 HTAP</td><td>MySQL 兼容、Raft 多副本、无需中间件</td></tr><tr><td>PolarDB-X</td><td>2.x</td><td>阿里云分布式</td><td>计算存储分离，兼容 MySQL 生态</td></tr></tbody></table></div>
+<p><strong>ShardingSphere 5.x 的两条线同源不同形态</strong>：JDBC 把内核织进 Java 应用，Proxy 把同一内核包成独立进程。规则语法（<code>!SHARDING</code>、<code>actualDataNodes</code>、DistSQL）两边一致，所以文档可以互相参照；差别在部署与故障域——JDBC 没有额外跳数但升级要动应用，Proxy 升级独立但多一个必须高可用的进程。4.x 到 5.x 的配置从 <code>shardingRule:</code> 平铺结构改成 <code>rules:</code> 列表 + <code>!SHARDING</code> 标签，老配置不能直接复用。</p>
+<p><strong>Vitess 的出身决定了它的形态</strong>：2010 年在 YouTube 为应对 MySQL 分片而写，2018 年进 CNCF、2019 年毕业，Slack、Square、PlanetScale 都在用。它的核心是 <code>VTGate</code>（SQL 路由与归并）+ <code>VTTablet</code>（管理单个 MySQL）+ 拓扑服务（etcd/ZooKeeper/Consul），分片信息放在 vschema 里：</p>
+<pre><code class="lang-json">{
+  "sharded": true,
+  "vindexes": { "user_hash": { "type": "hash" } },
+  "tables": {
+    "orders": { "columnVindexes": [{ "column": "user_id", "name": "user_hash" }] }
+  }
+}</code></pre>
+<pre><code class="lang-bash">vtctldclient ApplyVSchema --vschema-file vschema.json commerce
+vtctldclient Reshard --workflow=reshard_80 --target-keyspace=commerce \
+  --source-shards=- --target-shards=-80,80- create   # 1 片拆 2 片，参数随版本微调</code></pre>
+<p>它的优势是<strong>为 K8s 而生</strong>：vitess-operator 把 keyspace/shard/tablet 都做成 CRD，扩缩容是声明式的；代价是概念多（keyspace、shard、vindex、tablet type），学习曲线比 ShardingSphere 陡。</p>
+<p><strong>云上分布式数据库 vs 中间件分片</strong>：TiDB、PolarDB-X、OceanBase 把分片做进存储引擎，应用连一个地址，扩容由控制面完成，事务是原生的。代价是<strong>迁移成本与厂商绑定</strong>——SQL 兼容度、运维习惯、成本模型都要重新评估。中间件分片则是「保留 MySQL、在应用与 DB 之间加一层」，改造小、可控，但 JOIN/事务/分片的复杂度留在你这边。</p>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>跨片 JOIN 退化成笛卡尔积</strong>：<code>t_order JOIN t_user</code> 且两表分片键不同时，中间件会把每个分片的结果两两组合。对策：用 <code>bindingTables</code> 保证同键同片，小表设 <code>broadcastTables</code>，其余走冗余宽表。</li><li><strong><code>COUNT(*)</code> / <code>ORDER BY</code> 归并内存爆炸</strong>：每个分片都返回全量结果，Proxy 在内存里合并。对策：<code>max-connections-size-per-query</code> 限流、分片数控制在 16~64、聚合走预计算或 OLAP。</li><li><strong>深分页 <code>LIMIT 100000, 20</code></strong>：放大成 <code>分片数 × 100020</code> 行。对策：游标分页（<code>WHERE order_id &gt; ?</code>）、限制最大页数、导出走离线。</li><li><strong>自增主键冲突 / 唯一索引只在片内唯一</strong>：每个分片独立 <code>AUTO_INCREMENT</code>，必然重复；<code>UNIQUE(email)</code> 在 16 个分片里各唯一，全局仍可能重复。对策：写入前用雪花/号段生成主键，全局唯一键单独建索引表或用 Redis 兜底。</li><li><strong>分布式事务误用</strong>：默认 LOCAL 模式下跨片事务各自提交，失败一半。对策：先靠分片键把写收敛到同片；确实跨片用 Outbox，别默认开 XA 拖垮吞吐。</li><li><strong>分片键选错导致全广播</strong>：用 <code>status</code>、<code>created_at</code> 当分片键，或查询条件永远不带分片键。对策：分片键必须是高频等值查询列，且基数远大于分片数。</li><li><strong><code>DISTINCT</code> / <code>GROUP BY</code> 结果错误</strong>：跨片 <code>DISTINCT</code> 需要全局去重，部分实现只做片内去重。对策：确认中间件版本的归并能力，必要时改写成「分片聚合 + 应用层合并」。</li><li><strong>DDL 只在部分分片执行</strong>：绕过 Proxy 直连底层库改表，或新增分片时漏建表。对策：DDL 统一走 Proxy/DistSQL，上线后跑一遍表结构一致性校验。</li><li><strong>连接数放大</strong>：1 个逻辑连接可能对应 N 个后端连接，<code>MaxOpenConns=200</code> 会把底层 MySQL 打满。对策：按「逻辑连接 × 分片数 × 副本数」估算，Proxy 侧设 <code>maxPoolSize</code> 上限。</li></ol>
+<hr>
+
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>ShardingSphere-Proxy</th><th>Vitess</th><th>应用层分片</th><th>TiDB</th></tr></thead><tbody><tr><td>侵入性</td><td>低（改 DSN 端口）</td><td>低（MySQL 协议）</td><td><strong>高</strong>（路由/归并自己写）</td><td>低（换连接地址）</td></tr><tr><td>事务能力</td><td>LOCAL / XA / BASE</td><td>单分片事务，跨片靠应用</td><td>自己实现</td><td><strong>原生分布式事务</strong></td></tr><tr><td>扩容</td><td>Scaling 作业 / 手工双写</td><td><code>Reshard</code> + VReplication</td><td>全手工</td><td>自动调度（Region 分裂）</td></tr><tr><td>SQL 兼容</td><td>高，部分归并受限</td><td>高，MySQL 语法</td><td>取决于实现</td><td>高，少数函数不支持</td></tr><tr><td>JOIN</td><td>同片/广播表可用</td><td>同片可用，跨片受限</td><td>自己拼</td><td>原生支持（跨节点较慢）</td></tr><tr><td>运维成本</td><td>中（多一个代理）</td><td><strong>高</strong>（拓扑、tablet、K8s）</td><td>低（无额外组件）</td><td>中高（集群 + 监控）</td></tr><tr><td>生态/Hosted</td><td>Apache 社区 + 云厂商</td><td>CNCF + PlanetScale</td><td>无</td><td>TiDB Cloud / 各云</td></tr></tbody></table></div>
+<p>一句话决策：</p>
+<ul><li><strong>能换分布式数据库就别自己分片</strong>。数据量在亿级、团队没有专职 DBA、又不想维护中间件，直接上 TiDB / PolarDB-X，事务与扩容都是原生的。</li><li><strong>必须保留 MySQL、Go 技术栈</strong> → <strong>ShardingSphere-Proxy</strong>。JDBC 模式 Go 用不了，这是硬结论；Proxy 是唯一无侵入的选择。</li><li><strong>已经在 K8s、分片规模大（几十到上百片）、需要频繁 Reshard</strong> → Vitess，但要做好学习成本与运维投入的准备。</li><li><strong>分片逻辑简单、只有两三张表、团队想完全掌控</strong> → 应用层分片，省掉中间件但也省不掉归并、扩缩容、对账这些活。</li></ul>
+<blockquote><p>最后一句话：分片是<strong>架构上的最后一张牌</strong>，打出去就很难收回。先用 <a href="../mysql/mysql-guide.html">MySQL 篇</a> 的索引与慢查询治理把单机榨干，再考虑 <a href="../distributed-transaction/distributed-transaction-guide.html">分布式事务</a> 与全局 ID 的配套成本，最后才动分片键。</p></blockquote>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

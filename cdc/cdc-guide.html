@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CDC 变更捕获 · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#7c3aed; --accent-light:#f5f3ff; --accent-dark:#4c1d95;
+    --bg:#faf8ff; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#1e1233; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#4c1d95 0%,#7c3aed 58%,#4c1d95 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">CDC 变更捕获<span class="ver">Debezium 3.x / Canal 1.1.8</span></div>
+  <div class="sub">binlog · 快照 · 顺序</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a href="#2-能力总览">2. 能力总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-mysql-binlog-的三种格式为什么-cdc-必须-row">3.1 MySQL binlog 的三种格式：为什么 CDC 必须 ROW</a>
+  <a class="sub-link" href="#32-快照与增量的衔接位点一致性与那把全局锁">3.2 快照与增量的衔接：位点、一致性与那把全局锁</a>
+  <a class="sub-link" href="#33-debezium-的架构connector-kafka-connect-topic">3.3 Debezium 的架构：Connector → Kafka Connect → Topic</a>
+  <a class="sub-link" href="#34-canal-的架构伪装成从库自己管缓冲">3.4 Canal 的架构：伪装成从库，自己管缓冲</a>
+  <a class="sub-link" href="#35-事务边界与顺序单主键有序跨表要自己拼">3.5 事务边界与顺序：单主键有序，跨表要自己拼</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-起一套-mysql-kafka-debezium">4.1 起一套 MySQL + Kafka + Debezium</a>
+  <a class="sub-link" href="#42-go-消费解析信封四种-optombstone">4.2 Go 消费：解析信封、四种 op、tombstone</a>
+  <a class="sub-link" href="#43-outbox-表-outbox-event-router与业务写入同事务">4.3 Outbox 表 + Outbox Event Router：与业务写入同事务</a>
+  <a class="sub-link" href="#44-schema-变更让下游不认识的新列不致命">4.4 Schema 变更：让下游「不认识的新列」不致命</a>
+  <a class="sub-link" href="#45-延迟与积压怎么判断追平了">4.5 延迟与积压：怎么判断「追平了」</a>
+  <a href="#5-版本与生态">5. 版本与生态</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>变更数据捕获（CDC）技术指南</h1>
+<p><strong>一句话定位</strong>：订阅数据库的变更日志，把「数据变了」变成「事件」，业务代码不用写一行双写逻辑。 <strong>上游仓库</strong>：<a href="https://github.com/debezium/debezium">debezium/debezium</a>、<a href="https://github.com/alibaba/canal">alibaba/canal</a> · <strong>版本基线</strong>：Debezium 3.x、Canal 1.1.8 · <strong>协议</strong>：Apache-2.0</p>
+<p style="opacity:.8;font-size:13.5px">binlog · 快照 · 顺序</p>
+<div class="meta"><span>Debezium</span><span>binlog</span><span>outbox</span></div>
+</div>
+<blockquote><p><strong>一句话定位</strong>：订阅数据库的变更日志，把「数据变了」变成「事件」，业务代码不用写一行双写逻辑。</p>
+<p><strong>上游仓库</strong>：<a href="https://github.com/debezium/debezium">debezium/debezium</a>、<a href="https://github.com/alibaba/canal">alibaba/canal</a> · <strong>版本基线</strong>：Debezium 3.x、Canal 1.1.8 · <strong>协议</strong>：Apache-2.0</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p>「写库之后顺手更新缓存 / 索引 / 数仓」是微服务里最常见的一行代码，也是最容易烂掉的一行：它把两个系统塞进一次请求，却没有给它们任何原子性。</p>
+<div class="table-wrap"><table><thead><tr><th>缺陷</th><th>触发条件</th><th>现场</th></tr></thead><tbody><tr><td><strong>事务不一致</strong></td><td>写库成功，写 ES / Redis / MQ 失败或超时</td><td>库里有、搜索没有，永久漂移，只能靠对账</td></tr><tr><td><strong>漏写</strong></td><td>新增写入口（后台、批处理、运维 SQL）忘了同步</td><td>覆盖率随代码增长单调下降，越老的表越脏</td></tr><tr><td><strong>代码侵入</strong></td><td>每条写路径都要埋点，还要处理重试与顺序</td><td>业务逻辑与同步逻辑耦合，评审时看不出来</td></tr></tbody></table></div>
+<p>并发下还有第四种：A 更新 → B 更新 → B 的同步先到、A 的后到，索引最终停在 A 的旧值。<strong>双写没有全局顺序</strong>，加多少重试都修不好。</p>
+<p>CDC（Change Data Capture）换了一个信息源：<strong>不再问业务代码「你改了什么」，而是读数据库的提交日志</strong>。MySQL 的 binlog、PostgreSQL 的 WAL、Oracle 的 redo，都是「已提交事务的追加写日志」，天然具备三个性质：</p>
+<ul><li><strong>完整</strong>：HTTP 接口、定时任务、运维手工 SQL、批量脚本，只要提交了，日志里就有；</li><li><strong>有序</strong>：按事务提交顺序追加，同一行的变更不会倒序；</li><li><strong>可重放</strong>：位点（GTID / LSN / SCN）持久化后，进程重启从断点继续。</li></ul>
+<p>所以 CDC 的定位不是「同步工具」，而是<strong>把「数据变更」提升为一等事件</strong>：数据库负责产生事实，CDC 负责把事实翻译成事件流，下游各自决定拿它做什么。</p>
+<div class="table-wrap"><table><thead><tr><th>场景</th><th>消费动作</th><th>关键要求</th></tr></thead><tbody><tr><td>缓存失效</td><td>删除 key，而不是写 key</td><td>低延迟；删除天然幂等</td></tr><tr><td>搜索/推荐同步</td><td>按主键 upsert 文档</td><td>顺序；能处理删除</td></tr><tr><td>数仓 / 数据湖入湖</td><td>追加 ODS 或 merge 成宽表</td><td>全量 + 增量；schema 演进</td></tr><tr><td>审计与风控</td><td>记录 before/after 与操作位点</td><td>不可篡改；可追溯</td></tr></tbody></table></div>
+<p>边界也要说清：CDC 只解决「数据变了要通知」，<strong>不解决「多个写要原子」</strong>——那是 <a href="../distributed-transaction/distributed-transaction-guide.html">分布式事务篇</a> 的 Outbox / Saga 要处理的问题；它也<strong>不做业务语义转换</strong>，「支付成功要发券」应该在下游消费端判断，而不是塞进 CDC 管道。CDC 的下游通常是一条 <a href="../kafka/kafka-guide.html">Kafka</a> 事件流，源头的日志格式则绕不开 <a href="../mysql/mysql-guide.html">MySQL</a> 的 binlog。</p>
+<hr>
+
+</section>
+<section data-anchor="2-能力总览">
+<h2 id="2-能力总览">2. 能力总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>实现方式</th><th>边界与代价</th></tr></thead><tbody><tr><td><strong>全量快照 + 增量</strong></td><td>一致性快照读 + 记录位点 + 从位点读日志</td><td>大表快照耗时长；锁位点会短暂阻塞写入</td></tr><tr><td><strong>Schema 演进</strong></td><td>解析 DDL、维护 schema history、发 schema change 事件</td><td>解析不了的 DDL 会让连接器停下</td></tr><tr><td><strong>事务边界还原</strong></td><td>事务元数据 topic，携带事务 id 与事件序号</td><td>需内存缓冲整个事务；跨表原子性仍要下游拼</td></tr><tr><td><strong>Exactly-once 投递</strong></td><td>Kafka Connect KIP-618：数据与 offset 同事务提交</td><td>只覆盖「源库 → Kafka」，之后仍靠幂等</td></tr><tr><td><strong>断点续传</strong></td><td>offset 存 Kafka 内部 topic；GTID / file+pos 作位点</td><td>binlog 被清理后位点失效，只能重做快照</td></tr><tr><td><strong>过滤与路由</strong></td><td><code>table.include.list</code>、SMT、按字段路由 topic</td><td>正则写错会静默漏表，需有「表数量」基线告警</td></tr><tr><td><strong>可观测</strong></td><td>JMX 指标：延迟、队列余量、快照进度、断连次数</td><td>要接 JMX exporter 才能进 Prometheus</td></tr></tbody></table></div>
+<p>三条硬约束，先接受再选型：</p>
+<ol><li><strong>默认是 at-least-once</strong>：崩溃重启、offset 提交失败都会重放。所谓「不重复」是下游幂等的效果，不是投递层的承诺。</li><li><strong>顺序只在单主键内保证</strong>：Kafka 按 key 分区，key 是主键；跨主键、跨表没有全局顺序。</li><li><strong>快照与增量会重叠</strong>：快照读到的行，与随后重放的 binlog 事件可能指向同一行，下游必须按主键 upsert，而不是盲目 append。</li></ol>
+<hr>
+
+<div class="features">
+  <div class="feature"><div class="fh"><h4>零侵入</h4></div><p>业务代码不写双写，变更从 binlog 来</p></div>
+  <div class="feature"><div class="fh"><h4>顺序保证</h4></div><p>同主键有序，事务边界可还原</p></div>
+  <div class="feature"><div class="fh"><h4>快照 + 增量</h4></div><p>先全量再追平，位点可续传</p></div>
+</div>
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-mysql-binlog-的三种格式为什么-cdc-必须-row">3.1 MySQL binlog 的三种格式：为什么 CDC 必须 ROW</h3>
+<div class="table-wrap"><table><thead><tr><th>格式</th><th>记录内容</th><th>能否还原行</th><th>典型问题</th></tr></thead><tbody><tr><td><code>STATEMENT</code></td><td>原始 SQL 文本</td><td><strong>不能</strong></td><td><code>NOW()</code>、<code>RAND()</code>、无 <code>ORDER BY</code> 的 <code>LIMIT</code> 在主从上结果不同</td></tr><tr><td><code>ROW</code></td><td>每一行的变更镜像（before/after）</td><td><strong>能</strong></td><td>日志量大；要 <code>binlog_row_image=FULL</code> 才有完整旧值</td></tr><tr><td><code>MIXED</code></td><td>默认 statement，非确定性语句转 row</td><td>部分能</td><td>CDC 必须同时处理两种，解析路径翻倍</td></tr></tbody></table></div>
+<p><code>STATEMENT</code> 对 CDC 是死路：<code>UPDATE t SET stock = stock - 1</code> 只留下 SQL，消费端要自己连库重算；触发器、存储过程、<code>INSERT ... SELECT</code> 更无法还原成「哪一行变成了什么」。<code>ROW</code> 格式下 binlog 本身就是<strong>行级事实</strong>，CDC 只做解码与信封包装，不需要理解 SQL 语义。</p>
+<pre><code class="lang-ini"># my.cnf（8.0+）；改完必须重启，ROW 是 CDC 的硬前提
+[mysqld]
+server-id                = 1
+log-bin                  = mysql-bin
+binlog_format            = ROW
+binlog_row_image         = FULL
+binlog_row_metadata      = FULL
+gtid_mode                = ON
+enforce_gtid_consistency = ON
+binlog_expire_logs_seconds = 604800   # 7 天，必须大于「最长可接受停机时间」</code></pre>
+<p>两个容易漏的参数：<code>binlog_row_image=MINIMAL</code> 只记主键和被修改列，<code>before</code> 里没有未变的列，下游无法构造完整旧文档（<code>NOBLOB</code> 会省略未改的 TEXT/BLOB），要审计或全量同步必须 <code>FULL</code>；<code>binlog_row_metadata=FULL</code> 让 binlog 自带列名、类型、精度（8.0.1+），否则 Debezium 只能靠 DDL 历史推断，遇到不支持的语法更容易出错。</p>
+<h3 id="32-快照与增量的衔接位点一致性与那把全局锁">3.2 快照与增量的衔接：位点、一致性与那把全局锁</h3>
+<p>CDC 冷启动要回答两个问题：<strong>历史数据怎么拿</strong>、<strong>从哪个位点开始追增量</strong>。两者必须对得上，否则中间会丢一段或重一段。</p>
+<pre><code class="lang-text">T0  FLUSH TABLES WITH READ LOCK          -- 只在这一步持锁
+T1  SHOW BINARY LOG STATUS（8.4+；旧版 SHOW MASTER STATUS）→ file, pos, gtid_executed
+T2  UNLOCK TABLES                        -- 锁通常只持有几十毫秒
+T3  START TRANSACTION WITH CONSISTENT SNAPSHOT（REPEATABLE READ）
+T4  分块 SELECT 每张表 → 发 op=r 事件 → 提交
+T5  从 T1 的位点开始读 binlog → 发 op=c/u/d 事件</code></pre>
+<p>锁的作用只是让「读位点」和「确定快照起点」之间没有新事务插进来，<strong>不是锁住整个快照过程</strong>。Debezium 的 <code>snapshot.lock.timeout.ms</code> 默认 10 秒，拿不到锁就让快照失败重试，而不是无限等待把业务拖死；锁被长时间占用时 <code>HoldingGlobalLock=1</code> 会一直为真，这是最该告警的指标之一。</p>
+<p><code>FLUSH TABLES WITH READ LOCK</code> 的替代方案，按侵入性从低到高：</p>
+<ol><li><strong>在只读副本上快照</strong>：锁只影响副本，主库写入无感；前提是副本延迟为 0，且连接器能读到副本的 binlog。</li><li><strong><code>snapshot.lock.timeout.ms=0</code></strong>：拿不到锁立即失败，由调度层在低峰重试，用「失败重试」换「绝不阻塞业务」。</li><li><strong><code>snapshot.mode=no_data</code> + 增量快照</strong>：先只同步 schema，再用信号表触发 <code>execute-snapshot</code>，按 chunk 读取、不持全局锁；适合超大表，代价是链路要分两步编排。</li></ol>
+<p>位点选 GTID 还是 file+pos，直接决定主从切换后能不能续上：</p>
+<div class="table-wrap"><table><thead><tr><th>位点</th><th>形态</th><th>主从切换后</th><th>建议</th></tr></thead><tbody><tr><td><strong>file + pos</strong></td><td><code>mysql-bin.000003:154</code></td><td>新主库的文件名/偏移可能完全不同，位点错位</td><td>单机或从不切换的库</td></tr><tr><td><strong>GTID</strong></td><td><code>3e11fa47-...:1-100</code></td><td>全局唯一，新主从集合能识别已执行事务</td><td>生产默认，必须开 <code>gtid_mode=ON</code></td></tr></tbody></table></div>
+<p>还有一个反直觉的现象：快照读到的行，可能比随后重放的 binlog 事件更新。某行在 T1 之后被改过，快照里已是 T3 的值，而 T1 的事件稍后才到；下游无条件覆盖会<strong>短暂回退</strong>到旧值，等 T3 事件到达才恢复。解法是让写入单调：比较 <code>source.ts_ms</code> 或业务版本号，旧事件直接丢弃。</p>
+<h3 id="33-debezium-的架构connector-kafka-connect-topic">3.3 Debezium 的架构：Connector → Kafka Connect → Topic</h3>
+<pre><code class="lang-text">MySQL ──binlog──► Debezium Connector（快照线程 + binlog client）
+                        │ SourceRecord
+                        ▼
+                 Kafka Connect Worker（SMT、序列化）
+                        │
+        ┌───────────────┼────────────────┐
+        ▼               ▼                ▼
+  &lt;prefix&gt;.&lt;db&gt;.&lt;table&gt;   ...      &lt;prefix&gt;.transaction
+        └── offset 存 connect-offsets，schema 历史存 schema-changes.&lt;prefix&gt;</code></pre>
+<p>连接器本身不写 Kafka，它把 <code>SourceRecord</code> 交给 Kafka Connect；<strong>offset 与 schema history 都存在 Kafka 内部 topic</strong>，所以 Connect 集群是无状态的，换一台 worker 也能接着跑。表级 topic 名是 <code>&lt;topic.prefix&gt;.&lt;database&gt;.&lt;table&gt;</code>。</p>
+<pre><code class="lang-json">{
+  "before": { "id": 1001, "status": "PENDING" },
+  "after":  { "id": 1001, "status": "PAID" },
+  "source": { "version": "3.7.1.Final", "connector": "mysql", "db": "inventory",
+              "table": "orders", "ts_ms": 1786435255000, "snapshot": "false",
+              "gtid": "3e11fa47-...:42", "file": "mysql-bin.000003", "pos": 1572, "row": 0 },
+  "op": "u", "ts_ms": 1786435255680,
+  "transaction": { "id": "3e11fa47:42", "total_order": 1 }
+}</code></pre>
+<div class="table-wrap"><table><thead><tr><th>字段</th><th>含义</th><th>使用注意</th></tr></thead><tbody><tr><td><code>before</code></td><td>变更前整行；<code>c</code> 时为 <code>null</code></td><td>受 <code>binlog_row_image</code> / <code>REPLICA IDENTITY</code> 影响，可能只有主键</td></tr><tr><td><code>after</code></td><td>变更后整行；<code>d</code> 时为 <code>null</code></td><td><code>r</code>（快照读）与 <code>c</code>/<code>u</code> 都从这里取新值</td></tr><tr><td><code>op</code></td><td><code>c</code> 新增、<code>u</code> 更新、<code>d</code> 删除、<code>r</code> 快照读、<code>t</code> truncate</td><td>不要只处理 <code>c/u</code>，否则快照数据全丢</td></tr><tr><td><code>source</code></td><td>位点与元数据：库、表、GTID、file、pos、row</td><td>做幂等键、排查「这条事件从哪来」</td></tr><tr><td><code>source.ts_ms</code></td><td><strong>binlog 事件时间</strong>（数据库侧）</td><td>计算延迟用它，不要用顶层 <code>ts_ms</code></td></tr><tr><td><code>ts_ms</code></td><td>连接器<strong>处理</strong>这条事件的时间</td><td>与 <code>source.ts_ms</code> 的差值≈链路延迟</td></tr></tbody></table></div>
+<p>Kafka 消息的 key 是主键 JSON（如 <code>{"id":1001}</code>），Debezium 用它做分区，所以<strong>同一主键天然落同一分区、保持顺序</strong>。没有主键的表 key 为 <code>null</code>，会被轮询到不同分区，更新和删除都无法定位行——这不是配置问题，是模型问题。</p>
+<h3 id="34-canal-的架构伪装成从库自己管缓冲">3.4 Canal 的架构：伪装成从库，自己管缓冲</h3>
+<pre><code class="lang-text">MySQL ──dump 协议（server_id=伪从库）──► Canal Server
+                                          ├─ eventParser：协议解析
+                                          ├─ eventSink：过滤/加工
+                                          ├─ eventStore：环形缓冲 + ack
+                                          └─ metaManager：位点持久化
+                                                │
+                              ┌─────────────────┴─────────────────┐
+                              ▼                                   ▼
+                        TCP 客户端（ack）              Kafka / RocketMQ / RabbitMQ</code></pre>
+<p>Canal 把「伪装从库」做得很彻底：它向 MySQL 发 <code>COM_BINLOG_DUMP</code>，用自己的 <code>server_id</code> 注册，MySQL 认为多了一个副本，开始推 binlog。区别在于它不写 relay log、不重放 SQL，而是解析成结构化事件放进 <code>eventStore</code>，客户端按 batch 拉取并 ack 位点，ack 之后才推进消费位置。</p>
+<p>它和 Debezium 的差异不在「能不能捕获」，而在<strong>职责边界</strong>：</p>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>Debezium</th><th>Canal</th></tr></thead><tbody><tr><td>部署形态</td><td>Kafka Connect 集群 + Kafka（或 Server 单机）</td><td>独立 JVM；HA 依赖 ZooKeeper 选主</td></tr><tr><td>全量快照</td><td>连接器内置，一致性快照 + 增量快照</td><td>Server <strong>不做</strong>快照，全量由 canal-adapter 另起任务</td></tr><tr><td>Schema</td><td>DDL 解析 + schema history topic</td><td>解析 DDL 维护表结构，主要面向 MySQL</td></tr><tr><td>下游协议</td><td>Kafka 生态（任意客户端、SMT、Connect）</td><td>TCP 私有协议 / 直投 MQ；Java 客户端为主</td></tr><tr><td>生态绑定</td><td>多云、多源（MySQL/PG/Oracle/Mongo…）</td><td>阿里系（RDS、ADB、DTS、RocketMQ）</td></tr><tr><td>运维成本</td><td>高（Connect + Kafka + 内部 topic）</td><td>中（一个 JVM + 可选 ZK）</td></tr></tbody></table></div>
+<p>Canal 的取舍很清晰：<strong>轻、贴 MySQL、与阿里云生态无缝</strong>；代价是快照能力弱、跨源支持少、社区迭代慢（1.1.8 是 2025-01 的版本）。Debezium 反过来：重，但把「快照、schema 历史、事务元数据、多 sink」都做进了平台。</p>
+<h3 id="35-事务边界与顺序单主键有序跨表要自己拼">3.5 事务边界与顺序：单主键有序，跨表要自己拼</h3>
+<div class="table-wrap"><table><thead><tr><th>范围</th><th>是否有序</th><th>是否原子</th><th>说明</th></tr></thead><tbody><tr><td>单表、单主键</td><td><strong>是</strong></td><td>事件级</td><td>key=主键，落同一分区；同一行的 c/u/d 按提交顺序到达</td></tr><tr><td>单表、跨主键</td><td>分区内有序，跨分区无序</td><td>否</td><td>不要假设「A 先于 B」</td></tr><tr><td>同库跨表事务</td><td>各自表内有序</td><td><strong>否</strong></td><td>默认逐条发，下游可能先看到订单、后看到库存</td></tr><tr><td>快照 + 增量</td><td>不保证</td><td>否</td><td>快照是「某一时刻的读」，与增量事件会重叠</td></tr></tbody></table></div>
+<p>跨表事务要还原，必须开事务元数据：连接器为每条事件加上 <code>transaction{id,total_order,data_collection_order}</code>，并额外写 <code>&lt;topic.prefix&gt;.transaction</code>，其中 <code>status</code> 为 <code>BEGIN</code>/<code>END</code>、带 <code>event_count</code>。消费端按 <code>transaction.id</code> 缓冲，收到 <code>END</code> 后再在一个本地事务里落库；<code>total_order</code> 排序，<code>data_collection_order</code> 表示该表在事务内的相对顺序。代价很实在：<strong>连接器要在内存里攒完整个事务才能发</strong>，大事务会直接放大堆内存（见 §6）。因此下游只关心单表时不要开它；若业务要求「订单与明细必须同时可见」，与其在消费端拼事务，不如把两张表合成一个聚合、发一条自包含事件——CDC 不负责帮你重新设计领域模型。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-起一套-mysql-kafka-debezium">4.1 起一套 MySQL + Kafka + Debezium</h3>
+<pre><code class="lang-yaml">services:
+  mysql:
+    image: mysql:8.4
+    command:
+      - --server-id=1
+      - --log-bin=mysql-bin
+      - --binlog-format=ROW
+      - --binlog-row-image=FULL
+      - --binlog-row-metadata=FULL
+      - --gtid-mode=ON
+      - --enforce-gtid-consistency=ON
+      - --binlog-expire-logs-seconds=604800
+      - --mysql-native-password=ON
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: inventory
+    ports: ["3306:3306"]
+    volumes: ["./init.sql:/docker-entrypoint-initdb.d/init.sql:ro"]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-proot"]
+      interval: 5s
+      retries: 20
+
+  kafka:
+    image: apache/kafka:4.1.0
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+
+  connect:
+    image: quay.io/debezium/connect:3.7.1.Final
+    depends_on: { mysql: { condition: service_healthy }, kafka: { condition: service_started } }
+    environment:
+      BOOTSTRAP_SERVERS: kafka:9092
+      GROUP_ID: cdc
+      CONFIG_STORAGE_TOPIC: connect-configs
+      OFFSET_STORAGE_TOPIC: connect-offsets
+      STATUS_STORAGE_TOPIC: connect-status
+      CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      STATUS_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+    ports: ["8083:8083"]</code></pre>
+<pre><code class="lang-sql">-- init.sql：业务表 + CDC 账号（RELOAD 是 FTWRL 的前提）
+CREATE TABLE inventory.orders (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  order_no VARCHAR(32) NOT NULL,
+  status VARCHAR(16) NOT NULL,
+  amount DECIMAL(10,2) NOT NULL,
+  updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (id), UNIQUE KEY uk_order_no (order_no)
+) ENGINE=InnoDB;
+
+CREATE USER 'debezium'@'%' IDENTIFIED WITH mysql_native_password BY 'dbz';
+GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'debezium'@'%';</code></pre>
+<pre><code class="lang-bash">docker compose up -d
+curl -s -X POST http://localhost:8083/connectors -H 'Content-Type: application/json' -d '{
+  "name": "inventory-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+    "tasks.max": "1", "database.hostname": "mysql", "database.port": "3306",
+    "database.user": "debezium", "database.password": "dbz",
+    "database.server.id": "184054", "topic.prefix": "inventory",
+    "table.include.list": "inventory.orders,inventory.outbox",
+    "schema.history.internal.kafka.bootstrap.servers": "kafka:9092",
+    "schema.history.internal.kafka.topic": "schema-changes.inventory",
+    "database.connectionTimeZone": "UTC",
+    "decimal.handling.mode": "string",
+    "provide.transaction.metadata": "true"
+  }
+}'
+curl -s http://localhost:8083/connectors/inventory-connector/status
+docker compose exec kafka /opt/kafka/bin/kafka-console-consumer.sh \
+  --bootstrap-server kafka:9092 --topic inventory.inventory.orders --from-beginning --max-messages 3</code></pre>
+<p><code>database.server.id</code> 必须与 MySQL 的 <code>server-id</code> 不同，否则会抢同一个副本槽位；MySQL 连接器<strong>永远只有一个 task</strong>，<code>tasks.max</code> 调大不会并行，真正的并行在 3.x 的快照 chunk 上。</p>
+<h3 id="42-go-消费解析信封四种-optombstone">4.2 Go 消费：解析信封、四种 op、tombstone</h3>
+<pre><code class="lang-go">package main
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"log/slog"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
+
+	"github.com/segmentio/kafka-go"
+)
+
+type Envelope struct {
+	Before map[string]any `json:"before"`
+	After  map[string]any `json:"after"`
+	Source Source         `json:"source"`
+	Op     string         `json:"op"`
+}
+
+type Source struct {
+	Table string `json:"table"`
+	TsMs  int64  `json:"ts_ms"`
+}
+
+var (
+	mu   sync.Mutex
+	rows = map[string]map[string]any{} // PK JSON -&gt; 行，仅演示；生产按主键 UPSERT
+)
+
+func main() {
+	r := kafka.NewReader(kafka.ReaderConfig{
+		Brokers:     []string{env("KAFKA_BROKERS", "localhost:9092")},
+		GroupID:     "cdc-sync",
+		Topic:       env("KAFKA_TOPIC", "inventory.inventory.orders"),
+		StartOffset: kafka.FirstOffset,
+		MinBytes:    1,
+		MaxBytes:    10 &lt;&lt; 20,
+	})
+	defer r.Close()
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	for {
+		m, err := r.FetchMessage(ctx)
+		if err != nil {
+			if ctx.Err() != nil {
+				return
+			}
+			slog.Error("fetch", "err", err)
+			continue
+		}
+		if err := handle(m); err != nil {
+			slog.Error("handle", "offset", m.Offset, "err", err) // 不提交 → 重启后重放
+			continue
+		}
+		if err := r.CommitMessages(ctx, m); err != nil {
+			slog.Error("commit", "offset", m.Offset, "err", err)
+		}
+	}
+}
+
+func handle(m kafka.Message) error {
+	if m.Value == nil { // tombstone：compact topic 的删除标记
+		return nil
+	}
+	var ev Envelope
+	if err := json.Unmarshal(m.Value, &amp;ev); err != nil {
+		return fmt.Errorf("decode event: %w", err)
+	}
+	key := string(m.Key) // 主键 JSON，如 {"id":1001}
+	switch ev.Op {
+	case "r", "c", "u": // 快照读 / 新增 / 更新，统一 upsert
+		mu.Lock()
+		defer mu.Unlock()
+		if key == "" {
+			return fmt.Errorf("table %s has no primary key", ev.Source.Table)
+		}
+		rows[key] = ev.After // 生产：INSERT ... ON DUPLICATE KEY UPDATE
+		return nil
+	case "d":
+		mu.Lock()
+		defer mu.Unlock()
+		delete(rows, key) // 生产：DELETE ... WHERE 主键 = ?
+		return nil
+	default: // t=truncate 等
+		slog.Warn("skip op", "op", ev.Op, "table", ev.Source.Table)
+		return nil
+	}
+}
+
+func env(k, def string) string {
+	if v := os.Getenv(k); v != "" {
+		return v
+	}
+	return def
+}</code></pre>
+<p>三个细节决定这段代码在生产能不能活：</p>
+<ul><li><strong><code>r</code> 必须当 upsert</strong>：快照事件不是「插入」，下游已有数据时要覆盖；只处理 <code>c/u</code> 会在重做快照时留下旧文档。</li><li><strong>tombstone 是正常的</strong>：<code>tombstones.on.delete=true</code>（默认）时，删除事件后跟一条 value 为 <code>null</code> 的消息，用于 compact topic 的物理清理；当成解析错误会让消费者卡死。</li><li><strong>先提交业务、再提交 offset</strong>：反了就会丢消息。重复靠主键 upsert 吸收；需要精确去重时，另存 <code>(gtid,file,pos)</code> 并定期清理。</li></ul>
+<h3 id="43-outbox-表-outbox-event-router与业务写入同事务">4.3 Outbox 表 + Outbox Event Router：与业务写入同事务</h3>
+<p>CDC 最大的优势是零侵入，但「业务事件」往往需要业务语义（订单已支付、库存已锁定）。折中做法是<strong>仍然写一张 outbox 表，但由 CDC 负责搬运</strong>：业务只多做一次同库 INSERT，不碰 Kafka。</p>
+<pre><code class="lang-sql">CREATE TABLE outbox (
+  id            CHAR(36)    NOT NULL,
+  aggregatetype VARCHAR(32) NOT NULL,   -- 路由维度：order / payment
+  aggregateid   VARCHAR(64) NOT NULL,   -- 分区 key：订单号
+  type          VARCHAR(64) NOT NULL,   -- 事件类型：order.paid
+  payload       JSON        NOT NULL,
+  created_at    DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (id), KEY idx_created (created_at)
+) ENGINE=InnoDB;
+
+START TRANSACTION;
+UPDATE orders SET status = 'PAID' WHERE order_no = 'A1001' AND status = 'PENDING';
+INSERT INTO outbox (id, aggregatetype, aggregateid, type, payload)
+VALUES (UUID(), 'order', 'A1001', 'order.paid', JSON_OBJECT('order_no', 'A1001', 'amount', 19.90));
+COMMIT;  -- 业务行与事件行同生共死，没有双写窗口</code></pre>
+<p>在连接器配置里加一个 SMT：</p>
+<pre><code class="lang-json">{
+  "transforms": "outbox",
+  "transforms.outbox.type": "io.debezium.transforms.outbox.EventRouter",
+  "transforms.outbox.predicate": "isOutbox",
+  "predicates": "isOutbox",
+  "predicates.isOutbox.type": "org.apache.kafka.connect.transforms.predicates.TopicNameMatches",
+  "predicates.isOutbox.pattern": "inventory\\.inventory\\.outbox",
+  "transforms.outbox.route.by.field": "aggregatetype",
+  "transforms.outbox.route.topic.replacement": "outbox.event.${routedByValue}",
+  "transforms.outbox.table.field.event.key": "aggregateid",
+  "transforms.outbox.table.field.event.payload": "payload",
+  "transforms.outbox.table.expand.json.payload": "true",
+  "transforms.outbox.table.fields.additional.placement": "type:header:eventType"
+}</code></pre>
+<p>SMT <strong>只处理 <code>op=c</code></strong>，所以 outbox 只该 INSERT、不该 UPDATE；<code>aggregateid</code> 变成 Kafka key，保证同一订单的事件有序；<code>eventType</code> 放在 header 里，消费端不解析 body 就能路由。outbox 行在事件进入 Kafka 后可按时间清理（例如保留 3 天），但<strong>连接器停机期间别清</strong>——binlog 里还有，行没了不影响追增量，可一旦重做快照就补不回来了。</p>
+<h3 id="44-schema-变更让下游不认识的新列不致命">4.4 Schema 变更：让下游「不认识的新列」不致命</h3>
+<div class="table-wrap"><table><thead><tr><th>变更</th><th>风险</th><th>做法</th></tr></thead><tbody><tr><td><strong>加列</strong>（可空/有默认）</td><td>低</td><td>消费端忽略未知字段；Avro/Protobuf 需 registry 兼容级别 <code>BACKWARD</code></td></tr><tr><td><strong>加列</strong>（NOT NULL 无默认）</td><td>中</td><td>老行快照会带 <code>null</code>，下游必须容忍；分两次 DDL</td></tr><tr><td><strong>改类型</strong> <code>INT → BIGINT</code></td><td>中</td><td>JSON 数字无感；强类型 schema 可能不兼容，按 expand/contract 走</td></tr><tr><td><strong>改名 / 删列</strong></td><td><strong>高</strong></td><td>先加新列双写 → 回填 → 切读 → 删旧列，不要一步到位</td></tr></tbody></table></div>
+<p>两个具体坑：<code>decimal.handling.mode</code> 默认 <code>precise</code>，JSON 里是二进制/base64 结构而不是 <code>19.90</code>，Go 侧解析会直接失败——建议显式设成 <code>string</code>；MySQL 的 <code>time.precision.mode</code> 默认 <code>adaptive_time_microseconds</code>，<code>DATETIME(6)</code> 会变成微秒整数，和 <code>connect</code> 模式输出的毫秒时间戳不是同一种东西。<strong>跨语言消费时，一律在连接器侧把类型收敛成字符串/整数，别让每个消费者各自猜。</strong></p>
+<h3 id="45-延迟与积压怎么判断追平了">4.5 延迟与积压：怎么判断「追平了」</h3>
+<div class="table-wrap"><table><thead><tr><th>指标（JMX）</th><th>含义</th><th>判读</th></tr></thead><tbody><tr><td><code>MilliSecondsBehindSource</code></td><td>binlog 事件时间到连接器处理时间的差</td><td>稳态应 &lt; 1s；持续升高说明追不上</td></tr><tr><td><code>QueueRemainingCapacity</code></td><td>事件队列剩余容量</td><td>长期为 0 = 写 Kafka 反压，先查 broker/网络</td></tr><tr><td><code>SnapshotCompleted</code> / <code>RemainingTableCount</code></td><td>快照是否完成 / 还剩几张表</td><td>1 且 0 才算快照结束</td></tr><tr><td><code>HoldingGlobalLock</code></td><td>是否持有全局读锁</td><td>长期为 1 = 业务写入被阻塞，最高优先级告警</td></tr></tbody></table></div>
+<pre><code class="lang-promql"># 延迟超过 5s（指标前缀取决于 jmx_exporter 规则）
+max by (server) (debezium_metrics_MilliSecondsBehindSource{context="binlog"}) &gt; 5000</code></pre>
+<p>「追平」不能只看 Kafka lag：lag=0 只说明消费到了 Kafka 末尾，不说明 Kafka 里有最新数据。可靠做法是写一条 <strong>canary 行</strong>（专用表，每 10 秒更新一次），端到端量 <code>now - 消费到的 source.ts_ms</code>；这个数稳定在阈值内才叫真追平。再配一条 <code>MAX(updated_at)</code> 与下游最大时间戳的对账，防止「连接器活着但表被过滤掉了」。</p>
+<hr>
+
+</section>
+<section data-anchor="5-版本与生态">
+<h2 id="5-版本与生态">5. 版本与生态<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>组件</th><th>版本（截至 2026-11）</th><th>与本篇相关的要点</th></tr></thead><tbody><tr><td><strong>Debezium</strong></td><td><strong>3.7.1.Final</strong></td><td>Java 17+；3.0 基线 Kafka 3.8，3.2 起支持 Kafka 4.x，3.3 起核心连接器支持 Exactly-once（KIP-618）；3.x 快照支持 chunk 并行</td></tr><tr><td><strong>Canal</strong></td><td><strong>1.1.8</strong>（2025-01）</td><td>支持 MySQL 5.1–8.0；<code>serverMode</code> 可选 tcp/kafka/rocketmq/rabbitmq/pulsar；canal-admin 管配置，canal-adapter 做全量+写下游</td></tr><tr><td><strong>Kafka</strong></td><td><strong>4.x</strong></td><td>KRaft-only；Connect 的 EOS 要求 3.3+；Debezium 3.3 起以 Kafka 4.1 为构建基线</td></tr><tr><td><strong>Flink CDC</strong></td><td><strong>3.x</strong></td><td>Pipeline 连接器把「全量+增量」做成一个 Flink 作业，靠 checkpoint 保证端到端一次</td></tr></tbody></table></div>
+<p>Debezium 3.x 的几个升级要点：</p>
+<ul><li><strong>配置改名</strong>：<code>database.history.*</code> 在 2.x 已废弃，3.x 用 <code>schema.history.internal.*</code>；老配置直接启动会报缺参。</li><li><strong>信号表</strong>：增量快照必须有 <code>signal.data.collection</code> 指向的表（示例名 <code>debezium_signal</code>，列为 <code>id/type/data</code>）；3.0 移除了 <code>additional-condition</code>，只认 <code>additional-conditions</code>。</li><li><strong>Exactly-once</strong>：worker 设 <code>exactly.once.source.support=enabled</code>，连接器设 <code>exactly.once.support=required</code>，<code>transaction.boundary</code> 保持默认 <code>poll</code>；它只保证「源记录 + offset」原子写 Kafka。</li></ul>
+<p>Canal 与阿里生态的绑定是优势也是天花板：RDS、ADB、DTS、RocketMQ 一条链路很顺，canal-adapter 直接写 ES/HBase；但跨源（PG、Oracle、Mongo）没有对等能力，社区节奏也慢。Flink CDC 则是另一个物种：它把 CDC 当<strong>流式 ETL 的 source</strong>，优势是无需 Kafka、全增量一体、checkpoint 容错；若需要「多个异构系统订阅同一份变更」，仍要落到 Kafka，而不是让每个团队各起一个 Flink 作业。</p>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>大事务打爆堆内存</strong>：<code>max.queue.size</code>（默认 8192 条）、<code>max.batch.size</code>（2048 条）只是队列上限；真正危险的是开了 <code>provide.transaction.metadata</code> 后连接器要缓冲整个事务。先限事务大小，再调 <code>max.queue.size.in.bytes</code> 和堆。</li><li><strong>DDL 解析失败导致连接器停</strong>：Debezium 用 DDL 维护 schema，遇到不认识的语法直接 <code>ParsingException</code>，task 变 FAILED 并在同一条 binlog 上循环重启。DDL 先在 canary 表跑一遍；救急可开 <code>schema.history.internal.skip.unparseable.ddl</code>，但那意味着 schema 历史已不可信。</li><li><strong>binlog 过期，位点永久失效</strong>：<code>binlog_expire_logs_seconds</code> 小于「最长停机时间」时，重启会报找不到日志文件，只能重做快照。保留期至少 7 天，并对延迟与连接器存活同时告警。</li><li><strong>重做快照时沿用旧 offset</strong>：只改 <code>snapshot.mode=initial</code> 没用——offset 还在，连接器认为没必要快照。要么删连接器并清 <code>connect-offsets</code>，要么用新名字 + 新 <code>topic.prefix</code> 起一套再切流量。</li><li><strong>以为 EOS 能端到端去重</strong>：Kafka Connect 的 exactly-once 只覆盖「源 → Kafka」，Kafka 到下游仍是 at-least-once；非幂等副作用（发短信、扣款）要单独去重。</li><li><strong>用时间戳当幂等键</strong>：<code>ts_ms</code> 每次重放都会变，去重必然失效。稳定键是 <code>source.gtid</code> 或 <code>source.file + pos</code>；更稳的是直接用主键 upsert，让重复天然无害。</li><li><strong><code>before</code> 里没有完整旧值</strong>：MySQL 的 <code>binlog_row_image=MINIMAL</code> 只给主键和被改列；PostgreSQL 默认 <code>REPLICA IDENTITY DEFAULT</code> 同样只给主键，要完整旧值得 <code>ALTER TABLE ... REPLICA IDENTITY FULL</code>（代价是 WAL 放大）。</li><li><strong>时区导致快照与增量差 8 小时</strong>：<code>TIMESTAMP</code> 由驱动按连接时区归一化，<code>DATETIME</code> 不带时区。显式设 <code>database.connectionTimeZone=UTC</code>、MySQL <code>default-time-zone='+00:00'</code>、JVM <code>-Duser.timezone=UTC</code>，三处必须一致。</li><li><strong>快照锁把主库写挂</strong>：<code>FLUSH TABLES WITH READ LOCK</code> 期间所有写入排队；大表 DDL、长事务会让锁等更久。把 <code>snapshot.lock.timeout.ms</code> 设为可控值，优先在只读副本快照，超大表改增量快照。</li><li><strong>无主键表</strong>：key 为 <code>null</code>，事件被轮询到各分区，同一行的顺序和删除都无法保证。补主键，或用 <code>message.key.columns</code> 指定业务唯一键。</li><li><strong>内部 topic 副本数沿用单机配置</strong>：demo 里 <code>connect-offsets</code>、<code>connect-configs</code> 和 schema history topic 都是 1 副本；生产照抄的话 broker 一挂就丢位点或 schema 历史，恢复时可能重复快照。按 broker 数把 worker 的 <code>*.replication.factor</code> 提到 3、<code>min.insync.replicas=2</code>，schema history topic 也要单独确认副本数。</li><li><strong>监控只看 connector 状态</strong>：<code>/connectors/{name}/status</code> 里 <code>connector.state=RUNNING</code> 但 <code>tasks[].state=FAILED</code> 很常见；必须分别判断，并对 task 重启次数告警。</li><li><strong>大字段撑爆单条消息</strong>：LONGBLOB/长文本会让单条事件超过 Kafka <code>max.request.size</code>（默认 1MB），表现为 <code>RecordTooLargeException</code>。用 <code>producer.override.max.request.size</code> 放大，同时评估是否该把大字段拆表。</li><li><strong>把 CDC 当强一致读</strong>：端到端延迟通常 100ms~数秒，写完立刻读下游必然读不到。「读己之写」要走主库或本地缓存，不能指望 CDC 追平。</li></ol>
+<hr>
+
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>Debezium</th><th>Canal</th><th>Maxwell</th><th>Flink CDC</th></tr></thead><tbody><tr><td><strong>部署复杂度</strong></td><td>高：Kafka Connect + Kafka + 内部 topic</td><td>中：独立 JVM，HA 需 ZK</td><td><strong>低</strong>：单进程 + 配置</td><td>高：Flink 集群 + checkpoint 存储</td></tr><tr><td><strong>全量快照</strong></td><td>内置一致性快照 + 增量快照</td><td>Server 不做，adapter 另起全量任务</td><td>支持 bootstrap</td><td>内置，全增量一体</td></tr><tr><td><strong>Schema 演进</strong></td><td>强：DDL 解析 + schema history</td><td>中：解析 DDL，主要面向 MySQL</td><td>弱：基本透传</td><td>强：部分链路支持 schema evolution</td></tr><tr><td><strong>事务边界</strong></td><td>有 transaction metadata topic</td><td>有 begin/end 事件</td><td>有 <code>xid</code></td><td>有 changelog 语义</td></tr><tr><td><strong>投递语义</strong></td><td>at-least-once；3.3+ 源→Kafka EOS</td><td>at-least-once</td><td>at-least-once</td><td>checkpoint 端到端一次</td></tr><tr><td><strong>输出</strong></td><td>Kafka（或 Server 到 Pulsar/Kinesis 等）</td><td>TCP / Kafka / RocketMQ</td><td>Kafka / Kinesis / SQS</td><td>Flink 表 / 湖仓 / Kafka</td></tr><tr><td><strong>生态</strong></td><td>最广：多源、SMT、Operator、云托管</td><td>阿里系：RDS/ADB/DTS/RocketMQ</td><td>轻量工具</td><td>流计算生态</td></tr><tr><td><strong>适合场景</strong></td><td>跨国队、多云、多源、长期演进</td><td>阿里云 RDS、RocketMQ 体系</td><td>小团队快速接 Kafka</td><td>流式 ETL、湖仓入湖、实时宽表</td></tr></tbody></table></div>
+<p>一句话决策：</p>
+<ul><li><strong>多云 / 跨国队 / 多源（MySQL + PG + Mongo）</strong> → Debezium。平台复杂度高，但快照、schema 历史、事务元数据、SMT 都是现成的，出问题也有指标可查。</li><li><strong>阿里云 RDS + RocketMQ 生态、只要 MySQL</strong> → Canal。部署轻、链路短，配 canal-adapter 能直接写 ES/HBase。</li><li><strong>只想把变更丢进 Kafka，不想维护 Connect</strong> → Maxwell。单进程、配置少，功能也少，适合小规模。</li><li><strong>目标是湖仓/数仓的实时入湖，而不是给多个业务订阅</strong> → Flink CDC。别用它替代事件总线，它的强项是「全量 + 增量 + 变换 + 写入」的一条作业。</li><li><strong>写入路径只有一两处、团队没有 Kafka 运维能力</strong> → 先别上 CDC。直接在写库的同一个本地事务里写 outbox，用轮询投递，复杂度低一个数量级。</li></ul>
+<p>最后一条经验：CDC 的难点从来不是「把 binlog 读出来」，而是<strong>位点、幂等、schema 演进</strong>这三件长期维护的事。选型时先问「谁负责在凌晨三点处理 task FAILED」，而不是「谁的功能多」。</p>
+<p>参考：<a href="https://debezium.io/documentation/">https://debezium.io/documentation/</a> · <a href="https://github.com/alibaba/canal/wiki">https://github.com/alibaba/canal/wiki</a> · <a href="https://nightlies.apache.org/flink/flink-cdc-docs-stable/">https://nightlies.apache.org/flink/flink-cdc-docs-stable/</a></p>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

@@ -6,7 +6,7 @@
 
 能读、能查、能直接抄代码的「技术手册」，而不是又一份 Hello World。
 
-[![Docs](https://img.shields.io/badge/docs-56%20篇-16a34a?style=for-the-badge)](./README.md)
+[![Docs](https://img.shields.io/badge/docs-66%20篇-16a34a?style=for-the-badge)](./README.md)
 [![Lines](https://img.shields.io/badge/正文-26%2C345%20行-0ea5e9?style=for-the-badge)](./README.md)
 [![Format](https://img.shields.io/badge/format-Markdown%20%2B%20HTML-f59e0b?style=for-the-badge)](./README.md)
 
@@ -27,7 +27,7 @@
 
 | 📚 指南 | 📝 正文 | 📄 离线手册 | 🖼️ 架构图 | ✅ 写作规范 | ⚖️ 许可 |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| **56 篇** | **≈ 26,345 行** | **56 份** | **116 张 SVG** | **7 个必备要素** | **MIT** |
+| **66 篇** | **≈ 31,572 行** | **66 份** | **117 张 SVG** | **7 个必备要素** | **MIT** |
 
 </div>
 
@@ -68,7 +68,7 @@
 
 | 🔤 语言核心 | 🌐 服务与治理 | 🗄️ 数据存储与检索 | 📨 消息 / 任务 | 🔭 可观测性 | 🐳 部署 |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| **13** | **9** | **17** | **8** | **7** | **2** |
+| **13** | **12** | **21** | **8** | **7** | **5** |
 
 </div>
 
@@ -92,7 +92,7 @@
 | **Excelize** | OOXML 结构、共享字符串表的内存账、普通 API vs `StreamWriter`、样式共享池、迭代读取、十万行导出与模板填充 | [MD](./excelize/excelize-guide.md) · [HTML](./excelize/excelize-guide.html) |
 | **Go 设计模式** | 哪些 GoF 模式在 Go 里消失 / 变形、functional options、中间件链、策略 = 函数值、观察者 = channel、并发模式与设计模式的区别、何时不该用 | [MD](./golang-design-pattern/golang-design-pattern-guide.md) · [HTML](./golang-design-pattern/golang-design-pattern-guide.html) |
 
-### 🌐 Web、微服务与治理 <sub>9 篇</sub>
+### 🌐 Web、微服务与治理 <sub>12 篇</sub>
 
 | 主题 | 覆盖要点 | 文档 |
 | --- | --- | --- |
@@ -105,8 +105,11 @@
 | **认证：JWT / OAuth2 / OIDC** | JWT 结构与签名算法、校验清单（alg 白名单 / iss / aud / exp）、JWKS 轮换、OAuth2 四种模式与 PKCE、OIDC、refresh 轮换与撤销 | [MD](./auth/auth-guide.md) · [HTML](./auth/auth-guide.html) |
 | **服务治理** | 限流四算法、单机 vs 集群限流、熔断三态与滑动窗口、自适应限流、重试预算与幂等、舱壁隔离、降级形态 | [MD](./service-governance/service-governance-guide.md) · [HTML](./service-governance/service-governance-guide.html) |
 | **gorilla/websocket** | 握手与 Origin 校验、帧与消息、单 reader / 单 writer 模型、deadline 与心跳、关闭握手、读上限与背压、水平扩展 | [MD](./websocket/websocket-guide.md) · [HTML](./websocket/websocket-guide.html) |
+| **Sentinel-Go** | 资源与 Entry 生命周期、LeapArray 滑动窗口、快速失败 / Warm Up / 匀速排队、慢调用与异常比例熔断、热点参数限流、规则推送到 etcd / Nacos、与 Gin / gRPC 中间件集成 | [MD](./sentinel/sentinel-guide.md) · [HTML](./sentinel/sentinel-guide.html) |
+| **GraphQL（gqlgen）** | Schema first 与代码生成、字段级 Resolver 执行模型、N+1 与 DataLoader、Relay 游标分页、错误 extensions、订阅与 graphql-ws、深度与复杂度限制 | [MD](./graphql/graphql-guide.md) · [HTML](./graphql/graphql-guide.html) |
+| **Go 工程分层** | 依赖倒置与接口归属、domain / application / infrastructure / interface 四层职责、贫血模型与不变量、仓储边界、事务放在用例层、模块化单体与 internal 约束 | [MD](./architecture/architecture-guide.md) · [HTML](./architecture/architecture-guide.html) |
 
-### 🗄️ 数据存储与检索 <sub>17 篇</sub>
+### 🗄️ 数据存储与检索 <sub>21 篇</sub>
 
 | 主题 | 覆盖要点 | 文档 |
 | --- | --- | --- |
@@ -127,6 +130,10 @@
 | **TimescaleDB** | hypertable 与 chunk 自动分区、`time_bucket`、连续聚合、列式压缩与 segmentby / orderby、retention 与数据分层、唯一索引必须含时间列、与 InfluxDB / ClickHouse 的边界 | [MD](./timescaledb/timescaledb-guide.md) · [HTML](./timescaledb/timescaledb-guide.html) |
 | **向量数据库** | 距离度量与归一化、HNSW 的 M / efConstruction / efSearch、IVF / PQ、pre-filter vs post-filter、RRF 混合检索、pgvector / Milvus / Qdrant 实战 | [MD](./vector-database/vector-database-guide.md) · [HTML](./vector-database/vector-database-guide.html) |
 | **golang-migrate** | 版本表与 dirty 语义、up / down / steps、`embed` + `iofs`、并发与 advisory lock、不可逆迁移、与 goose / atlas 的分工 | [MD](./migrate/migrate-guide.md) · [HTML](./migrate/migrate-guide.html) |
+| **CDC（Debezium / Canal）** | binlog row 模式、快照与增量衔接（GTID / file+pos）、Debezium 事件信封、Canal 伪装从库、outbox 路由、schema 演进、延迟与积压监控、大事务与位点失效 | [MD](./cdc/cdc-guide.md) · [HTML](./cdc/cdc-guide.html) |
+| **分库分表** | 垂直与水平拆分、分片键与基因法、取模 / 范围 / 一致性哈希路由、跨片查询三种解法、双写迁移与翻倍扩容、ShardingSphere-Proxy 与 Vitess | [MD](./sharding/sharding-guide.md) · [HTML](./sharding/sharding-guide.html) |
+| **本地缓存** | TinyLFU 与 LRU 的差别、bigcache 分片与免 GC、freecache 堆外内存、singleflight 防击穿、二级缓存失效顺序、多实例广播失效 | [MD](./local-cache/local-cache-guide.md) · [HTML](./local-cache/local-cache-guide.html) |
+| **分布式 ID** | 雪花结构与时钟回拨、机器号分配（etcd 注册）、号段双 buffer、UUIDv7 与 B+ 树插入、基因法、int64 精度与不可预测性 | [MD](./distributed-id/distributed-id-guide.md) · [HTML](./distributed-id/distributed-id-guide.html) |
 
 > 💡 ES 有双重身份：业务全文检索与日志检索。日志场景可与 [Zap 篇](./zap/zap-guide.md) 的 `trace_id` 配合，直接跳到 [OpenTelemetry](./opentelemetry/opentelemetry-guide.md) 链路。
 
@@ -159,12 +166,15 @@
 
 > 💡 `Zap` / `slog` 管日志输出、`Loki` 管日志检索、`Prometheus` 管指标、`OpenTelemetry` 管链路，靠统一的 `service.name` 与 `trace_id` 串成完整排障链路。
 
-### 🐳 部署与编排 <sub>2 篇</sub>
+### 🐳 部署与编排 <sub>5 篇</sub>
 
 | 主题 | 覆盖要点 | 文档 |
 | --- | --- | --- |
 | **Docker / Kubernetes** | 镜像分层与多阶段构建、namespace/cgroups、声明式 Reconcile Loop、Pod/Deployment/Service、三类探针与 QoS、滚动发布与优雅下线、client-go 与 RBAC | [MD](./docker-k8s/docker-k8s-guide.md) · [HTML](./docker-k8s/docker-k8s-guide.html) |
 | **Kubernetes Operator** | 声明式协调与 level-triggered、CRD / Scheme、Reconcile 幂等、resourceVersion 冲突、ownerReference 与 finalizer、envtest 与 e2e | [MD](./k8s-operator/k8s-operator-guide.md) · [HTML](./k8s-operator/k8s-operator-guide.html) |
+| **Helm** | Chart 目录与四类文件、`.Values` / `.Release` / `.Capabilities` 上下文、values 合并与 `--set` 类型陷阱、`_helpers.tpl`、Hooks 与执行时机、依赖开关、helm diff / rollback、helm-unittest | [MD](./helm/helm-guide.md) · [HTML](./helm/helm-guide.html) |
+| **ArgoCD** | GitOps 控制循环、Application / AppProject / ApplicationSet、selfHeal 与 prune、Sync Waves 与钩子、多集群、SOPS / Sealed Secrets、漂移检测与回滚 | [MD](./argocd/argocd-guide.md) · [HTML](./argocd/argocd-guide.html) |
+| **发布策略** | 蓝绿 / 金丝雀 / A-B / 流量镜像、Ingress 注解与 APISIX traffic-split、Argo Rollouts 自动判定、流量染色透传、数据库 expand-contract、灰度期缓存与 MQ 的坑 | [MD](./release-strategy/release-strategy-guide.md) · [HTML](./release-strategy/release-strategy-guide.html) |
 
 ---
 
@@ -275,7 +285,7 @@ python tools/build_html.py --stats         # 结构统计 + 内链锚点自检
 | 文件 | 作用 |
 |---|---|
 | [`tools/themes.json`](./tools/themes.json) | 每篇的配色、Hero 副标题与标签 |
-| [`tools/fragments.json`](./tools/fragments.json) | SVG 架构图、要点卡片、提示框等视觉增强（Markdown 无对应源），按章节锚点注入，共 441 块 / 116 张图 |
+| [`tools/fragments.json`](./tools/fragments.json) | SVG 架构图、要点卡片、提示框等视觉增强（Markdown 无对应源），按章节锚点注入，共 452 块 / 117 张图 |
 | [`tools/anchor_map.json`](./tools/anchor_map.json) | 旧版手工 HTML 的语义锚点 → 标题 slug 映射，保证增强块内的跳转不断链 |
 
 新增主题无需改构建配置：脚本自动发现 `*/ *.md`，未配置配色时按目录名分配稳定色板。CI（[`.github/workflows/check-html.yml`](./.github/workflows/check-html.yml)）在每次 push / PR 执行 `--check --audit`，从机制上杜绝漂移。
@@ -310,7 +320,7 @@ python tools/build_html.py --stats         # 结构统计 + 内链锚点自检
 ## 六、上游项目与版本对照
 
 <details>
-<summary><b>展开完整对照表（56 项）</b></summary>
+<summary><b>展开完整对照表（66 项）</b></summary>
 
 | 文档 | 上游仓库 | 文档对应版本 |
 | --- | --- | --- |
@@ -368,6 +378,16 @@ python tools/build_html.py --stats         # 结构统计 + 内链锚点自检
 | DTM | [dtm-labs/dtm](https://github.com/dtm-labs/dtm) | v1.19.0 |
 | Watermill | [ThreeDotsLabs/watermill](https://github.com/ThreeDotsLabs/watermill) | v1.5.3 |
 | Go 设计模式 | [senghoo/golang-design-pattern](https://github.com/senghoo/golang-design-pattern) | Go 1.22+ |
+| Helm | [helm/helm](https://github.com/helm/helm) | Helm 3.19 / 4.x |
+| ArgoCD | [argoproj/argo-cd](https://github.com/argoproj/argo-cd) | v3.x |
+| 发布策略 | Ingress-NGINX / [apache/apisix](https://github.com/apache/apisix) / [argoproj/argo-rollouts](https://github.com/argoproj/argo-rollouts) | Ingress 1.11+ · APISIX 3.x · Rollouts 1.7+ |
+| CDC | [debezium/debezium](https://github.com/debezium/debezium) · [alibaba/canal](https://github.com/alibaba/canal) | Debezium 3.x · Canal 1.1.8 |
+| 分库分表 | [apache/shardingsphere](https://github.com/apache/shardingsphere) · [vitessio/vitess](https://github.com/vitessio/vitess) | 5.5.x · 21.x |
+| Sentinel-Go | [alibaba/sentinel-golang](https://github.com/alibaba/sentinel-golang) | v1.0.4 |
+| 本地缓存 | [dgraph-io/ristretto](https://github.com/dgraph-io/ristretto) · [allegro/bigcache](https://github.com/allegro/bigcache) · [coocood/freecache](https://github.com/coocood/freecache) | v0.2 · v3.3 · v1.0 |
+| GraphQL | [99designs/gqlgen](https://github.com/99designs/gqlgen) | v0.17.x |
+| Go 工程分层 | DDD / Clean Architecture / Hexagonal（社区实践） | Go 1.24+ |
+| 分布式 ID | [google/uuid](https://github.com/google/uuid) · [sony/sonyflake](https://github.com/sony/sonyflake) | v1.6 · v2.2 |
 
 </details>
 
@@ -461,6 +481,6 @@ Copyright (c) 2026 Weisg1999
 
 [文档目录](#二文档目录) · [阅读路径](#三推荐的阅读路径) · [参与贡献](#七贡献) · [English](./README_EN.md)
 
-<sub>Markdown 是唯一真源 · HTML 由构建脚本生成 · 56 篇 / 26,345 行 · © 2026 Weisg1999</sub>
+<sub>Markdown 是唯一真源 · HTML 由构建脚本生成 · 66 篇 / 31,572 行 · © 2026 Weisg1999</sub>
 
 </div>

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ArgoCD · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#ea580c; --accent-light:#fff7ed; --accent-dark:#7c2d12;
+    --bg:#fffaf5; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#2a1408; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#7c2d12 0%,#ea580c 58%,#7c2d12 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">ArgoCD<span class="ver">ArgoCD v3.x</span></div>
+  <div class="sub">Git 即真相 · 持续同步</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a href="#2-能力总览">2. 能力总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-控制循环desired-state-与-live-state">3.1 控制循环：desired state 与 live state</a>
+  <a class="sub-link" href="#32-三层对象applicationappprojectapplicationset">3.2 三层对象：Application、AppProject、ApplicationSet</a>
+  <a class="sub-link" href="#33-同步策略手动自动selfheal-与-prune">3.3 同步策略：手动、自动、selfHeal 与 prune</a>
+  <a class="sub-link" href="#34-sync-waves-与资源钩子">3.4 Sync Waves 与资源钩子</a>
+  <a class="sub-link" href="#35-健康评估内置规则与-lua-自定义">3.5 健康评估：内置规则与 Lua 自定义</a>
+  <a class="sub-link" href="#36-密钥管理sopssealed-secretsexternal-secrets">3.6 密钥管理：SOPS、Sealed Secrets、External Secrets</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-安装与第一个-application">4.1 安装与第一个 Application</a>
+  <a class="sub-link" href="#42-applicationset-做3-环境-2-集群矩阵">4.2 ApplicationSet 做「3 环境 × 2 集群」矩阵</a>
+  <a class="sub-link" href="#43-与-helm-kustomize-集成">4.3 与 Helm / Kustomize 集成</a>
+  <a class="sub-link" href="#44-漂移检测与告警">4.4 漂移检测与告警</a>
+  <a class="sub-link" href="#45-回滚与灾难恢复">4.5 回滚与灾难恢复</a>
+  <a href="#5-版本与生态">5. 版本与生态</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>Argo CD 技术指南（Kubernetes GitOps 持续交付）</h1>
+<p><strong>一句话定位</strong>：GitOps 持续交付控制器——把「集群应该长什么样」写进 Git，由控制器持续把现实拉回期望。 <strong>上游仓库</strong>：<a href="https://github.com/argoproj/argo-cd">argoproj/argo-cd</a> · <strong>版本基线</strong>：ArgoCD v3.x · <strong>协议</strong>：Apache-2.0</p>
+<p style="opacity:.8;font-size:13.5px">Git 即真相 · 持续同步</p>
+<div class="meta"><span>GitOps</span><span>Application</span><span>漂移</span></div>
+</div>
+<blockquote><p><strong>一句话定位</strong>：GitOps 持续交付控制器——把「集群应该长什么样」写进 Git，由控制器持续把现实拉回期望。</p>
+<p><strong>上游仓库</strong>：<a href="https://github.com/argoproj/argo-cd">argoproj/argo-cd</a> · <strong>版本基线</strong>：ArgoCD v3.x · <strong>协议</strong>：Apache-2.0</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p>传统 CD 是「CI 推」：流水线拿着生产集群的 kubeconfig，构建完镜像后执行 <code>kubectl apply</code> 或 <code>helm upgrade</code>。这条路能跑，但留下三个回答不了的问题——<strong>谁改的、改了什么、能不能回滚</strong>。集群的实际状态没有版本记录，凭据散落在每个 CI 项目里，有人手工 <code>kubectl edit</code> 造成的漂移无人知晓。</p>
+<p>GitOps 把方向反过来，变成「CD 拉」：CI 只负责构建镜像、把新 tag 写回 Git；部署由集群内的 ArgoCD 主动拉取 Git、渲染清单、与实时状态对比、再同步。于是「集群里跑的是什么」等于「Git 某个 commit 的渲染结果」，上面三个问题分别对应 commit 作者、<code>argocd app diff</code>、revert 一个 commit。</p>
+<pre><code class="lang-text">CI：代码 → 测试 → 构建镜像 → 修改 Git 中的 image tag（产生一个 commit）
+                                      │
+CD：ArgoCD 轮询 Git ──► 渲染（Helm / Kustomize / 纯 YAML）──► diff vs 集群 ──► sync
+                                      ▲                                        │
+                                      └────────── 状态回写、事件通知 ◄──────────┘</code></pre>
+<ul><li><strong>适用</strong>：Kubernetes 上的应用与平台组件交付、多集群统一发布、需要审计与一键回滚的生产环境、把「环境差异」收敛成目录/values 差异</li><li><strong>不适用</strong>：非 K8s 资源（虚拟机、裸机进程、数据库实例）为主的部署、需要复杂编排与人工审批节点的流程（那是工作流引擎的活）、无 Git 可用的遗留系统</li><li><strong>与 CI 的分工</strong>：Jenkins / GitLab CI / GitHub Actions 负责编译、测试、构建并推送镜像；Argo Workflows 是 DAG 工作流引擎，同样属于 CI/批处理侧；<strong>ArgoCD 不构建镜像、不跑测试，只负责「把 Git 里的清单变成集群里的对象」</strong></li></ul>
+<blockquote><p>最常见的误用是让 Jenkins 继续持有生产 kubeconfig，只在最后一步调用 <code>argocd app sync</code>。这样 ArgoCD 退化成一个远程 <code>kubectl</code>，Git 不是唯一事实来源，审计链断在 CI 里。</p></blockquote>
+<hr>
+
+</section>
+<section data-anchor="2-能力总览">
+<h2 id="2-能力总览">2. 能力总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>承载对象 / 组件</th><th>说明</th></tr></thead><tbody><tr><td>部署单元</td><td><code>Application</code></td><td>一个 Git 路径 + 一个目标集群/namespace 的绑定，是同步与健康状态的最小单位</td></tr><tr><td>多租户边界</td><td><code>AppProject</code></td><td>限定允许的 Git 仓库、目标集群/namespace、可创建的资源类型与 RBAC 角色</td></tr><tr><td>批量生成</td><td><code>ApplicationSet</code></td><td>用 list / git / cluster / matrix 生成器批量产出 Application</td></tr><tr><td>同步</td><td>application-controller</td><td>手动或自动 sync，支持 <code>prune</code>、<code>selfHeal</code>、<code>ApplyOutOfSyncOnly</code></td></tr><tr><td>差异计算</td><td>repo-server + 控制器</td><td>渲染 desired，与 live 做结构化 diff；支持 <code>ignoreDifferences</code></td></tr><tr><td>健康评估</td><td>内置 health check + Lua</td><td>Deployment / StatefulSet / Job / PVC 等有内置规则，CRD 可自定义</td></tr><tr><td>多集群</td><td>cluster Secret</td><td>用独立 ServiceAccount 凭据注册外部集群，集中从一个控制面管理</td></tr><tr><td>发布编排</td><td>Sync Waves + Hooks</td><td>按注解排序，配合 <code>PreSync</code> / <code>PostSync</code> Job 做迁移、校验、通知</td></tr><tr><td>认证与授权</td><td>Dex / OIDC + RBAC</td><td>SSO 登录，<code>argocd-rbac-cm</code> 按 role 映射 policy</td></tr><tr><td>回滚</td><td>同步历史</td><td>保留已同步 revision，可回滚到任一历史点；推荐用 Git revert</td></tr><tr><td>通知</td><td>argocd-notifications</td><td>订阅 sync / health 状态变化，推送到 Slack、Webhook、邮件</td></tr><tr><td>声明式自管理</td><td>App of Apps / ApplicationSet</td><td>ArgoCD 自己也可以由 Git 中的 Application 管理</td></tr></tbody></table></div>
+<hr>
+
+<div class="features">
+  <div class="feature"><div class="fh"><h4>Git 为唯一真源</h4></div><p>集群状态与 Git 不一致时，控制器把它拉回来</p></div>
+  <div class="feature"><div class="fh"><h4>持续同步</h4></div><p>selfHeal + prune，手工改动会被自动纠正</p></div>
+  <div class="feature"><div class="fh"><h4>多集群矩阵</h4></div><p>ApplicationSet 用一份模板生成 N 个环境 × M 个集群</p></div>
+</div>
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-控制循环desired-state-与-live-state">3.1 控制循环：desired state 与 live state</h3>
+<p>ArgoCD 的核心是一个<strong>对比—收敛</strong>循环，但要注意它和 controller-runtime 的紧循环不同：默认每 3 分钟才拉一次 Git（<code>argocd-cm</code> 的 <code>timeout.reconciliation: 180s</code>），配置 webhook 后可被 push 事件提前触发。因此「提交了代码但页面还没变」通常只是没到下一个周期，不是故障。</p>
+<div class="table-wrap"><table><thead><tr><th>概念</th><th>含义</th></tr></thead><tbody><tr><td>desired state</td><td>repo-server 把 Git 中的目录渲染成一组 K8s 对象（Helm 渲染、Kustomize build、纯 YAML 直读）</td></tr><tr><td>live state</td><td>通过目标集群 API 实时读取的对象，含控制器回填的 <code>status</code>、默认值、<code>resourceVersion</code></td></tr><tr><td>diff</td><td>两者按字段比较；<code>OutOfSync</code> 表示存在差异，<code>Synced</code> 表示一致</td></tr><tr><td>sync</td><td>把 desired 写进集群（apply / create / prune），并记录 revision</td></tr></tbody></table></div>
+<p>三个容易踩的认知偏差：</p>
+<ol><li><strong>diff 比的是「渲染结果」而不是「Git 文本」</strong>。Helm 的 <code>lookup</code>、集群版本相关的 Capabilities、Kustomize 的 hash 后缀都会让渲染结果与 <code>helm template</code> 本地输出不同。</li><li><strong><code>OutOfSync</code> 不等于服务坏了</strong>。它只说明有差异；服务是否可用看 <code>health.status</code>（<code>Healthy</code> / <code>Progressing</code> / <code>Degraded</code> / <code>Missing</code>）。</li><li><strong>同步成功也不等于收敛完成</strong>。同步命令返回成功只代表对象已被 API Server 接受，Pod 是否 Ready 要看 <code>health.status</code>；需要阻塞等待时用 <code>argocd app wait --health</code>。</li></ol>
+<h3 id="32-三层对象applicationappprojectapplicationset">3.2 三层对象：Application、AppProject、ApplicationSet</h3>
+<pre><code class="lang-text">AppProject（边界：能用哪些 repo / 集群 / namespace / 资源类型）
+   └── Application（一个部署单元：repo+path+revision → cluster+namespace）
+          └── 渲染出的 K8s 对象（Deployment / Service / ConfigMap ...）
+
+ApplicationSet（生成器）──► 批量创建 N 个 Application（每个环境/集群一个）</code></pre>
+<ul><li><strong>Application</strong> 是操作单位，删除时是否级联删除集群资源取决于 finalizer：<code>resources-finalizer.argocd.argoproj.io</code> 会删资源，<code>resources-finalizer.argocd.argoproj.io/background</code> 异步删；不加 finalizer 只删 CR，集群资源成为孤儿。</li><li><strong>AppProject</strong> 是安全边界而非目录。默认 <code>default</code> 项目几乎不设限，生产必须自建 Project 并写死 <code>sourceRepos</code>、<code>destinations</code>、<code>clusterResourceWhitelist</code>。<code>orphanedResources</code> 警告能发现「不在 Git 里但还活着」的资源。</li><li><strong>ApplicationSet</strong> 解决的是 N×M 的组合爆炸：3 个环境 × 2 个集群不必手写 6 份 YAML。它由独立控制器负责生成与回收 Application，删除 ApplicationSet 时通过 <code>preserveResourcesOnDeletion</code> 决定是否连带删除 Application。</li></ul>
+<h3 id="33-同步策略手动自动selfheal-与-prune">3.3 同步策略：手动、自动、selfHeal 与 prune</h3>
+<div class="table-wrap"><table><thead><tr><th>配置</th><th>行为</th><th>风险</th></tr></thead><tbody><tr><td>默认（无 <code>automated</code>）</td><td>只在 UI/CLI 触发的 sync 时写集群</td><td>漂移会一直存在，直到有人手动同步</td></tr><tr><td><code>automated: {}</code></td><td>检测到 <code>OutOfSync</code> 自动 sync</td><td>一次错误提交会被立即放大到集群</td></tr><tr><td><code>automated.prune: true</code></td><td>同步时删除「Git 里已不存在」的资源</td><td>删 namespace / CRD 会连带清空数据，最危险的一项</td></tr><tr><td><code>automated.selfHeal: true</code></td><td>集群对象被改动后自动改回 Git 版本</td><td>与 HPA、其他控制器争夺字段时会反复打架</td></tr><tr><td><code>syncOptions: [PruneLast=true]</code></td><td>其他资源都健康后才执行 prune</td><td>降低「先删后建」导致的中断</td></tr><tr><td><code>syncOptions: [CreateNamespace=true]</code></td><td>目标 namespace 不存在时自动创建</td><td>方便，但也掩盖了 namespace 归属问题</td></tr></tbody></table></div>
+<p>生产上的常用组合是<strong>自动同步开启、prune 开启、selfHeal 开启，但用 AppProject 与 <code>Prune=false</code> 注解保护关键资源</strong>：</p>
+<pre><code class="lang-yaml">metadata:
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false</code></pre>
+<p><code>Prune=false</code> 让该对象在 Git 删除后仍保留在集群里；<code>Delete=false</code> 阻止删除 Application 时级联删它。适合 CRD、namespace、PV、外部创建的 Secret。</p>
+<p><code>ignoreDifferences</code> 与 <code>RespectIgnoreDifferences=true</code> 解决的是另一类问题：某些字段由别的控制器写，不该被 ArgoCD 覆盖。两者必须成对使用，只配 <code>ignoreDifferences</code> 只能让状态显示为 <code>Synced</code>，同步时仍会把字段改回去。</p>
+<h3 id="34-sync-waves-与资源钩子">3.4 Sync Waves 与资源钩子</h3>
+<p>同一批资源不是同时创建的：<code>argocd.argoproj.io/sync-wave</code> 注解把同步分成若干波次，<strong>数值小的先执行</strong>（可为负），同 wave 内再按资源 kind 的内置顺序排。典型编排是「namespace / CRD（-2）→ 配置与 Secret（-1）→ 工作负载（0）→ 校验 Job（1）」。</p>
+<pre><code class="lang-yaml">apiVersion: batch/v1
+kind: Job
+metadata:
+  name: demo-migrate
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: ghcr.io/acme/demo:v1.4.0
+          command: ["/app/migrate", "--up"]</code></pre>
+<div class="table-wrap"><table><thead><tr><th>钩子</th><th>执行时机</th><th>典型用途</th></tr></thead><tbody><tr><td><code>PreSync</code></td><td>同步主资源之前</td><td>数据库迁移、备份、前置校验</td></tr><tr><td><code>Sync</code></td><td>与主资源同批（默认）</td><td>需要与工作负载同时存在的辅助 Job</td></tr><tr><td><code>PostSync</code></td><td>所有资源健康之后</td><td>冒烟测试、注册、通知</td></tr><tr><td><code>SyncFail</code></td><td>同步失败时</td><td>回滚外部系统、发告警</td></tr><tr><td><code>Skip</code></td><td>永不随 sync 应用</td><td>只在手动 <code>kubectl apply</code> 时使用的一次性对象</td></tr></tbody></table></div>
+<p>钩子对象<strong>不属于 Application 的常规管理资源</strong>，不会因为 Git 里删掉就被 prune；靠 <code>hook-delete-policy</code> 清理，否则 Job 会一直留着，甚至因 <code>ttlSecondsAfterFinished</code> 缺失而堆积。钩子失败的 Application 会停在 <code>Degraded</code>，先看 <code>kubectl -n &lt;ns&gt; logs job/&lt;name&gt;</code>。</p>
+<h3 id="35-健康评估内置规则与-lua-自定义">3.5 健康评估：内置规则与 Lua 自定义</h3>
+<p>健康状态由控制器对每个对象求值后聚合：任一对象 <code>Degraded</code> → Application <code>Degraded</code>；任一 <code>Progressing</code> → <code>Progressing</code>；全部 <code>Healthy</code> 才算 <code>Healthy</code>。Deployment 看 <code>observedGeneration</code>、可用副本与更新完成；StatefulSet 看 partition 与 ready 副本；Job 看 <code>succeeded</code> / <code>failed</code>；PVC 看 phase。</p>
+<p>CRD 默认没有健康规则，会长期停在 <code>Progressing</code>，这是「自定义资源永远不 Healthy」的根因。用 <code>argocd-cm</code> 的 Lua 补一条：</p>
+<pre><code class="lang-yaml">apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cm
+  namespace: argocd
+data:
+  resource.customizations.health.example.com_MyApp: |
+    hs = {}
+    if obj.status ~= nil and obj.status.conditions ~= nil then
+      for _, c in ipairs(obj.status.conditions) do
+        if c.type == "Ready" and c.status == "True" then
+          hs.status, hs.message = "Healthy", c.message
+          return hs
+        end
+        if c.type == "Ready" and c.status == "False" then
+          hs.status, hs.message = "Degraded", c.message
+          return hs
+        end
+      end
+    end
+    hs.status, hs.message = "Progressing", "waiting for Ready condition"
+    return hs</code></pre>
+<p>key 的格式固定为 <code>&lt;group&gt;_&lt;kind&gt;</code>，group 为空时写 <code>_&lt;kind&gt;</code>（如 <code>_ConfigMap</code>）。Lua 在控制器里执行，<strong>不要写循环等待或网络调用</strong>，只读 <code>obj</code> 返回状态。</p>
+<h3 id="36-密钥管理sopssealed-secretsexternal-secrets">3.6 密钥管理：SOPS、Sealed Secrets、External Secrets</h3>
+<p>三者的差别不在「能不能加密」，而在<strong>信任边界放在哪</strong>。</p>
+<div class="table-wrap"><table><thead><tr><th>方案</th><th>密文存放</th><th>解密者 / 信任边界</th><th>轮换与多集群</th></tr></thead><tbody><tr><td>SOPS</td><td>Git 中的密文文件</td><td>持有 KMS / age 私钥的一方；ArgoCD 需装 <code>ksops</code> 或 helm-secrets 插件</td><td>重新加密提交；同一密文可被多集群解，取决于 key 分发</td></tr><tr><td>Sealed Secrets</td><td>Git 中的 <code>SealedSecret</code> CR</td><td>集群内 controller 的私钥，密文与 namespace/name 绑定</td><td>换集群要重新 seal；私钥必须备份，丢了无法解</td></tr><tr><td>External Secrets Operator</td><td>Git 中只有 <code>ExternalSecret</code> 引用</td><td>集群内 ESO 用 Workload Identity / SecretStore 向 Vault、云 Secrets Manager 取</td><td>外部系统轮换，ESO 定时刷新；多集群各自拉取，Git 里没有密文</td></tr></tbody></table></div>
+<p>判断方法：<strong>谁能读到明文</strong>。SOPS 意味着任何拿到私钥的人都能在集群外解密；Sealed Secrets 把解密能力锁在单个集群；ESO 让明文根本不进 Git，但把信任交给了外部密钥系统与云 IAM。没有一种方案能同时做到「Git 里有完整密文、跨集群通用、且无需管理密钥」。</p>
+<blockquote><p>不要把「CI 里解密后再提交明文」当成方案——那只是把密钥搬到了 Git 历史里，且永久可追溯。</p></blockquote>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-安装与第一个-application">4.1 安装与第一个 Application</h3>
+<pre><code class="lang-bash">kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/v3.0.0/manifests/install.yaml
+kubectl -n argocd rollout status deploy/argocd-server
+kubectl -n argocd port-forward svc/argocd-server 8080:443
+
+# CLI 登录；initial-password 读取 argocd-initial-admin-secret 中的初始密码
+argocd login localhost:8080 --username admin --password "$(argocd admin initial-password -n argocd | head -1)" --insecure</code></pre>
+<p>私有仓库先配凭据，推荐声明式 Secret，便于随 Git 一起恢复：</p>
+<pre><code class="lang-yaml">apiVersion: v1
+kind: Secret
+metadata:
+  name: repo-platform
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/secret-type: repository   # repo-creds 表示按 URL 前缀通配
+stringData:
+  type: git
+  url: https://git.example.com/platform/deploy.git
+  username: ci-bot
+  password: glpat-xxxxxxxx
+  insecure: "false"                              # 自签证书时才置 "true"</code></pre>
+<p>先建 Project 再建 Application，否则 <code>spec.project: demo</code> 会报 <code>project not found</code>：</p>
+<pre><code class="lang-yaml">apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata: {name: demo, namespace: argocd}
+spec:
+  sourceRepos:
+    - https://git.example.com/platform/deploy.git
+    - https://charts.example.com        # 多源模式里的 Helm chart 仓库
+  destinations:
+    - {server: https://kubernetes.default.svc, namespace: 'demo-*'}
+    - {server: https://dr.example.com:6443, namespace: 'demo-*'}
+  clusterResourceWhitelist:
+    - {group: '', kind: Namespace}     # CreateNamespace=true 需要这一条</code></pre>
+<p>第一个 Application，把「渲染 → 对比 → 同步」跑通：</p>
+<pre><code class="lang-yaml">apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: demo-dev
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: demo
+  source:
+    repoURL: https://git.example.com/platform/deploy.git
+    targetRevision: main
+    path: apps/demo/overlays/dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: demo-dev
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+    retry:
+      limit: 5
+      backoff: {duration: 5s, factor: 2, maxDuration: 3m}</code></pre>
+<pre><code class="lang-bash">kubectl apply -f apps/demo/project.yaml -f apps/demo/application.yaml
+argocd app get demo-dev
+argocd app diff demo-dev
+argocd app sync demo-dev --prune
+argocd app wait demo-dev --health --timeout 300</code></pre>
+<p><code>retry</code> 是必须配的：首次同步常因 CRD 尚未建立、webhook 未就绪而失败，没有退避就只能人工重试。</p>
+<h3 id="42-applicationset-做3-环境-2-集群矩阵">4.2 ApplicationSet 做「3 环境 × 2 集群」矩阵</h3>
+<p><code>matrix</code> 生成器把两个 list 做笛卡尔积，得到 6 个 Application：3 个环境铺到 2 个同构集群（主集群 + 灾备集群，两边都跑 dev/staging/prod）。<code>goTemplate: true</code> 后模板用 <code>{{.env}}</code> 这类变量，prod 通过条件关闭自动同步：</p>
+<pre><code class="lang-yaml">apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata: {name: demo, namespace: argocd}
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - matrix:
+        generators:
+          - list:
+              elements:
+                - {env: dev, autoSync: "true"}
+                - {env: staging, autoSync: "true"}
+                - {env: prod, autoSync: "false"}
+          - list:
+              elements:
+                - {cluster: https://kubernetes.default.svc, clusterName: primary}
+                - {cluster: https://dr.example.com:6443, clusterName: dr}
+  template:
+    metadata:
+      name: 'demo-{{.env}}-{{.clusterName}}'
+      labels: {env: '{{.env}}'}
+    spec:
+      project: demo
+      source:
+        repoURL: https://git.example.com/platform/deploy.git
+        targetRevision: main
+        path: 'apps/demo/overlays/{{.env}}'
+      destination:
+        server: '{{.cluster}}'
+        namespace: 'demo-{{.env}}'
+      {{- if eq .autoSync "true" }}
+      syncPolicy:
+        automated: {prune: true, selfHeal: true}
+        syncOptions: [CreateNamespace=true, PruneLast=true]
+      {{- end }}</code></pre>
+<p>用 git 目录生成器可以省掉手写环境列表，新增目录即新增环境；<code>{{.path.basename}}</code> 就是目录名：</p>
+<pre><code class="lang-yaml">  generators:
+    - git:
+        repoURL: https://git.example.com/platform/deploy.git
+        revision: main
+        directories:
+          - path: apps/demo/overlays/*</code></pre>
+<p><code>matrix</code> 的组合数等于各生成器元素数之积。如果第二个集群专用于生产、不该跑 dev，<strong>不要用 matrix 硬乘</strong>——改用两个 ApplicationSet，或用 cluster Secret 的 label 配合 <code>clusters</code> 生成器的 <code>selector</code> 限定组合。把 dev 铺到生产集群是这套模板最容易出的事故。</p>
+<h3 id="43-与-helm-kustomize-集成">4.3 与 Helm / Kustomize 集成</h3>
+<p>Helm 的 values 常放在另一个仓库，用 <code>sources</code> 多源模式：第二个 source 只做 <code>ref</code>，供第一个 source 以 <code>$values</code> 引用。</p>
+<pre><code class="lang-yaml">spec:
+  project: demo
+  sources:
+    - repoURL: https://charts.example.com
+      chart: demo
+      targetRevision: 1.8.2
+      helm:
+        releaseName: demo
+        valueFiles:
+          - $values/apps/demo/values-prod.yaml
+        parameters:
+          - name: image.tag
+            value: v1.4.0
+    - repoURL: https://git.example.com/platform/deploy.git
+      targetRevision: main
+      ref: values
+  destination: {server: https://kubernetes.default.svc, namespace: demo-prod}</code></pre>
+<p><code>helm.parameters</code> 的优先级高于 <code>valueFiles</code>，适合由 CI 只改 tag；<code>helm.releaseName</code> 必须显式指定，否则不同 Application 可能算出同一个 release 名而互相覆盖。<code>helm.skipCrds</code> 要慎用：CRD 不随 chart 升级时，控制器与 CRD 版本错配会出现难以定位的字段丢失。</p>
+<p>Kustomize 侧不需要改 base，用 override 字段换镜像与命名：</p>
+<pre><code class="lang-yaml">  source:
+    repoURL: https://git.example.com/platform/deploy.git
+    targetRevision: main
+    path: apps/demo/base
+    kustomize:
+      namePrefix: prod-
+      nameSuffix: -v2
+      images:
+        - ghcr.io/acme/demo:v1.4.0     # 等价于 kustomize edit set image</code></pre>
+<p><code>kustomize.images</code> 的元素等价于 <code>kustomize edit set image</code> 的参数：<code>demo:v1.4.0</code> 只改 tag，<code>demo=ghcr.io/acme/demo:v1.4.0</code> 连仓库地址一起改。<strong>不要同时用 Kustomize 的 <code>images</code> 和 Helm 的 <code>image.tag</code></strong> 去管同一个 Deployment，diff 会在两者之间来回跳。</p>
+<h3 id="44-漂移检测与告警">4.4 漂移检测与告警</h3>
+<p>三种视角互补：<code>argocd app diff</code> 看渲染差异，<code>kubectl diff -f</code> 看服务端 apply 预演，<code>OutOfSync</code> 通知看持续状态。</p>
+<pre><code class="lang-bash">argocd app list -o wide                       # SYNC / HEALTH 两列
+argocd app diff demo-prod                     # 服务端渲染结果 vs live
+kubectl diff -k apps/demo/overlays/prod       # 本地 kustomize build 的服务端 dry-run</code></pre>
+<p>通知由 <code>argocd-notifications-cm</code> 定义 service / template / trigger，Application 用注解订阅：</p>
+<pre><code class="lang-yaml">apiVersion: v1
+kind: ConfigMap
+metadata: {name: argocd-notifications-cm, namespace: argocd}
+data:
+  service.webhook.alert: |
+    url: https://alert.internal/hooks/argocd
+    headers:
+      - {name: Content-Type, value: application/json}
+  template.app-sync-status: |
+    webhook:
+      alert:
+        method: POST
+        body: |
+          {"app":"{{.app.metadata.name}}","sync":"{{.app.status.sync.status}}","health":"{{.app.status.health.status}}"}
+  trigger.on-out-of-sync: |
+    - when: app.status.sync.status == 'OutOfSync'
+      send: [app-sync-status]</code></pre>
+<pre><code class="lang-yaml"># Application 上订阅
+metadata:
+  annotations:
+    notifications.argoproj.io/subscribe.on-out-of-sync.alert: ""</code></pre>
+<p>真正的漂移治理不是「通知更多」，而是<strong>关闭人工写集群的通道</strong>：把 <code>kubectl edit</code> 从 runbook 里删掉，只留 <code>git revert</code> 与 PR。<code>selfHeal</code> 只是兜底，不是权限模型。</p>
+<h3 id="45-回滚与灾难恢复">4.5 回滚与灾难恢复</h3>
+<div class="table-wrap"><table><thead><tr><th>方式</th><th>操作</th><th>结果</th><th>适用</th></tr></thead><tbody><tr><td>Git revert</td><td>回退提交 → 自动/手动 sync</td><td>产生新的 revision，Git 与集群一致</td><td><strong>默认选择</strong></td></tr><tr><td><code>argocd app rollback</code></td><td>回滚到历史 revision</td><td>集群回到旧版本，但 Git HEAD 仍是新的</td><td>紧急止血、CI 不可用时</td></tr><tr><td><code>kubectl rollout undo</code></td><td>绕过 ArgoCD 改 Deployment</td><td>下一次 selfHeal 会被改回，且无审计</td><td>不推荐</td></tr></tbody></table></div>
+<pre><code class="lang-bash">argocd app history demo-prod            # 列出已同步的 revision
+argocd app rollback demo-prod 12 --prune
+argocd app get demo-prod                # 确认 sync/health 与当前 revision</code></pre>
+<p>推荐 Git revert 的核心原因是<strong>状态一致性</strong>：<code>argocd app rollback</code> 只改集群，Git 仍指向坏版本，一旦开启 <code>selfHeal</code> 或下一次自动同步，坏版本会立刻回来，形成「回滚成功 → 几分钟后又坏了」的循环。只有 CI 挂了、必须立刻恢复时才用 rollback，并把它当作临时措施，随后补一个 revert commit。</p>
+<p>灾难恢复分两层：</p>
+<ul><li><strong>控制面</strong>：<code>argocd admin export &gt; argocd-backup.yaml</code> 与 <code>argocd admin import - &lt; argocd-backup.yaml</code> 可以搬运 Application、AppProject、仓库与集群 Secret；更稳的做法是用 Velero 备份整个 <code>argocd</code> namespace（含 etcd 对象）。</li><li><strong>数据面</strong>：ArgoCD 不备份业务数据。PVC、数据库、Sealed Secrets 私钥、SOPS 的 KMS key 必须独立备份；<strong>私钥丢了，Git 里的密文就是不可恢复的二进制</strong>。</li></ul>
+<p>重建顺序是：装 ArgoCD → 恢复 repo/cluster 凭据与私钥 → 恢复 AppProject 与 Application → 让它们自己 sync。Application 只是指针，真正的恢复能力来自 Git 与密钥。</p>
+<hr>
+
+</section>
+<section data-anchor="5-版本与生态">
+<h2 id="5-版本与生态">5. 版本与生态<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>阶段</th><th>关键变化与迁移注意点</th></tr></thead><tbody><tr><td>2.x</td><td>引入 ApplicationSet（独立控制器）、多集群、SSO/RBAC、Sync Waves/Hooks、Lua health check；<code>argocd app rollback</code> 与通知体系成型</td></tr><tr><td><strong>3.0</strong></td><td>ApplicationSet 合并进主仓库并默认随 <code>install.yaml</code> 安装；<strong>默认实例跟踪标签由 <code>app.kubernetes.io/instance</code> 改为 <code>argocd.argoproj.io/instance</code></strong>；清理一批废弃配置与 CLI 参数</td></tr><tr><td>3.x 后续</td><td>Server-Side Apply 同步路径完善、diff 归一化与 UI 改进，Helm/Kustomize/K8s 支持版本随 minor 上移</td></tr></tbody></table></div>
+<p><strong>升级注意</strong>：</p>
+<ul><li>3.0 的 tracking label 变更会让已有资源被判定为「不属于当前 Application」，表现为重复创建或 <code>OutOfSync</code> 抖动。升级前确认 <code>argocd-cm</code> 的 <code>application.instanceLabelKey</code>，要么显式保留旧值，要么先迁移资源标签。</li><li>从 2.x 升 3.x 先读官方 upgrade notes，逐项核对 <code>argocd-cm</code> / <code>argocd-rbac-cm</code> 中已废弃的 key；控制器与 repo-server 必须同版本，混跑会出现渲染结果不一致。</li><li>ApplicationSet 从独立部署变为内置后，旧的 <code>applicationset-controller</code> Deployment 与 RBAC 需要清理，否则两个控制器会争抢同一批 Application。</li></ul>
+<p>生态边界要分清，这四个项目经常被混为一谈：</p>
+<ul><li><strong>Argo CD</strong>：GitOps 持续交付，负责「集群里应该有什么」。它不构建镜像、不跑测试、不做流量切分。</li><li><strong>Argo Workflows</strong>：Kubernetes 原生 DAG 工作流引擎，做 CI、批处理、数据管道。它的「workflow」是任务编排，不是部署状态收敛。</li><li><strong>Argo Rollouts</strong>：用 <code>Rollout</code> CRD 替代 Deployment，做金丝雀/蓝绿与基于指标的自动分析。ArgoCD 可以管理 <code>Rollout</code> 对象并读取其健康状态，但<strong>发布策略由 Rollouts 执行，不是 ArgoCD 的 sync 策略</strong>。</li><li><strong>Argo Events</strong>：事件源到触发器的路由，常用于「对象存储有新文件 → 触发 Workflow」。</li></ul>
+<p>此外 <strong>argocd-image-updater</strong> 是独立组件，负责把镜像仓库的新 tag 写回 Git 或参数覆盖。它解决的是「谁改 Git 里的 tag」，不要指望 ArgoCD 自己监控镜像仓库。</p>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong><code>prune</code> 误删 CRD 与 namespace</strong>：<code>prune: true</code> 下把 namespace 从 Git 删掉，会连带删除其中所有对象；CRD 被删则所有 CR 一起消失。namespace 删除还会卡在 <code>Terminating</code>——因为 finalizer 依赖的 CRD/控制器已经没了。保护手段：关键对象加 <code>argocd.argoproj.io/sync-options: Prune=false</code>，namespace 与 CRD 放独立的 Application/Project，并开启 <code>PruneLast</code>。</li><li><strong>Application 永远 <code>Progressing</code></strong>：90% 是 CRD 没有 health check（见 3.5），其余是 Job 没有完成、PVC 一直 Pending、Deployment 卡在 <code>progressDeadlineSeconds</code>。先 <code>argocd app get &lt;app&gt;</code> 逐层展开资源树定位具体对象，再补 Lua 或修探针。</li><li><strong><code>selfHeal</code> 与 HPA 互相打架</strong>：Git 里写 <code>replicas: 2</code>，HPA 扩到 10，selfHeal 每 3 分钟改回 2，HPA 再扩——副本数锯齿、指标失真。正确做法是从 Git 移除 <code>replicas</code>（只保留 HPA 的 <code>minReplicas</code>），或在 <code>ignoreDifferences</code> 里忽略 <code>/spec/replicas</code>，并确保 <code>RespectIgnoreDifferences=true</code>。</li><li><strong>多集群 cluster Secret 权限过大</strong>：用 <code>cluster-admin</code> 的 token 注册集群，等于把 ArgoCD 的任一 Project 配置错误放大成全集群写权限。为每个集群建专用 ServiceAccount + 受限 ClusterRole，能用 namespace 级 Role 就不用 ClusterRole；AppProject 的 <code>destinations</code> 不要写 <code>*</code>。</li><li><strong>Helm chart 生成随机值导致永久 <code>OutOfSync</code></strong>：密码、<code>randAlphaNum</code>、<code>now</code> 时间戳每次渲染都不同，diff 永不收敛。把随机值移出 chart 改用 External Secrets，或对相应字段配 <code>ignoreDifferences</code>（jsonPointers 精确到字段，别整对象忽略）。</li><li><strong>服务端 apply 的注解超限</strong>：对象较大时 <code>kubectl apply</code> 报 <code>metadata.annotations: Too long</code>（<code>last-applied-configuration</code> 上限 262144 字节）。此时必须开 <code>syncOptions: [ServerSideApply=true]</code>，让 ArgoCD 走 SSA 的字段所有权模型；共享对象同时要评估 <code>ForceOwnership</code> 的冲突风险。</li><li><strong><code>selfHeal</code> 掩盖了真实故障</strong>：控制器不断把被改坏的资源改回去，表面上「一直很健康」，实际是有人在手工改、或有另一个 operator 在争字段。开 <code>selfHeal</code> 的同时必须监控 <code>OutOfSync</code> 次数，否则等于把告警静音。</li><li><strong>用 Application 管理集群级引导资源</strong>：CRD、webhook、CNI、metrics-server 这类「ArgoCD 依赖它才能工作」的资源，一旦被 prune 会连控制器一起挂掉。拆到独立的 bootstrap Application，并禁止自动 prune。</li></ol>
+<hr>
+
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>Argo CD</th><th>Flux CD</th><th>Jenkins / GitLab CI 部署阶段</th></tr></thead><tbody><tr><td>模型</td><td>集中式控制面拉 Git，推送对象到各集群</td><td>每集群常驻 agent，各自拉 Git 收敛</td><td>流水线推送（push），CI 持有集群凭据</td></tr><tr><td>部署方式</td><td>controller + repo-server + server/UI</td><td>一组 controller（source/kustomize/helm/notification）</td><td>在 CI runner 里执行 <code>kubectl</code> / <code>helm</code></td></tr><tr><td>UI 与可视化</td><td><strong>强</strong>，资源树、diff、回滚、日志</td><td>弱（靠 CLI 与 Grafana）</td><td>取决于 CI 平台，无资源拓扑</td></tr><tr><td>多集群</td><td>一个控制面管多集群，需注册 cluster Secret</td><td>每集群 bootstrap，天然去中心</td><td>每个环境一套凭据与 job</td></tr><tr><td>多租户</td><td>AppProject + RBAC，成熟</td><td>依赖 K8s RBAC 与 namespace 隔离</td><td>靠 CI 项目权限，粒度粗</td></tr><tr><td>漂移检测</td><td>内置 diff + <code>OutOfSync</code> 通知</td><td>内置 reconciliation，默认强制收敛</td><td>无（除非另接工具）</td></tr><tr><td>回滚</td><td>历史 revision + Git revert</td><td>Git revert / 重新 apply</td><td>重跑旧流水线</td></tr><tr><td>学习曲线</td><td>中（概念多：Project/ApplicationSet/Hook）</td><td>中高（CRD 多、调试靠日志）</td><td>低（会写脚本即可）</td></tr><tr><td>适用</td><td>平台团队统一交付、需要审计与 UI</td><td>强 SRE 团队、追求去中心与 composability</td><td>非 K8s 部署、简单脚本化发布</td></tr></tbody></table></div>
+<p>一句话决策：</p>
+<ul><li><strong>K8s 原生 GitOps、要可视化与多租户</strong> → ArgoCD。Application/AppProject/ApplicationSet 三件套覆盖了 90% 的交付场景，UI 与 diff 是排障效率的关键差异。</li><li><strong>多集群、强隔离、团队偏好 CLI 与组合式设计</strong> → Flux。它没有中心控制面，单集群故障不影响其他集群，但需要自己搭可观测与通知。</li><li><strong>非 K8s 场景（虚拟机、裸机、传统中间件）</strong> → 别硬套 GitOps 控制器。Jenkins / GitLab CI 的部署阶段仍然合理，GitOps 的前提是「有声明式 API 可以收敛」。</li><li><strong>CI 与 CD 的边界</strong> → 构建、测试、镜像扫描留在 CI；部署与漂移收敛交给 ArgoCD。两者通过「CI 改 Git 里的 image tag」交接，而不是通过 kubeconfig 交接。</li></ul>
+<blockquote><p>落地顺序：先把 Git 目录结构定好（base + overlays，环境差异只放 values）→ 建 AppProject 划边界 → 用 ApplicationSet 批量生成 → 开自动同步与通知 → 最后才引入 Sync Waves、Hooks 与密钥方案。<strong>目录结构错了，后面每个环境都在复制粘贴。</strong></p></blockquote>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sentinel-Go · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#e11d48; --accent-light:#fff1f2; --accent-dark:#881337;
+    --bg:#fff8f9; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#2b0a13; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#881337 0%,#e11d48 58%,#881337 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">Sentinel-Go<span class="ver">sentinel-golang v1.0.4</span></div>
+  <div class="sub">限流 · 熔断 · 热点</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a href="#2-能力总览">2. 能力总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-资源与-entry-的生命周期">3.1 资源与 Entry 的生命周期</a>
+  <a class="sub-link" href="#32-滑动窗口leaparray-的桶与精度">3.2 滑动窗口：LeapArray 的桶与精度</a>
+  <a class="sub-link" href="#33-流控效果两个字段组合出的三种行为">3.3 流控效果：两个字段组合出的三种行为</a>
+  <a class="sub-link" href="#34-熔断三种策略与半开探测">3.4 熔断：三种策略与半开探测</a>
+  <a class="sub-link" href="#35-热点参数按参数值限流">3.5 热点参数：按参数值限流</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-最小可跑初始化-一条流控规则">4.1 最小可跑：初始化 + 一条流控规则</a>
+  <a class="sub-link" href="#42-熔断给下游调用加保护与降级返回">4.2 熔断：给下游调用加保护与降级返回</a>
+  <a class="sub-link" href="#43-热点参数按-uid-限流">4.3 热点参数：按 uid 限流</a>
+  <a class="sub-link" href="#44-规则动态化从-etcd-拉取并热更新">4.4 规则动态化：从 etcd 拉取并热更新</a>
+  <a class="sub-link" href="#45-与-gin-grpc-集成">4.5 与 Gin / gRPC 集成</a>
+  <a class="sub-link" href="#46-可观测pass-block-打成-prometheus-指标">4.6 可观测：pass / block 打成 Prometheus 指标</a>
+  <a href="#5-版本与生态">5. 版本与生态</a>
+  <a href="#6-常见坑">6. 常见坑</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>Sentinel-Go 限流熔断实战指南</h1>
+<p><strong>一句话定位</strong>：把「限流、熔断、热点保护」从架构图上的三个词，变成能用规则动态调整的运行时能力。 <strong>上游仓库</strong>：<a href="https://github.com/alibaba/sentinel-golang">alibaba/sentinel-golang</a> · <strong>版本基线</strong>：sentinel-golang v1.0.4 · <strong>协议</strong>：Apache-2.0</p>
+<p style="opacity:.8;font-size:13.5px">限流 · 熔断 · 热点</p>
+<div class="meta"><span>流控</span><span>熔断</span><span>热点</span></div>
+</div>
+<blockquote><p><strong>一句话定位</strong>：把「限流、熔断、热点保护」从架构图上的三个词，变成能用规则动态调整的运行时能力。</p>
+<p><strong>上游仓库</strong>：<a href="https://github.com/alibaba/sentinel-golang">alibaba/sentinel-golang</a> · <strong>版本基线</strong>：sentinel-golang v1.0.4 · <strong>协议</strong>：Apache-2.0</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p><a href="../service-governance/service-governance-guide.html">服务治理</a> 讲的是算法与取舍：令牌桶为什么允许突发、半开该放几个探针、重试预算怎么算。本篇是它的落地篇，只回答工程问题：<strong>规则怎么定义、埋点写在哪、阈值怎么热更新、拦截量怎么变成指标</strong>。概念不重复，遇到不清楚的机制先回上篇。</p>
+<p>Sentinel 把进程内的保护拆成四件互不替代的事：</p>
+<ul><li><strong>限流</strong>：入口流量超过本机容量时挡住多余请求，保护的是自己；</li><li><strong>熔断</strong>：下游持续变慢或报错时停止调用，保护的是调用链和下游的恢复时间；</li><li><strong>降级</strong>：被限、被熔之后返回什么，这是业务决策，SDK 只能给你一个明确的 block 信号；</li><li><strong>热点保护</strong>：单个参数值（大 V 的 uid、爆款 sku）打爆服务时只限制这个值，不牵连其他用户。</li></ul>
+<p>为什么不能全靠网关？网关在进程外，能看见路由、IP、Header、总 QPS，看不见「这个进程还有多少 goroutine 卡在等 DB」「这个方法 P99 是 300ms 还是 3s」「uid=42 一个值占了 80% 的流量」。<strong>单机并发、方法级 RT、参数值维度，只有进程内埋点才拿得到</strong>。反过来，跨实例的总配额应该在网关或 Redis 做，SDK 的单机阈值乘以副本数就是集群上限，副本一扩就失真。两层是叠加关系，取更严格者生效。</p>
+<p>依赖只有一条：<code>go get github.com/alibaba/sentinel-golang@v1.0.4</code>（Apache-2.0）。它会在 <code>go.mod</code> 里带入 <code>prometheus/client_golang</code>、<code>pkg/errors</code> 等依赖，不是零依赖的小库；v1.0.4 的 <code>go.mod</code> 仍写着 <code>go 1.13</code>，但代码能在 Go 1.21+ 正常编译。</p>
+<hr>
+
+</section>
+<section data-anchor="2-能力总览">
+<h2 id="2-能力总览">2. 能力总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>触发条件（判定依据）</th><th>典型参数</th><th>规则包</th></tr></thead><tbody><tr><td>流控 · 快速失败</td><td>窗口内通过数 ≥ Threshold</td><td><code>Threshold</code>、<code>StatIntervalInMs</code></td><td><code>core/flow</code></td></tr><tr><td>流控 · 预热</td><td>同上，但允许阈值从 <code>Threshold/coldFactor</code> 线性爬升</td><td><code>WarmUpPeriodSec</code>、<code>WarmUpColdFactor</code></td><td><code>core/flow</code></td></tr><tr><td>流控 · 匀速排队</td><td>请求间隔小于 <code>1000/Threshold</code> ms 且排队未超时</td><td><code>MaxQueueingTimeMs</code></td><td><code>core/flow</code></td></tr><tr><td>熔断 · 慢调用比例</td><td>窗口内 <code>RT &gt; MaxAllowedRtMs</code> 的占比 &gt; Threshold</td><td><code>MaxAllowedRtMs</code>、<code>MinRequestAmount</code></td><td><code>core/circuitbreaker</code></td></tr><tr><td>熔断 · 异常比例</td><td><code>err != nil</code> 的占比 &gt; Threshold</td><td><code>Threshold</code>、<code>StatIntervalMs</code></td><td><code>core/circuitbreaker</code></td></tr><tr><td>熔断 · 异常数</td><td>窗口内错误数 &gt; Threshold</td><td><code>Threshold</code>、<code>MinRequestAmount</code></td><td><code>core/circuitbreaker</code></td></tr><tr><td>热点参数</td><td>单个参数值的 QPS 或并发数 &gt; Threshold</td><td><code>ParamKey</code>、<code>BurstCount</code>、<code>DurationInSec</code>、<code>ParamsMaxCapacity</code></td><td><code>core/hotspot</code></td></tr><tr><td>系统自适应</td><td>整机 Load / CPU / 并发 / 入口 QPS / 平均 RT 超阈值</td><td><code>MetricType</code>、<code>TriggerCount</code>、<code>Strategy: BBR</code></td><td><code>core/system</code></td></tr><tr><td>规则动态推送</td><td>外部配置变更后调用 <code>LoadRules</code></td><td>—</td><td>自建或 <code>ext/datasource</code></td></tr></tbody></table></div>
+<p>规则是<strong>数据</strong>，不是代码：<code>flow.Rule</code> 是普通结构体，<code>LoadRules</code> 可以随时整批替换，不需要重启进程。这是 Sentinel 与 <code>x/time/rate</code> 最本质的差别——后者要改限流值只能改代码或自己加一层 setter。</p>
+<p>入口 <code>Entry</code> 会依次过一遍 slot chain（统计、系统、流控、热点、熔断），任一 slot 返回 blocked 就短路，后面的规则不再执行。所以<strong>同一个资源同时命中流控和熔断时，你拿到的 block type 是流控</strong>，排查时别去翻熔断配置。</p>
+<hr>
+
+<div class="features">
+  <div class="feature"><div class="fh"><h4>流控</h4></div><p>快速失败 / 预热 / 匀速排队，按 QPS 或并发数</p></div>
+  <div class="feature"><div class="fh"><h4>熔断</h4></div><p>慢调用、异常比例、异常数三种策略 + 半开探测</p></div>
+  <div class="feature"><div class="fh"><h4>热点保护</h4></div><p>按参数值限流，挡住单点刷接口</p></div>
+</div>
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-资源与-entry-的生命周期">3.1 资源与 Entry 的生命周期</h3>
+<p>资源名是 Sentinel 里唯一的绑定键：规则按资源名下发，埋点用同一个字符串进入。<code>sentinel.Entry</code> 返回两个值，语义必须记牢：</p>
+<pre><code class="lang-text">Entry("order.create")
+  ├─ 取 EntryContext + ResourceWrapper，过 slot chain（统计/系统/流控/热点/熔断）
+  ├─ 被拦截 → (nil, *BlockError)，entry 为 nil
+  └─ 放行   → (*SentinelEntry, nil)
+e.Exit(...) 回写 RT/错误/并发数并归还 context，sync.Once 只执行一次</code></pre>
+<p>三个必须遵守的约束：<strong>先判 <code>blockErr</code> 再 defer <code>Exit</code></strong>（blocked 时 entry 为 nil，defer 会 panic）；<code>Exit</code> 必须 defer（panic 或提前 return 都会漏掉统计）；错误要通过 <code>Exit(base.WithError(err))</code> 回填（否则熔断的异常比例永远是 0）。</p>
+<h3 id="32-滑动窗口leaparray-的桶与精度">3.2 滑动窗口：LeapArray 的桶与精度</h3>
+<p>Sentinel 用环形数组做滑动窗口，核心是三个量：<code>intervalInMs</code>（窗口长度）、<code>sampleCount</code>（桶数）、<code>bucketLengthInMs = intervalInMs / sampleCount</code>。全局统计默认 <strong>1000ms 窗口、2 个桶</strong>，即每桶 500ms。</p>
+<pre><code class="lang-text">idx = (now / bucketLengthInMs) % sampleCount
+bucketStart = now - now % bucketLengthInMs
+
+时间轴   0     500    1000   1500   2000
+桶       B0     B1     B0     B1     B0    ← 同一个数组循环复用
+读取     最近 2 个未过期桶之和 = 最近 1s 的通过数
+过期     now - bucketStart &gt; intervalInMs 的桶直接跳过</code></pre>
+<p>写路径只对当前桶做原子累加；只有跨周期复用旧桶时才用 <code>TryLock</code> + CAS 重置，读路径无锁遍历。这带来两个工程结论：</p>
+<ul><li><strong>精度是桶长，不是毫秒</strong>。500ms 桶意味着限流判定每 500ms 才校准一次，窗口交界处仍可能多放接近一个桶的量。桶数由全局统计配置决定（默认 2），不能按规则单独调；<code>StatIntervalInMs</code> 必须是全局桶长的整数倍，否则内部 <code>sampleCount</code> 直接退化成 1。</li><li><strong>熔断的 <code>StatSlidingWindowBucketCount</code> 必须整除 <code>StatIntervalMs</code></strong>，不满足时会被静默改成 1，同样退化成固定窗口——配置看起来生效了，实际精度全丢。</li></ul>
+<p>为什么不用固定窗口？固定窗口在交界处能放过 2 倍阈值：阈值 100 QPS，窗口 1 的最后 100ms 进 100 个、窗口 2 的前 100ms 再进 100 个，200ms 内实际 200 QPS。滑动窗口把「最近一个完整窗口」作为判定区间，消灭了这种整点突刺，但它是<strong>计数</strong>语义：窗口内先放进 100 个，第 101 个才拒，这 100 个仍可能挤在同一毫秒。</p>
+<h3 id="33-流控效果两个字段组合出的三种行为">3.3 流控效果：两个字段组合出的三种行为</h3>
+<p>规则里其实是两个字段在配合：<code>TokenCalculateStrategy</code>（Direct / WarmUp）决定「允许的阈值怎么算」，<code>ControlBehavior</code>（Reject / Throttling）决定「超阈值怎么办」。</p>
+<div class="table-wrap"><table><thead><tr><th>效果</th><th>字段组合</th><th>流量形态</th><th>不适合</th></tr></thead><tbody><tr><td>快速失败</td><td><code>Direct</code> + <code>Reject</code></td><td>入口 API，超了立刻 429</td><td>需要平滑出口配额</td></tr><tr><td>预热</td><td><code>WarmUp</code> + <code>Reject</code></td><td>刚启动、缓存冷、连接池未建</td><td>已预热实例的滚动重启（浪费容量）</td></tr><tr><td>匀速排队</td><td><code>Direct</code> + <code>Throttling</code></td><td>调用第三方、批处理</td><td>入口高并发（占 goroutine、放大尾延迟）</td></tr></tbody></table></div>
+<p><strong>Warm Up</strong>：起始阈值约为 <code>Threshold / WarmUpColdFactor</code>（默认 3），在 <code>WarmUpPeriodSec</code> 内线性升到 <code>Threshold</code>。它解决的是「新实例一上线就被打满，缓存还没热，全部超时」的问题。但冷启动比多数人预期长：阈值 300、预热 600s，前 100s 只能过 100 QPS，扩容后容量爬升很慢；而且改一次规则会重建 controller，预热重新开始。</p>
+<p><strong>匀速排队</strong>是漏桶：请求在 slot 里 <code>Sleep(nanosToWait)</code> 等到下一个可用间隔，排队超过 <code>MaxQueueingTimeMs</code> 才拒。注意这个 sleep 发生在<strong>调用方 goroutine</strong> 里，入口用它等于把「快速拒绝」变成「慢拒绝」，连接和 goroutine 都被占着。它只适合出口配额，且 <code>MaxQueueingTimeMs</code> 必须小于上游剩余 timeout。</p>
+<h3 id="34-熔断三种策略与半开探测">3.4 熔断：三种策略与半开探测</h3>
+<pre><code class="lang-text">                 窗口内比例/数量超阈值
+   closed ────────────────────────────────► open
+     ▲                                        │ RetryTimeoutMs 到期 + CAS
+     │ 探针全部成功                            ▼
+     └────────────────────────────────── half-open
+                         任一探针失败 → 立即回 open，重置冷却</code></pre>
+<div class="table-wrap"><table><thead><tr><th>策略</th><th>统计量</th><th>Threshold 含义</th><th>什么时候用</th></tr></thead><tbody><tr><td><code>SlowRequestRatio</code></td><td>RT &gt; <code>MaxAllowedRtMs</code> 的请求占比</td><td>比例 0~1</td><td>首选。雪崩早期错误率还是 0，RT 已经涨了 10 倍</td></tr><tr><td><code>ErrorRatio</code></td><td><code>err != nil</code> 的占比</td><td>比例 0~1</td><td>下游明确返回错误、连接失败</td></tr><tr><td><code>ErrorCount</code></td><td>窗口内错误绝对数</td><td>个数</td><td>高流量且错误预算明确，小流量下几乎不可用</td></tr></tbody></table></div>
+<p>三个参数决定它是否可靠：<code>MinRequestAmount</code> 是判定门槛（10s 内至少 20 个样本才允许熔断，避免「3 个请求错 2 个 = 66%」）；<code>StatIntervalMs</code> 是统计窗口；<code>RetryTimeoutMs</code> 是 open 冷却时长，必须大于下游典型恢复时间（重启 + 预热），否则会陷入「打开→半开→失败→打开」的抖动。</p>
+<p>半开不是「全量放行试探」：<code>RetryTimeoutMs</code> 到期后，只有一个 goroutine 能 CAS 成功进入 half-open，随后按 <code>ProbeNum</code> 放行探针（不设时等价于单探针语义），<strong>其余并发请求仍然被拒</strong>。任一探针失败立刻回 open 并重置冷却；探针数量凑齐且全部成功才 closed，同时清空统计窗口。<code>ProbeNum</code> 建议 3~10，且探针要带独立短超时，别让一个卡住的探针把状态机吊在半开。</p>
+<h3 id="35-热点参数按参数值限流">3.5 热点参数：按参数值限流</h3>
+<p>普通流控看的是资源总量，热点规则看的是<strong>每个参数值各自一份配额</strong>。规则字段不多，但每个都影响行为：</p>
+<div class="table-wrap"><table><thead><tr><th>字段</th><th>作用</th><th>注意</th></tr></thead><tbody><tr><td><code>ParamKey</code></td><td>从 <code>Entry</code> 的 Attachments 取值</td><td>优先级高于 <code>ParamIndex</code>，取不到就跳过（不限流）</td></tr><tr><td><code>ParamIndex</code></td><td>从 <code>WithArgs(...)</code> 的位置取值，负数从末尾算</td><td><code>ParamKey</code> 优先；参数位置改了规则就错位</td></tr><tr><td><code>MetricType</code></td><td><code>QPS</code> 或 <code>Concurrency</code></td><td>并发维度适合「每个用户只能同时跑 1 个导出任务」</td></tr><tr><td><code>Threshold</code></td><td>每个参数值在 <code>DurationInSec</code> 内的令牌数</td><td>不是全局阈值</td></tr><tr><td><code>BurstCount</code></td><td>额外可攒的令牌，桶容量 = Threshold + BurstCount</td><td>只对 QPS + <code>Reject</code> 生效</td></tr><tr><td><code>DurationInSec</code></td><td>统计窗口</td><td>调大等于放宽瞬时速率</td></tr><tr><td><code>ParamsMaxCapacity</code></td><td>参数值统计槽的 LRU 上限</td><td>QPS 模式不设时为 <code>min(20000, 4000 × DurationInSec)</code></td></tr><tr><td><code>SpecificItems</code></td><td>给特定值单独阈值</td><td>大客户白名单，值类型要与参数一致</td></tr></tbody></table></div>
+<p><code>Reject</code> 的语义是每参数一个令牌桶：每 <code>DurationInSec</code> 补 <code>Threshold</code> 个令牌，最多存 <code>Threshold + BurstCount</code> 个；<code>Throttling</code> 则按 <code>DurationInSec / Threshold</code> 的间隔匀速放行，超过 <code>MaxQueueingTimeMs</code> 拒绝。统计槽存在 LRU 里，所以「大 V 保护」不会无限吃内存——但前提是你设了合理的容量，且没有拿一个基数上千万的字段当 <code>ParamKey</code>。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-最小可跑初始化-一条流控规则">4.1 最小可跑：初始化 + 一条流控规则</h3>
+<pre><code class="lang-go">package main
+
+import (
+	"log"
+	"net/http"
+
+	sentinel "github.com/alibaba/sentinel-golang/api"
+	"github.com/alibaba/sentinel-golang/core/base"
+	"github.com/alibaba/sentinel-golang/core/flow"
+)
+
+const resUserQuery = "user.query"
+
+func userQuery(w http.ResponseWriter, r *http.Request) {
+	e, b := sentinel.Entry(resUserQuery, sentinel.WithTrafficType(base.Inbound))
+	if b != nil {
+		http.Error(w, "busy", http.StatusTooManyRequests)
+		return
+	}
+	defer e.Exit()
+	_, _ = w.Write([]byte(`{"ok":true}`))
+}
+
+func main() {
+	if err := sentinel.InitDefault(); err != nil {
+		log.Fatal(err)
+	}
+	_, err := flow.LoadRules([]*flow.Rule{{
+		Resource:               resUserQuery,
+		TokenCalculateStrategy: flow.Direct,
+		ControlBehavior:        flow.Reject,
+		Threshold:              100,  // 单机 100 QPS
+		StatIntervalInMs:       1000, // 1s 窗口，默认 2 个 500ms 桶
+	}})
+	if err != nil {
+		log.Fatal(err)
+	}
+	http.HandleFunc("/api/user", userQuery)
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}</code></pre>
+<p><code>InitDefault</code> 只需在进程启动时调用一次。规则里的 <code>Resource</code> 必须与 <code>Entry</code> 的字符串逐字节一致，大小写、空格、前缀都算。<code>WithBatchCount(n)</code> 让一次 Entry 消耗 n 个 token（批量消费必用，否则 50 条消息只算 1 QPS）；<code>WithTrafficType(base.Inbound)</code> 决定它是否计入系统规则的入口 QPS / 平均 RT，内部 RPC、DB 调用应标 <code>Outbound</code>。</p>
+<h3 id="42-熔断给下游调用加保护与降级返回">4.2 熔断：给下游调用加保护与降级返回</h3>
+<pre><code class="lang-go">package downstream
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"io"
+	"net/http"
+	"time"
+
+	sentinel "github.com/alibaba/sentinel-golang/api"
+	"github.com/alibaba/sentinel-golang/core/base"
+	"github.com/alibaba/sentinel-golang/core/circuitbreaker"
+)
+
+const resUserSvc = "downstream.user.get"
+
+var (
+	ErrDegraded     = errors.New("user-service degraded")
+	ErrUserNotFound = errors.New("user not found")
+	httpCli         = &amp;http.Client{Timeout: 800 * time.Millisecond}
+)
+
+func initUserBreaker() error {
+	_, err := circuitbreaker.LoadRules([]*circuitbreaker.Rule{{
+		Resource:         resUserSvc,
+		Strategy:         circuitbreaker.SlowRequestRatio,
+		RetryTimeoutMs:   5000,  // open 冷却 5s
+		MinRequestAmount: 20,    // 10s 内至少 20 个样本
+		StatIntervalMs:   10000, // 统计窗口 10s
+		MaxAllowedRtMs:   300,   // 超过 300ms 算慢调用
+		Threshold:        0.5,   // 慢调用占比 &gt; 50% 熔断
+		ProbeNum:         3,     // 半开放 3 个探针
+	}})
+	return err
+}
+
+// GetUser 返回值里 (nil, ErrUserNotFound) 是业务结果，不算下游故障。
+func GetUser(ctx context.Context, id string) (body []byte, err error) {
+	e, b := sentinel.Entry(resUserSvc)
+	if b != nil {
+		return nil, fmt.Errorf("%w: %s", ErrDegraded, b.BlockType())
+	}
+	defer func() {
+		if errors.Is(err, ErrUserNotFound) { // 业务错误不回填，避免正常波动触发熔断
+			e.Exit()
+			return
+		}
+		e.Exit(base.WithError(err))
+	}()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://user-svc/users/"+id, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := httpCli.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, ErrUserNotFound
+	}
+	if resp.StatusCode &gt;= 500 {
+		return nil, fmt.Errorf("upstream status %d", resp.StatusCode)
+	}
+	return io.ReadAll(resp.Body)
+}</code></pre>
+<p>启动时调用 <code>initUserBreaker()</code>；调用方拿到 <code>ErrDegraded</code> 就走兜底（缓存快照、空对象 + <code>degraded: true</code>），不要返回 <code>nil, nil</code>。另一个细节：<code>http.Client.Timeout</code> 要明显大于 <code>MaxAllowedRtMs</code>（例如 2~3 倍），否则慢调用在客户端就被掐断，<code>SlowRequestRatio</code> 永远统计不到；它同时要小于上游剩余 deadline。</p>
+<h3 id="43-热点参数按-uid-限流">4.3 热点参数：按 uid 限流</h3>
+<pre><code class="lang-go">package hotpath
+
+import (
+	"net/http"
+
+	sentinel "github.com/alibaba/sentinel-golang/api"
+	"github.com/alibaba/sentinel-golang/core/hotspot"
+)
+
+const resProfile = "user.profile"
+
+func initHotspotRules() error {
+	_, err := hotspot.LoadRules([]*hotspot.Rule{{
+		Resource:          resProfile,
+		MetricType:        hotspot.QPS,
+		ControlBehavior:   hotspot.Reject,
+		ParamKey:          "uid", // 从 WithAttachment 取，取不到则不限流
+		Threshold:         20,    // 每个 uid 每秒 20 次
+		BurstCount:        5,     // 桶容量 25
+		DurationInSec:     1,
+		ParamsMaxCapacity: 5000, // 只保留 5000 个活跃 uid 的统计槽
+	}})
+	return err
+}
+
+func profileHandler(w http.ResponseWriter, r *http.Request) {
+	uid := r.URL.Query().Get("uid")
+	e, b := sentinel.Entry(resProfile, sentinel.WithAttachment("uid", uid))
+	if b != nil {
+		http.Error(w, "too many requests for this user", http.StatusTooManyRequests)
+		return
+	}
+	defer e.Exit()
+	_, _ = w.Write([]byte(`{"uid":"` + uid + `"}`))
+}</code></pre>
+<p>启动时调用 <code>initHotspotRules()</code>；参数也可以用位置传：<code>sentinel.WithArgs(uid, skuID)</code> 配 <code>ParamIndex: 0</code>，<code>-1</code> 表示最后一个。位置传参在 handler 签名变化时最容易被改错，优先 <code>ParamKey</code> + <code>WithAttachment</code>：名字改了编译期还能 grep 到。</p>
+<h3 id="44-规则动态化从-etcd-拉取并热更新">4.4 规则动态化：从 etcd 拉取并热更新</h3>
+<p><code>ext/datasource</code> 只提供了 <code>DataSource</code> / <code>PropertyHandler</code> 抽象和文件源，etcd、Nacos 需要自己接。自己接的好处是能控制版本、校验和失败策略：</p>
+<pre><code class="lang-go">package ruler
+
+import (
+	"context"
+	"encoding/json"
+	"log"
+	"sync/atomic"
+
+	"github.com/alibaba/sentinel-golang/core/flow"
+	clientv3 "go.etcd.io/etcd/client/v3"
+)
+
+type flowDoc struct {
+	Rules []*flow.Rule `json:"rules"`
+}
+
+var lastRev atomic.Int64 // 用 etcd ModRevision 做幂等键
+
+func Watch(ctx context.Context, cli *clientv3.Client, key string) error {
+	load := func(raw []byte, rev int64) {
+		var doc flowDoc
+		if err := json.Unmarshal(raw, &amp;doc); err != nil {
+			log.Printf("sentinel: bad payload, keep old rules: %v", err) // fail-safe
+			return
+		}
+		if rev &lt;= lastRev.Load() { // 幂等：乱序/重复推送直接丢
+			return
+		}
+		if _, err := flow.LoadRules(doc.Rules); err != nil {
+			log.Printf("sentinel: load rules failed, keep old: %v", err)
+			return
+		}
+		lastRev.Store(rev)
+	}
+	resp, err := cli.Get(ctx, key)
+	if err != nil {
+		return err
+	}
+	if len(resp.Kvs) &gt; 0 {
+		load(resp.Kvs[0].Value, resp.Kvs[0].ModRevision)
+	}
+	go func() {
+		for wresp := range cli.Watch(ctx, key) {
+			for _, ev := range wresp.Events {
+				if ev.Type == clientv3.EventTypeDelete { // 删除事件只跳过，绝不 LoadRules(nil)
+					continue
+				}
+				load(ev.Kv.Value, ev.Kv.ModRevision)
+			}
+		}
+	}()
+	return nil
+}</code></pre>
+<p>Nacos 是同一个模式：监听配置变更 → 反序列化成 <code>[]*flow.Rule</code> / <code>[]*circuitbreaker.Rule</code> → <code>LoadRules</code>。三个必须自己兜住的点：<strong>版本单调</strong>（etcd revision 或配置里的 version）、<strong>结构校验</strong>（空 Resource、负阈值会让规则被静默丢弃）、<strong>失败保留旧值</strong>（解析失败、网络失败都不能清空）。etcd 的 watch 断连会自动重连并从上次 revision 续传，但应用重启后的第一次 <code>Get</code> 必须成功，否则进程会带着零规则跑——启动时应重试到成功再放量。</p>
+<h3 id="45-与-gin-grpc-集成">4.5 与 Gin / gRPC 集成</h3>
+<pre><code class="lang-go">package middleware
+
+import (
+	"net/http"
+
+	sentinel "github.com/alibaba/sentinel-golang/api"
+	"github.com/alibaba/sentinel-golang/core/base"
+	"github.com/gin-gonic/gin"
+)
+
+func Guard() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		e, b := sentinel.Entry(c.Request.Method+":"+c.FullPath(),
+			sentinel.WithTrafficType(base.Inbound))
+		if b != nil {
+			c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{
+				"code":   http.StatusTooManyRequests,
+				"reason": b.BlockType().String(),
+			})
+			return
+		}
+		defer func() {
+			var err error
+			if last := c.Errors.Last(); last != nil {
+				err = last.Err
+			}
+			e.Exit(base.WithError(err))
+		}()
+		c.Next()
+	}
+}</code></pre>
+<pre><code class="lang-go">package interceptor
+
+import (
+	"context"
+
+	sentinel "github.com/alibaba/sentinel-golang/api"
+	"github.com/alibaba/sentinel-golang/core/base"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
+func UnaryServer() grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
+		e, b := sentinel.Entry(info.FullMethod, sentinel.WithTrafficType(base.Inbound))
+		if b != nil {
+			return nil, status.Error(codes.ResourceExhausted, b.BlockType().String())
+		}
+		defer func() { e.Exit(base.WithError(err)) }()
+		return handler(ctx, req)
+	}
+}</code></pre>
+<p>两处共同点：<strong>统一 block 响应</strong>（HTTP 429 + block type，gRPC <code>ResourceExhausted</code>），客户端才能区分「限流」和「服务端 500」并决定是否重试；<strong>资源名从框架的路由信息生成</strong>，不要在每个 handler 里手写字符串，否则规则和代码迟早对不上。</p>
+<h3 id="46-可观测pass-block-打成-prometheus-指标">4.6 可观测：pass / block 打成 Prometheus 指标</h3>
+<p>v1.0.4 的 stat slot 已经自动上报 <code>sentinel_go_handled_total{resource,result,block_type}</code>，<strong>pass / block 次数不用自己写</strong>；<code>exporter/metric</code> 提供 registry 和 <code>HTTPHandler()</code>，<code>mux.Handle("/metrics", sentinelmetric.HTTPHandler())</code> 即可暴露。缺的是 RT 分布，补一个直方图：</p>
+<pre><code class="lang-go">package metrics
+
+import (
+	"time"
+
+	sentinel "github.com/alibaba/sentinel-golang/api"
+	"github.com/alibaba/sentinel-golang/core/base"
+	sentinelmetric "github.com/alibaba/sentinel-golang/exporter/metric"
+)
+
+var rtHist = sentinelmetric.NewHistogram("rt_seconds", "Resource RT.",
+	[]float64{0.005, 0.02, 0.1, 0.3, 1}, []string{"resource"})
+
+func init() { sentinelmetric.MustRegister(rtHist) }
+
+func Do(resource string, fn func() error) error {
+	start := time.Now()
+	e, b := sentinel.Entry(resource)
+	if b != nil {
+		return b
+	}
+	err := fn()
+	e.Exit(base.WithError(err))
+	rtHist.Observe(time.Since(start).Seconds(), resource)
+	return err
+}</code></pre>
+<pre><code class="lang-promql">sum by (resource, block_type) (rate(sentinel_go_handled_total{result="block"}[1m]))
+
+histogram_quantile(0.99, sum by (le, resource) (rate(sentinel_go_rt_seconds_bucket[5m])))</code></pre>
+<p><code>block_type</code> 是排查的关键维度：<code>BlockTypeFlowControl</code> 说明阈值该调了，<code>BlockTypeCircuitBreaking</code> 说明下游有问题，<code>BlockTypeHotSpotParamFlow</code> 说明是单值热点而不是总量。指标都带 <code>host/app/pid</code> 常量标签，多副本下记得用 <code>sum by (resource)</code> 聚合。</p>
+<hr>
+
+</section>
+<section data-anchor="5-版本与生态">
+<h2 id="5-版本与生态">5. 版本与生态<span class="lvl b">版本</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>sentinel-golang v1.0.4</th><th>Sentinel Java 1.8.x</th></tr></thead><tbody><tr><td>发布节奏</td><td>tag 停在 2022-01，master 仍有零星提交</td><td>持续发版</td></tr><tr><td>集群流控</td><td><strong>无</strong>（没有 Token Server 实现）</td><td>有</td></tr><tr><td>控制台</td><td>无官方 Dashboard</td><td>有</td></tr><tr><td>数据源</td><td><code>ext/datasource</code> 抽象 + 文件源，etcd/Nacos 自己接</td><td>内置 Nacos/ZK/Apollo/etcd</td></tr><tr><td>注解埋点</td><td>无，手写 <code>Entry</code></td><td><code>@SentinelResource</code></td></tr><tr><td>系统自适应</td><td>Load / CPU / 并发 / 入口 QPS / 平均 RT + BBR</td><td>同</td></tr></tbody></table></div>
+<p><strong>规则格式兼容性</strong>要打个问号：两边概念一一对应，但 <strong>JSON 不兼容</strong>。Java 的流控规则是 <code>grade</code> + <code>count</code> + <code>controlBehavior</code>，Go 是 <code>tokenCalculateStrategy</code> + <code>threshold</code> + <code>controlBehavior</code>，枚举还是整数（<code>Direct=0</code>、<code>Reject=0</code>）。把 Java 控制台导出的规则直接灌给 Go SDK 会解析成零值，阈值变 0、全部拒绝。要么自己写一层字段映射，要么以 Go 的 <code>flow.Rule</code> 作为唯一事实源、用配置中心下发，别指望直接复用 Java 控制台。</p>
+<p>替代品定位很清楚：<code>golang.org/x/time/rate</code> 是纯令牌桶，没有规则、没有统计、没有熔断，适合「这个 client 每秒最多调 50 次」；<code>uber-go/ratelimit</code> 是阻塞式漏桶，零分配，适合严格匀速；<code>sony/gobreaker</code> 只做熔断，API 面最小、语义最干净；go-zero 把自适应熔断和 load shedding 做进框架，但绑定它的工程结构。Sentinel 的不可替代项是<strong>热点参数 + 规则热更新 + 系统自适应</strong>三件套，以及和 Java 体系一致的资源/规则心智模型。</p>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑">
+<h2 id="6-常见坑">6. 常见坑<span class="lvl a">避坑</span></h2>
+<ol><li><strong>blocked 之后还 defer <code>Exit</code></strong>：被拦截时 <code>Entry</code> 返回的 entry 是 nil，<code>defer e.Exit()</code> 直接 panic；反过来忘了 defer，统计里的并发数只增不减（热点/熔断的并发判定会永久失真），RT 也永远缺样本。</li><li><strong>资源名硬编码且到处复制</strong>：拼错一个字符规则就静默不生效；把 uid、订单号拼进资源名更糟——资源表有 10000 个的软上限（<code>DefaultMaxResourceAmount</code>），超出只打 warning、不阻止创建，内存照涨且规则基本失效。资源名集中成常量，和规则生成用同一份定义。</li><li><strong>规则推送不幂等或乱序</strong>：多个实例或多次推送没有版本约束时，旧配置可能后到并覆盖新配置；<code>LoadRules(nil)</code> 等于把保护全关。用 etcd revision 或单调 version 丢弃旧事件，删除事件只告警、保留最后一份有效规则。</li><li><strong>熔断用 <code>ErrorCount</code> 但流量很小</strong>：阈值 20 个错误，10 QPS 要连续错 2 秒才触发，1 QPS 时 <code>MinRequestAmount</code> 都凑不满，永远不熔断。小流量用 <code>SlowRequestRatio</code>，或把 <code>MinRequestAmount</code> 降到个位数。</li><li><strong>Warm Up 冷启动比想象的长</strong>：<code>WarmUpColdFactor=3</code> 意味着起始只有 1/3 阈值，预热 600s 的规则前 100s 都在低水位；改阈值会重建 controller、预热重新计时。扩容窗口紧的服务别用预热，或把 <code>WarmUpPeriodSec</code> 压到 30~60s。</li><li><strong>热点参数的内存增长</strong>：每个参数值要维护时间戳、令牌数（并发模式还有并发计数）三份状态，高基数 <code>ParamKey</code>（如 session id）会迅速填满 LRU；QPS 模式默认容量是 <code>min(20000, 4000 × DurationInSec)</code>，不显式设 <code>ParamsMaxCapacity</code> 就可能比预期大一个量级。</li><li><strong>单机限流当集群限流</strong>：10 个副本各配 200 QPS，集群上限 2000；HPA 扩到 20 个副本，上限自动变 4000，下游只有 2000 容量时扩容反而加速打垮它。Go 版没有 Token Server，跨实例配额必须走网关或 Redis。</li></ol>
+<p>另外两个容易忽略的口径问题：<code>Entry</code> 只包住业务函数，JSON 序列化、日志、中间件耗时都在外面，RT 会偏小；系统规则的 <code>InboundQPS</code> / <code>AvgRT</code> 只统计标了 <code>Inbound</code> 的 entry，内部调用不标 <code>Outbound</code> 的话，自适应看到的负载比真实值低。</p>
+<hr>
+
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>Sentinel-Go</th><th>x/time/rate</th><th>网关（Nginx / APISIX）</th><th>服务网格（Envoy）</th></tr></thead><tbody><tr><td>粒度</td><td>资源 / 方法 / 参数值 / 依赖</td><td>单进程 limiter</td><td>路由 / IP / Header</td><td>服务 / 路由</td></tr><tr><td>动态规则</td><td><code>LoadRules</code> + 配置中心</td><td>改代码或 <code>SetLimit</code></td><td>有（Admin API / CRD）</td><td>有（CRD / xDS）</td></tr><tr><td>熔断</td><td>慢调用 / 异常比例 / 异常数</td><td>无</td><td>部分（插件）</td><td>有（outlier detection）</td></tr><tr><td>热点参数</td><td>有</td><td>需自建 map</td><td>插件 / Lua</td><td>无</td></tr><tr><td>集群配额</td><td>无</td><td>无</td><td>有（Redis / 集群模块）</td><td>有（global rate limit）</td></tr><tr><td>部署成本</td><td>引依赖 + 逐点埋点</td><td>极低</td><td>中（多一跳）</td><td>高（sidecar）</td></tr></tbody></table></div>
+<ul><li><strong>单机细粒度 + 规则要能动态改</strong> → Sentinel-Go。尤其是「按 uid/sku 限流」「方法级 RT 熔断」「系统负载兜底」这三类需求，网关和 <code>rate.Limiter</code> 都做不到。</li><li><strong>只要单机 QPS 上限</strong> → <code>rate.Limiter</code> 就够，几十行中间件，别为三个词引入规则引擎和一套埋点规范。</li><li><strong>跨实例的精确配额</strong> → 网关或 Redis + Lua。SDK 里做集群限流只能做近似（哈希分摊/批量领配额），精确性要求高时不要自己造。</li><li><strong>多语言、跨进程统一治理</strong> → 服务网格，应用层只留兜底降级；但网格看不到参数值维度，热点保护仍要回到 SDK。</li></ul>
+<p>一句话：<strong>入口总量交网关，进程内细粒度交 Sentinel，跨实例精确配额交 Redis，谁也别越界</strong>。</p>
+<p>参考：<a href="https://github.com/alibaba/sentinel-golang">https://github.com/alibaba/sentinel-golang</a>、<a href="https://sentinelguard.io/zh-cn/docs/introduction.html">https://sentinelguard.io/zh-cn/docs/introduction.html</a>、<a href="https://pkg.go.dev/github.com/alibaba/sentinel-golang/api">https://pkg.go.dev/github.com/alibaba/sentinel-golang/api</a>、<a href="https://golang.org/x/time/rate">https://golang.org/x/time/rate</a></p>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

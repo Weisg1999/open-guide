@@ -2633,5 +2633,81 @@
    "section": 6,
    "html": "<div class=\"callout warning\"><p><b>生产警示：</b>为未来预留扩展点、接口污染、把模式名写进函数名——读者要先查模式再看代码。</p></div>"
   }
+ ],
+ "helm": [
+  {
+   "h2": "2. 能力总览",
+   "section": 2,
+   "html": "<div class=\"features\">\n  <div class=\"feature\"><div class=\"fh\"><h4>模板化</h4></div><p>values 覆盖 + `_helpers.tpl`，一套 Chart 覆盖多环境</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>版本化</h4></div><p>Release 是有状态的发布记录，可 diff、可 rollback</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>依赖管理</h4></div><p>子 Chart + condition 开关，按环境裁剪组件</p></div>\n</div>"
+  }
+ ],
+ "argocd": [
+  {
+   "h2": "2. 能力总览",
+   "section": 2,
+   "html": "<div class=\"features\">\n  <div class=\"feature\"><div class=\"fh\"><h4>Git 为唯一真源</h4></div><p>集群状态与 Git 不一致时，控制器把它拉回来</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>持续同步</h4></div><p>selfHeal + prune，手工改动会被自动纠正</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>多集群矩阵</h4></div><p>ApplicationSet 用一份模板生成 N 个环境 × M 个集群</p></div>\n</div>"
+  }
+ ],
+ "release-strategy": [
+  {
+   "h2": "2. 能力总览",
+   "section": 2,
+   "html": "<div class=\"features\">\n  <div class=\"feature\"><div class=\"fh\"><h4>渐进放量</h4></div><p>5% → 20% → 100%，每步都可停</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>自动判定</h4></div><p>错误率与 P99 达标才继续，否则自动 abort</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>快速回滚</h4></div><p>流量归零比重新部署快一个数量级</p></div>\n</div>"
+  }
+ ],
+ "cdc": [
+  {
+   "h2": "2. 能力总览",
+   "section": 2,
+   "html": "<div class=\"features\">\n  <div class=\"feature\"><div class=\"fh\"><h4>零侵入</h4></div><p>业务代码不写双写，变更从 binlog 来</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>顺序保证</h4></div><p>同主键有序，事务边界可还原</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>快照 + 增量</h4></div><p>先全量再追平，位点可续传</p></div>\n</div>"
+  }
+ ],
+ "sharding": [
+  {
+   "h2": "2. 能力总览",
+   "section": 2,
+   "html": "<div class=\"features\">\n  <div class=\"feature\"><div class=\"fh\"><h4>水平扩展</h4></div><p>写入与容量随分片数线性增长</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>透明路由</h4></div><p>Proxy 模式下应用仍写标准 SQL</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>平滑扩容</h4></div><p>双写迁移 + 一致性哈希，停机窗口为零</p></div>\n</div>"
+  }
+ ],
+ "sentinel": [
+  {
+   "h2": "2. 能力总览",
+   "section": 2,
+   "html": "<div class=\"features\">\n  <div class=\"feature\"><div class=\"fh\"><h4>流控</h4></div><p>快速失败 / 预热 / 匀速排队，按 QPS 或并发数</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>熔断</h4></div><p>慢调用、异常比例、异常数三种策略 + 半开探测</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>热点保护</h4></div><p>按参数值限流，挡住单点刷接口</p></div>\n</div>"
+  }
+ ],
+ "local-cache": [
+  {
+   "h2": "2. 能力总览",
+   "section": 2,
+   "html": "<div class=\"features\">\n  <div class=\"feature\"><div class=\"fh\"><h4>微秒级读</h4></div><p>进程内命中，省掉一次网络往返</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>可控 GC</h4></div><p>bigcache 分片、freecache 堆外，避免指针扫描</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>防击穿</h4></div><p>singleflight 让回源只有一个请求</p></div>\n</div>"
+  }
+ ],
+ "graphql": [
+  {
+   "h2": "2. 能力总览",
+   "section": 2,
+   "html": "<div class=\"features\">\n  <div class=\"feature\"><div class=\"fh\"><h4>按需取数</h4></div><p>客户端声明字段，避免过度获取与多次往返</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>单端点</h4></div><p>一个 `/graphql` 承载所有查询与变更</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>强类型</h4></div><p>SDL 即契约，代码由 schema 生成</p></div>\n</div>"
+  }
+ ],
+ "architecture": [
+  {
+   "h2": "2. 能力总览",
+   "section": 2,
+   "html": "<div class=\"features\">\n  <div class=\"feature\"><div class=\"fh\"><h4>依赖倒置</h4></div><p>接口由使用方定义，infrastructure 去实现</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>用例编排</h4></div><p>事务边界在 application 层，domain 保持纯净</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>可测试</h4></div><p>domain 纯单测，仓储用替身，不用连数据库</p></div>\n</div>"
+  },
+  {
+   "h2": "3. 核心概念与原理",
+   "section": 3,
+   "after": "3.1 依赖倒置：谁定义接口",
+   "html": "<div class=\"figure\">\n  <svg viewBox=\"0 0 880 486\" xmlns=\"http://www.w3.org/2000/svg\" font-family=\"-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif\">\n    <text x=\"440\" y=\"30\" text-anchor=\"middle\" font-size=\"17\" font-weight=\"700\" fill=\"#1e293b\">依赖方向永远指向内层</text>\n    <text x=\"440\" y=\"52\" text-anchor=\"middle\" font-size=\"12.5\" fill=\"#64748b\">domain 不知道数据库存在；infrastructure 实现 domain 定义的接口</text>\n    <defs><marker id=\"a3\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0,0 L10,5 L0,10 z\" fill=\"#475569\"/></marker></defs>\n    <rect x=\"230\" y=\"74\" width=\"420\" height=\"64\" rx=\"12\" fill=\"#ffffff\" stroke=\"#e3e9f2\" stroke-width=\"1.5\"/>\n    <text x=\"250\" y=\"100\" font-size=\"14\" font-weight=\"700\" fill=\"#64748b\">interface</text>\n    <text x=\"250\" y=\"121\" font-size=\"11.5\" fill=\"#64748b\">HTTP / gRPC / 消费者入口，只做解析与渲染</text>\n    <rect x=\"230\" y=\"176\" width=\"420\" height=\"64\" rx=\"12\" fill=\"#f1f5f9\" stroke=\"#475569\" stroke-width=\"1.5\"/>\n    <text x=\"250\" y=\"202\" font-size=\"14\" font-weight=\"700\" fill=\"#1e293b\">application</text>\n    <text x=\"250\" y=\"223\" font-size=\"11.5\" fill=\"#64748b\">用例编排、事务边界、跨聚合协调</text>\n    <rect x=\"230\" y=\"278\" width=\"420\" height=\"64\" rx=\"12\" fill=\"#f1f5f9\" stroke=\"#475569\" stroke-width=\"1.5\"/>\n    <text x=\"250\" y=\"304\" font-size=\"14\" font-weight=\"700\" fill=\"#1e293b\">domain</text>\n    <text x=\"250\" y=\"325\" font-size=\"11.5\" fill=\"#64748b\">实体 / 值对象 / 仓储接口（不依赖任何外部）</text>\n    <rect x=\"230\" y=\"380\" width=\"420\" height=\"64\" rx=\"12\" fill=\"#ffffff\" stroke=\"#e3e9f2\" stroke-width=\"1.5\"/>\n    <text x=\"250\" y=\"406\" font-size=\"14\" font-weight=\"700\" fill=\"#64748b\">infrastructure</text>\n    <text x=\"250\" y=\"427\" font-size=\"11.5\" fill=\"#64748b\">MySQL / Redis / MQ 的实现，依赖 domain 的接口</text>\n    <line x1=\"440\" y1=\"138\" x2=\"440\" y2=\"172\" stroke=\"#475569\" stroke-width=\"2\" marker-end=\"url(#a3)\"/>\n    <line x1=\"440\" y1=\"240\" x2=\"440\" y2=\"274\" stroke=\"#475569\" stroke-width=\"2\" marker-end=\"url(#a3)\"/>\n    <text x=\"452\" y=\"158\" font-size=\"11\" fill=\"#64748b\">调用</text>\n    <text x=\"452\" y=\"260\" font-size=\"11\" fill=\"#64748b\">调用</text>\n    <line x1=\"440\" y1=\"380\" x2=\"440\" y2=\"348\" stroke=\"#475569\" stroke-width=\"2\" stroke-dasharray=\"5 4\" marker-end=\"url(#a3)\"/>\n    <text x=\"452\" y=\"366\" font-size=\"11\" fill=\"#64748b\">实现接口（依赖倒置）</text>\n    <text x=\"700\" y=\"300\" font-size=\"11.5\" fill=\"#64748b\" transform=\"rotate(0)\">← 稳定</text>\n    <text x=\"60\" y=\"300\" font-size=\"11.5\" fill=\"#64748b\">易变 →</text>\n  </svg>\n  <figcaption>四层依赖方向：外层可以依赖内层，内层不允许反向 import</figcaption>\n</div>"
+  }
+ ],
+ "distributed-id": [
+  {
+   "h2": "2. 能力总览",
+   "section": 2,
+   "html": "<div class=\"features\">\n  <div class=\"feature\"><div class=\"fh\"><h4>全局唯一</h4></div><p>多进程同时写库也不冲突</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>趋势递增</h4></div><p>对 B+ 树友好，避免页分裂</p></div>\n  <div class=\"feature\"><div class=\"fh\"><h4>不泄露业务</h4></div><p>连续 ID 会被爬，必要时加随机化</p></div>\n</div>"
+  }
  ]
 }

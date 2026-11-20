@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>分布式 ID · 技术指南 | open-guide</title>
+<meta name="generator" content="open-guide/tools/build_html.py">
+<style>
+  :root{
+    --accent:#059669; --accent-light:#ecfdf5; --accent-dark:#064e3b;
+    --bg:#f7fdfa; --card:#ffffff; --border:#e3e9f2; --text:#1e293b; --muted:#64748b;
+    --ok:#059669; --warn:#d97706; --danger:#dc2626;
+    --code-bg:#062a20; --kw:#93c5fd; --str:#86efac; --cmt:#64748b; --num:#fbbf24; --fn:#f472b6; --typ:#67e8f9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .layout{display:flex;max-width:1280px;margin:0 auto}
+  nav.sidebar{width:255px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 14px 40px 22px;border-right:1px solid var(--border)}
+  nav.sidebar .logo{font-weight:800;font-size:19px;margin-bottom:4px;color:var(--accent-dark)}
+  nav.sidebar .logo .ver{font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:10px;padding:2px 8px;vertical-align:2px;margin-left:6px}
+  nav.sidebar .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+  nav.sidebar a{display:block;padding:6px 10px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+  nav.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark);text-decoration:none}
+  nav.sidebar a.sub-link{padding-left:24px;font-size:12.5px}
+  nav.sidebar a.active{background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+  main{flex:1;min-width:0;padding:36px 44px 90px;max-width:960px}
+  .hero{background:linear-gradient(135deg,#064e3b 0%,#059669 58%,#064e3b 100%);color:#fff;border-radius:18px;padding:42px 40px;margin-bottom:34px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .hero h1{font-size:30px;margin-bottom:10px}
+  .hero p{opacity:.94;font-size:15px;max-width:680px}
+  .hero a{color:#fff;text-decoration:underline}
+  .hero .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .hero .meta span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:3px 12px;border-radius:20px;font-size:12.5px}
+  section{margin-bottom:46px}
+  h2{font-size:22px;margin-bottom:18px;padding-left:12px;border-left:4px solid var(--accent);scroll-margin-top:20px}
+  h3{font-size:17px;margin:24px 0 12px;color:var(--accent-dark);scroll-margin-top:20px}
+  h4{font-size:15px;margin:16px 0 8px;color:var(--text)}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:24px;margin-bottom:12px}
+  li{margin-bottom:6px}
+  blockquote{border-left:4px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:10px 18px;margin:14px 0;color:var(--muted);font-size:14.2px}
+  blockquote.warn{border-left-color:var(--warn);background:#fffbeb;color:#92400e}
+  blockquote.tip{border-left-color:var(--ok);background:#ecfdf5;color:#065f46}
+  blockquote p{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--border);margin:26px 0}
+  pre{background:var(--code-bg);color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:13.2px;line-height:1.65;margin:14px 0;position:relative}
+  pre .codelabel{position:absolute;top:0;right:0;font-size:11px;color:#8fa8cf;background:rgba(255,255,255,.09);padding:2px 12px;border-radius:0 12px 0 10px;user-select:none}
+  code{font-family:"JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+  p code,li code,td code,blockquote code{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border);padding:1px 6px;border-radius:6px;font-size:.88em}
+  .kw{color:var(--kw)} .str{color:var(--str)} .cmt{color:var(--cmt);font-style:italic} .num{color:var(--num)} .fn{color:var(--fn)} .typ{color:var(--typ)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);border-radius:12px;overflow:hidden;font-size:13.8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  th{background:var(--accent-light);color:var(--accent-dark);text-align:left;padding:10px 14px;font-size:13px}
+  td{padding:9px 14px;border-top:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+  img{max-width:100%}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin:18px 0}
+  .figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:18px 0}
+  .figure svg{width:100%;height:auto;display:block}
+  .figure figcaption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .feature .ft,.feature .fh{font-size:14.5px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+  .feature .fic{font-size:21px}
+  .feature p{font-size:12.6px;color:var(--muted);margin:0;line-height:1.62}
+  .timeline{position:relative;margin:18px 0;padding-left:32px}
+  .timeline::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--accent-light)}
+  .tl{position:relative;margin-bottom:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px}
+  .tl::before{content:"";position:absolute;left:-30px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--accent-light)}
+  .tl b{color:var(--accent-dark)}
+  .tip,.warn,.danger,.callout{border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+  .tip,.callout.info{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .warn,.callout.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  .danger,.callout.danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .callout.ok{background:#e6f4ec;border-left:5px solid var(--ok);color:#065f46}
+  .callout p{margin:4px 0}
+  @media (max-width:760px){ .features{grid-template-columns:1fr} }
+  .lvl{display:inline-block;font-size:11px;border-radius:6px;padding:1px 9px;margin-left:8px;vertical-align:2px}
+  .lvl.b{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--border)}
+  .lvl.m{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+  .lvl.a{background:#fce7f3;color:#be185d;border:1px solid #fbcfe8}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);text-align:center}
+  @media (max-width:900px){
+    nav.sidebar{display:none}
+    main{padding:24px 18px 60px}
+    .hero{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="logo">分布式 ID<span class="ver">google/uuid v1.6 / sonyflake v2</span></div>
+  <div class="sub">唯一 · 有序 · 不泄露</div>
+  <a href="#1-项目简介">1. 项目简介</a>
+  <a class="sub-link" href="#id-的五个属性">ID 的五个属性</a>
+  <a href="#2-能力总览">2. 能力总览</a>
+  <a href="#3-核心概念与原理">3. 核心概念与原理</a>
+  <a class="sub-link" href="#31-雪花的位布局">3.1 雪花的位布局</a>
+  <a class="sub-link" href="#32-时钟回拨">3.2 时钟回拨</a>
+  <a class="sub-link" href="#33-机器号分配">3.3 机器号分配</a>
+  <a class="sub-link" href="#34-号段模式">3.4 号段模式</a>
+  <a class="sub-link" href="#35-uuidv7">3.5 UUIDv7</a>
+  <a class="sub-link" href="#36-趋势递增-vs-严格递增">3.6 趋势递增 vs 严格递增</a>
+  <a href="#4-使用实战">4. 使用实战</a>
+  <a class="sub-link" href="#41-手写一个雪花实现">4.1 手写一个雪花实现</a>
+  <a class="sub-link" href="#42-现成实现sonyflake-与-googleuuid-v7">4.2 现成实现：sonyflake 与 google/uuid v7</a>
+  <a class="sub-link" href="#43-号段模式表设计与双-buffer">4.3 号段模式：表设计与双 buffer</a>
+  <a class="sub-link" href="#44-机器号用-etcd-注册">4.4 机器号用 etcd 注册</a>
+  <a class="sub-link" href="#45-分库分表下的基因法">4.5 分库分表下的基因法</a>
+  <a class="sub-link" href="#46-测试并发生成-100-万个查重-回拨模拟">4.6 测试：并发生成 100 万个查重 + 回拨模拟</a>
+  <a href="#5-版本与生态">5. 版本与生态</a>
+  <a href="#6-常见坑与最佳实践">6. 常见坑与最佳实践</a>
+  <a href="#7-选型对比">7. 选型对比</a>
+</nav>
+<main>
+<div class="hero">
+  <h1>分布式 ID 生成技术指南</h1>
+<p><strong>一句话定位</strong>：在多个进程同时写库时，生成全局唯一、趋势递增、不泄露业务量的 ID。 <strong>涉及方案</strong>：雪花算法、号段模式、UUIDv7、数据库自增 · <strong>版本基线</strong>：google/uuid v1.6、sony/sonyflake v2 · <strong>协议</strong>：文档 MIT</p>
+<p style="opacity:.8;font-size:13.5px">唯一 · 有序 · 不泄露</p>
+<div class="meta"><span>雪花</span><span>号段</span><span>UUIDv7</span></div>
+</div>
+<blockquote><p><strong>一句话定位</strong>：在多个进程同时写库时，生成全局唯一、趋势递增、不泄露业务量的 ID。</p>
+<p><strong>涉及方案</strong>：雪花算法、号段模式、UUIDv7、数据库自增 · <strong>版本基线</strong>：google/uuid v1.6、sony/sonyflake v2 · <strong>协议</strong>：文档 MIT</p></blockquote>
+<section data-anchor="1-项目简介">
+<h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
+<p>单库单表时，<code>AUTO_INCREMENT</code> 是完美的：唯一、递增、8 字节、零额外依赖。一旦拆成多个库、多个进程，它的三个前提同时失效：</p>
+<ul><li><strong>唯一性失效</strong>：两个库各自从 1 开始自增，<code>id=1001</code> 会出现两次；</li><li><strong>有序性失效</strong>：跨库的自增序列互相穿插，全局看是乱序的；</li><li><strong>性能瓶颈</strong>：所有写都要排同一个全局序列，等于把并发压回串行。</li></ul>
+<p>分布式 ID 就是解决这三个问题的一层"基础设施"。它不产生业务价值，但一旦出错就是<strong>主键冲突、数据错位、对账失败</strong>这类不可修复的事故，所以值得单独设计。</p>
+<h3 id="id-的五个属性">ID 的五个属性</h3>
+<div class="table-wrap"><table><thead><tr><th>属性</th><th>含义</th><th>冲突点</th></tr></thead><tbody><tr><td>唯一</td><td>任何时刻、任何节点都不会重复</td><td>与"无中心"冲突</td></tr><tr><td>趋势递增</td><td>新 ID 大体比旧 ID 大，利于 B+ 树顺序写</td><td>与"无中心"冲突</td></tr><tr><td>不可预测</td><td>外部无法从 ID 推出下一个或业务量</td><td>与"递增"冲突</td></tr><tr><td>可读</td><td>人能看出时间、分片等信息</td><td>与"短"冲突</td></tr><tr><td>性能</td><td>单节点 10 万+/s，延迟微秒级</td><td>与"强一致"冲突</td></tr></tbody></table></div>
+<p><strong>没有任何一种方案能同时满足这五条。</strong> 自增牺牲无中心，雪花牺牲绝对不可预测，UUID 牺牲可读与索引友好，号段牺牲严格递增。选型的第一步不是挑方案，而是明确这篇业务<strong>必须保住哪三条</strong>——同一个系统里，内部主键、对外单号、幂等键的诉求往往完全不同，混成一套是常见的过度设计。</p>
+<hr>
+
+</section>
+<section data-anchor="2-能力总览">
+<h2 id="2-能力总览">2. 能力总览<span class="lvl b">速览</span></h2>
+<div class="table-wrap"><table><thead><tr><th>方案</th><th>唯一性保证</th><th>有序性</th><th>性能</th><th>依赖</th><th>ID 长度</th></tr></thead><tbody><tr><td>数据库自增</td><td>单表单库内绝对唯一</td><td>严格递增</td><td>受单库写入上限约束（千~万级/s）</td><td>MySQL/PG</td><td>8 字节</td></tr><tr><td>自增 + 步长</td><td><code>auto_increment_increment=n</code>，按实例错开</td><td>全局趋势递增</td><td>同单库，横向扩容即提升</td><td>需运维规划步长</td><td>8 字节</td></tr><tr><td>UUIDv4</td><td>122 位随机，碰撞概率可忽略</td><td>完全无序</td><td>本地生成，无网络开销</td><td>无</td><td>16 字节（文本 36）</td></tr><tr><td>UUIDv7</td><td>48 位毫秒 + 74 位随机</td><td>按时间趋势递增</td><td>本地生成</td><td>无</td><td>16 字节（文本 36）</td></tr><tr><td>雪花</td><td>时间 + 机器号 + 序列</td><td>单机严格，全局趋势</td><td>单机 400 万/s 理论值，实测 100 万+/s</td><td>时钟 + 机器号</td><td>8 字节（int64）</td></tr><tr><td>号段模式</td><td>DB 行锁保证段不重叠</td><td>段内递增，跨实例趋势</td><td>极高，DB 压力降到 1/step</td><td>MySQL + 双 buffer</td><td>8 字节</td></tr><tr><td>Redis INCR</td><td>单 key 原子递增</td><td>严格递增</td><td>10 万+/s（单分片）</td><td>Redis 持久化策略</td><td>8 字节</td></tr></tbody></table></div>
+<p>两条容易忽略的读法：</p>
+<ul><li><strong>"性能"一列要看瓶颈在哪</strong>：UUID 是纯本地计算，雪花是本地计算 + 时钟，号段与 Redis 是"每 N 次一次网络"，自增是"每次一次网络 + 一次 fsync"。</li><li><strong>"ID 长度"决定索引体积</strong>：16 字节 UUID 做主键，二级索引每条都要多存 16 字节；一张 1 亿行的表，二级索引会凭空多出 1.6GB。<strong>"依赖"则决定故障面</strong>：UUID 与雪花不依赖任何服务，进程活着就能发号；号段依赖 DB，Redis 依赖缓存。</li></ul>
+<hr>
+
+<div class="features">
+  <div class="feature"><div class="fh"><h4>全局唯一</h4></div><p>多进程同时写库也不冲突</p></div>
+  <div class="feature"><div class="fh"><h4>趋势递增</h4></div><p>对 B+ 树友好，避免页分裂</p></div>
+  <div class="feature"><div class="fh"><h4>不泄露业务</h4></div><p>连续 ID 会被爬，必要时加随机化</p></div>
+</div>
+</section>
+<section data-anchor="3-核心概念与原理">
+<h2 id="3-核心概念与原理">3. 核心概念与原理<span class="lvl m">核心</span></h2>
+<h3 id="31-雪花的位布局">3.1 雪花的位布局</h3>
+<p>雪花把 64 位有符号整数切成四段，本质是<strong>在一个整数里编码"什么时候、哪台机器、第几个"</strong>：</p>
+<pre><code class="lang-text"> 0 | 41 bit 毫秒时间戳 | 10 bit 机器号 | 12 bit 序列号
+ ^   ^                   ^              ^
+ 符号位恒 0              0 ~ 1023       0 ~ 4095</code></pre>
+<div class="table-wrap"><table><thead><tr><th>段</th><th>宽度</th><th>溢出边界</th><th>推导</th></tr></thead><tbody><tr><td>符号位</td><td>1</td><td>恒为 0，保证 int64 非负</td><td>—</td></tr><tr><td>时间戳</td><td>41</td><td><strong>69.7 年</strong></td><td>2^41 ms ÷ 1000 ÷ 86400 ÷ 365 ≈ 69.7</td></tr><tr><td>机器号</td><td>10</td><td><strong>1024 台</strong></td><td>2^10</td></tr><tr><td>序列号</td><td>12</td><td><strong>4096 个/毫秒/台</strong></td><td>2^12</td></tr></tbody></table></div>
+<p>三个数字决定了容量上限：<strong>69 年</strong>是从自定义 epoch 起算的——选项目启动那年（如 2024-01-01），不要用 1970，否则白扔 54 年，且 epoch 一旦上线就不能改，改了全表 ID 冲突；<strong>4096/ms</strong> 换算成单机 <strong>409 万/s</strong> 的理论值，实际受 <code>sync.Mutex</code> 与 <code>time.Now()</code> 限制在 <strong>100 万/s</strong> 量级，对任何业务都过剩。</p>
+<p>编码只有一行：<code>id = (now_ms - epoch) &lt;&lt; 22 | machine_id &lt;&lt; 12 | sequence</code>（左移 22 = 10 + 12）。反解同样直接：<code>id &gt;&gt; 22</code> 拿时间、<code>id &gt;&gt; 12 &amp; 0x3FF</code> 拿机器号。</p>
+<h3 id="32-时钟回拨">3.2 时钟回拨</h3>
+<p>雪花的唯一性建立在"时间戳单调不减"上。但服务器时钟会被 NTP 校正、虚拟机会被热迁移、容器可能被调度到另一台宿主机——<strong>时间往回跳是常态，不是异常</strong>。回拨 N 毫秒，就意味着这 N 毫秒内的序列号会被重新发一遍。</p>
+<p>三种处理方式的真实代价：</p>
+<div class="table-wrap"><table><thead><tr><th>策略</th><th>做法</th><th>代价</th><th>能否上线</th></tr></thead><tbody><tr><td>等待</td><td>回拨 &lt; N ms 就 <code>sleep</code> 追上再发</td><td>写路径被阻塞 N 毫秒</td><td>小回拨（&lt; 5ms）可以</td></tr><tr><td>抛错</td><td>直接返回错误，上层重试或降级</td><td>这段时间不可用</td><td>大回拨必须这样，且要告警</td></tr><tr><td>借位</td><td>序列号位借给时间用，或用逻辑时钟继续自增</td><td>时间戳不再真实，透支未来</td><td>能上线，但透支上限必须可控</td></tr></tbody></table></div>
+<p><strong>能真正上线的是组合拳，不是单选</strong>：系统层用 <code>chrony</code> 平滑校时（默认 slew 而不是 step，时钟是"追"上去而非"跳"过去），而不是 <code>ntpd -g</code> 那种一次性大跳；代码层回拨 ≤ 5ms 时自旋等待，超过就 <strong>fail-fast 抛错</strong>；抛错后由上层重试（写库失败重试是业务本来就该有的能力），同时打点告警。</p>
+<p>"借位"（百度 UidGenerator 的 RingBuffer 思路）确实能保证不重复且不阻塞，但它的前提是"回拨窗口有限、且未来时间够用"。一旦时钟被往回拨了几秒而你借了几秒的未来，接下来这几秒的 ID 会全部落在"未来"，重启后从真实时间重新发号就会撞车。<strong>只有在你完全无法接受写失败时才用它，并且要限制最大透支窗口。</strong></p>
+<h3 id="33-机器号分配">3.3 机器号分配</h3>
+<p>10 位机器号是雪花唯一的"配置项"，也是最容易出事的地方。三种做法：</p>
+<div class="table-wrap"><table><thead><tr><th>方式</th><th>做法</th><th>风险</th></tr></thead><tbody><tr><td>手写配置</td><td>启动参数 / 环境变量写死</td><td>容器化后必然重复：扩容、滚动发布都会复制同一份配置</td></tr><tr><td>注册中心</td><td>etcd/ZooKeeper 注册临时节点，抢 0~1023 的空位</td><td>依赖注册中心可用；进程假死时租约未过期会占位</td></tr><tr><td>IP 哈希取模</td><td><code>crc32(ip) % 1024</code></td><td>冲突概率随规模平方增长，且重启换 IP 就换号</td></tr></tbody></table></div>
+<p>IP 哈希的冲突概率按生日问题计算：<code>P ≈ 1 - e^(-k(k-1)/2M)</code>。M=1024 时空位看似充足，实际<strong>20 个 Pod 就有 8.9% 的概率撞上一对，50 个到 70%，100 个是 99.2%</strong>。所以它只适合几十个节点以内、且能容忍极小概率冲突的场景。Kubernetes 里更实用的两个技巧：</p>
+<ul><li><strong>StatefulSet 的序号就是机器号</strong>：<code>order-0</code> ~ <code>order-2</code> 的 ordinal 稳定不变，直接取 <code>$(hostname##*-)</code>，零依赖；</li><li><strong>etcd 注册</strong>：无状态 Deployment 用它，租约绑定，进程退出自动释放号位（见 4.4）。</li></ul>
+<h3 id="34-号段模式">3.4 号段模式</h3>
+<p>号段模式把"每次取一个 ID"改成"每次取一段 ID"：</p>
+<pre><code class="lang-text">应用启动 → UPDATE id_segment SET max_id = max_id + 1000 WHERE biz_tag='order' → 读回新上界
+发号     → 本地持有 [1001..2000]，纯内存自增、零 IO；用尽再取下一段</code></pre>
+<p>DB 压力从"每个 ID 一次写"降到"每 1000 个 ID 一次写"，<strong>降低三个数量级</strong>。代价是 ID 不再严格递增：两个实例各自持有不同段，A 的 2000 可能比 B 的 1500 晚生成，但全局看仍在同一量级。</p>
+<p><strong>双 buffer 是它能不能扛住抖动的关键</strong>：内存里同时持有 <code>[1001..2000]</code> 与预留的 <code>[2001..3000]</code>，当前段剩余 20% 时后台就去 DB 取下一段，用尽时原子切换指针，发号不中断。没有它时，段用尽那一刻所有请求都要等一次 DB 往返（几毫秒），表现为<strong>周期性的 P99 毛刺</strong>——每 1000 个请求抖一次，压测时非常明显。</p>
+<p>号段的两个隐含成本：<strong>重启丢弃</strong>（内存里没用完的段直接作废，频繁发布的环境要调小 step）和<strong>依赖 DB 可用性</strong>（DB 挂了只能靠本地剩余号段撑住，撑完就停）。</p>
+<h3 id="35-uuidv7">3.5 UUIDv7</h3>
+<p>RFC 9562 在 2024 年 5 月正式定义了 UUIDv7，布局是"时间在前、随机在后"：</p>
+<pre><code class="lang-text"> 48 bit unix_ts_ms | 4 bit ver=7 | 12 bit rand_a | 2 bit var=0b10 | 62 bit rand_b</code></pre>
+<p>对比 UUIDv4（122 位纯随机），差别全在<strong>索引行为</strong>上：</p>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>UUIDv4</th><th>UUIDv7</th></tr></thead><tbody><tr><td>生成顺序</td><td>完全随机</td><td>按毫秒递增</td></tr><tr><td>B+ 树插入</td><td>随机落在任意页 → 页分裂、缓冲池命中率低</td><td>追加到最右页 → 顺序写</td></tr><tr><td>可读性</td><td>无</td><td>前 48 位可解出时间</td></tr><tr><td>信息泄露</td><td>无</td><td>泄露"创建时间"（毫秒级）</td></tr></tbody></table></div>
+<p>InnoDB 的聚簇索引按主键物理排序。用 v4 做主键，每次插入都相当于在书的随机一页插入内容，页分裂导致<strong>写放大 2~3 倍、索引碎片率飙升</strong>；用 v7，插入集中在最右页，行为和自增几乎一致。所以"要用 UUID 做主键"这句话，在今天应该理解成"<strong>要用 UUIDv7</strong>"。存储上还有两个细节：<strong>必须用 <code>BINARY(16)</code> 而不是 <code>CHAR(36)</code></strong>（36 字节的字符串主键会让所有二级索引跟着膨胀）；MySQL 里 <code>UUID_TO_BIN(uuid, 1)</code> 的 swap 参数是给 v1 用的，v7 本身就是有序的，直接 <code>UUID_TO_BIN(uuid)</code> 即可。</p>
+<h3 id="36-趋势递增-vs-严格递增">3.6 趋势递增 vs 严格递增</h3>
+<p>这两个词经常被混用，但它们的实现成本差了几个数量级：</p>
+<ul><li><strong>严格递增</strong>：任意两个 ID，先生成的必定更小。这要求全局单点或每个 ID 一次共识（Raft/Paxos），吞吐直接掉到千级，没有分布式系统会这么做。</li><li><strong>趋势递增</strong>：同一节点内单调，跨节点按时间大致有序。允许"后生成的 ID 略小"，只要偏差在毫秒级。</li></ul>
+<p>绝大多数业务只需要趋势递增，因为它的收益（索引局部性、按 ID 排序≈按时间排序）已经拿到了，而代价为零。真正需要严格递增的只有两类：<strong>对账文件按 ID 排序后要求无空洞</strong>、<strong>增量同步用 ID 做水位线</strong>。</p>
+<p>趋势递增下水位的坑：用 <code>WHERE id &gt; last_id</code> 做增量拉取，如果另一台机器的时钟慢了 3ms，它生成的 ID 可能小于 <code>last_id</code> 但写入更晚——<strong>这条数据会被永久跳过</strong>。正确做法是水位线回退一个安全窗口：</p>
+<pre><code class="lang-sql">SELECT * FROM orders
+WHERE id &gt; ? AND created_at &lt;= NOW() - INTERVAL 2 SECOND
+ORDER BY id LIMIT 1000;</code></pre>
+<p>用时间做二次约束，宁可重复拉一小段（下游幂等），也不要漏。</p>
+<hr>
+
+</section>
+<section data-anchor="4-使用实战">
+<h2 id="4-使用实战">4. 使用实战<span class="lvl m">实战</span></h2>
+<h3 id="41-手写一个雪花实现">4.1 手写一个雪花实现</h3>
+<p>完整可编译版本，包含回拨处理、<code>sync.Mutex</code> 保护与可注入时钟（为了测试回拨）：</p>
+<pre><code class="lang-go">package snowflake
+
+import (
+	"errors"
+	"fmt"
+	"sync"
+	"time"
+)
+
+const (
+	epoch        int64 = 1704067200000 // 2024-01-01T00:00:00Z，毫秒
+	machineBits        = 10
+	sequenceBits       = 12
+	maxMachine   int64 = 1&lt;&lt;machineBits - 1
+	maxSequence  int64 = 1&lt;&lt;sequenceBits - 1
+	machineShift       = sequenceBits
+	timeShift          = sequenceBits + machineBits
+	maxDriftMs   int64 = 5
+)
+
+var (
+	ErrClockBackwards = errors.New("snowflake: 时钟回拨")
+	ErrMachineID      = errors.New("snowflake: 机器号越界")
+)
+
+type Node struct {
+	mu       sync.Mutex
+	machine  int64
+	lastMs   int64
+	sequence int64
+	now      func() int64
+}
+
+func NewNode(machineID int64) (*Node, error) {
+	if machineID &lt; 0 || machineID &gt; maxMachine {
+		return nil, ErrMachineID
+	}
+	return &amp;Node{machine: machineID, now: func() int64 { return time.Now().UnixMilli() }}, nil
+}
+
+func (n *Node) Next() (int64, error) {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+
+	now := n.now()
+	if now &lt; n.lastMs {
+		drift := n.lastMs - now
+		if drift &gt; maxDriftMs {
+			return 0, fmt.Errorf("%w: 回拨 %dms", ErrClockBackwards, drift)
+		}
+		time.Sleep(time.Duration(drift) * time.Millisecond)
+		now = n.now()
+	}
+
+	if now == n.lastMs {
+		n.sequence = (n.sequence + 1) &amp; maxSequence
+		if n.sequence == 0 { // 本毫秒 4096 个用尽，自旋到下一毫秒
+			for now &lt;= n.lastMs {
+				now = n.now()
+			}
+			n.lastMs = now
+		}
+	} else { // 新的一毫秒，序列归零
+		n.sequence = 0
+		n.lastMs = now
+	}
+
+	return (now-epoch)&lt;&lt;timeShift | n.machine&lt;&lt;machineShift | n.sequence, nil
+}</code></pre>
+<p>三个实现细节值得单独说：</p>
+<ul><li><strong>锁必须覆盖"读时间 + 改序列"整个过程</strong>，只锁序列号没有意义；</li><li><strong>自旋等待下一毫秒时不要放锁</strong>，否则同一毫秒会有多个 goroutine 同时判定"序列用尽"；</li><li><strong><code>now</code> 是函数字段</strong>，线上用 <code>time.Now</code>，测试里替换成假时钟，回拨逻辑才可测（见 4.6）。</li></ul>
+<h3 id="42-现成实现sonyflake-与-googleuuid-v7">4.2 现成实现：sonyflake 与 google/uuid v7</h3>
+<pre><code class="lang-go">import (
+	"fmt"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/sony/sonyflake/v2"
+)
+
+// sonyflake：39 位时间（10ms 单位，约 174 年）+ 8 位序列 + 16 位机器号
+func newSonyflake() (*sonyflake.Sonyflake, error) {
+	return sonyflake.New(sonyflake.Settings{
+		MachineID: func() (int, error) { return 3, nil }, // 生产从 etcd/环境变量取
+		StartTime: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
+	})
+}
+
+func demo() {
+	sf, _ := newSonyflake()
+	id, _ := sf.NextID() // 默认每 10ms 一个周期，单周期 256 个
+	u, _ := uuid.NewV7() // v1.6.0 起提供
+	fmt.Println(id, u.String(), u.Time())
+}</code></pre>
+<p>sonyflake 与 Twitter 雪花的差异值得知道：它用 <strong>10ms 为一个时间片</strong>（而不是 1ms）换更长的寿命，序列位只有 8 位（每 10ms 256 个，即 2.56 万/s），机器号 16 位。<strong>低 QPS 场景下它的 ID 低位更"干净"，高 QPS 场景下它的上限远低于标准雪花</strong>——选之前先算峰值。<code>uuid.NewV7()</code> 则内部维护了一个单调计数器：同一毫秒内多次调用时递增 <code>rand_a</code>，保证<strong>同一进程内严格有序</strong>；跨进程仍可能乱序，但毫秒内的偏差对索引没有影响。</p>
+<h3 id="43-号段模式表设计与双-buffer">4.3 号段模式：表设计与双 buffer</h3>
+<pre><code class="lang-sql">CREATE TABLE id_segment (
+  biz_tag    VARCHAR(64) NOT NULL PRIMARY KEY,
+  max_id     BIGINT      NOT NULL DEFAULT 0,
+  step       INT         NOT NULL DEFAULT 1000,
+  updated_at TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE = InnoDB;
+
+INSERT INTO id_segment (biz_tag, max_id, step) VALUES ('order', 0, 1000);</code></pre>
+<p>取号必须在一个事务里"读取 + 推进"。MySQL 没有 <code>UPDATE ... RETURNING</code>，标准写法是 <code>SELECT ... FOR UPDATE</code> 锁行再更新；如果在意往返次数，可以用 <code>UPDATE ... SET max_id = LAST_INSERT_ID(max_id + step)</code> 再读 <code>LAST_INSERT_ID()</code> 的技巧，一次往返拿到新上界（注意它绑定连接，必须复用同一连接）。</p>
+<pre><code class="lang-sql">BEGIN;
+SELECT max_id FROM id_segment WHERE biz_tag = 'order' FOR UPDATE;
+UPDATE id_segment SET max_id = max_id + 1000 WHERE biz_tag = 'order';
+COMMIT;</code></pre>
+<p>Go 侧的双 buffer（<code>step</code> 与 <code>fetch</code> 在初始化时注入，首次取号时懒加载第一段）：</p>
+<pre><code class="lang-go">type span struct{ cur, end int64 }
+
+type Segment struct {
+	mu      sync.Mutex
+	cur     *span
+	next    *span
+	loading bool
+	step    int64
+	fetch   func(ctx context.Context, step int64) (start, end int64, err error)
+}
+
+func (s *Segment) Next(ctx context.Context) (int64, error) {
+	s.mu.Lock()
+	if s.cur == nil || s.cur.cur &gt;= s.cur.end {
+		if s.next == nil { // 预取没赶上，同步兜底
+			s.mu.Unlock()
+			start, end, err := s.fetch(ctx, s.step)
+			if err != nil {
+				return 0, err
+			}
+			s.mu.Lock()
+			s.next = &amp;span{cur: start, end: end}
+		}
+		s.cur, s.next = s.next, nil
+	}
+	id := s.cur.cur
+	s.cur.cur++
+
+	// 剩余不足 20% 时异步预取，把 DB 往返挪出发号路径
+	prefetch := s.next == nil &amp;&amp; !s.loading &amp;&amp; (s.cur.end-s.cur.cur)*5 &lt;= s.step
+	if prefetch {
+		s.loading = true
+	}
+	s.mu.Unlock()
+
+	if prefetch {
+		go func() {
+			start, end, err := s.fetch(context.Background(), s.step)
+			s.mu.Lock()
+			defer s.mu.Unlock()
+			s.loading = false
+			if err == nil {
+				s.next = &amp;span{cur: start, end: end}
+			}
+		}()
+	}
+	return id, nil
+}</code></pre>
+<p><code>step</code> 的取值是吞吐与浪费的权衡：step=1000 时 DB 写 QPS 是发号 QPS 的 1/1000；但如果每天发布 50 次、每次丢掉剩余号段，日均浪费最多 5 万个号，对 BIGINT 无影响，<strong>只影响"ID 连续"这种业务假设</strong>。</p>
+<h3 id="44-机器号用-etcd-注册">4.4 机器号用 etcd 注册</h3>
+<p>思路：在 <code>0 ~ 1023</code> 里找一个空的键，用事务的 <code>CreateRevision == 0</code> 抢占，键绑定租约，进程退出后自动释放。</p>
+<pre><code class="lang-go">func allocMachineID(ctx context.Context, cli *clientv3.Client, prefix string, slots int) (int64, clientv3.LeaseID, error) {
+	lease, err := cli.Grant(ctx, 15) // 15s 租约，后台 KeepAlive 续
+	if err != nil {
+		return 0, 0, err
+	}
+	for i := 0; i &lt; slots; i++ {
+		key := fmt.Sprintf("%s/%d", prefix, i)
+		resp, err := cli.Txn(ctx).
+			If(clientv3.Compare(clientv3.CreateRevision(key), "=", 0)).
+			Then(clientv3.OpPut(key, "1", clientv3.WithLease(lease.ID))).
+			Commit()
+		if err != nil {
+			return 0, 0, err
+		}
+		if resp.Succeeded {
+			return int64(i), lease.ID, nil
+		}
+	}
+	return 0, 0, errors.New("etcd: 机器号已用尽")
+}</code></pre>
+<p>拿号之后起一个 goroutine 消费 <code>cli.KeepAlive(ctx, lease.ID)</code> 的通道；如果租约丢失（网络分区超过 15s），<strong>进程必须停止发号并退出</strong>，否则它持有的机器号可能已被别的进程抢走——这时"活着但发错号"比"挂掉"危险得多。这就是 <code>../etcd/</code> 里 Lease 语义的直接应用。</p>
+<h3 id="45-分库分表下的基因法">4.5 分库分表下的基因法</h3>
+<p>用户表和订单表按 <code>uid % 8</code> 分 8 个库时，订单号如果只是纯雪花，按 <code>order_id</code> 查询就无法定位分片（得扫 8 个库）。<strong>基因法把分片键"编进"ID</strong>：</p>
+<pre><code class="lang-go">// 取 uid 的低 3 位作为基因，拼在雪花 ID 的最低位。
+// 结果：order_id % 8 == uid % 8，按任意一个都能算出同一个分片。
+func orderID(snow int64, uid int64) int64 {
+	gene := uid &amp; 0x7
+	return snow&lt;&lt;3 | gene
+}
+
+func shardOf(id int64) int64 { return id &amp; 0x7 }</code></pre>
+<p>代价要写清楚：<strong>每个毫秒的序列容量被除以 8</strong>（4096 → 512/ms/台），且 ID 的低位不再连续。对订单这种量级完全够用；如果分片数取 1024，就必须重新评估雪花的位分配。若还要求"订单号能看出日期"，可在最前面拼 8 位日期（<code>20261120</code> + 19 位雪花 + 1 位基因），此时订单号是 <code>string</code>、列用 <code>VARCHAR(32)</code> 并建唯一索引——<strong>对外可读性与内部存储效率，只能选一个</strong>。</p>
+<h3 id="46-测试并发生成-100-万个查重-回拨模拟">4.6 测试：并发生成 100 万个查重 + 回拨模拟</h3>
+<pre><code class="lang-go">func TestNextUnique(t *testing.T) {
+	n, _ := NewNode(7)
+	const total = 1_000_000
+	ids := make([]int64, total)
+
+	var wg sync.WaitGroup
+	for w := 0; w &lt; 8; w++ {
+		wg.Add(1)
+		go func(offset int) {
+			defer wg.Done()
+			for i := offset; i &lt; total; i += 8 {
+				id, err := n.Next()
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				ids[i] = id
+			}
+		}(w)
+	}
+	wg.Wait()
+
+	seen := make(map[int64]struct{}, total)
+	for _, id := range ids {
+		if _, ok := seen[id]; ok {
+			t.Fatalf("重复 ID: %d", id)
+		}
+		seen[id] = struct{}{}
+	}
+}
+
+func TestClockBackwards(t *testing.T) {
+	n, _ := NewNode(1)
+	fake := int64(1_700_000_000_000)
+	n.now = func() int64 { return fake }
+
+	if _, err := n.Next(); err != nil {
+		t.Fatal(err)
+	}
+	fake -= 100 // 回拨 100ms，超过 maxDriftMs
+	if _, err := n.Next(); !errors.Is(err, ErrClockBackwards) {
+		t.Fatalf("期望 ErrClockBackwards，得到 %v", err)
+	}
+}</code></pre>
+<p>跑 <code>go test -race</code>：100 万个 ID 在 8 个 goroutine 下并发产生，<code>-race</code> 能顺带验证锁的覆盖范围。注意这个测试会真实消耗约 250ms 的时钟（100 万 ÷ 4096/ms），不要放到 <code>-short</code> 的快速回归里。</p>
+<hr>
+
+</section>
+<section data-anchor="5-版本与生态">
+<h2 id="5-版本与生态">5. 版本与生态<span class="lvl b">版本</span></h2>
+<p><strong>雪花家族的三个流派</strong>（都在 Java 生态成熟后被 Go 借鉴）：</p>
+<div class="table-wrap"><table><thead><tr><th>实现</th><th>语言</th><th>核心改进</th><th>备注</th></tr></thead><tbody><tr><td>Twitter Snowflake</td><td>Scala</td><td>原始 41+10+12 布局</td><td>已归档，仅作参考</td></tr><tr><td>美团 Leaf</td><td>Java</td><td>snowflake + segment 双模式</td><td>号段模式的事实标准，依赖 ZK 做机器号</td></tr><tr><td>百度 UidGenerator</td><td>Java</td><td>RingBuffer + 借未来时间</td><td>吞吐最高，但时钟逻辑最难排障</td></tr><tr><td>sony/sonyflake</td><td>Go</td><td>39 位 10ms 时间片 + 16 位机器号</td><td><strong>v2 的 <code>MachineID</code> 回调签名改为返回 <code>int</code></strong>，接口更干净</td></tr><tr><td>bwmarrin/snowflake</td><td>Go</td><td>严格对齐 Twitter 布局</td><td>API 简单，无内置机器号分配</td></tr></tbody></table></div>
+<ul><li>2024-05，<strong>RFC 9562</strong> 正式发布，UUIDv6/v7/v8 从草案变成标准，同时 v1（暴露 MAC 地址）被标注为不推荐；<code>google/uuid</code> <strong>v1.6.0</strong> 起提供 <code>NewV7()</code>，是目前 Go 生态最稳的 v7 实现；</li><li><code>gofrs/uuid</code>、<code>rs/xid</code>、<code>oklog/ulid</code> 是同类替代：xid 是 12 字节（4 字节时间 + 3 字节机器 + 3 字节计数），比 UUID 更短；ULID 是 26 字符 Crockford Base32，可读性更好但仍是 16 字节。</li></ul>
+<p><strong>数据库侧</strong>：</p>
+<ul><li><strong>MySQL</strong>：8.0 起 <code>AUTO_INCREMENT</code> 计数器<strong>持久化到 redo log</strong>，重启不再回落到 <code>max(id)+1</code>——5.7 时代"重启后复用已删除 ID"的坑已经不存在；但主从切换仍可能回退，依赖 <code>auto_increment_increment</code> 的步长规划。</li><li><strong>PostgreSQL 与分布式数据库</strong>：<code>SEQUENCE</code> 支持 <code>CACHE n</code> 预分配，多连接各自缓存会导致 ID 乱序、重启丢弃缓存，本质是"内置的号段模式"；TiDB 的 <code>AUTO_RANDOM</code> 把自增 ID 的高位打散以解决单 Region 写热点。它们都在说同一件事——<strong>自增在分布式下需要额外机制，不是免费的</strong>。</li></ul>
+<hr>
+
+</section>
+<section data-anchor="6-常见坑与最佳实践">
+<h2 id="6-常见坑与最佳实践">6. 常见坑与最佳实践<span class="lvl a">避坑</span></h2>
+<ol><li><strong>容器化后机器号重复</strong>。Deployment 滚动发布时新旧 Pod 并存，若机器号来自配置文件，两个进程会拿到同一个号，<strong>在同一毫秒发号即冲突</strong>。用 StatefulSet ordinal 或 etcd 注册；并保证"拿不到号就退出"，不要用默认值兜底。</li><li><strong>时钟回拨没处理</strong>。这是雪花唯一可能产生重复 ID 的路径。至少要 fail-fast，绝不能"忽略回拨继续发"。</li><li><strong>低 QPS 下序列号每毫秒重置</strong>。QPS=10 时，绝大多数 ID 的低 12 位都是 0，ID 末尾大量 <code>000</code>。这不影响正确性，但<strong>从 ID 就能反推出 QPS 很低</strong>，且浪费了位宽；号段模式没有这个问题。</li><li><strong>连续 ID 泄露业务量</strong>。竞对下两单，看到订单号从 <code>100231</code> 变成 <code>100233</code>，就知道你昨天大概卖了 2 单。对外暴露的 ID 必须加前缀（<code>ORD20261120...</code>）或做可逆变换（Feistel / 号段 + 混淆表），<strong>内部主键不要直接对外</strong>。</li><li><strong>JS 前端精度丢失</strong>。<code>int64</code> 超过 <code>2^53</code>（9007199254740992）后，<code>JSON.parse</code> 会静默截断末位。雪花 ID 现在就在这个量级附近，接口必须<strong>序列化成字符串</strong>（<code>json:"id,string"</code>），这是 Go 服务端最容易忘的一行 tag。</li><li><strong>号段重启浪费</strong>。每次发布丢掉内存里剩余的号段，一天发 50 次版、step=10000 就是 50 万个号。对 BIGINT 无害，但如果业务假设"订单号连续可对账"，就会天天对不上。</li><li><strong>UUID 当主键导致页分裂</strong>。<code>CHAR(36)</code> + v4 是双重打击：字符串主键让所有二级索引膨胀，随机插入让 B+ 树持续分裂。用 <code>BINARY(16)</code> + UUIDv7，或干脆用雪花。</li><li><strong>NTP 直接 step</strong>。<code>ntpd -g</code> 或容器启动时的一次性校时可能一次跳几百毫秒，直接触发大批回拨错误。生产用 <code>chrony</code> 的 slew 模式，并在启动脚本里<strong>先校时再启动发号器</strong>。</li></ol>
+<hr>
+
+</section>
+<section data-anchor="7-选型对比">
+<h2 id="7-选型对比">7. 选型对比<span class="lvl a">决策</span></h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>自增</th><th>UUIDv4</th><th>UUIDv7</th><th>雪花</th><th>号段</th></tr></thead><tbody><tr><td>有序性</td><td>严格</td><td>无</td><td>时间趋势</td><td>时间趋势</td><td>段内严格</td></tr><tr><td>单机性能</td><td>千~万/s（DB 瓶颈）</td><td>千万/s（纯内存）</td><td>千万/s</td><td>百万/s</td><td>百万/s（每 step 一次 DB）</td></tr><tr><td>外部依赖</td><td>DB</td><td>无</td><td>无</td><td>时钟 + 机器号</td><td>DB</td></tr><tr><td>可读性</td><td>好（连续）</td><td>差</td><td>一般（可解时间）</td><td>一般（可解时间）</td><td>好</td></tr><tr><td>ID 长度</td><td>8 字节</td><td>16 字节</td><td>16 字节</td><td>8 字节</td><td>8 字节</td></tr><tr><td>适用</td><td>单库、内部表</td><td>幂等键、trace id</td><td>主键、客户端生成</td><td>分库分表主键</td><td>高吞吐、无时钟依赖</td></tr></tbody></table></div>
+<ul><li><strong>单库能撑住就别折腾</strong>。日订单 10 万以内、短期没有分库计划，<code>AUTO_INCREMENT</code> 是最优解，任何分布式 ID 方案都是给自己加故障面。</li><li><strong>分库分表且要趋势递增，选雪花</strong>。机器号交给 etcd 或 StatefulSet ordinal，回拨做 fail-fast，这套组合在生产上已经被验证过无数次。</li><li><strong>不想运维机器号，选号段</strong>。它把复杂性从"时钟 + 号段分配"转移到"一张 DB 表"，用你最熟悉的组件解决问题；代价是要接受 ID 不严格连续。</li><li><strong>对外暴露的 ID 必须不可预测</strong>。内部雪花 + 外部随机前缀，或直接用 UUIDv7；永远不要把内部主键原样返回给前端。</li></ul>
+</section>
+<footer>由 <code>tools/build_html.py</code> 从同名 Markdown 生成 · Markdown 为唯一真源 · open-guide</footer>
+</main>
+</div>
+<script>
+(function(){
+  var goRe = /(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|`[^`]*`)|\b(package|import|func|return|if|else|for|range|defer|go|select|case|break|continue|type|struct|interface|map|chan|var|const|switch|default|nil|true|false)\b|\b(make|new|append|len|cap|panic|recover|error|string|int|int64|int32|uint|uint64|bool|byte|rune|float64|any)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([a-zA-Z_]\w*)(?=\()/g;
+  document.querySelectorAll('pre code.lang-go').forEach(function(b){
+    var src = b.textContent;
+    b.innerHTML = src.replace(goRe, function(m,c1,c2,s,kw,typ,num,fn){
+      if(c1||c2) return '<span class="cmt">'+m+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(typ) return '<span class="typ">'+m+'</span>';
+      if(num) return '<span class="num">'+m+'</span>';
+      if(fn) return '<span class="fn">'+m+'</span>';
+      return m;
+    });
+  });
+  var shellRe = /(^|\n)(\s*#[^\n]*)|("(?:\\.|[^"\\])*"|'[^']*')|\b(echo|cd|export|go|docker|kubectl|python|pip|curl|sudo|make|git|cat|grep|chmod|systemctl)\b|\$[\w{][\w}]*/g;
+  document.querySelectorAll('pre code.lang-bash, pre code.lang-sh, pre code.lang-shell').forEach(function(b){
+    b.innerHTML = b.textContent.replace(shellRe, function(m,lead,c,s,kw,v){
+      if(c) return lead+'<span class="cmt">'+c+'</span>';
+      if(s) return '<span class="str">'+m+'</span>';
+      if(kw) return '<span class="kw">'+m+'</span>';
+      if(v) return '<span class="num">'+m+'</span>';
+      return m;
+    });
+  });
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
+    var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
+    var label = labels[lang] || lang.toUpperCase();
+    var s = document.createElement('span');
+    s.className = 'codelabel'; s.textContent = label;
+    b.closest('pre').appendChild(s);
+  });
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.sidebar a[href^="#"]'));
+  if(!('IntersectionObserver' in window) || !links.length) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id); });
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h2[id], h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

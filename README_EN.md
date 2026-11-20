@@ -6,7 +6,7 @@
 
 Manuals you can read, search, and copy working code from — not another Hello World.
 
-[![Docs](https://img.shields.io/badge/docs-56%20guides-16a34a?style=for-the-badge)](./README_EN.md)
+[![Docs](https://img.shields.io/badge/docs-66%20guides-16a34a?style=for-the-badge)](./README_EN.md)
 [![Lines](https://img.shields.io/badge/text-26%2C345%20lines-0ea5e9?style=for-the-badge)](./README_EN.md)
 [![Format](https://img.shields.io/badge/format-Markdown%20%2B%20HTML-f59e0b?style=for-the-badge)](./README_EN.md)
 
@@ -29,7 +29,7 @@ Manuals you can read, search, and copy working code from — not another Hello W
 
 | 📚 Guides | 📝 Text | 📄 Offline manuals | 🖼️ Diagrams | ✅ Writing rules | ⚖️ License |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| **56** | **≈ 26,345 lines** | **56 pages** | **116 SVG** | **7 required elements** | **MIT** |
+| **66** | **≈ 31,572 lines** | **66 pages** | **117 SVG** | **7 required elements** | **MIT** |
 
 </div>
 
@@ -70,7 +70,7 @@ Manuals you can read, search, and copy working code from — not another Hello W
 
 | 🔤 Language | 🌐 Frameworks | 🗄️ Data & Search | 📨 Messaging | 🔭 Observability | 🐳 Deployment |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| **13** | **9** | **17** | **8** | **7** | **2** |
+| **13** | **12** | **21** | **8** | **7** | **5** |
 
 </div>
 
@@ -94,7 +94,7 @@ Every guide ships as `MD` (searchable, copyable, PR-friendly) and `HTML` (a depe
 | **Excelize** | OOXML layout, the shared-strings memory bill, plain API vs `StreamWriter`, style pooling, iterator reads, 100k-row exports and template filling | [MD](./excelize/excelize-guide.md) · [HTML](./excelize/excelize-guide.html) |
 | **Go Design Patterns** | Which GoF patterns disappear or morph in Go, functional options, middleware chains, strategy as func values, observer as channels, concurrency vs design patterns, when not to use them | [MD](./golang-design-pattern/golang-design-pattern-guide.md) · [HTML](./golang-design-pattern/golang-design-pattern-guide.html) |
 
-### 🌐 Web, Microservices & Governance <sub>9 guides</sub>
+### 🌐 Web, Microservices & Governance <sub>12 guides</sub>
 
 | Topic | What's covered | Files |
 | --- | --- | --- |
@@ -107,8 +107,11 @@ Every guide ships as `MD` (searchable, copyable, PR-friendly) and `HTML` (a depe
 | **Authentication: JWT / OAuth2 / OIDC** | JWT structure and signing algorithms, the full validation checklist (alg allowlist / iss / aud / exp), JWKS rotation, OAuth2 flows and PKCE, OIDC, refresh rotation and revocation | [MD](./auth/auth-guide.md) · [HTML](./auth/auth-guide.html) |
 | **Service Governance** | Four rate-limiting algorithms, per-node vs cluster limits, circuit-breaker states and sliding windows, adaptive limits, retry budgets and idempotency, bulkheads and fallbacks | [MD](./service-governance/service-governance-guide.md) · [HTML](./service-governance/service-governance-guide.html) |
 | **gorilla/websocket** | Handshake and Origin checks, frames vs messages, single reader / single writer model, deadlines and heartbeats, close handshake, read limits and backpressure, horizontal scaling | [MD](./websocket/websocket-guide.md) · [HTML](./websocket/websocket-guide.html) |
+| **Sentinel-Go** | Resource / Entry lifecycle, LeapArray sliding window, fail-fast / warm-up / queuing, slow-call and error-ratio breakers, hot-param limiting, rules pushed from etcd / Nacos, Gin / gRPC middleware | [MD](./sentinel/sentinel-guide.md) · [HTML](./sentinel/sentinel-guide.html) |
+| **GraphQL (gqlgen)** | Schema-first codegen, field-level resolver execution, N+1 and DataLoader, Relay cursor pagination, error extensions, subscriptions over graphql-ws, depth and complexity limits | [MD](./graphql/graphql-guide.md) · [HTML](./graphql/graphql-guide.html) |
+| **Go Layering** | Dependency inversion and interface ownership, domain / application / infrastructure / interface responsibilities, invariants over anemic models, repository boundaries, transactions in use cases, modular monolith | [MD](./architecture/architecture-guide.md) · [HTML](./architecture/architecture-guide.html) |
 
-### 🗄️ Data Stores & Search <sub>17 guides</sub>
+### 🗄️ Data Stores & Search <sub>21 guides</sub>
 
 | Topic | What's covered | Files |
 | --- | --- | --- |
@@ -129,6 +132,10 @@ Every guide ships as `MD` (searchable, copyable, PR-friendly) and `HTML` (a depe
 | **TimescaleDB** | Hypertables and automatic chunk partitioning, `time_bucket`, continuous aggregates, columnar compression with segmentby / orderby, retention and tiering, why unique indexes must include the time column, boundaries with InfluxDB / ClickHouse | [MD](./timescaledb/timescaledb-guide.md) · [HTML](./timescaledb/timescaledb-guide.html) |
 | **Vector Databases** | Distance metrics and normalization, HNSW's M / efConstruction / efSearch, IVF / PQ, pre-filter vs post-filter, RRF hybrid search, pgvector / Milvus / Qdrant in practice | [MD](./vector-database/vector-database-guide.md) · [HTML](./vector-database/vector-database-guide.html) |
 | **golang-migrate** | Version table and dirty semantics, up / down / steps, `embed` + `iofs`, concurrency and advisory locks, irreversible migrations, vs goose / atlas | [MD](./migrate/migrate-guide.md) · [HTML](./migrate/migrate-guide.html) |
+| **CDC (Debezium / Canal)** | Row-based binlog, snapshot-to-stream handoff (GTID / file+pos), Debezium envelope, Canal as a fake replica, outbox routing, schema evolution, lag monitoring, large transactions | [MD](./cdc/cdc-guide.md) · [HTML](./cdc/cdc-guide.html) |
+| **Sharding** | Vertical vs horizontal split, shard key and gene method, modulo / range / consistent-hash routing, three ways around cross-shard queries, dual-write migration, ShardingSphere-Proxy and Vitess | [MD](./sharding/sharding-guide.md) · [HTML](./sharding/sharding-guide.html) |
+| **Local Cache** | TinyLFU vs LRU, bigcache sharding without GC pressure, freecache off-heap storage, singleflight against stampede, two-level invalidation order, cross-instance broadcast | [MD](./local-cache/local-cache-guide.md) · [HTML](./local-cache/local-cache-guide.html) |
+| **Distributed ID** | Snowflake layout and clock rollback, worker-id allocation via etcd, segment double-buffer, UUIDv7 and B-tree inserts, gene method, int64 precision and unpredictability | [MD](./distributed-id/distributed-id-guide.md) · [HTML](./distributed-id/distributed-id-guide.html) |
 
 > 💡 Elasticsearch wears two hats: business full-text search and log search. For logs, pair the `trace_id` from the [Zap guide](./zap/zap-guide.md) with [OpenTelemetry](./opentelemetry/opentelemetry-guide.md) traces.
 
@@ -161,12 +168,15 @@ Every guide ships as `MD` (searchable, copyable, PR-friendly) and `HTML` (a depe
 
 > 💡 `Zap` / `slog` produce logs, `Loki` retrieves them, `Prometheus` handles metrics and `OpenTelemetry` traces — all linked by a shared `service.name` and `trace_id`.
 
-### 🐳 Deployment & Orchestration <sub>2 guides</sub>
+### 🐳 Deployment & Orchestration <sub>5 guides</sub>
 
 | Topic | What's covered | Files |
 | --- | --- | --- |
 | **Docker / Kubernetes** | Image layers and multi-stage builds, namespaces/cgroups, the declarative reconcile loop, Pod/Deployment/Service, three probes and QoS classes, rolling updates and graceful shutdown, client-go and RBAC | [MD](./docker-k8s/docker-k8s-guide.md) · [HTML](./docker-k8s/docker-k8s-guide.html) |
 | **Kubernetes Operator** | Declarative reconciliation and level-triggered design, CRD / Scheme, idempotent Reconcile, resourceVersion conflicts, ownerReference and finalizers, envtest and e2e | [MD](./k8s-operator/k8s-operator-guide.md) · [HTML](./k8s-operator/k8s-operator-guide.html) |
+| **Helm** | Chart layout, `.Values` / `.Release` / `.Capabilities` contexts, values merging and `--set` type traps, `_helpers.tpl`, hooks and ordering, dependency toggles, helm diff / rollback, helm-unittest | [MD](./helm/helm-guide.md) · [HTML](./helm/helm-guide.html) |
+| **ArgoCD** | GitOps reconciliation, Application / AppProject / ApplicationSet, selfHeal and prune, sync waves and hooks, multi-cluster, SOPS / Sealed Secrets, drift detection and rollback | [MD](./argocd/argocd-guide.md) · [HTML](./argocd/argocd-guide.html) |
+| **Release Strategy** | Blue-green / canary / A-B / traffic mirroring, Ingress annotations and APISIX traffic-split, Argo Rollouts analysis, traffic tagging, expand-contract schema changes, cache and MQ pitfalls | [MD](./release-strategy/release-strategy-guide.md) · [HTML](./release-strategy/release-strategy-guide.html) |
 
 ---
 
@@ -275,7 +285,7 @@ The builder uses only the Python 3 standard library — no third-party packages.
 | File | Purpose |
 |---|---|
 | [`tools/themes.json`](./tools/themes.json) | Per-guide colours, hero subtitle and tags |
-| [`tools/fragments.json`](./tools/fragments.json) | SVG architecture diagrams, feature cards and callouts that have no Markdown equivalent, injected by chapter anchor (441 blocks / 116 diagrams) |
+| [`tools/fragments.json`](./tools/fragments.json) | SVG architecture diagrams, feature cards and callouts that have no Markdown equivalent, injected by chapter anchor (452 blocks / 117 diagrams) |
 | [`tools/anchor_map.json`](./tools/anchor_map.json) | Legacy semantic anchors -> heading slugs, so links inside those blocks keep working |
 
 A new topic needs no build configuration: the script auto-discovers `*/ *.md` and assigns a stable palette from the directory name. CI ([`.github/workflows/check-html.yml`](./.github/workflows/check-html.yml)) runs `--check --audit` on every push / PR, which mechanically prevents MD/HTML drift.
@@ -310,7 +320,7 @@ The original convention was a strict "7-section" layout. In practice, a deep man
 ## 6. Upstream Projects & Versions
 
 <details>
-<summary><b>Expand the full version table (56 entries)</b></summary>
+<summary><b>Expand the full version table (66 entries)</b></summary>
 
 | Guide | Upstream repo | Version documented |
 | --- | --- | --- |
@@ -368,6 +378,16 @@ The original convention was a strict "7-section" layout. In practice, a deep man
 | DTM | [dtm-labs/dtm](https://github.com/dtm-labs/dtm) | v1.19.0 |
 | Watermill | [ThreeDotsLabs/watermill](https://github.com/ThreeDotsLabs/watermill) | v1.5.3 |
 | Go Design Patterns | [senghoo/golang-design-pattern](https://github.com/senghoo/golang-design-pattern) | Go 1.22+ |
+| Helm | [helm/helm](https://github.com/helm/helm) | Helm 3.19 / 4.x |
+| ArgoCD | [argoproj/argo-cd](https://github.com/argoproj/argo-cd) | v3.x |
+| Release Strategy | Ingress-NGINX / [apache/apisix](https://github.com/apache/apisix) / [argoproj/argo-rollouts](https://github.com/argoproj/argo-rollouts) | Ingress 1.11+ · APISIX 3.x · Rollouts 1.7+ |
+| CDC | [debezium/debezium](https://github.com/debezium/debezium) · [alibaba/canal](https://github.com/alibaba/canal) | Debezium 3.x · Canal 1.1.8 |
+| Sharding | [apache/shardingsphere](https://github.com/apache/shardingsphere) · [vitessio/vitess](https://github.com/vitessio/vitess) | 5.5.x · 21.x |
+| Sentinel-Go | [alibaba/sentinel-golang](https://github.com/alibaba/sentinel-golang) | v1.0.4 |
+| Local Cache | [dgraph-io/ristretto](https://github.com/dgraph-io/ristretto) · [allegro/bigcache](https://github.com/allegro/bigcache) · [coocood/freecache](https://github.com/coocood/freecache) | v0.2 · v3.3 · v1.0 |
+| GraphQL | [99designs/gqlgen](https://github.com/99designs/gqlgen) | v0.17.x |
+| Go Layering | DDD / Clean Architecture / Hexagonal (community practice) | Go 1.24+ |
+| Distributed ID | [google/uuid](https://github.com/google/uuid) · [sony/sonyflake](https://github.com/sony/sonyflake) | v1.6 · v2.2 |
 
 </details>
 
@@ -461,6 +481,6 @@ You are free to use, copy, modify, merge, publish and distribute these documents
 
 [Guide Index](#2-guide-index) · [Reading Paths](#3-suggested-reading-paths) · [Contributing](#7-contributing) · [中文](./README.md)
 
-<sub>Markdown is the single source of truth · HTML is a build artifact · 56 guides / 26,345 lines · © 2026 Weisg1999</sub>
+<sub>Markdown is the single source of truth · HTML is a build artifact · 66 guides / 31,572 lines · © 2026 Weisg1999</sub>
 
 </div>
