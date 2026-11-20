@@ -18,11 +18,10 @@ jobs:
           set +e
           python tools/build_html.py --check --audit --stats > /tmp/out.txt 2>&1
           code=$?
-          cat /tmp/out.txt
-          if [ $code -ne 0 ]; then
-            msg=$(grep -aE "FAIL|Error|error|Traceback" /tmp/out.txt | head -6 | tr '\n' ' ')
-            echo "::error title=build_html check failed::${msg:0:900}"
-          fi
+          bytes=$(wc -c < /tmp/out.txt)
+          echo "exit=$code bytes=$bytes python=$(python -V 2>&1)"
+          tail -40 /tmp/out.txt
+          echo "::error title=check exit $code, $bytes bytes::$bytes bytes :: $(tail -c 800 /tmp/out.txt | tr '\n' '|' | cut -c1-780)"
           exit $code
 
       - name: Verify landing page matches README index
