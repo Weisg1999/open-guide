@@ -2,7 +2,9 @@
 
 > **一句话定位**：把「业务逻辑」从「框架、数据库、HTTP」里摘出来——分层不是为了好看，是为了让改动能只改一处。
 >
-> **社区实践**：DDD（Domain-Driven Design）、Clean Architecture、Hexagonal（端口-适配器）· **版本基线**：与框架无关，示例基于 Go 1.24+ · **协议**：文档 MIT
+> **社区实践**：DDD（Domain-Driven Design）、Clean Architecture、Hexagonal（端口-适配器）
+>
+> **上游参考**：[evrone/go-clean-template](https://github.com/evrone/go-clean-template)（Clean Architecture 的 Go 落地模板）· **版本基线**：与框架无关，示例基于 Go 1.24+ · **协议**：MIT
 
 ---
 

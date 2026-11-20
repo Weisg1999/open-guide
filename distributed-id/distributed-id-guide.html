@@ -118,12 +118,13 @@
 <main>
 <div class="hero">
   <h1>分布式 ID 生成技术指南</h1>
-<p><strong>一句话定位</strong>：在多个进程同时写库时，生成全局唯一、趋势递增、不泄露业务量的 ID。 <strong>涉及方案</strong>：雪花算法、号段模式、UUIDv7、数据库自增 · <strong>版本基线</strong>：google/uuid v1.6、sony/sonyflake v2 · <strong>协议</strong>：文档 MIT</p>
+<p><strong>一句话定位</strong>：在多个进程同时写库时，生成全局唯一、趋势递增、不泄露业务量的 ID。 <strong>涉及方案</strong>：雪花算法、号段模式、UUIDv7、数据库自增 <strong>上游仓库</strong>：<a href="https://github.com/google/uuid">google/uuid</a> · <a href="https://github.com/sony/sonyflake">sony/sonyflake</a> · <strong>版本基线</strong>：google/uuid v1.6、sony/sonyflake v2 · <strong>协议</strong>：BSD-3-Clause / MIT</p>
 <p style="opacity:.8;font-size:13.5px">唯一 · 有序 · 不泄露</p>
 <div class="meta"><span>雪花</span><span>号段</span><span>UUIDv7</span></div>
 </div>
 <blockquote><p><strong>一句话定位</strong>：在多个进程同时写库时，生成全局唯一、趋势递增、不泄露业务量的 ID。</p>
-<p><strong>涉及方案</strong>：雪花算法、号段模式、UUIDv7、数据库自增 · <strong>版本基线</strong>：google/uuid v1.6、sony/sonyflake v2 · <strong>协议</strong>：文档 MIT</p></blockquote>
+<p><strong>涉及方案</strong>：雪花算法、号段模式、UUIDv7、数据库自增</p>
+<p><strong>上游仓库</strong>：<a href="https://github.com/google/uuid">google/uuid</a> · <a href="https://github.com/sony/sonyflake">sony/sonyflake</a> · <strong>版本基线</strong>：google/uuid v1.6、sony/sonyflake v2 · <strong>协议</strong>：BSD-3-Clause / MIT</p></blockquote>
 <section data-anchor="1-项目简介">
 <h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
 <p>单库单表时，<code>AUTO_INCREMENT</code> 是完美的：唯一、递增、8 字节、零额外依赖。一旦拆成多个库、多个进程，它的三个前提同时失效：</p>
@@ -489,7 +490,7 @@ func TestClockBackwards(t *testing.T) {
       return m;
     });
   });
-  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx", "graphql": "GraphQL"};
   document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
     var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
     var label = labels[lang] || lang.toUpperCase();

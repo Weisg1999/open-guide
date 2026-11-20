@@ -29,7 +29,7 @@ Manuals you can read, search, and copy working code from — not another Hello W
 
 | 📚 Guides | 📝 Text | 📄 Offline manuals | 🖼️ Diagrams | ✅ Writing rules | ⚖️ License |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| **66** | **≈ 31,572 lines** | **66 pages** | **117 SVG** | **7 required elements** | **MIT** |
+| **66** | **≈ 31,578 lines** | **66 pages** | **117 SVG** | **7 required elements** | **MIT** |
 
 </div>
 
@@ -481,6 +481,6 @@ You are free to use, copy, modify, merge, publish and distribute these documents
 
 [Guide Index](#2-guide-index) · [Reading Paths](#3-suggested-reading-paths) · [Contributing](#7-contributing) · [中文](./README.md)
 
-<sub>Markdown is the single source of truth · HTML is a build artifact · 66 guides / 31,572 lines · © 2026 Weisg1999</sub>
+<sub>Markdown is the single source of truth · HTML is a build artifact · 66 guides / 31,578 lines · © 2026 Weisg1999</sub>
 
 </div>

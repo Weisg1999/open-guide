@@ -2,7 +2,9 @@
 
 > **一句话定位**：把「一次性全量替换」拆成「可控放量 + 可观测判定 + 可快速回滚」的发布工程。
 >
-> **涉及组件**：Nginx Ingress / Apache APISIX / Argo Rollouts / Istio · **版本基线**：APISIX 3.x、Argo Rollouts 1.7+、Ingress-Nginx 1.11+ · **协议**：各自 Apache-2.0 / MIT
+> **涉及组件**：Nginx Ingress / Apache APISIX / Argo Rollouts / Istio
+>
+> **上游仓库**：[apache/apisix](https://github.com/apache/apisix) · [argoproj/argo-rollouts](https://github.com/argoproj/argo-rollouts) · **版本基线**：APISIX 3.x、Rollouts 1.7+、Ingress-Nginx 1.11+ · **协议**：Apache-2.0
 
 ---
 

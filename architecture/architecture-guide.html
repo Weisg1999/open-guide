@@ -117,12 +117,13 @@
 <main>
 <div class="hero">
   <h1>Go 项目级分层技术指南</h1>
-<p><strong>一句话定位</strong>：把「业务逻辑」从「框架、数据库、HTTP」里摘出来——分层不是为了好看，是为了让改动能只改一处。 <strong>社区实践</strong>：DDD（Domain-Driven Design）、Clean Architecture、Hexagonal（端口-适配器）· <strong>版本基线</strong>：与框架无关，示例基于 Go 1.24+ · <strong>协议</strong>：文档 MIT</p>
+<p><strong>一句话定位</strong>：把「业务逻辑」从「框架、数据库、HTTP」里摘出来——分层不是为了好看，是为了让改动能只改一处。 <strong>社区实践</strong>：DDD（Domain-Driven Design）、Clean Architecture、Hexagonal（端口-适配器） <strong>上游参考</strong>：<a href="https://github.com/evrone/go-clean-template">evrone/go-clean-template</a>（Clean Architecture 的 Go 落地模板）· <strong>版本基线</strong>：与框架无关，示例基于 Go 1.24+ · <strong>协议</strong>：MIT</p>
 <p style="opacity:.8;font-size:13.5px">依赖倒置 · 用例 · 边界</p>
 <div class="meta"><span>DDD</span><span>六边形</span><span>模块化</span></div>
 </div>
 <blockquote><p><strong>一句话定位</strong>：把「业务逻辑」从「框架、数据库、HTTP」里摘出来——分层不是为了好看，是为了让改动能只改一处。</p>
-<p><strong>社区实践</strong>：DDD（Domain-Driven Design）、Clean Architecture、Hexagonal（端口-适配器）· <strong>版本基线</strong>：与框架无关，示例基于 Go 1.24+ · <strong>协议</strong>：文档 MIT</p></blockquote>
+<p><strong>社区实践</strong>：DDD（Domain-Driven Design）、Clean Architecture、Hexagonal（端口-适配器）</p>
+<p><strong>上游参考</strong>：<a href="https://github.com/evrone/go-clean-template">evrone/go-clean-template</a>（Clean Architecture 的 Go 落地模板）· <strong>版本基线</strong>：与框架无关，示例基于 Go 1.24+ · <strong>协议</strong>：MIT</p></blockquote>
 <section data-anchor="1-项目简介">
 <h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
 <p>分层讨论的不是目录好不好看，而是<strong>一处需求变更会波及多少个文件</strong>。没分层时，三个症状会同时出现：</p>
@@ -576,7 +577,7 @@ func writeErr(c *gin.Context, err error) {
       return m;
     });
   });
-  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx", "graphql": "GraphQL"};
   document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
     var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
     var label = labels[lang] || lang.toUpperCase();

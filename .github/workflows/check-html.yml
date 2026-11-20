@@ -20,8 +20,8 @@ jobs:
           code=$?
           bytes=$(wc -c < /tmp/out.txt)
           echo "exit=$code bytes=$bytes python=$(python -V 2>&1)"
-          grep -a "FAIL" /tmp/out.txt | head -8 || true
-          fails=$(grep -a "FAIL" /tmp/out.txt | head -4 | tr '\n' '|' | cut -c1-600)
+          cat /tmp/out.txt
+          fails=$(grep -aE "FAIL:|未登记的代码语言|文首引用块|代码围栏未配对|S6 |S7 " /tmp/out.txt | head -4 | tr '\n' '|' | cut -c1-600)
           echo "::error title=exit $code::$fails"
           exit $code
 

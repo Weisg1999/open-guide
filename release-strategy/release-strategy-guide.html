@@ -115,12 +115,13 @@
 <main>
 <div class="hero">
   <h1>渐进式发布技术指南（灰度 / 金丝雀 / 回滚）</h1>
-<p><strong>一句话定位</strong>：把「一次性全量替换」拆成「可控放量 + 可观测判定 + 可快速回滚」的发布工程。 <strong>涉及组件</strong>：Nginx Ingress / Apache APISIX / Argo Rollouts / Istio · <strong>版本基线</strong>：APISIX 3.x、Argo Rollouts 1.7+、Ingress-Nginx 1.11+ · <strong>协议</strong>：各自 Apache-2.0 / MIT</p>
+<p><strong>一句话定位</strong>：把「一次性全量替换」拆成「可控放量 + 可观测判定 + 可快速回滚」的发布工程。 <strong>涉及组件</strong>：Nginx Ingress / Apache APISIX / Argo Rollouts / Istio <strong>上游仓库</strong>：<a href="https://github.com/apache/apisix">apache/apisix</a> · <a href="https://github.com/argoproj/argo-rollouts">argoproj/argo-rollouts</a> · <strong>版本基线</strong>：APISIX 3.x、Rollouts 1.7+、Ingress-Nginx 1.11+ · <strong>协议</strong>：Apache-2.0</p>
 <p style="opacity:.8;font-size:13.5px">灰度 · 蓝绿 · 染色</p>
 <div class="meta"><span>金丝雀</span><span>权重</span><span>回滚</span></div>
 </div>
 <blockquote><p><strong>一句话定位</strong>：把「一次性全量替换」拆成「可控放量 + 可观测判定 + 可快速回滚」的发布工程。</p>
-<p><strong>涉及组件</strong>：Nginx Ingress / Apache APISIX / Argo Rollouts / Istio · <strong>版本基线</strong>：APISIX 3.x、Argo Rollouts 1.7+、Ingress-Nginx 1.11+ · <strong>协议</strong>：各自 Apache-2.0 / MIT</p></blockquote>
+<p><strong>涉及组件</strong>：Nginx Ingress / Apache APISIX / Argo Rollouts / Istio</p>
+<p><strong>上游仓库</strong>：<a href="https://github.com/apache/apisix">apache/apisix</a> · <a href="https://github.com/argoproj/argo-rollouts">argoproj/argo-rollouts</a> · <strong>版本基线</strong>：APISIX 3.x、Rollouts 1.7+、Ingress-Nginx 1.11+ · <strong>协议</strong>：Apache-2.0</p></blockquote>
 <section data-anchor="1-项目简介">
 <h2 id="1-项目简介">1. 项目简介<span class="lvl b">入门</span></h2>
 <p>发布是线上事故最集中的一段。Google SRE 与 DORA 多年的统计都指向同一个结论：<strong>大多数故障由变更引入</strong>，而不是硬件或基础依赖自己坏掉。原因并不神秘——新代码只在测试环境的假流量下跑过，真实的参数组合、缓存状态、数据分布、下游超时都没被验证；再加上配置、镜像、依赖版本一起变，出问题时很难判断是哪一处引起的。</p>
@@ -519,7 +520,7 @@ SELECT DISTINCT status FROM orders WHERE created_at &gt;= now() - interval '1 ho
       return m;
     });
   });
-  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx"};
+  var labels = {"go": "Go", "bash": "Shell", "sh": "Shell", "shell": "Shell", "yaml": "YAML", "yml": "YAML", "json": "JSON", "js": "JavaScript", "javascript": "JavaScript", "protobuf": "Protobuf", "proto": "Protobuf", "python": "Python", "text": "Text", "txt": "Text", "conf": "Config", "toml": "TOML", "sql": "SQL", "dockerfile": "Dockerfile", "promql": "PromQL", "gitignore": "Gitignore", "ini": "INI", "logql": "LogQL", "alloy": "Alloy", "nginx": "Nginx", "graphql": "GraphQL"};
   document.querySelectorAll('pre code[class^="lang-"]').forEach(function(b){
     var lang = (b.className.match(/lang-([\w+-]+)/) || [])[1];
     var label = labels[lang] || lang.toUpperCase();

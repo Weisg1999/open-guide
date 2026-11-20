@@ -2,7 +2,9 @@
 
 > **一句话定位**：在多个进程同时写库时，生成全局唯一、趋势递增、不泄露业务量的 ID。
 >
-> **涉及方案**：雪花算法、号段模式、UUIDv7、数据库自增 · **版本基线**：google/uuid v1.6、sony/sonyflake v2 · **协议**：文档 MIT
+> **涉及方案**：雪花算法、号段模式、UUIDv7、数据库自增
+>
+> **上游仓库**：[google/uuid](https://github.com/google/uuid) · [sony/sonyflake](https://github.com/sony/sonyflake) · **版本基线**：google/uuid v1.6、sony/sonyflake v2 · **协议**：BSD-3-Clause / MIT
 
 ---
 
