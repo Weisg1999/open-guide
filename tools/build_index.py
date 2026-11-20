@@ -30,6 +30,25 @@ CAT_COLORS = {
     "部署与编排": "#475569",
 }
 
+CAT_DESC = {
+    "Go 语言核心": "泛型、反射、并发、性能剖析、测试、时区",
+    "Web、微服务与治理": "Gin / Kratos / gRPC / 限流熔断 / GraphQL / 项目分层",
+    "数据存储与检索": "MySQL / PostgreSQL / Redis / 搜索 / 向量 / 分库分表",
+    "消息、任务与调度": "Kafka / NATS / RabbitMQ / Asynq / Temporal / CDC",
+    "可观测性": "Prometheus / Loki / OpenTelemetry / 告警",
+    "部署与编排": "Docker / Kubernetes / Helm / ArgoCD / 渐进式发布",
+}
+
+# 顶部导航用短名，区块标题仍用全名
+CAT_SHORT = {
+    "Go 语言核心": "语言核心",
+    "Web、微服务与治理": "服务治理",
+    "数据存储与检索": "数据存储",
+    "消息、任务与调度": "消息调度",
+    "可观测性": "可观测性",
+    "部署与编排": "部署编排",
+}
+
 
 def clean(text: str) -> str:
     text = text.replace("`", "")
@@ -92,16 +111,27 @@ def build(guides) -> str:
     counts = {c: sum(1 for g in guides if g["c"] == c) for c in cats}
     colors = {c: CAT_COLORS.get(c, "#0d9488") for c in cats}
 
-    chips = ['<button class="chip active" data-c="all">全部<span>%d</span></button>' % len(guides)]
-    for c in cats:
+    chips = ['<button class="chip all" data-c="all">全部<span>%d</span></button>' % len(guides)]
+    for i, c in enumerate(cats):
         emoji = next(g["e"] for g in guides if g["c"] == c)
         chips.append(
-            '<button class="chip" data-c="%s"><i style="background:%s"></i>%s %s<span>%d</span></button>'
-            % (html.escape(c, quote=True), colors[c], emoji, html.escape(c), counts[c])
+            '<button class="chip" data-c="%d"><i style="background:%s"></i>%s %s<span>%d</span></button>'
+            % (i, colors[c], emoji, html.escape(CAT_SHORT.get(c, c)), counts[c])
         )
 
+    cat_meta = [
+        {
+            "n": c,
+            "e": next(g["e"] for g in guides if g["c"] == c),
+            "c": colors[c],
+            "d": CAT_DESC.get(c, ""),
+            "k": counts[c],
+        }
+        for c in cats
+    ]
+
     data = json.dumps(
-        [{"t": g["t"], "d": g["d"], "c": g["c"], "e": g["e"], "u": g["u"], "m": g["m"]} for g in guides],
+        [{"t": g["t"], "d": g["d"], "c": g["c"], "u": g["u"]} for g in guides],
         ensure_ascii=False,
         indent=0,
     )
@@ -111,6 +141,7 @@ def build(guides) -> str:
         "count": len(guides),
         "cats": len(cats),
         "chips": "\n      ".join(chips),
+        "catmeta": json.dumps(cat_meta, ensure_ascii=False, indent=0),
         "data": data,
         "colors": json.dumps(colors, ensure_ascii=False),
         "lines": "{:,}".format(lines),
@@ -167,32 +198,44 @@ h1 em{font-style:normal;color:#5eead4}
 .search input:focus{border-color:#2dd4bf;box-shadow:0 0 0 3px rgba(45,212,191,.18)}
 .search svg{position:absolute;left:15px;top:50%%;transform:translateY(-50%%);width:18px;height:18px;stroke:#94a3b8}
 
-.filters{display:flex;gap:10px;flex-wrap:wrap;padding:26px 24px 6px}
-.chip{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;
+.filters{position:sticky;top:0;z-index:30;display:flex;gap:8px;flex-wrap:wrap;
+  width:100%%;max-width:1120px;margin:0 auto;padding:16px 24px 14px;
+  box-sizing:border-box;
+  background:var(--bg);
+  background:color-mix(in srgb, var(--bg) 88%%, transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:7px 13px;border-radius:999px;
   border:1px solid var(--line);background:var(--chip);color:var(--chip-fg);
-  font-size:13.5px;cursor:pointer;transition:.16s;font-family:inherit}
+  font-size:13px;cursor:pointer;transition:.16s;font-family:inherit;white-space:nowrap}
 .chip i{width:7px;height:7px;border-radius:50%%;display:inline-block}
-.chip span{font-size:11.5px;color:var(--muted)}
-.chip:hover{border-color:#94a3b8}
-.chip.active{background:#0f172a;color:#f8fafc;border-color:#0f172a}
-.chip.active span{color:#94a3b8}
-@media (prefers-color-scheme: dark){.chip.active{background:#2dd4bf;color:#042f2e;border-color:#2dd4bf}
-  .chip.active span{color:#0f766e}}
+.chip span{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.chip:hover{border-color:#94a3b8;transform:translateY(-1px)}
+.chip.all{font-weight:600}
+.chip.all.dim{opacity:.55}
+@media (prefers-color-scheme: dark){.chip:hover{border-color:#475569}}
 
-main{padding:18px 24px 64px}
+main{padding:30px 24px 64px}
+.cat{margin:0 0 46px;scroll-margin-top:78px}
+.cat:last-child{margin-bottom:8px}
+.cat-h{display:flex;align-items:flex-start;gap:12px;padding:0 0 15px;margin:0 0 18px;
+  border-bottom:1px solid var(--line)}
+.cat-h .bar{width:3px;border-radius:2px;align-self:stretch;min-height:34px;margin-top:1px}
+.cat-h .txt{flex:1;min-width:0}
+.cat-h h2{margin:0;font-size:19px;font-weight:800;letter-spacing:-.01em;line-height:1.35}
+.cat-h p{margin:3px 0 0;font-size:12.5px;color:var(--muted)}
+.cat-h .n{font-size:12.5px;color:var(--muted);white-space:nowrap;
+  font-variant-numeric:tabular-nums;padding-top:4px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(288px,1fr));gap:16px}
 .card{display:flex;flex-direction:column;gap:9px;padding:18px 18px 16px;border-radius:14px;
   border:1px solid var(--line);background:var(--card);transition:.18s;position:relative}
 .card:hover{transform:translateY(-2px);border-color:#2dd4bf;box-shadow:0 14px 34px -18px var(--shadow)}
-.card .top{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--muted);letter-spacing:.04em}
-.card .top i{width:7px;height:7px;border-radius:50%%}
-.card h3{margin:0;font-size:16px;font-weight:700;letter-spacing:-.01em}
-.card p{margin:0;font-size:13px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;
+.card h3{margin:0;font-size:16px;font-weight:700;letter-spacing:-.01em;line-height:1.45}
+.card p{margin:0;font-size:13px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:3;
   -webkit-box-orient:vertical;overflow:hidden}
-.card .foot{display:flex;align-items:center;gap:12px;margin-top:auto;padding-top:6px;
-  font-size:12px;color:var(--muted)}
+.card .foot{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:8px;
+  font-size:11.5px;color:var(--muted)}
 .card .foot .go{margin-left:auto;color:#0d9488;font-weight:600}
-.empty{padding:60px 0;text-align:center;color:var(--muted)}
+.empty{padding:72px 0;text-align:center;color:var(--muted)}
 
 footer{border-top:1px solid var(--line);padding:30px 0 44px;color:var(--muted);font-size:13px}
 footer .wrap{display:flex;gap:16px;flex-wrap:wrap;align-items:center;justify-content:space-between}
@@ -204,8 +247,15 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;paddi
   .hero{padding:52px 0 40px}
   .stats{gap:24px;margin:26px 0 24px}
   .stats b{font-size:26px}
-  .filters{padding:20px 20px 4px}
-  main{padding:14px 20px 48px}
+  .filters{padding:12px 20px 11px;gap:7px;overflow-x:auto;flex-wrap:nowrap;
+    scrollbar-width:none;-ms-overflow-style:none}
+  .filters::-webkit-scrollbar{display:none}
+  .chip{padding:6px 11px;font-size:12.5px}
+  main{padding:22px 20px 48px}
+  .cat{margin-bottom:38px;scroll-margin-top:66px}
+  .cat-h h2{font-size:17px}
+  .cat-h p{font-size:12px}
+  .grid{grid-template-columns:1fr;gap:12px}
 }
 </style>
 </head>
@@ -228,12 +278,12 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;paddi
   </div>
 </header>
 
-<nav class="filters wrap" id="filters">
+<nav class="filters" id="filters">
       %(chips)s
 </nav>
 
 <main class="wrap">
-  <div class="grid" id="grid"></div>
+  <div id="list"></div>
   <p class="empty" id="empty" hidden>没有匹配的条目，换个关键词试试。</p>
 </main>
 
@@ -246,36 +296,56 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;paddi
 
 <script>
 const DATA = %(data)s;
+const CATS = %(catmeta)s;
 const COLORS = %(colors)s;
-const grid = document.getElementById('grid');
+const list = document.getElementById('list');
 const empty = document.getElementById('empty');
 const input = document.getElementById('q');
-let cat = 'all';
 
 function esc(s){return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 
-function render(){
-  const kw = input.value.trim().toLowerCase();
-  const items = DATA.filter(d =>
-    (cat === 'all' || d.c === cat) &&
-    (!kw || (d.t + ' ' + d.d + ' ' + d.c).toLowerCase().includes(kw))
-  );
-  grid.innerHTML = items.map(d => `
-    <a class="card" href="${esc(d.u)}">
-      <div class="top"><i style="background:${COLORS[d.c] || '#0d9488'}"></i>${esc(d.e)} ${esc(d.c)}</div>
+function card(d){
+  return `<a class="card" href="${esc(d.u)}">
       <h3>${esc(d.t)}</h3>
       <p title="${esc(d.d)}">${esc(d.d)}</p>
       <div class="foot"><span>Markdown</span><span>·</span><span>单文件 HTML</span><span class="go">阅读 →</span></div>
-    </a>`).join('');
-  empty.hidden = items.length > 0;
+    </a>`;
+}
+
+function render(){
+  const kw = input.value.trim().toLowerCase();
+  const hit = d => !kw || (d.t + ' ' + d.d + ' ' + d.c).toLowerCase().includes(kw);
+  let shown = 0;
+  let html = '';
+  CATS.forEach((c, i) => {
+    const items = DATA.filter(d => d.c === c.n && hit(d));
+    if (!items.length) return;
+    shown += items.length;
+    const desc = c.d && !kw ? `<p>${esc(c.d)}</p>` : '';
+    html += `<section class="cat" id="cat-${i}">
+      <div class="cat-h">
+        <span class="bar" style="background:${c.c}"></span>
+        <div class="txt"><h2>${esc(c.e)} ${esc(c.n)}</h2>${desc}</div>
+        <span class="n">${items.length} 篇</span>
+      </div>
+      <div class="grid">${items.map(card).join('')}</div>
+    </section>`;
+  });
+  list.innerHTML = html;
+  empty.hidden = shown > 0;
+  empty.textContent = kw ? `没有匹配「${kw}」的条目，换个关键词试试。` : '没有可显示的条目。';
 }
 
 document.getElementById('filters').addEventListener('click', e => {
   const btn = e.target.closest('.chip');
   if (!btn) return;
-  document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c === btn));
-  cat = btn.dataset.c;
-  render();
+  const idx = btn.dataset.c;
+  if (idx === 'all') {
+    window.scrollTo({top: 0, behavior: 'smooth'});
+    return;
+  }
+  const el = document.getElementById('cat-' + idx);
+  if (el) el.scrollIntoView({behavior: 'smooth', block: 'start'});
 });
 
 input.addEventListener('input', render);
