@@ -20,8 +20,9 @@ jobs:
           code=$?
           bytes=$(wc -c < /tmp/out.txt)
           echo "exit=$code bytes=$bytes python=$(python -V 2>&1)"
-          tail -40 /tmp/out.txt
-          echo "::error title=check exit $code, $bytes bytes::$bytes bytes :: $(tail -c 800 /tmp/out.txt | tr '\n' '|' | cut -c1-780)"
+          grep -a "FAIL" /tmp/out.txt | head -8 || true
+          fails=$(grep -a "FAIL" /tmp/out.txt | head -4 | tr '\n' '|' | cut -c1-600)
+          echo "::error title=exit $code::$fails"
           exit $code
 
       - name: Verify landing page matches README index
