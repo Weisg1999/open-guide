@@ -14,7 +14,16 @@ jobs:
         with:
           python-version: '3.11'
       - name: Verify HTML matches Markdown and required elements
-        run: python tools/build_html.py --check --audit --stats
+        run: |
+          set +e
+          python tools/build_html.py --check --audit --stats > /tmp/out.txt 2>&1
+          code=$?
+          cat /tmp/out.txt
+          if [ $code -ne 0 ]; then
+            msg=$(grep -aE "FAIL|Error|error|Traceback" /tmp/out.txt | head -6 | tr '\n' ' ')
+            echo "::error title=build_html check failed::${msg:0:900}"
+          fi
+          exit $code
 
       - name: Verify landing page matches README index
         run: python tools/build_index.py --check
